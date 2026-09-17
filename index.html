@@ -362,7 +362,7 @@ button.row:active{background:var(--soft)}
 
 <section id='home'>
 <div class='wipnote'>👋 Early prototype. We're testing the look and feel. Training drills and stickers are still being built.</div>
-<div class='topbar'><div class='brand'><img class='brandlogo' src='logo.png' alt='Thwap Hockey Training' width='80' height='68'> Thwap Hockey Training</div><nav class='toplinks'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Change player</a><span class='topsep'>|</span><a class='link' href='#progress'>Leaderboard</a></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><a href='#stickers'>Stickers</a><a href='#roster'>Change player</a><a href='#progress'>Leaderboard</a></div></div>
+<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='logo.png' alt='Thwap Hockey Training' width='80' height='68' style='cursor:pointer'> Thwap Hockey Training</div><nav class='toplinks'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Change player</a><span class='topsep'>|</span><a class='link' href='#progress'>Leaderboard</a></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><a href='#stickers'>Stickers</a><a href='#roster'>Change player</a><a href='#progress'>Leaderboard</a></div></div>
 <div class='hero'><div class='kicker'>Rangers 10U</div><div class='forrow'><span class='forline'>Today’s <button type='button' class='daytip' id='dayTip' aria-label='Show today’s date'>Sunday<span class='daydate' id='dayDate'>Sunday, September 13</span></button> training for</span></div><button type='button' class='playername' id='homePlayer' aria-label='Open your player card'>Lewie M.</button><p>Three quick parts. About 30 minutes. Every drill counts.</p></div>
 <div class='cards'>
 <a class='nav' href='hockey_game_goals.html'><div class='ico'>🎯</div><div><h2>Game Day Goals</h2><p>Pick your 4 goals for today’s game</p></div><div class='chev'>›</div></a>
@@ -1178,4 +1178,38 @@ document.addEventListener('click',function(e){
   },0);
 },true);
 })();</script>
+
+<style>
+/* Sass skate-across easter egg: the real header logo skates right and back, staying fully visible. Flat PNG, so skating is faked with a bob. */
+.brandlogo{cursor:pointer}
+#sassLogo.skating{animation:sassAcross 2.2s ease-in-out forwards, sassSkate .3s ease-in-out infinite}
+@keyframes sassAcross{
+  0%{transform:translateX(0)}
+  45%{transform:translateX(var(--sass-travel,200px))}
+  55%{transform:translateX(var(--sass-travel,200px)) scaleX(-1)}   /* pause + flip to skate back */
+  100%{transform:translateX(0) scaleX(-1)}
+}
+@keyframes sassSkate{0%{margin-top:0}50%{margin-top:-7px}100%{margin-top:0}}
+@media (prefers-reduced-motion: reduce){#sassLogo.skating{animation:sassAcross 2.2s ease-in-out forwards}}
+</style>
+<script>(function(){
+  var logo=document.getElementById('sassLogo'); if(!logo)return;
+  logo.addEventListener('click',function(e){
+    e.preventDefault();
+    if(logo.classList.contains('skating'))return;
+    /* travel = from the logo's right edge to just before the viewport's right edge, so he never leaves the screen */
+    var r=logo.getBoundingClientRect();
+    var travel=Math.max(80, window.innerWidth - r.right - 16);
+    logo.style.setProperty('--sass-travel', travel+'px');
+    logo.classList.add('skating');
+    logo.addEventListener('animationend',function done(ev){
+      if(ev.animationName!=='sassAcross')return;
+      logo.classList.remove('skating');
+      logo.style.transform=''; logo.style.marginTop=''; logo.style.removeProperty('--sass-travel');
+      logo.removeEventListener('animationend',done);
+    });
+  });
+})();</script>
+
+
 </body></html>
