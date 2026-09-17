@@ -229,15 +229,20 @@ button.row:active{background:var(--soft)}
 .pl-name{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;line-height:1.05}
 .pl-pos{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
 .pl-streak{font-family:'Archivo Black',system-ui,sans-serif;font-size:18px;color:var(--orange);margin:28px 0 14px}
-.pl-disc{margin:0 0 20px}
-.pl-disc-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:8px}
-.pl-disc-name{font-size:17px;font-weight:800}
-.pl-disc-count{font-size:13px;font-weight:800;color:var(--green2)}
-.pl-ex{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:15px;font-weight:600}
-.pl-ex:last-child{border-bottom:0}
-.pl-dot{width:24px;height:24px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;font-size:14px;font-weight:900;border:2px solid var(--line);color:var(--muted)}
-.pl-ex.done .pl-dot{background:var(--lime);border-color:var(--lime);color:var(--ink)}
-.pl-ex.done{color:var(--muted)}
+.pl-disc{margin:0 0 22px}
+.pl-disc-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:12px}
+.pl-disc-name{font-size:18px;font-weight:900}
+.pl-disc-count{font-size:14px;font-weight:800;color:var(--green2)}
+.pl-ex{display:flex;align-items:center;gap:14px;padding:14px;margin-bottom:10px;border:1px solid var(--line);border-radius:16px;background:var(--card);font-size:17px;font-weight:800;animation:plexin .4s ease both}
+.pl-exicon{width:48px;height:48px;flex:0 0 auto;border-radius:14px;display:grid;place-items:center;font-size:26px;background:color-mix(in srgb,var(--dacc) 20%,transparent)}
+.pl-exname{flex:1 1 auto;min-width:0}
+.pl-exdot{width:28px;height:28px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;font-size:15px;font-weight:900;border:2px solid var(--line);color:var(--muted)}
+.pl-ex.done{border-color:var(--dacc);background:color-mix(in srgb,var(--dacc) 12%,var(--card))}
+.pl-ex.done .pl-exicon{background:var(--dacc)}
+.pl-ex.done .pl-exdot{background:var(--dacc);border-color:var(--dacc);color:#0f1712}
+@keyframes plexin{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
+.pl-ex:nth-child(2){animation-delay:.03s}.pl-ex:nth-child(3){animation-delay:.06s}.pl-ex:nth-child(4){animation-delay:.09s}.pl-ex:nth-child(5){animation-delay:.12s}.pl-ex:nth-child(6){animation-delay:.15s}
+@media (prefers-reduced-motion: reduce){.pl-ex{animation:none}}
 .plflame{display:inline-block;transform-origin:50% 90%;animation:plflick .55s ease-in-out infinite;filter:drop-shadow(0 0 4px rgba(255,140,40,.7))}
 @keyframes plflick{0%{transform:scale(1) rotate(-4deg);opacity:1}25%{transform:scale(1.18,1.24) rotate(3deg);opacity:.85}50%{transform:scale(.94,1.1) rotate(-2deg);opacity:1}75%{transform:scale(1.12,1.16) rotate(4deg);opacity:.9}100%{transform:scale(1) rotate(-4deg);opacity:1}}
 .pl-rings{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
@@ -1000,6 +1005,12 @@ var CATALOG={
   Shooting:['Wrist Shots','Snap Shots','Backhand','Pick-a-Corner','Quick Release'],
   Dryland:['Skater Jumps','Box Jumps','Wall Sit','Plank','Dead Bugs']
 };
+/* A pictograph per exercise so kids recognize the move at a glance (design aid, not official content). */
+var EXICON={
+  'Side-to-Side':'↔️','Figure-8 Around Cones':'🎿','Toe Drag & Rescue':'🏒','Eyes-Up Glancing':'👀','Cone Weave Course':'🚧',
+  'Wrist Shots':'🎯','Snap Shots':'⚡','Backhand':'🔄','Pick-a-Corner':'🥅','Quick Release':'⏱️',
+  'Skater Jumps':'🦘','Box Jumps':'📦','Wall Sit':'🧱','Plank':'🪵','Dead Bugs':'🐞'
+};
 /* DEMO completion counts per player/timeframe (placeholder, real data Phase 4). */
 function demoDone(name,disc,tf){
   var seed=0; for(var i=0;i<name.length;i++) seed+=name.charCodeAt(i);
@@ -1096,10 +1107,16 @@ function build(){
 
   /* exercise detail, shown directly. When a discipline filter is active (all-time), show only that one. */
   var showDiscs=(tf==='all'&&plFilter!=='all')?[plFilter]:discs;
+  var DACC={Stickhandling:'#8fd65e',Shooting:'#75B8FF',Dryland:'#FF9D4D'};
   var list=showDiscs.map(function(disc){
     var exs=CATALOG[disc]; var done=demoDone(first,disc,tf);
-    var rows=exs.map(function(name,i){var isDone=i<done;return "<div class='pl-ex"+(isDone?' done':'')+"'><span class='pl-dot'>"+(isDone?'✓':'')+"</span>"+esc(name)+"</div>";}).join('');
-    return "<div class='pl-disc'><div class='pl-disc-h'><span class='pl-disc-name'>"+disc+"</span><span class='pl-disc-count'>"+done+" of "+exs.length+" done</span></div>"+rows+"</div>";
+    var rows=exs.map(function(name,i){var isDone=i<done;
+      return "<div class='pl-ex"+(isDone?' done':'')+"'>"+
+        "<span class='pl-exicon'>"+(EXICON[name]||'🏒')+"</span>"+
+        "<span class='pl-exname'>"+esc(name)+"</span>"+
+        "<span class='pl-exdot'>"+(isDone?'✓':'')+"</span></div>";
+    }).join('');
+    return "<div class='pl-disc' style='--dacc:"+DACC[disc]+"'><div class='pl-disc-h'><span class='pl-disc-name'>"+disc+"</span><span class='pl-disc-count'>"+done+" of "+exs.length+" done</span></div>"+rows+"</div>";
   }).join('');
   wrap.innerHTML=visual+"<div class='pl-list'>"+list+"</div>";
 
