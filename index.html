@@ -1182,14 +1182,15 @@ document.addEventListener('click',function(e){
 <style>
 /* Sass skate-across easter egg: the real header logo skates right and back, staying fully visible. Flat PNG, so skating is faked with a bob. */
 .brandlogo{cursor:pointer}
-#sassLogo.skating{animation:sassAcross 2.2s ease-in-out forwards, sassSkate .3s ease-in-out infinite}
+#sassLogo.skating{transform-origin:center bottom;animation:sassAcross 2.2s ease-in-out forwards, sassSkate .3s ease-in-out infinite}
 @keyframes sassAcross{
-  0%{transform:translateX(0)}
-  45%{transform:translateX(var(--sass-travel,200px))}
-  55%{transform:translateX(var(--sass-travel,200px)) scaleX(-1)}   /* pause + flip to skate back */
-  100%{transform:translateX(0) scaleX(-1)}
+  0%{transform:translateX(0) translateY(-8px) scale(.86)}
+  45%{transform:translateX(var(--sass-travel,200px)) translateY(-8px) scale(.86)}
+  55%{transform:translateX(var(--sass-travel,200px)) translateY(-8px) scale(.86) scaleX(-.86)}   /* flip to skate back */
+  100%{transform:translateX(0) translateY(-8px) scale(.86) scaleX(-.86)}
 }
-@keyframes sassSkate{0%{margin-top:0}50%{margin-top:-7px}100%{margin-top:0}}
+/* bob stays small and strictly upward, inside the headroom, so he never touches the bottom line */
+@keyframes sassSkate{0%{margin-top:0}50%{margin-top:-5px}100%{margin-top:0}}
 @media (prefers-reduced-motion: reduce){#sassLogo.skating{animation:sassAcross 2.2s ease-in-out forwards}}
 </style>
 <script>(function(){
@@ -1197,9 +1198,13 @@ document.addEventListener('click',function(e){
   logo.addEventListener('click',function(e){
     e.preventDefault();
     if(logo.classList.contains('skating'))return;
-    /* travel = from the logo's right edge to just before the viewport's right edge, so he never leaves the screen */
+    /* stop before the nav on the right: desktop = the links, mobile = the kebab. Whichever is visible. */
     var r=logo.getBoundingClientRect();
-    var travel=Math.max(80, window.innerWidth - r.right - 16);
+    var stopX=window.innerWidth-16;
+    document.querySelectorAll('#home .toplinks, #home .kebab').forEach(function(el){
+      if(el.offsetParent!==null){ var b=el.getBoundingClientRect(); if(b.left<stopX) stopX=b.left; }
+    });
+    var travel=Math.max(60, stopX - r.right - 12);
     logo.style.setProperty('--sass-travel', travel+'px');
     logo.classList.add('skating');
     logo.addEventListener('animationend',function done(ev){
