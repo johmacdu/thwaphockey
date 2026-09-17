@@ -1,0 +1,1093 @@
+<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=Archivo+Black&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;0,6..12,800;0,6..12,900&display=swap' rel='stylesheet'><title>Thwap Hockey Training</title><link rel='icon' type='image/png' href='logo-64.png'><link rel='apple-touch-icon' href='logo-180.png'><style>
+:root{
+/* Thwap brand palette */
+--ink:#15221B;--ice:#F3F7F4;--puck:#202522;--lime:#B9F06B;--blue:#75B8FF;--orange:#FF9D4D;--tape:#FFFFFF;--bench:#A5B0A9;--pnw:#315B43;--alert:#F0645A;
+/* Foundation = Ice light: dark Ink text on Ice bg, Lime reserved for go/active */
+--bg:#F3F7F4;--bg2:#E9EFEA;--panel:#FFFFFF;--panel2:#FBFDFB;--line:#DCE5DE;--text:#15221B;--muted:#5F6F64;--green:#2F6B41;--green2:#2F6B41;--soft:#E7EEE8;--card:#FFFFFF;--card2:#F7FAF7;--cardgrad1:#FFFFFF;--cardgrad2:#F2F6F3;--line2:#C9D5CC;--line3:#DCE5DE;--linesel:#8FD65E;--text2:#2C3A31;--muted2:#5F6F64;--chev:#9AA8A0;--onaccent:#15221B;--shadow:rgba(20,40,25,.10);
+/* radii */
+--r-card:16px;--r-major:22px;--r-player:26px;--r-pill:999px}
+html[data-theme='dark']{
+/* Thwap dark theme: Ink-based surfaces, Ice text, accents kept vivid */
+--bg:#101A14;--bg2:#0B130E;--panel:#182420;--panel2:#141E19;--line:#2A3831;--text:#F3F7F4;--muted:#9DACA2;--green:#B9F06B;--green2:#CDEFA0;--soft:#1F2C24;--card:#182420;--card2:#1E2B24;--cardgrad1:#20302A;--cardgrad2:#131C16;--line2:#3A4A40;--line3:#2A3831;--linesel:#B9F06B;--text2:#D3DDD6;--muted2:#9DACA2;--chev:#7C8C82;--onaccent:#15221B;--shadow:rgba(0,0,0,.35)}
+*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2));color:var(--text);font-family:'Nunito Sans',system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weight:600}a{color:inherit;text-decoration:none}.app{max-width:1100px;margin:auto;min-height:100vh;padding:0 16px 44px}
+.wipnote{margin:14px 0 0;padding:10px 14px;border-radius:12px;background:var(--soft);border:1px solid var(--line);color:var(--muted);font-size:13px;font-weight:600;line-height:1.4}
+/* Sticker Book */
+.stickcount{margin:6px 0 16px;font-size:13px;font-weight:800;color:var(--muted);letter-spacing:.02em}
+.stickgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:14px}
+.stickcell{position:relative;aspect-ratio:1;display:flex;align-items:center;justify-content:center;padding:8px;border-radius:16px;background:var(--card);border:1px solid var(--line);cursor:pointer;transition:transform .1s ease,border-color .12s ease}
+.stickcell:active{transform:scale(.94)}
+.stickcell img{max-width:100%;max-height:100%;object-fit:contain;display:block;-webkit-user-drag:none}
+.stickcell.locked img{filter:grayscale(1) brightness(.35) contrast(.7);opacity:.5}
+.stickcell.locked::after{content:'🔒';position:absolute;font-size:20px;opacity:.65}
+.stickcell.earned{border-color:var(--lime)}
+.stickcell.on-card{box-shadow:inset 0 0 0 2px var(--lime)}
+@keyframes stickSlap{0%{transform:scale(1.8) rotate(-14deg);opacity:0}60%{transform:scale(.9) rotate(4deg);opacity:1}100%{transform:scale(1) rotate(var(--slap-rot,-5deg))}}
+.slapped{animation:stickSlap .6s cubic-bezier(.2,.8,.2,1)}
+@media (prefers-reduced-motion: reduce){.slapped{animation:none}}
+.page{display:none}.page:target{display:block;padding-top:64px}.page:target~#home{display:none}#home{display:block}
+.topbar{height:68px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.01em}.brandlogo{height:68px;width:auto;object-fit:contain;display:block}.link{color:var(--green2);font-weight:900;font-size:13px}.back{display:inline-block;padding:20px 0 6px;color:var(--green2);font-weight:900}
+
+
+
+.glassclose{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);right:max(16px, calc(50vw - 534px));z-index:50;display:inline-grid;place-items:center;width:40px;height:40px;border-radius:50%;font-size:20px;font-weight:700;color:var(--text);cursor:pointer;text-decoration:none;background:color-mix(in srgb,var(--panel) 62%,transparent);border:1px solid color-mix(in srgb,var(--text) 12%,transparent);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);box-shadow:0 6px 20px var(--shadow)}
+.glassclose:hover{background:color-mix(in srgb,var(--panel) 78%,transparent)}
+.hero{padding:30px 0 15px}.kicker{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--green);font-weight:950}h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(38px,10vw,54px);line-height:1.04;letter-spacing:.005em;margin:8px 0 11px}h2{letter-spacing:.01em}p{color:var(--text2);line-height:1.5}.hero p{margin:12px 0 0}.daytip{position:relative;display:inline-flex;align-items:center;font:inherit;font-size:14px;font-weight:600;color:var(--muted);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;-webkit-tap-highlight-color:transparent}
+.daydate{position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%) translateY(4px);white-space:nowrap;background:var(--ink);color:#fff;font-size:12px;font-weight:600;padding:6px 10px;border-radius:8px;opacity:0;visibility:hidden;transition:opacity .15s ease,transform .15s ease;pointer-events:none;z-index:5}
+.daydate::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--ink)}
+.daytip:hover .daydate,.daytip:focus-visible .daydate,.daytip.show .daydate{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
+.cards{display:grid;gap:12px;margin-top:20px;grid-template-columns:1fr}.nav{display:grid;grid-template-columns:50px 1fr auto;gap:14px;align-items:center;padding:16px 2px;min-height:auto;border-bottom:1px solid var(--line)}
+a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient(180deg,var(--panel2),var(--panel));padding:18px;min-height:94px;box-shadow:0 6px 18px var(--shadow)}.ico{width:50px;height:50px;border-radius:16px;background:var(--soft);display:grid;place-items:center;font-size:25px}.nav h2{margin:0;font-size:19px;font-weight:800;letter-spacing:.005em}.nav p{margin:5px 0 0;font-size:16px;color:var(--muted)}.chev{font-size:22px;color:var(--chev)}
+.nav.soon{cursor:default;opacity:.72}.nav.soon:hover{border-color:var(--line);transform:none}.soontag{font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--green);border:1px solid var(--line3);border-radius:999px;padding:4px 8px;align-self:center;white-space:nowrap}
+.heroCard{padding:6px 2px 4px;margin-top:6px}.heroCard h1{font-size:40px}.big{font-size:38px}.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.pill{padding:7px 10px;border-radius:999px;background:var(--soft);color:var(--green2);font-size:12px;font-weight:900}
+.pilltip{position:relative;padding:7px 12px;border-radius:999px;background:var(--soft);color:var(--green2);font:inherit;font-size:12px;font-weight:900;border:0;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;-webkit-tap-highlight-color:transparent}
+.pilltip-date{position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%) translateY(4px);white-space:nowrap;background:var(--ink);color:#fff;font-size:12px;font-weight:600;padding:6px 10px;border-radius:8px;opacity:0;visibility:hidden;transition:opacity .15s ease,transform .15s ease;pointer-events:none;z-index:5}
+.pilltip-date::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--ink)}
+.pilltip:hover .pilltip-date,.pilltip:focus-visible .pilltip-date,.pilltip.show .pilltip-date{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
+.titletip{position:relative;font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;text-decoration:underline dotted;text-underline-offset:6px;-webkit-tap-highlight-color:transparent}
+.titletip-date{position:absolute;left:0;top:calc(100% + 8px);white-space:nowrap;background:var(--ink);color:#fff;font-family:'Nunito Sans',system-ui,sans-serif;font-size:13px;font-weight:600;letter-spacing:0;text-transform:none;padding:6px 10px;border-radius:8px;opacity:0;visibility:hidden;transition:opacity .15s ease;pointer-events:none;z-index:5}
+.titletip:hover .titletip-date,.titletip:focus-visible .titletip-date,.titletip.show .titletip-date{opacity:1;visibility:visible}.sectionTitle{margin:28px 0 12px}.sectionTitle h2{font-size:24px;margin:0}.sectionTitle p{margin:5px 0 0;font-size:13px;color:var(--muted)}
+.check{position:absolute;opacity:0;pointer-events:none}.activity{display:grid;grid-template-columns:42px 1fr 30px;gap:13px;align-items:start;padding:15px 2px;margin-bottom:0;border-bottom:1px solid var(--line)}.activity .em{font-size:26px}.activity h3{margin:0;font-size:16px}.activity p{margin:5px 0 0;font-size:13px;color:var(--muted)}.activity small{display:block;color:var(--green2);font-weight:900;margin-top:8px}.circle{width:30px;height:30px;border:1px solid var(--line2);border-radius:50%;display:grid;place-items:center;color:transparent}.check:checked+label.activity{border-color:var(--line)}
+.donebanner{display:none;align-items:center;gap:10px;padding:14px 16px;margin-top:12px;border-radius:14px;background:var(--soft);color:var(--green2);font-weight:900;font-size:14px}
+.donebanner.show{display:flex}
+.exrow{border-bottom:1px solid var(--line)}
+.exhead{display:grid;grid-template-columns:42px 1fr auto;gap:13px;align-items:center;padding:16px 2px;cursor:pointer;min-height:56px}
+.exhead .exem{font-size:34px;line-height:1}
+.exhead h3{margin:0;font-size:22px;letter-spacing:.01em}
+.exhead .exdose{font-size:15px;color:var(--muted);margin-top:3px}
+.exhead .exchev{font-size:16px;color:var(--chev);transition:transform .15s ease}
+.exrow.open .exhead .exchev{transform:rotate(90deg)}
+.exbadge{display:none;margin-left:8px;font-size:12px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:var(--green2);background:var(--soft);border-radius:999px;padding:2px 8px;vertical-align:middle}
+.exrow.done .exbadge{display:inline-block}
+.exrow.done .exhead h3{color:var(--text2)}
+.exbody{display:none;padding:0 2px 36px 55px}
+.exrow.open .exbody{display:block}
+.exbody p{margin:0 0 12px;font-size:18px;color:var(--text2);line-height:1.55}
+.exvideo{position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;margin:0 0 12px;background:var(--soft);border:1px solid var(--line)}
+.exvideo iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.exvideo.placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--muted)}
+.exvideo.placeholder span{font-size:26px;color:var(--chev)}
+.exvideo.placeholder small{font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+.exbody ol{margin:0 0 18px;padding-left:26px;color:var(--text);font-size:18px;line-height:1.75}
+.exbody ol li{margin-bottom:14px;padding-left:4px}
+.exbody ol li::marker{font-weight:700;color:var(--text)}
+.exbody ol li b{font-weight:600;color:var(--text)}
+.exdone{display:inline-flex;align-items:center;gap:7px;margin-top:10px;min-height:44px;background:var(--lime);color:var(--ink);font-weight:900;font-size:15px;border:0;border-radius:999px;padding:12px 20px;cursor:pointer;font-family:inherit}
+.exrow.done .exdone{background:var(--soft);color:var(--green2)}.check:checked+label.activity .circle{background:var(--green);border-color:var(--green);color:var(--onaccent)}.check:checked+label.activity h3{text-decoration:line-through;text-decoration-color:var(--linesel);color:var(--text2)}
+.rule{border-left:3px solid var(--green);padding:4px 0 4px 14px;margin-top:20px;color:var(--text2);line-height:1.6;font-size:14px}.primary{display:block;text-align:center;background:var(--green);color:var(--onaccent);font-weight:950;border-radius:15px;padding:15px;margin-top:16px}
+/* Player picker (roster) */
+.toplinks{display:flex;align-items:center;gap:10px}
+.topsep{color:var(--line);font-weight:400}
+.topbar{position:relative}
+.kebab{display:none;width:44px;height:44px;border:0;background:none;color:var(--text);font-size:26px;line-height:1;cursor:pointer;border-radius:12px;-webkit-tap-highlight-color:transparent}
+.kebab:hover{background:var(--soft)}
+.kebabmenu{position:absolute;top:60px;right:0;z-index:40;display:flex;flex-direction:column;min-width:180px;background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:0 12px 30px var(--shadow);overflow:hidden}
+.kebabmenu[hidden]{display:none}
+.kebabmenu a{padding:14px 18px;font-weight:800;font-size:15px;color:var(--text);border-bottom:1px solid var(--line)}
+.kebabmenu a:last-child{border-bottom:0}
+.kebabmenu a:hover{background:var(--soft)}
+@media (max-width:640px){.toplinks{display:none}.kebab{display:inline-flex;align-items:center;justify-content:center}}
+.forrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px}
+.forline{font-size:15px;color:var(--muted);font-weight:600}
+.playername{font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;letter-spacing:.01em;font-size:34px;line-height:1.1;color:var(--ink);margin:2px 0 8px;display:block;background:none;border:0;padding:0;text-align:left;cursor:pointer;text-decoration:none;-webkit-tap-highlight-color:transparent}
+/* ---- Flippable player card overlay ---- */
+.cardoverlay{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:rgba(9,15,11,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;transition:opacity .2s ease;padding:20px}
+.cardoverlay.show{opacity:1}
+.cardoverlay[hidden]{display:none}
+.cardclose{position:absolute;top:16px;right:16px;width:44px;height:44px;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.cardscene{perspective:1400px;width:min(320px,86vw);display:flex;flex-direction:column;align-items:center;gap:16px}
+.card3d{position:relative;width:100%;aspect-ratio:5/7;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.7,.2,1);will-change:transform;touch-action:none;cursor:grab}
+.card3d.dragging{transition:none;cursor:grabbing}
+.card3d.intro{animation:cardIn .5s cubic-bezier(.2,.9,.2,1)}
+@keyframes cardIn{from{opacity:0;transform:scale(.85) rotateY(-30deg)}to{opacity:1;transform:none}}
+.cardface{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:var(--r-player);overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.14)}
+.cardback{transform:rotateY(180deg)}
+.cardart{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;-webkit-user-drag:none;user-select:none}
+/* holographic sheen driven by --sheen (0..1) */
+.cardface::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.28) 47%,rgba(185,240,107,.22) 52%,rgba(117,184,255,.22) 57%,transparent 72%);transform:translateX(calc((var(--sheen,.5) - .5) * 160%));mix-blend-mode:screen;opacity:.7}
+.cardhint{color:rgba(255,255,255,.72);font-size:13px;font-weight:700;letter-spacing:.02em}
+/* faces are dark/immersive per spec */
+.cardfront{color:#fff;background:#0f1712}.cardback{color:#fff;background:linear-gradient(160deg,#1d2a21,#0f1712)}/* position accent themes on the front */.cardfront.pos-fwd,.cardback.pos-fwd{--acc:#F0B429;--acc2:#B98216}.cardfront.pos-def,.cardback.pos-def{--acc:#75B8FF;--acc2:#3E7DC4}.cardfront.pos-goalie,.cardback.pos-goalie{--acc:#F0645A;--acc2:#B23F38}/* mountain/gradient backdrop (Big Number cards + behind photos) */.cf-bg{position:absolute;inset:0;background:linear-gradient(165deg,var(--acc2,#334) 0%,#0f1712 62%)}.cf-bg::after{content:'';position:absolute;left:0;right:0;bottom:0;height:52%;background:linear-gradient(160deg,transparent,rgba(0,0,0,.35)),conic-gradient(from 210deg at 30% 100%, rgba(255,255,255,.08), transparent 40%);clip-path:polygon(0 100%,18% 46%,32% 70%,52% 28%,70% 62%,86% 40%,100% 66%,100% 100%);opacity:.5}
+.cf-num{font-family:'Archivo Black',system-ui,sans-serif;font-size:64px;line-height:.82;color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.25)}
+.cf-name{font-family:'Archivo Black',system-ui,sans-serif;font-size:22px;line-height:1;margin-top:6px;text-transform:uppercase}
+.cf-pos{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:900;letter-spacing:.06em;color:#0f1712;background:var(--acc,#F0B429);border-radius:999px;padding:3px 10px;text-transform:uppercase;margin-top:10px;align-self:flex-start}
+.cf-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center}
+.cf-pad{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:20px;z-index:2}.cf-topnum{position:absolute;top:16px;left:18px;z-index:3}
+.cf-photo-scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(15,23,18,0) 30%,rgba(15,23,18,.9))}
+.cb-pad{position:absolute;inset:0;padding:24px;display:flex;flex-direction:column;z-index:2}
+.cb-eyebrow{font-size:11px;font-weight:900;letter-spacing:.14em;color:var(--acc,var(--lime));text-transform:uppercase}
+.cb-stat{display:flex;align-items:baseline;gap:10px;margin-top:14px}
+.cb-stat .n{font-family:'Archivo Black',system-ui,sans-serif;font-size:30px}
+.cb-stat .l{font-size:12px;font-weight:800;letter-spacing:.06em;color:rgba(255,255,255,.7);text-transform:uppercase}
+.cb-streak{margin-top:auto;font-family:'Archivo Black',system-ui,sans-serif;font-size:22px;color:var(--orange)}
+.cb-stats{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:4;display:inline-flex;align-items:center;gap:7px;background:var(--lime);color:#0f1712;font-family:'Nunito Sans',system-ui,sans-serif;font-weight:900;font-size:14px;border:0;border-radius:999px;padding:11px 22px;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.4);-webkit-tap-highlight-color:transparent}
+.cb-stats::before{content:'📊'}
+.cb-stats:hover{filter:brightness(1.05)}
+.cb-stats:active{transform:translateX(-50%) scale(.96)}
+.cb-disc{margin-top:14px}
+.cb-disc-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.cb-disc-name{font-size:15px;font-weight:800;color:#fff}
+.cb-disc-days{font-size:13px;font-weight:800;color:var(--orange);white-space:nowrap}
+.cb-disc-most{font-size:12px;font-weight:600;color:rgba(255,255,255,.7);margin-top:2px}
+.cb-stickers{position:absolute;right:14px;bottom:14px;display:flex;gap:-6px}
+.cb-sticker{width:46px;height:46px;object-fit:contain;margin-left:-8px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));transform:rotate(-6deg)}
+.cb-sticker:nth-child(2){transform:rotate(5deg)}
+.cb-sticker:nth-child(3){transform:rotate(-3deg)}
+.cb-sessions{font-size:13px;font-weight:700;color:rgba(255,255,255,.7);margin-top:4px}
+@media (prefers-reduced-motion: reduce){.card3d{transition:opacity .2s}.card3d.intro{animation:none}}
+
+.rsearch{width:100%;box-sizing:border-box;margin:14px 0 4px;padding:13px 16px;font:inherit;font-size:16px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--text)}
+.rsearch::placeholder{color:var(--muted)}
+.rsearch-empty{color:var(--muted);font-size:15px;padding:14px 2px}
+
+
+
+
+.pcard{position:relative;display:block;border-radius:16px;overflow:hidden;background:var(--card2);box-shadow:0 6px 18px var(--shadow);text-decoration:none;color:var(--text);cursor:pointer;aspect-ratio:5/7;transition:transform .12s ease,box-shadow .12s ease}
+.pcard:hover{transform:translateY(-3px);box-shadow:0 12px 26px var(--shadow)}
+.pcard:active{transform:scale(.98)}
+.pcard-cardart{width:100%;height:100%;object-fit:cover;display:block;-webkit-user-drag:none}
+.pcard-you-card{outline:3px solid var(--lime);outline-offset:-3px}
+.pcard-bignum{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:linear-gradient(165deg,var(--acc2,#334),#0f1712)}
+.pcard-bignum.pos-fwd{--acc2:#B98216}.pcard-bignum.pos-def{--acc2:#3E7DC4}.pcard-bignum.pos-goalie{--acc2:#B23F38}
+.pcard-bn{font-family:'Archivo Black',system-ui,sans-serif;font-size:52px;line-height:.9;color:#fff}
+.pcard-bnname{font-family:'Archivo Black',system-ui,sans-serif;font-size:15px;color:#fff;text-transform:uppercase}
+.pcard:hover{transform:translateY(-2px);box-shadow:0 10px 24px var(--shadow)}
+.pcard.tapped{transform:scale(.96)}
+.pcard-crest{width:62px;height:62px;border-radius:16px;display:grid;place-items:center;background:var(--green);color:var(--onaccent);box-shadow:0 3px 10px var(--shadow)}
+.pcard-num{font-family:'Archivo Black',system-ui,sans-serif;font-weight:700;font-size:30px;line-height:1;letter-spacing:.01em}
+.pcard-av{width:52px;height:52px;border-radius:50%;object-fit:cover;background:var(--soft);margin-top:-30px;border:3px solid var(--panel)}
+.pcard-name{font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;font-size:18px;letter-spacing:.01em}
+.pcard-pos{display:inline-flex;align-items:center;gap:5px;font-size:13px;color:var(--muted);font-weight:600}
+.posdot{width:9px;height:9px;border-radius:50%;display:inline-block}
+.pos-fwd{--pc:#e0b341}.pos-def{--pc:#5aa9e6}.pos-goalie{--pc:#e07a5f}
+.posdot.pos-fwd{background:#e0b341}.posdot.pos-def{background:#5aa9e6}.posdot.pos-goalie{background:#e07a5f}
+.pcard-crest.pos-fwd{background:#e0b341;color:#3a2c00}
+.pcard-crest.pos-def{background:#5aa9e6;color:#08243a}
+.pcard-crest.pos-goalie{background:#e07a5f;color:#3a1206}
+.pcard-you{display:inline-block;margin-left:6px;font-size:11px;font-weight:900;color:var(--ink);background:var(--lime);border-radius:999px;padding:2px 8px;vertical-align:middle}
+.pcard-streak{font-size:12px;font-weight:800;color:var(--green2)}
+
+.roster{display:grid;gap:12px;margin-top:15px;grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(min-width:560px){.roster{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:900px){.roster{grid-template-columns:repeat(4,minmax(0,1fr))}}.avatar{width:54px;height:54px;border-radius:50%;object-fit:cover;background:var(--soft)}
+.summary{display:flex;justify-content:space-between;gap:14px;padding:6px 2px;margin:6px 0 4px;border-bottom:1px solid var(--line)}.summary strong{font-size:30px}.summary small{display:block;color:var(--muted)}
+
+
+.boardscope{margin:14px 0 6px;font-size:13px;font-weight:700;color:var(--muted2);letter-spacing:.02em}
+.board{overflow:hidden}
+/* Leaderboard controls */
+.seg{display:inline-flex;gap:2px;background:var(--soft);border-radius:999px;padding:3px;margin:14px 0 4px}
+.segbtn{font:inherit;font-size:14px;font-weight:700;color:var(--muted);background:none;border:0;padding:8px 16px;border-radius:999px;cursor:pointer}
+.segbtn.on{background:var(--lime);color:var(--ink);box-shadow:0 1px 2px var(--shadow)}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0 16px}
+.metric{display:flex;flex-direction:column;align-items:center;gap:4px;padding:16px 6px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,var(--cardgrad1),var(--cardgrad2));cursor:pointer;min-height:56px;transition:border-color .12s ease,transform .08s ease}
+.metric:active{transform:scale(.97)}
+.metric.on{border-color:var(--lime);box-shadow:inset 0 0 0 2px var(--lime)}
+.metric-label{font-size:13px;font-weight:800;color:var(--muted);white-space:nowrap}
+.metric-num{font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;font-size:26px;color:var(--text);line-height:1}
+.metric.on .metric-num{color:var(--ink)}
+/* Leaderboard team view */
+.lb-zone{font-size:14px;font-weight:900;letter-spacing:.10em;text-transform:uppercase;color:var(--green2);margin:0 0 14px}
+.lb-teamzone{margin-bottom:36px}
+.lb-streak{display:flex;align-items:center;gap:10px;background:linear-gradient(160deg,#20302a,#131c16);color:#fff;border-radius:14px;padding:14px 18px;margin-bottom:22px}
+.lb-flame{font-size:26px;display:inline-block;transform-origin:50% 90%;animation:plflick .55s ease-in-out infinite;filter:drop-shadow(0 0 4px rgba(255,140,40,.7))}
+.lb-streak-n{font-family:'Archivo Black',system-ui,sans-serif;font-size:18px;color:var(--orange)}
+.lb-streak-t{font-size:15px;font-weight:700;color:rgba(255,255,255,.85)}
+.lb-goal-lab{display:inline-flex;align-items:center;gap:8px;font-weight:800;color:var(--muted);font-size:15px;text-transform:uppercase;letter-spacing:.03em}
+.lb-info{position:relative;display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--soft);color:var(--green2);font-size:13px;font-weight:900;border:0;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent}
+.lb-tip{position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%) translateY(4px);width:240px;white-space:normal;text-align:left;background:var(--ink);color:#fff;font-size:14px;font-weight:700;text-transform:none;letter-spacing:0;line-height:1.4;padding:11px 13px;border-radius:10px;opacity:0;visibility:hidden;transition:opacity .15s ease,transform .15s ease;pointer-events:none;z-index:5;box-shadow:0 8px 24px var(--shadow)}
+.lb-info.open .lb-tip{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
+.lb-goal-big{font-family:'Archivo Black',system-ui,sans-serif;font-size:44px;line-height:1;margin:12px 0 4px;color:var(--text)}
+.lb-goal-big small{font-size:18px;color:var(--muted);font-family:'Nunito Sans',system-ui,sans-serif;font-weight:800}
+.lb-track{height:22px;border-radius:999px;background:var(--soft);overflow:hidden;margin-top:20px;max-width:520px}
+.lb-trackfill{height:100%;width:0;background:linear-gradient(90deg,var(--lime),#8fd65e);border-radius:999px;transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+.lb-goal-togo{font-size:17px;color:var(--text);margin-top:14px;font-weight:800}
+.lb-divider{height:1px;background:var(--line);margin:0 0 26px}
+.lb-scope{font-size:15px;font-weight:800;color:var(--green2);margin:0 0 12px}
+@media (prefers-reduced-motion: reduce){.lb-flame{animation:none}}
+.row{display:grid;grid-template-columns:30px 1fr 74px 28px;gap:9px;align-items:center;padding:13px 12px;border-bottom:1px solid var(--line)}
+button.row{width:100%;background:none;border:0;border-bottom:1px solid var(--line);text-align:left;font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button.row:active{background:var(--soft)}
+.glassback{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:max(16px, calc(50vw - 534px));z-index:50;display:inline-grid;place-items:center;width:44px;height:44px;border-radius:50%;font-size:26px;line-height:1;font-weight:700;color:var(--text);cursor:pointer;text-decoration:none;background:var(--panel);border:1px solid var(--line);box-shadow:0 6px 20px var(--shadow)}
+.glassback:hover{background:var(--soft)}
+.pl-head{display:flex;align-items:center;gap:14px;padding-top:56px;margin-bottom:6px}
+.pl-photo{width:64px;height:88px;object-fit:cover;border-radius:12px;background:var(--card2);flex:0 0 auto}
+.pl-name{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;line-height:1.05}
+.pl-pos{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+.pl-streak{font-family:'Archivo Black',system-ui,sans-serif;font-size:18px;color:var(--orange);margin:6px 0 14px}
+.pl-disc{margin:0 0 20px}
+.pl-disc-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:8px}
+.pl-disc-name{font-size:17px;font-weight:800}
+.pl-disc-count{font-size:13px;font-weight:800;color:var(--green2)}
+.pl-ex{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:15px;font-weight:600}
+.pl-ex:last-child{border-bottom:0}
+.pl-dot{width:24px;height:24px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;font-size:14px;font-weight:900;border:2px solid var(--line);color:var(--muted)}
+.pl-ex.done .pl-dot{background:var(--lime);border-color:var(--lime);color:var(--ink)}
+.pl-ex.done{color:var(--muted)}
+.plflame{display:inline-block;transform-origin:50% 90%;animation:plflick .55s ease-in-out infinite;filter:drop-shadow(0 0 4px rgba(255,140,40,.7))}
+@keyframes plflick{0%{transform:scale(1) rotate(-4deg);opacity:1}25%{transform:scale(1.18,1.24) rotate(3deg);opacity:.85}50%{transform:scale(.94,1.1) rotate(-2deg);opacity:1}75%{transform:scale(1.12,1.16) rotate(4deg);opacity:.9}100%{transform:scale(1) rotate(-4deg);opacity:1}}
+.pl-rings{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.pl-ring{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px 6px 12px;text-align:center;cursor:pointer}
+.pl-ring svg{display:block;margin:auto}
+.pl-ringfill{transition:stroke-dashoffset 1s cubic-bezier(.2,.8,.2,1)}
+.pl-ring-l{font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin-top:8px}
+.pl-ring-n{font-family:'Archivo Black',system-ui,sans-serif;font-size:15px;margin-top:2px}
+.pl-pop{animation:plpop .45s ease}
+@keyframes plpop{0%{transform:scale(1)}40%{transform:scale(1.1)}100%{transform:scale(1)}}
+.pl-radar-wrap{text-align:center;margin-bottom:16px}
+.pl-radar-poly{animation:plpulse 2.4s ease-in-out infinite;transform-origin:center}
+@keyframes plpulse{0%,100%{opacity:.82}50%{opacity:1}}
+.pl-totals{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.pl-tot{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px 6px;text-align:center}
+.pl-tot .te{font-size:22px}
+.pl-tot .tn{font-family:'Archivo Black',system-ui,sans-serif;font-size:28px;margin-top:2px}
+.pl-tot .tl{font-weight:800;font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.03em}
+.pl-details{margin-top:6px}
+.pl-details summary{cursor:pointer;font-weight:800;font-size:14px;color:var(--green2);padding:10px 0;list-style:none}
+.pl-details summary::-webkit-details-marker{display:none}
+.pl-details summary::before{content:'▸ ';color:var(--muted)}
+.pl-details[open] summary::before{content:'▾ '}
+.pl-thwap{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%) rotate(-8deg) scale(0);font-family:'Archivo Black',system-ui,sans-serif;font-size:56px;color:var(--lime);-webkit-text-stroke:3px var(--ink);pointer-events:none;z-index:60;opacity:0}
+.pl-thwap.go{animation:plthwap .7s ease}
+@keyframes plthwap{0%{transform:translate(-50%,-50%) rotate(-8deg) scale(0);opacity:0}30%{transform:translate(-50%,-50%) rotate(-8deg) scale(1.2);opacity:1}100%{transform:translate(-50%,-50%) rotate(-8deg) scale(1);opacity:0}}
+@media (prefers-reduced-motion: reduce){.plflame,.pl-radar-poly,.pl-thwap.go,.pl-ringfill{animation:none;transition:none}}.row:last-child{border-bottom:0}.row.me{background:rgba(185,240,107,.18);box-shadow:inset 3px 0 0 var(--lime)}.bar{height:6px;background:var(--soft);border-radius:99px;overflow:hidden}.fill{height:100%;background:var(--lime)}.score{font-weight:950;color:var(--green2)}.note{padding:14px 2px 0;margin-top:16px;border-top:1px solid var(--line);color:var(--muted2);font-size:13px;line-height:1.5}.footer{text-align:center;color:var(--chev);font-size:11px;padding:28px 0}
+.footer{display:flex;align-items:center;justify-content:space-between;gap:14px;color:var(--muted);font-size:12px;padding:28px 4px}.footer .slogan{font-weight:800;letter-spacing:.01em}.themetoggle{display:inline-flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit}.themetoggle:hover{border-color:var(--line2)}.themetoggle .ttico{font-size:14px;line-height:1}</style><script>try{if(localStorage.getItem('thwapTheme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script></head><body><div class='app'>
+
+<section id='dryland' class='page'>
+<a class='glassclose' href='#home' aria-label='Close'>✕</a>
+<div class='heroCard'><div class='big'>⚡</div><h1><button type='button' class='titletip' data-daytip>Today’s<span class='titletip-date' id='drylandDate'>Sunday, September 13</span></button> Dryland Mix</h1><p>A little of everything: agility, power, strength and core. About 15 minutes.</p><div class='pills'><span class='pill' id='drylandTime'>15 min</span></div></div>
+<div id='drylandList'></div>
+</section>
+
+<section id='stick' class='page'>
+<a class='glassclose' href='#home' aria-label='Close'>✕</a><div class='heroCard'><div class='big'>🏒</div><h1><button type='button' class='titletip' data-daytip>Today’s<span class='titletip-date'>Sunday, September 13</span></button> Stickhandling</h1><p>Head up, soft hands and clean puck movement.</p><div class='pills'><span class='pill'>about 10–15 min</span></div></div>
+<div id='stickList'></div>
+</section>
+
+<section id='shoot' class='page'>
+<a class='glassclose' href='#home' aria-label='Close'>✕</a><div class='heroCard'><div class='big'>🥅</div><h1><button type='button' class='titletip' data-daytip>Today’s<span class='titletip-date'>Sunday, September 13</span></button> Shooting</h1><p>Purposeful shots, not just more shots.</p><div class='pills'><span class='pill'>about 15 min</span></div></div>
+<div class='nav soon'><div class='ico'>🎯</div><div><h2>Accuracy</h2><p>Pick a target before every shot.</p></div><div class='soontag'>Soon</div></div><div style='height:10px'></div>
+<div class='nav soon'><div class='ico'>⚡</div><div><h2>Quick Release</h2><p>Move the puck, change the angle and release.</p></div><div class='soontag'>Soon</div></div><div style='height:10px'></div>
+<div class='nav soon'><div class='ico'>↔️</div><div><h2>Change the Angle</h2><p>Pull around an obstacle before shooting.</p></div><div class='soontag'>Soon</div></div>
+</section>
+
+<section id='roster' class='page'>
+<a class='glassclose' href='#home' aria-label='Close'>✕</a>
+<div class='hero'><div class='kicker'>Jr Rangers 10U · 16 Rangers</div><h1>Who’s hitting the ice?</h1><p>Tap your card so your work counts.</p></div>
+<div class='roster' id='roster-grid'><a href='#home' class='pcard' data-name='Alder Reese'><img class='pcard-cardart' src='cards/alder_front.png' alt='Alder Reese'></a><a href='#home' class='pcard' data-name='Brooklyn Coughlan'><img class='pcard-cardart' src='cards/brooklyn_front.png' alt='Brooklyn Coughlan'></a><a href='#home' class='pcard' data-name='Dawson Huffman'><img class='pcard-cardart' src='cards/dawson_front.png' alt='Dawson Huffman'></a><a href='#home' class='pcard' data-name='Dominic Cinque'><img class='pcard-cardart' src='cards/dominic_front.png' alt='Dominic Cinque'></a><a href='#home' class='pcard' data-name='Eugene Kuhn'><img class='pcard-cardart' src='cards/eugene_front.png' alt='Eugene Kuhn'></a><a href='#home' class='pcard' data-name='Evan Ewing'><img class='pcard-cardart' src='cards/evan_front.png' alt='Evan Ewing'></a><a href='#home' class='pcard' data-name='Greyson Wertz'><img class='pcard-cardart' src='cards/greyson_front.png' alt='Greyson Wertz'></a><a href='#home' class='pcard' data-name='Issac Moyer'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>53</span><span class='pcard-bnname'>Issac</span></div></a><a href='#home' class='pcard' data-name='Johnny Eraman'><img class='pcard-cardart' src='cards/johnny_front.png' alt='Johnny Eraman'></a><a href='#home' class='pcard' data-name='Joziah Soto'><img class='pcard-cardart' src='cards/joziah_front.png' alt='Joziah Soto'></a><a href='#home' class='pcard pcard-you-card' data-name='Lewie'><img class='pcard-cardart' src='cards/lewie_front.png' alt='Lewie'></a><a href='#home' class='pcard' data-name='Liam Delatorre'><img class='pcard-cardart' src='cards/liam_front.png' alt='Liam Delatorre'></a><a href='#home' class='pcard' data-name='Maddux Jones'><img class='pcard-cardart' src='cards/maddux_front.png' alt='Maddux Jones'></a><a href='#home' class='pcard' data-name='Oliver Moyer'><img class='pcard-cardart' src='cards/oliver_front.png' alt='Oliver Moyer'></a><a href='#home' class='pcard' data-name='Teddy Diss'><img class='pcard-cardart' src='cards/teddy_front.png' alt='Teddy Diss'></a><a href='#home' class='pcard' data-name='William Schnell'><img class='pcard-cardart' src='cards/william_front.png' alt='William Schnell'></a></div>
+<div class='rsearch-empty' id='rsearchEmpty' hidden></div>
+</section>
+
+<section id='progress' class='page'>
+<a class='glassclose' href='#home' aria-label='Close'>✕</a>
+<div class='hero'><div class='kicker'>Rangers 10U</div><h1>Leaderboard</h1></div>
+<div class='seg' id='timeframe' role='tablist' aria-label='Timeframe'>
+<button type='button' class='segbtn on' data-tf='week' role='tab' aria-selected='true'>This week</button>
+<button type='button' class='segbtn' data-tf='all' role='tab' aria-selected='false'>All time</button>
+</div>
+
+<div class='lb-teamzone'>
+<div class='lb-zone'>🏒 The whole team</div>
+<div class='lb-streak' id='lbStreak'><span class='lb-flame'>🔥</span><span class='lb-streak-n' id='lbStreakN'>6 days</span><span class='lb-streak-t'>The whole team trained 6 days in a row. Keep it going!</span></div>
+<div class='lb-goal'>
+<div class='lb-goal-lab' id='lbGoalLab'>This week, everybody together
+<button type='button' class='lb-info' id='lbInfo' aria-label='How the bar works'>i<span class='lb-tip' id='lbTip'>Every drill anybody on the team does fills this bar 💪</span></button>
+</div>
+<div class='lb-goal-big' id='lbGoalBig'>0<small> of 150 workouts</small></div>
+<div class='lb-track' id='lbTrack'><div class='lb-trackfill' id='lbTrackFill'></div></div>
+<div class='lb-goal-togo' id='lbGoalTogo'>0 to go!</div>
+</div>
+</div>
+
+<div class='lb-divider'></div>
+
+<div class='lb-zone'>🏅 Each player</div>
+<div class='metrics' id='metrics'>
+<button type='button' class='metric on' data-disc='all'><span class='metric-label'>All</span><span class='metric-num' data-total='all'>0</span></button>
+<button type='button' class='metric' data-disc='stick'><span class='metric-label'>🏒 Hands</span><span class='metric-num' data-total='stick'>0</span></button>
+<button type='button' class='metric' data-disc='shoot'><span class='metric-label'>🥅 Shoot</span><span class='metric-num' data-total='shoot'>0</span></button>
+<button type='button' class='metric' data-disc='dryland'><span class='metric-label'>⚡ Dryland</span><span class='metric-num' data-total='dryland'>0</span></button>
+</div>
+<p id='boardscope' class='lb-scope'>Everyone, all training</p>
+<div class='board' id='board'></div>
+<div class='note'><strong>How points work</strong><br>Each drill counts once. Extra practice is awesome, but it does not add extra points.</div>
+</section>
+
+<section id='stickers' class='page'>
+<a class='glassclose' href='#home' aria-label='Close'>✕</a>
+<div class='hero'><div class='kicker'>Rangers 10U</div><h1>Sticker Book</h1><p>Earn stickers by showing up. Tap one to stick it on your card.</p></div>
+<div class='stickcount' id='stickCount'></div>
+<div class='stickgrid' id='stickGrid'></div>
+</section>
+
+<section id='player' class='page'>
+<a class='glassback' href='#progress' aria-label='Back to leaderboard'>‹</a>
+<div class='pl-head'><img class='pl-photo' id='plPhoto' src='' alt=''><div><div class='pl-name' id='plName'>Player</div><div class='pl-pos' id='plPos'></div></div></div>
+<div class='seg' id='plTf' role='tablist' aria-label='Timeframe'>
+<button type='button' class='segbtn on' data-tf='week' role='tab' aria-selected='true'>This week</button>
+<button type='button' class='segbtn' data-tf='all' role='tab' aria-selected='false'>All time</button>
+</div>
+<div class='pl-streak' id='plStreak'></div>
+<div id='plDisc'></div>
+<div class='pl-thwap' id='plThwap'>THWAP!</div>
+</section>
+
+<section id='home'>
+<div class='wipnote'>👋 Early prototype. We're testing the look and feel. Training drills and stickers are still being built.</div>
+<div class='topbar'><div class='brand'><img class='brandlogo' src='logo.png' alt='Thwap Hockey Training' width='80' height='68'> Thwap Hockey Training</div><nav class='toplinks'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Change player</a><span class='topsep'>|</span><a class='link' href='#progress'>Leaderboard</a></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><a href='#stickers'>Stickers</a><a href='#roster'>Change player</a><a href='#progress'>Leaderboard</a></div></div>
+<div class='hero'><div class='kicker'>Rangers 10U</div><div class='forrow'><span class='forline'>Today’s <button type='button' class='daytip' id='dayTip' aria-label='Show today’s date'>Sunday<span class='daydate' id='dayDate'>Sunday, September 13</span></button> training for</span></div><button type='button' class='playername' id='homePlayer' aria-label='Open your player card'>Lewie M.</button><p>Three quick parts. About 30 minutes. Every drill counts.</p></div>
+<div class='cards'>
+<a class='nav' href='hockey_game_goals.html'><div class='ico'>🎯</div><div><h2>Game Day Goals</h2><p>Pick your 4 goals for today’s game</p></div><div class='chev'>›</div></a>
+<a class='nav' href='#stick'><div class='ico'>🏒</div><div><h2>Stickhandling</h2><p>Hands + puck control · about 10–15 min</p></div><div class='chev'>›</div></a>
+<a class='nav' href='#shoot'><div class='ico'>🥅</div><div><h2>Shooting</h2><p>Accuracy + release · about 15 min</p></div><div class='chev'>›</div></a>
+<a class='nav' href='#dryland'><div class='ico'>⚡</div><div><h2>Dryland</h2><p>Speed + power + balance · about 15 min</p></div><div class='chev'>›</div></a>
+</div><div class='footer'><span class='slogan'>Compete. Improve. Have fun.</span><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button></div>
+</section>
+</div><script>(function(){
+/* Player gate: tapping a drill card asks who you are, then continues to the drill. */
+var PLAYER='bfPlayer';
+function showHomePlayer(){
+  var el=document.getElementById('homePlayer'); if(!el)return;
+  /* DEMO phase: pin to Lewie (matches the leaderboard highlight). Real per-account
+     player selection returns in Phase 4; until then ignore any stale saved value. */
+  var saved='Lewie MacDuffie';
+  var parts=saved.trim().split(/\s+/);
+  el.textContent=parts.length>1 ? parts[0]+' '+parts[parts.length-1].charAt(0)+'.' : parts[0];
+}
+function pickPlayer(name,ev,el){
+  try{localStorage.setItem(PLAYER,name);}catch(e){}
+  var go=function(){ showHomePlayer(); location.hash='#home'; };
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(ev){ev.preventDefault();}
+  if(el&&!reduce){el.classList.add('tapped');setTimeout(go,160);}else{go();}
+}
+document.querySelectorAll('#roster .pcard').forEach(function(cardEl){
+  cardEl.addEventListener('click',function(ev){ pickPlayer(cardEl.getAttribute('data-name'),ev,cardEl); });
+});
+showHomePlayer();
+window.addEventListener('hashchange',function(){ if(location.hash===''||location.hash==='#home') showHomePlayer(); });
+/* Day tooltip: tap toggles it; tapping it again, outside, or Escape closes it (4s auto-hide fallback) */
+(function(){
+  var d=document.getElementById('dayTip'); if(!d)return;
+  var t=null;
+  function close(){ d.classList.remove('show'); if(t){clearTimeout(t);t=null;} }
+  function open(){ d.classList.add('show'); if(t)clearTimeout(t); t=setTimeout(close,4000); }
+  d.addEventListener('click',function(e){
+    e.stopPropagation();
+    if(d.classList.contains('show')) close(); else open();
+  });
+  document.addEventListener('click',function(e){ if(d.classList.contains('show') && !d.contains(e.target)) close(); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') close(); });
+})();
+/* Search / jump-to: filter cards by name or number */
+(function(){
+  var box=document.getElementById('rsearch'); if(!box)return;
+  var grid=document.getElementById('roster-grid'), empty=document.getElementById('rsearchEmpty');
+  box.addEventListener('input',function(){
+    var q=box.value.trim().toLowerCase(); var shown=0;
+    grid.querySelectorAll('.pcard').forEach(function(c){
+      var hit=!q||(c.getAttribute('data-search')||'').indexOf(q)>=0;
+      c.style.display=hit?'':'none'; if(hit)shown++;
+    });
+    if(empty)empty.hidden=(shown>0);
+  });
+})();
+})();</script>
+<script>(function(){
+/* ---- Dryland: per-exercise expand + mark-done, date rotation, per-player saving ---- */
+/* How-to steps + cue + emoji per movement, defined once. Real reps (dose) are passed per workout. */
+var MOVE={
+  will:{emoji:'🔢', cue:'Quick, light hops through the square. Head up. Hold each sequence for 20 seconds.',
+    video:'https://www.youtube.com/watch?v=TiUZ2JfD0do',
+    steps:['Set up: Mark a square on the floor. Number the corners 1, 2, 3, 4. Stay low, weight on the balls of your feet.','Both feet: Hop 1-2, then 1-3, then 1-4. Do each one for 20 seconds.','Right foot only: Hop 1-2, then 1-3, then 1-4. 20 seconds each.','Left foot only: Same thing. Hop 1-2, 1-3, 1-4. 20 seconds each.','Both feet, long patterns: 1-2-3, 1-4-2, 1-2-4-3, 1-4-2-3, 1-2-3-4, 1-4-3-2. Hold each for 20 seconds.','Remember: Push hard, land light, and keep your head up the whole time.']},
+  skater:{emoji:'⛸️', cue:'Controlled lateral power. Stick the landing.', video:'https://www.youtube.com/watch?v=_FuKfMEM0HQ',
+    steps:['Start on one leg, knee slightly bent, like a skater push-off.','Jump sideways and land softly on the other leg.','Land quiet, bend the knee, and hold your balance for one second.','Then jump back the other way. Control matters more than distance.']},
+  broad:{emoji:'🐸', cue:'Jump forward as far as you can, land soft.',
+    steps:['Stand tall, feet about hip-width apart.','Swing your arms back and bend your knees.','Explode forward, swinging your arms up, and jump as far as you can.','Land soft on both feet, knees bent. Hold the landing before the next jump.']},
+  box:{emoji:'⬆️', cue:'Jump up onto a low box and land quiet.', video:'https://www.youtube.com/watch?v=L3w73JlNLhY',
+    steps:['Stand facing a sturdy low box or step, a short jump away.','Bend your knees and swing your arms back.','Jump up and land softly on top with both feet, knees bent.','Stand up tall, then step (do not jump) back down. Reset and repeat.']},
+  lunge:{emoji:'🚶', cue:'Controlled single-leg strength.', video:'https://www.youtube.com/watch?v=xJh9TACU70s',
+    steps:['Stand tall, hands on hips or out for balance.','Step one foot straight back and lower until both knees are about 90 degrees.','Keep your chest up and front knee over your ankle, not past your toes.','Push through the front heel to stand back up. Alternate legs each rep.']},
+  rdl:{emoji:'⚖️', cue:'Balance, hip strength and body control. Reach toward the floor, slow control.',
+    steps:['Stand on one leg with a soft bend in that knee.','Hinge at the hips and reach your chest and hands toward the floor as the back leg lifts behind you.','Keep your back flat and hips level, like a seesaw tipping.','Squeeze the standing leg to stand back up tall. Do all reps, then switch legs.']},
+  wallsit:{emoji:'🪑', cue:'Hold a seated position against the wall.', video:'https://www.youtube.com/watch?v=M5MKJ4T4e2k',
+    steps:['Put your back flat against a wall and walk your feet out.','Slide down until your knees are bent about 90 degrees, like sitting in a chair.','Keep your back flat on the wall and weight in your heels.','Hold for the time, breathe steady, then stand up and shake it out.']},
+  situps:{emoji:'🤸', cue:'Controlled sit-ups.',
+    steps:['Lie on your back, knees bent, feet flat on the floor.','Cross your arms or reach your hands toward your knees.','Curl up slowly using your belly, not your neck.','Lower back down with control. Breathe out on the way up.']},
+  plank:{emoji:'🪵', cue:'Strong plank hold while you tap the opposite shoulder.', video:'https://www.youtube.com/watch?v=3aLPIhE4AiY',
+    steps:['Set up: Get on your hands and toes, arms straight, body in one straight line.','Stay strong: Squeeze your belly and glutes so your hips do not sag or twist.','Tap across: Lift one hand and tap the opposite shoulder (right hand to left shoulder), then put it back down.','Switch hands: Now tap the other way (left hand to right shoulder). Keep going, slow and steady, and try not to rock your hips.']},
+  stairs:{emoji:'🏃', cue:'Quick, powerful steps up the stairs.',
+    steps:['Find a safe set of stairs and start at the bottom.','Run up quick and light, one or two steps at a time, pumping your arms.','Keep your eyes up and steps controlled, do not trip.','Walk back down slowly to recover, then go again.']},
+  sprint:{emoji:'🏁', cue:'Explode into a fast first few steps.',
+    steps:['Start in an athletic stance, one foot slightly back, knees bent, leaning forward.','On go, drive your back leg and pump your arms hard.','Explode into a few fast, powerful steps.','Slow down safely, walk back, and reset before the next start.']},
+  reaction:{emoji:'👀', cue:'Ball drop: react and go before the second bounce.',
+    steps:['Face a partner a few steps away who holds a ball out.','Stay in an athletic stance, eyes on the ball, ready to move.','When they drop it, sprint and try to catch it before the second bounce.','Reset and go again. React to the drop, do not guess.']},
+  splitsquat:{emoji:'🦵', cue:'Hold a low split-squat position for time.',
+    steps:['Step into a lunge stance, one foot forward, one back.','Lower straight down until both knees are about 90 degrees.','Keep your chest tall and weight balanced between both legs.','Hold still for the time, then switch legs.']},
+  calf:{emoji:'🩰', cue:'Slow, tall calf raises.',
+    steps:['Stand tall, feet about hip-width apart, near a wall for balance.','Push up onto the balls of your feet as high as you can.','Pause at the top for a second, standing tall.','Lower slowly back down with control. Repeat.']},
+  deadbug:{emoji:'🐞', cue:'Slow, controlled core with opposite arm and leg.',
+    steps:['Lie on your back, arms reaching up, knees bent up over your hips.','Press your low back gently into the floor.','Slowly lower one arm overhead and the opposite leg toward the floor.','Bring them back and switch sides. Keep it slow and controlled.']},
+  mcdavid:{emoji:'🏒', cue:'Feet moving, head up, call out the numbers your partner flashes.',
+    video:'https://www.youtube.com/watch?v=GQK1RBm8Vx4&t=17',
+    steps:['Get low in a hockey stance and keep your feet moving fast, either quick side-to-side shuffle steps or crossover steps over a line.','Keep soft, fast stickhandle touches with the ball or puck right in front of you.','Lock your eyes on your partner and call out every number they flash, keeping your head up the whole time.','Keep your chest square to the front and let your hands and feet work on their own while your eyes read the numbers.']}
+};
+/* Category per movement, used to build a balanced daily block. */
+var CAT={will:'Agility', skater:'Power',broad:'Power',box:'Power', stairs:'Speed',sprint:'Speed',reaction:'Speed', lunge:'Strength',rdl:'Strength',wallsit:'Strength',splitsquat:'Strength',calf:'Strength', situps:'Core',plank:'Core',deadbug:'Core',mcdavid:'Core'};
+/* d(key, dose) builds a drill from the shared MOVE library plus this workout's reps. */
+function d(k,dose,nameOverride){var m=MOVE[k];return {key:k, cat:CAT[k]||'', emoji:m.emoji, name:nameOverride||({will:"Will's Squares (4-sq Drill)",skater:'Skater Jumps',broad:'Broad Jumps',box:'Box Jumps',lunge:'Reverse Lunges',rdl:'Single-Leg RDL',wallsit:'Wall Sit',situps:'Sit-ups',plank:'Plank with Shoulder Taps',stairs:'Stair Sprints',sprint:'Sprint Starts',reaction:'Reaction Start',splitsquat:'Split Squat Hold',calf:'Calf Raises',deadbug:'Dead Bugs',mcdavid:"McDavid's"}[k]), dose:dose, cue:m.cue, video:m.video||'', steps:m.steps};}
+
+var WORKOUTS=[
+  /* Week 1 */
+  {id:'w1wed', name:'Power: Base & Technique', emoji:'💥', time:'25–30 min', blurb:'Week 1 · Wednesday. Learn the movements, clean landings, confidence.',
+   drills:[d('will','20 seconds / sequence'),d('skater','8× (2 reps)'),d('broad','8× (2 reps)'),d('box','5× (2 reps)'),d('lunge','8× (2 reps)'),d('rdl','5× (2 reps) each side'),d('wallsit','45 seconds'),d('situps','30 (2 reps)'),d('plank','30 seconds (2 reps)')]},
+  {id:'w1thu', name:'Speed: Base & Technique', emoji:'🚀', time:'25–30 min', blurb:'Week 1 · Thursday. Sharp feet and quick reactions.',
+   drills:[d('will','20 seconds / sequence'),d('stairs','10 yards, 6 reps'),d('sprint','4 reps'),d('reaction','ball drop, before the second bounce'),d('splitsquat','2 × 20 seconds'),d('calf','12 × (2 reps)'),d('deadbug','8 each side'),d('plank','30 seconds (2 reps)')]},
+  {id:'w1fri', name:'Light / Balance', emoji:'⚡', time:'20–25 min', blurb:'Week 1 · Friday. Lighter day, balance and control.',
+   drills:[d('will','20 seconds / sequence'),d('skater','3× (2 reps)'),d('box','light balance'),d('rdl','5× (2 reps) each side'),d('wallsit','45 seconds'),d('situps','30 (2 reps)'),d('mcdavid','60 seconds (3 reps)')]},
+  /* Week 2 - build */
+  {id:'w2wed', name:'Power: Build', emoji:'💥', time:'25–30 min', blurb:'Week 2 · Wednesday. Slight volume increase, same movements.',
+   drills:[d('will','20 seconds / sequence'),d('skater','8× (3 reps)'),d('broad','8× (3 reps)'),d('box','6× (2 reps)'),d('lunge','8× (3 reps)'),d('rdl','6× (2 reps) each side'),d('wallsit','45 seconds'),d('situps','30 (2 reps)'),d('plank','35 seconds (2 reps)')]},
+  {id:'w2fri', name:'Speed: Build', emoji:'🚀', time:'25–30 min', blurb:'Week 2 · Friday. Faster feet, more reps.',
+   drills:[d('will','20 seconds / sequence'),d('stairs','10 yards, 8 reps'),d('sprint','5 reps'),d('reaction','ball drop, before the second bounce'),d('splitsquat','2 × 25 seconds'),d('calf','15 × (2 reps)'),d('deadbug','8 each side'),d('plank','30 seconds (2 reps)')]},
+  {id:'w2sat', name:'Light / Balance', emoji:'⚡', time:'20–25 min', blurb:'Week 2 · Saturday. Lighter day, balance and control.',
+   drills:[d('will','20 seconds / sequence'),d('skater','3× (2 reps)'),d('box','light balance'),d('rdl','5× (2 reps) each side'),d('wallsit','45 seconds'),d('situps','30 (2 reps)'),d('mcdavid','60 seconds (3 reps)')]},
+  /* Week 3 - peak (lower volume, max speed) */
+  {id:'w3wed', name:'Power: Peak', emoji:'💥', time:'25–30 min', blurb:'Week 3 · Wednesday. Peak intensity, lower volume. Faster, sharper, not tired.',
+   drills:[d('will','20 seconds / sequence'),d('skater','8× (3 reps)'),d('broad','3× (3 reps)'),d('box','4× (3 reps)'),d('lunge','8× (3 reps)'),d('rdl','5× (2 reps) each side'),d('wallsit','45 seconds'),d('situps','30 (2 reps)'),d('plank','30 seconds (2 reps)')]},
+  {id:'w3fri', name:'Speed: Peak', emoji:'🚀', time:'25–30 min', blurb:'Week 3 · Friday. Peak intensity, sharp and fast.',
+   drills:[d('will','20 seconds / sequence'),d('stairs','10 yards, 8 reps'),d('sprint','5 reps'),d('reaction','ball drop, before the second bounce'),d('splitsquat','2 × 25 seconds'),d('calf','12 × (2 reps)'),d('deadbug','8 each side'),d('plank','30 seconds (2 reps)')]},
+  {id:'w3sat', name:'Light / Balance', emoji:'⚡', time:'20–25 min', blurb:'Week 3 · Saturday. Lighter day, balance and control.',
+   drills:[d('will','20 seconds / sequence'),d('skater','3× (2 reps)'),d('box','light balance'),d('rdl','5× (2 reps) each side'),d('wallsit','45 seconds'),d('situps','30 (2 reps)'),d('mcdavid','60 seconds (3 reps)')]},
+  /* Week 4 - taper & pop */
+  {id:'w4wed', name:'Power: Taper', emoji:'💥', time:'20–25 min', blurb:'Week 4 · Wednesday. Fresh legs, nervous system sharp.',
+   drills:[d('will','20 seconds / sequence'),d('skater','6× (2 reps)'),d('broad','6× (2 reps)'),d('box','3× (2 reps)'),d('lunge','6× (2 reps)'),d('rdl','5× (1 rep) each side'),d('wallsit','30 seconds'),d('situps','30 (2 reps)'),d('plank','30 seconds (1 rep)')]},
+  {id:'w4fri', name:'Speed: Taper', emoji:'🚀', time:'20–25 min', blurb:'Week 4 · Friday. Fresh and fast, then rest for game day.',
+   drills:[d('will','20 seconds / sequence'),d('stairs','10 yards, 4 reps'),d('sprint','3 reps'),d('reaction','ball drop, before the second bounce'),d('splitsquat','2 × 15 seconds'),d('calf','10 × (2 reps)'),d('mcdavid','60 seconds (3 reps)')]}
+];
+
+function dayIndex(){var d=new Date();var base=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000);try{var m=location.search.match(/[?&]day=([^&]*)/);if(m){var raw=decodeURIComponent(m[1]).trim();if(/^[+-]/.test(m[1])||/^[+-]/.test(raw)){var o=parseInt(m[1].replace(/^ /,'+'),10);if(isNaN(o))o=parseInt(raw,10);if(!isNaN(o))return base+o;}var n=parseInt(raw,10);if(!isNaN(n))return n;}}catch(e){}return base;}
+function todayKey(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function player(){try{return localStorage.getItem('bfPlayer')||'guest';}catch(e){return 'guest';}}
+function progKey(wid){return 'bfDryland|'+player()+'|'+todayKey()+'|'+wid;}
+function loadProg(wid){try{return JSON.parse(localStorage.getItem(progKey(wid))||'{}');}catch(e){return {};}}
+function saveProg(wid,o){try{localStorage.setItem(progKey(wid),JSON.stringify(o));}catch(e){}}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function ytid(url){ if(!url)return ''; var m=String(url).match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([A-Za-z0-9_-]{11})/); return m?m[1]:''; }
+function videoBlock(dr){
+  var id=ytid(dr.video);
+  if(id){
+    return "<div class='exvideo'><iframe src='https://www.youtube-nocookie.com/embed/"+id+
+      "' title='"+esc(dr.name)+" video' frameborder='0' loading='lazy' "+
+      "allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture' allowfullscreen></iframe></div>";
+  }
+  return "<div class='exvideo placeholder'><span>▶</span><small>Video coming soon</small></div>";
+}
+function todaysWorkout(){return WORKOUTS[dayIndex()%WORKOUTS.length];}
+
+/* Build a balanced ~15-min block: 1–2 exercises from each category present today,
+   capped at 6, in a sensible order. Which ones (when a category has several) rotates by day. */
+var CAT_ORDER=['Agility','Power','Speed','Strength','Core'];
+function trimDrills(dr){
+  if(dr.length<=6) return dr;
+  var di=dayIndex();
+  var byCat={};
+  dr.forEach(function(x){ (byCat[x.cat]=byCat[x.cat]||[]).push(x); });
+  var cats=CAT_ORDER.filter(function(c){return byCat[c];});
+  var pick=[];
+  /* first pass: one per category (rotating which one by day) */
+  cats.forEach(function(c){ var g=byCat[c]; pick.push(g[di%g.length]); });
+  /* second pass: add a 2nd from categories that have more, until we hit 6 */
+  for(var r=0; r<cats.length && pick.length<6; r++){
+    var g=byCat[cats[r]];
+    if(g.length>1){ var second=g[(di+1)%g.length]; if(pick.indexOf(second)<0) pick.push(second); }
+  }
+  /* keep the original workout order so it still reads sensibly */
+  return dr.filter(function(x){return pick.indexOf(x)>=0;});
+}
+
+function render(){
+  var w=todaysWorkout(), prog=loadProg(w.id);
+  var drills=trimDrills(w.drills);
+  var dateEl=document.getElementById('drylandDate');
+  if(dateEl){var d=new Date();dateEl.textContent=d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});}
+  var t=document.getElementById('drylandTime'); if(t)t.textContent='15 min';
+
+  var list=document.getElementById('drylandList'); if(!list)return;
+  list.innerHTML='';
+  if(!drills.length){
+    list.innerHTML="<p style='color:var(--muted);font-size:16px;padding:14px 2px'>Exercises for this workout are on the way.</p>";
+    return;
+  }
+  drills.forEach(function(dr,i){
+    var done=prog[i]?' done':'';
+    var dose=dr.dose?"<div class='exdose'>"+esc(dr.dose)+"</div>":'';
+    var steps=(dr.steps&&dr.steps.length)?"<ol>"+dr.steps.map(function(s){var ci=s.indexOf(':');if(ci>0&&ci<28){return "<li><b>"+esc(s.slice(0,ci))+"</b>"+esc(s.slice(ci))+"</li>";}return "<li>"+esc(s)+"</li>";}).join('')+"</ol>":'';
+    var doneLabel=prog[i]?'Done ✓':'Mark done';
+    list.insertAdjacentHTML('beforeend',
+      "<div class='exrow"+done+"' data-i='"+i+"'>"+
+        "<div class='exhead'><div class='exem'>"+dr.emoji+"</div>"+
+          "<div><h3>"+esc(dr.name)+"<span class='exbadge'>Done</span></h3>"+dose+"</div>"+
+          "<div class='exchev'>›</div></div>"+
+        "<div class='exbody'><p>"+esc(dr.cue)+"</p>"+videoBlock(dr)+steps+
+          "<button type='button' class='exdone'>"+doneLabel+"</button></div>"+
+      "</div>");
+  });
+
+  /* header taps toggle expand; Mark done toggles done + saves */
+  list.querySelectorAll('.exrow').forEach(function(row){
+    var i=+row.getAttribute('data-i');
+    row.querySelector('.exhead').addEventListener('click',function(){row.classList.toggle('open');});
+    row.querySelector('.exdone').addEventListener('click',function(ev){
+      ev.stopPropagation();
+      var p=loadProg(w.id); p[i]=!p[i]; saveProg(w.id,p);
+      row.classList.toggle('done',!!p[i]);
+      this.textContent=p[i]?'Done ✓':'Mark done';
+    });
+  });
+}
+
+render();
+window.addEventListener('hashchange',function(){ if(location.hash==='#dryland') render(); });
+})();</script>
+<script>(function(){
+/* ---- Leaderboard: DEMO DATA (placeholder, not real scores). Replace with real team data in Phase 4. ---- */
+var DATA={ week:[{n:'Alder',stick:3,shoot:2,dryland:2},{n:'Joziah',stick:2,shoot:2,dryland:2},{n:'Lewie',stick:2,shoot:1,dryland:2},{n:'Maddux',stick:2,shoot:2,dryland:1},{n:'Greyson',stick:1,shoot:1,dryland:2},{n:'Dawson',stick:2,shoot:1,dryland:1},{n:'Evan',stick:1,shoot:2,dryland:1},{n:'Oliver',stick:1,shoot:1,dryland:1},{n:'Teddy',stick:1,shoot:1,dryland:1},{n:'Brooklyn',stick:1,shoot:0,dryland:2},{n:'Dominic',stick:1,shoot:1,dryland:0},{n:'Issac',stick:0,shoot:1,dryland:1},{n:'Liam',stick:1,shoot:0,dryland:1},{n:'Eugene',stick:0,shoot:0,dryland:1},{n:'William',stick:1,shoot:0,dryland:0},{n:'Johnny',stick:0,shoot:0,dryland:0}], all:[{n:'Alder',stick:14,shoot:11,dryland:12},{n:'Joziah',stick:12,shoot:10,dryland:11},{n:'Lewie',stick:11,shoot:7,dryland:13},{n:'Maddux',stick:10,shoot:12,dryland:8},{n:'Greyson',stick:8,shoot:6,dryland:11},{n:'Dawson',stick:9,shoot:7,dryland:6},{n:'Evan',stick:7,shoot:9,dryland:6},{n:'Oliver',stick:6,shoot:5,dryland:7},{n:'Teddy',stick:5,shoot:6,dryland:6},{n:'Brooklyn',stick:6,shoot:3,dryland:8},{n:'Dominic',stick:5,shoot:5,dryland:3},{n:'Issac',stick:3,shoot:6,dryland:4},{n:'Liam',stick:5,shoot:2,dryland:5},{n:'Eugene',stick:2,shoot:3,dryland:4},{n:'William',stick:4,shoot:2,dryland:2},{n:'Johnny',stick:1,shoot:1,dryland:2}] };
+var ME='Lewie';
+var tf='week', disc='all';
+var board=document.getElementById('board');
+var scope=document.getElementById('boardscope');
+if(!board)return;
+function scoreOf(p){ return disc==='all' ? (p.stick+p.shoot+p.dryland) : p[disc]; }
+function render(){
+  var rows=DATA[tf].map(function(p){ return {n:p.n, s:scoreOf(p)}; });
+  rows.sort(function(a,b){ return b.s-a.s || a.n.localeCompare(b.n); });
+  var max=rows.length?Math.max(1,rows[0].s):1;
+  board.innerHTML=rows.map(function(r,i){
+    var pct=Math.round(r.s/max*100);
+    var meCls=(r.n===ME)?' me':'';
+    return "<button type='button' class='row"+meCls+"' data-player='"+r.n+"'><span>"+(i+1)+"</span><strong>"+r.n+"</strong>"+
+      "<div class='bar'><div class='fill' style='width:"+pct+"%'></div></div>"+
+      "<span class='score'>"+r.s+"</span></button>";
+  }).join('');
+  board.querySelectorAll('.row[data-player]').forEach(function(rw){
+    rw.addEventListener('click',function(){ if(window.openPlayerPage) window.openPlayerPage(rw.getAttribute('data-player')); });
+  });
+  var t={stick:0,shoot:0,dryland:0};
+  DATA[tf].forEach(function(p){ t.stick+=p.stick; t.shoot+=p.shoot; t.dryland+=p.dryland; });
+  t.all=t.stick+t.shoot+t.dryland;
+  ['all','stick','shoot','dryland'].forEach(function(k){
+    var el=document.querySelector(".metric-num[data-total='"+k+"']"); if(el)el.textContent=t[k];
+  });
+  /* Team goal block: This week has a target + bar; All time is a running total with no ceiling. */
+  var lab=document.getElementById('lbGoalLab'), big=document.getElementById('lbGoalBig'),
+      track=document.getElementById('lbTrack'), togo=document.getElementById('lbGoalTogo'),
+      info=document.getElementById('lbInfo');
+  if(big){
+    if(tf==='week'){
+      var goal=150, done=t.all, left=Math.max(0,goal-done);
+      if(lab)lab.childNodes[0].nodeValue='This week, everybody together ';
+      big.innerHTML=done+"<small> of "+goal+" workouts</small>";
+      if(track)track.style.display='';
+      if(info)info.style.display='';
+      if(togo){togo.style.display='';togo.textContent=left+' to go! Every drill anybody does fills the bar 💪';}
+      var fill=document.getElementById('lbTrackFill'); if(fill)setTimeout(function(){fill.style.width=Math.min(100,Math.round(done/goal*100))+'%';},60);
+    }else{
+      if(lab)lab.childNodes[0].nodeValue='All time, everybody together ';
+      big.innerHTML=t.all.toLocaleString()+"<small> workouts and counting</small>";
+      if(track)track.style.display='none';   /* no ceiling on all time, so no bar */
+      if(info)info.style.display='none';
+      if(togo)togo.style.display='none';
+    }
+  }
+  var discLabel={all:'all training',stick:'🏒 Hands',shoot:'🥅 Shoot',dryland:'⚡ Dryland'}[disc];
+  if(scope)scope.textContent=(disc==='all')?'Everyone, all training':('Just '+discLabel);
+}
+/* team streak: only shows when >= 3 days (temporal reward). Demo value until Phase 4. */
+(function(){var TEAM_STREAK=6;var b=document.getElementById('lbStreak');if(b)b.style.display=(TEAM_STREAK>=3)?'':'none';})();
+/* info tooltip: tap toggles, outside tap / Escape closes */
+(function(){var info=document.getElementById('lbInfo');if(!info)return;
+  info.addEventListener('click',function(e){e.stopPropagation();info.classList.toggle('open');});
+  document.addEventListener('click',function(){info.classList.remove('open');});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')info.classList.remove('open');});
+})();
+document.querySelectorAll('#timeframe .segbtn').forEach(function(b){
+  b.addEventListener('click',function(){
+    tf=b.getAttribute('data-tf');
+    document.querySelectorAll('#timeframe .segbtn').forEach(function(x){var on=(x===b);x.classList.toggle('on',on);x.setAttribute('aria-selected',on?'true':'false');});
+    render();
+  });
+});
+document.querySelectorAll('#metrics .metric').forEach(function(m){
+  m.addEventListener('click',function(){
+    disc=m.getAttribute('data-disc');
+    document.querySelectorAll('#metrics .metric').forEach(function(x){x.classList.toggle('on',x===m);});
+    render();
+  });
+});
+render();
+})();</script>
+<script>(function(){var KEY='thwapTheme';function apply(t){var dark=(t==='dark');document.documentElement.setAttribute('data-theme',dark?'dark':'light');var i=document.getElementById('ttico'),l=document.getElementById('ttlabel');if(i)i.textContent=dark?'☀️':'🌙';if(l)l.textContent=dark?'Light':'Dark';}var saved='light';try{saved=localStorage.getItem(KEY)||'light';}catch(e){}apply(saved);var b=document.getElementById('themeToggle');if(b)b.addEventListener('click',function(){var cur='light';try{cur=localStorage.getItem(KEY)||'light';}catch(e){}var next=(cur==='dark'?'light':'dark');try{localStorage.setItem(KEY,next);}catch(e){}apply(next);});})();</script>
+<div class='cardoverlay' id='cardOverlay' hidden>
+  <button type='button' class='cardclose' id='cardClose' aria-label='Close card'>✕</button>
+  <div class='cardscene' id='cardScene'>
+    <div class='card3d' id='card3d'>
+      <div class='cardface cardfront' id='cardFront'></div>
+      <div class='cardface cardback' id='cardBack'></div>
+    </div>
+    <div class='cardhint' id='cardHint' hidden></div>
+  </div>
+</div>
+<script>(function(){
+/* ---- Flippable player card: open from home name, free 3D rotate, flip to back ---- */
+var PLAYER='bfPlayer';
+var overlay=document.getElementById('cardOverlay');
+var scene=document.getElementById('cardScene');
+var card=document.getElementById('card3d');
+var front=document.getElementById('cardFront');
+var back=document.getElementById('cardBack');
+var closeBtn=document.getElementById('cardClose');
+var openBtn=document.getElementById('homePlayer');
+var hint=document.getElementById('cardHint');
+if(!overlay||!card||!openBtn)return;
+var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* DEMO progress data (placeholder, replace with real per-player data in Phase 4) */
+/* DEMO progress (placeholder, replace with real per-player data in Phase 4).
+   Training/completion only: streak DAYS per discipline + the most-done exercise. */
+var THISWEEK={
+  stickDays:4, shootDays:3, drylandDays:5,
+  topStick:'Toe Drags', topShoot:'Wrist Shots', topDryland:'Skater Jumps',
+  streak:5
+};
+
+function currentPlayer(){
+  /* DEMO phase: pin to Lewie (real selection returns in Phase 4) */
+  var saved='Lewie MacDuffie';
+  /* known demo player facts (roster cards no longer expose inner num/pos nodes) */
+  var MAP={'lewie':{num:'72',pos:'D'}};
+  var parts=saved.trim().split(/\s+/);
+  var key=parts[0].toLowerCase();
+  var info=MAP[key]||{num:'',pos:'F'};
+  var display=parts.length>1?parts[0]+' '+parts[parts.length-1].charAt(0)+'.':parts[0];
+  return {name:saved, display:display, first:parts[0].toUpperCase(), num:info.num, pos:info.pos, photo:''};
+}
+function buildFaces(){
+  var p=currentPlayer();
+  var posCls=p.pos==='G'?'pos-goalie':p.pos==='D'?'pos-def':'pos-fwd';
+  var slug=p.first.toLowerCase().replace(/[^a-z]/g,'');
+  front.className='cardface cardfront '+posCls;
+  back.className='cardface cardback '+posCls;
+  /* Front: the real designed card art. */
+  front.innerHTML="<img class='cardart' src='cards/"+slug+"_front.png' alt='"+p.first+" card front'>";
+  /* Back: the real designed card art + chosen-sticker overlay + a See my stats button. */
+  back.innerHTML="<img class='cardart' src='cards/"+slug+"_back.png' alt='"+p.first+" card back'>"+stickerStrip()+
+    "<button type='button' class='cb-stats' id='cbStats'>See my stats</button>";
+  var sb=document.getElementById('cbStats');
+  if(sb){
+    sb.addEventListener('pointerdown',function(e){ e.stopPropagation(); });
+    sb.addEventListener('click',function(e){
+      e.stopPropagation();
+      var name=(p.first||'')+(p.last?' '+p.last:'');
+      close();
+      setTimeout(function(){ if(window.openPlayerPage) window.openPlayerPage(name); },220);
+    });
+  }
+}
+function disc(icon,label,days,top){
+  return "<div class='cb-disc'>"+
+    "<div class='cb-disc-top'><span class='cb-disc-name'>"+icon+" "+label+"</span>"+
+    "<span class='cb-disc-days'>🔥 "+days+" days</span></div>"+
+    "<div class='cb-disc-most'>Most: "+top+"</div></div>";
+}
+function stickerStrip(){
+  var chosen=[];
+  try{chosen=JSON.parse(localStorage.getItem('thwapStickers')||'[]');}catch(e){}
+  if(!chosen.length)return '';
+  var imgs=chosen.slice(0,3).map(function(f){
+    return "<img src='stickers/"+f+"' alt='' class='cb-sticker'>";
+  }).join('');
+  return "<div class='cb-stickers'>"+imgs+"</div>";
+}
+
+/* rotation state */
+var rx=0, ry=0, sheen=.5, flipped=false;
+function paint(){
+  card.style.transform='rotateX('+rx+'deg) rotateY('+ry+'deg)';
+  front.style.setProperty('--sheen', sheen);
+  back.style.setProperty('--sheen', 1-sheen);
+}
+function open(){
+  buildFaces(); rx=0; ry=0; flipped=false; paint();
+  overlay.hidden=false;
+  requestAnimationFrame(function(){ overlay.classList.add('show'); if(!reduce)card.classList.add('intro'); });
+  document.addEventListener('keydown', onKey);
+}
+function close(){
+  overlay.classList.remove('show');
+  document.removeEventListener('keydown', onKey);
+  setTimeout(function(){ overlay.hidden=true; card.classList.remove('intro'); }, 200);
+}
+function onKey(e){ if(e.key==='Escape') close(); }
+
+openBtn.addEventListener('click', open);
+closeBtn.addEventListener('click', close);
+overlay.addEventListener('click', function(e){ if(e.target===overlay) close(); });
+
+/* free 3D rotation via pointer drag + momentum (desktop + mobile) */
+var dragging=false, lastX=0, lastY=0, moved=0, lastTap=0;
+var vrx=0, vry=0, lastT=0, momentum=null;
+if(!reduce){
+  function stopMomentum(){ if(momentum){ cancelAnimationFrame(momentum); momentum=null; } }
+  card.addEventListener('pointerdown', function(e){
+    stopMomentum();
+    dragging=true; moved=0; lastX=e.clientX; lastY=e.clientY; lastT=e.timeStamp||Date.now();
+    vrx=0; vry=0;
+    card.classList.add('dragging'); card.setPointerCapture(e.pointerId);
+  });
+  card.addEventListener('pointermove', function(e){
+    if(!dragging)return;
+    var now=e.timeStamp||Date.now();
+    var dx=e.clientX-lastX, dy=e.clientY-lastY;
+    var dt=Math.max(1, now-lastT);
+    lastX=e.clientX; lastY=e.clientY; lastT=now;
+    moved+=Math.abs(dx)+Math.abs(dy);
+    var ddy=dx*0.6, ddx=-dy*0.6;
+    ry+=ddy; rx+=ddx;
+    rx=Math.max(-85,Math.min(85,rx));
+    /* track angular velocity (deg per frame ~16ms) */
+    vry=ddy/dt*16; vrx=ddx/dt*16;
+    sheen=Math.max(0,Math.min(1,(ry%360+360)%360/180));
+    paint();
+  });
+  function coast(){
+    /* apply velocity, friction slows it; gentle pull levels the X tilt for readability */
+    ry+=vry; rx+=vrx;
+    vry*=0.94; vrx*=0.94;
+    rx*=0.96;                     /* ease X back toward level, but never force Y */
+    rx=Math.max(-85,Math.min(85,rx));
+    sheen=Math.max(0,Math.min(1,(ry%360+360)%360/180));
+    flipped=(((ry%360)+360)%360>90 && ((ry%360)+360)%360<270);
+    paint();
+    if(Math.abs(vry)>0.05 || Math.abs(vrx)>0.05 || Math.abs(rx)>0.3){
+      momentum=requestAnimationFrame(coast);
+    } else { momentum=null; card.classList.remove('dragging'); }
+  }
+  function endDrag(e){
+    if(!dragging)return; dragging=false;
+    /* keep transitions off and let momentum coast to a natural stop (no snap) */
+    if(Math.abs(vry)>0.2 || Math.abs(vrx)>0.2 || Math.abs(rx)>0.3){
+      momentum=requestAnimationFrame(coast);
+    } else { card.classList.remove('dragging'); }
+  }
+  card.addEventListener('pointerup', endDrag);
+  card.addEventListener('pointercancel', endDrag);
+  /* double-tap / double-click gives a playful flick spin toward the other face */
+  card.addEventListener('click', function(e){
+    if(moved>8)return; /* was a drag, not a tap */
+    var now=Date.now();
+    if(now-lastTap<300){
+      stopMomentum();
+      card.classList.add('dragging');
+      vry=(flipped?-9:9); vrx=(Math.random()*4-2);
+      momentum=requestAnimationFrame(coast);
+      lastTap=0;
+    } else lastTap=now;
+  });
+} else {
+  /* reduced motion: click toggles front/back, no spin */
+  card.addEventListener('click', function(){ ry=flipped?0:180; flipped=!flipped; rx=0; paint(); });
+}
+})();
+</script>
+<script>(function(){
+/* ---- Sticker Book: load manifest, render grid, pick up to 3 onto the card ---- */
+var grid=document.getElementById('stickGrid');
+var countEl=document.getElementById('stickCount');
+if(!grid)return;
+var CHOSEN_KEY='thwapStickers';
+var chosen=[];
+try{chosen=JSON.parse(localStorage.getItem(CHOSEN_KEY)||'[]');}catch(e){chosen=[];}
+
+fetch('stickers/stickers.json').then(function(r){return r.json();}).then(function(files){
+  /* DEMO: first 22 are "earned", rest locked. Real unlock rules come in Phase 4. */
+  var EARNED=22;
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  countEl.textContent=EARNED+' of '+files.length+' earned';
+  files.forEach(function(f,i){
+    var earned=i<EARNED;
+    var cell=document.createElement('button');
+    cell.type='button';
+    cell.className='stickcell '+(earned?'earned':'locked');
+    if(chosen.indexOf(f)>=0) cell.classList.add('on-card');
+    cell.setAttribute('data-file',f);
+    cell.innerHTML="<img src='stickers/"+f+"' alt='"+(earned?'sticker':'locked sticker')+"'>";
+    if(earned){
+      cell.addEventListener('click',function(){
+        var idx=chosen.indexOf(f);
+        if(idx>=0){ chosen.splice(idx,1); cell.classList.remove('on-card'); }
+        else{
+          if(chosen.length>=3){ chosen.shift(); }
+          chosen.push(f); cell.classList.add('on-card');
+          if(!reduce){ var img=cell.querySelector('img'); img.style.setProperty('--slap-rot',(Math.random()*10-5)+'deg'); img.classList.remove('slapped'); void img.offsetWidth; img.classList.add('slapped'); }
+        }
+        try{localStorage.setItem(CHOSEN_KEY,JSON.stringify(chosen));}catch(e){}
+        /* refresh on-card marks */
+        grid.querySelectorAll('.stickcell').forEach(function(c){
+          c.classList.toggle('on-card', chosen.indexOf(c.getAttribute('data-file'))>=0);
+        });
+      });
+    }
+    grid.appendChild(cell);
+  });
+}).catch(function(){ countEl.textContent='Stickers coming soon.'; });
+})();
+</script>
+<script>(function(){
+/* ---- Mobile kebab menu ---- */
+var btn=document.getElementById('kebab');
+var menu=document.getElementById('kebabMenu');
+if(!btn||!menu)return;
+function open(){ menu.hidden=false; btn.setAttribute('aria-expanded','true'); }
+function close(){ menu.hidden=true; btn.setAttribute('aria-expanded','false'); }
+btn.addEventListener('click',function(e){ e.stopPropagation(); if(menu.hidden)open(); else close(); });
+menu.addEventListener('click',function(){ close(); });
+document.addEventListener('click',function(e){ if(!menu.hidden && !menu.contains(e.target) && e.target!==btn) close(); });
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') close(); });
+})();
+</script>
+<script>(function(){
+/* ---- Drill-page "Today" pills: tap toggles the weekday tooltip ---- */
+var pills=document.querySelectorAll('[data-daytip]');
+if(!pills.length)return;
+function closeAll(except){ pills.forEach(function(p){ if(p!==except) p.classList.remove('show'); }); }
+pills.forEach(function(p){
+  var t=null;
+  p.addEventListener('click',function(e){
+    e.stopPropagation();
+    var open=p.classList.contains('show');
+    closeAll(p);
+    if(open){ p.classList.remove('show'); }
+    else { p.classList.add('show'); if(t)clearTimeout(t); t=setTimeout(function(){p.classList.remove('show');},4000); }
+  });
+});
+document.addEventListener('click',function(e){ pills.forEach(function(p){ if(p.classList.contains('show') && !p.contains(e.target)) p.classList.remove('show'); }); });
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeAll(null); });
+})();
+</script>
+<script>(function(){
+/* ---- Stickhandling: real drill library, 2 per day, expand + mark-done ---- */
+function esc(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function dayIndex(){var d=new Date();var base=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000);try{var m=location.search.match(/[?&]day=([^&]*)/);if(m){var raw=decodeURIComponent(m[1]).trim();if(/^[+-]/.test(m[1])||/^[+-]/.test(raw)){var o=parseInt(m[1].replace(/^ /,'+'),10);if(isNaN(o))o=parseInt(raw,10);if(!isNaN(o))return base+o;}var n=parseInt(raw,10);if(!isNaN(n))return n;}}catch(e){}return base;}
+function player(){try{return localStorage.getItem('bfPlayer')||'guest';}catch(e){return 'guest';}}
+function todayKey(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function progKey(){return 'bfStick|'+player()+'|'+todayKey();}
+function loadProg(){try{return JSON.parse(localStorage.getItem(progKey())||'{}');}catch(e){return {};}}
+function saveProg(p){try{localStorage.setItem(progKey(),JSON.stringify(p));}catch(e){}}
+
+/* Real content (Woody-provided). cat groups; steps are short bold-label cues. */
+var DRILLS=[
+  {cat:'Fundamental Rhythm', emoji:'↔️', name:'Stationary Side-to-Side', cue:'Move the puck rapidly across your body, left to right.',
+   steps:['Stance: Athletic stance, knees bent, hands out front.','Move it: Slide the puck side to side across your body.','Stay quick: Small, fast touches. Head up.']},
+  {cat:'Fundamental Rhythm', emoji:'🔁', name:'Front-to-Back', cue:'Push the puck straight out front and pull it back to your toes.',
+   steps:['Push out: Reach the puck straight out in front.','Pull back: Draw it back to your toes.','Keep rhythm: Smooth push-pull, soft hands.']},
+  {cat:'Fundamental Rhythm', emoji:'📐', name:'The "L" Shape', cue:'Push forward, drag back, then push wide to one side.',
+   steps:['Forward: Push the puck out in front.','Back: Drag it back to you.','Wide: Push it out to one side to make an L.']},
+  {cat:'Fundamental Rhythm', emoji:'🙌', name:'Wide Extensions', cue:'Reach as far to the forehand and backhand as you can.',
+   steps:['Forehand: Reach the puck out wide on your strong side.','Backhand: Reach it out wide the other way.','Shift weight: Lean into each reach, stay balanced.']},
+  {cat:'Fundamental Rhythm', emoji:'💨', name:'Narrow-to-Wide', cue:'Three tiny stickhandles, then push the puck out wide.',
+   steps:['Narrow: 3 rapid, tiny touches in tight.','Wide: Immediately push the puck out wide.','Repeat: Tiny-tiny-tiny, then explode wide.']},
+  {cat:'Multi-Directional', emoji:'♾️', name:'Figure-8 Around Cones', cue:'Guide the puck in a continuous figure-8 around two objects.',
+   steps:['Set up: Two cones a stick-length apart.','Weave: Guide the puck in a figure-8 around them.','Smooth: Keep it flowing, no stops.']},
+  {cat:'Multi-Directional', emoji:'🔺', name:'The Triangle Drill', cue:'Move the puck in a large triangle pattern around your feet.',
+   steps:['Shape: Picture a big triangle around your feet.','Trace it: Move the puck point to point.','Control: Slow and clean before fast.']},
+  {cat:'Multi-Directional', emoji:'💎', name:'The Diamond Matrix', cue:'Four cones in a diamond, weave the puck around each point.',
+   steps:['Set up: 4 cones in a diamond.','Weave: Take the puck around each point.','Head up: Glance up between points.']},
+  {cat:'Multi-Directional', emoji:'⚡', name:'Z-Pattern Slalom', cue:'Move the puck diagonally left, then right, in a zig-zag.',
+   steps:['Diagonal: Push forward-left, then forward-right.','Zig-zag: Keep the Z going down the floor.','Quick feet: Move with the puck.']},
+  {cat:'Multi-Directional', emoji:'⬛', name:'The Square Box', cue:'Outline a square with the puck: front, side, back, side.',
+   steps:['Front: Push the puck forward.','Side: Move it out to the side.','Back then side: Pull it back, then across. Trace the box.']},
+  {cat:'Strength & Coordination', emoji:'☝️', name:'Top-Hand Only', cue:'Maneuver the puck with only your top hand.',
+   steps:['One hand: Top hand only on the stick.','Control: Small, controlled moves.','Build strength: Feel your forearm work.']},
+  {cat:'Strength & Coordination', emoji:'👇', name:'Bottom-Hand Only', cue:'Control the puck with only your bottom hand.',
+   steps:['One hand: Bottom hand only.','Guide it: Practice steering the puck.','Soft touch: Light, not stiff.']},
+  {cat:'Strength & Coordination', emoji:'🪝', name:'Toe Drag & Rescue', cue:'Push the puck wide, then hook it back with the toe of the blade.',
+   steps:['Push wide: Send the puck out to the side.','Toe hook: Use the toe of the blade to pull it back.','Rescue it: Reel it back under control.']},
+  {cat:'Strength & Coordination', emoji:'🔃', name:'Heel-to-Toe Flips', cue:'Roll the puck from the heel of the blade to the toe to lift it.',
+   steps:['Heel: Start the puck at the heel of the blade.','Roll: Roll it out to the toe.','Lift: A small pop as it reaches the toe.']},
+  {cat:'Strength & Coordination', emoji:'🆙', name:'Flip Over Objects', cue:'Gently chip the puck or ball over a stick or low barrier.',
+   steps:['Barrier: Lay a stick flat on the floor.','Chip: Gently lift the puck over it.','Catch it: Settle it on the other side.']},
+  {cat:'Reaction & Game', emoji:'👀', name:'Eyes-Up Glancing', cue:'Stickhandle while looking at a parent or the wall, not the floor.',
+   steps:['Eyes up: Look at a target, not the puck.','Feel it: Trust your hands to find the puck.','Hold it: Keep your head up the whole time.']},
+  {cat:'Reaction & Game', emoji:'🧱', name:'The Wall Bounce', cue:'Pass a ball against a wall and cushion the rebound smoothly.',
+   steps:['Pass: Send the ball into the wall.','Cushion: Catch the rebound soft.','Repeat: Quick, smooth, controlled.']},
+  {cat:'Reaction & Game', emoji:'🚧', name:'Cone Weave Course', cue:'Line up 5 cones and weave the puck through them.',
+   steps:['Set up: 5 cones in a straight line.','Weave: Take the puck through each one.','Speed up: Faster once it feels clean.']},
+  {cat:'Reaction & Game', emoji:'🌀', name:'Chaos Dribbling', cue:'Drop 10 random items and weave through them randomly.',
+   steps:['Scatter: Drop about 10 items on the floor.','Weave: Move through them any way you can.','React: No set path. Read and go.']}
+];
+
+function twoForToday(){
+  var di=dayIndex(), n=DRILLS.length;
+  var a=di%n, b=(di+1)%n;
+  if(b===a) b=(a+1)%n;
+  return [DRILLS[a], DRILLS[b]];
+}
+
+function render(){
+  var list=document.getElementById('stickList'); if(!list)return;
+  var picks=twoForToday(); var prog=loadProg();
+  list.innerHTML='';
+  picks.forEach(function(dr,i){
+    var done=prog[i]?' done':'';
+    var steps="<ol>"+dr.steps.map(function(s){var ci=s.indexOf(':');if(ci>0&&ci<28){return "<li><b>"+esc(s.slice(0,ci))+"</b>"+esc(s.slice(ci))+"</li>";}return "<li>"+esc(s)+"</li>";}).join('')+"</ol>";
+    var doneLabel=prog[i]?'Done ✓':'Mark done';
+    list.insertAdjacentHTML('beforeend',
+      "<div class='exrow"+done+"' data-i='"+i+"'>"+
+        "<div class='exhead'><div class='exem'>"+dr.emoji+"</div>"+
+          "<div><h3>"+esc(dr.name)+"<span class='exbadge'>Done</span></h3><div class='exdose'>"+esc(dr.cat)+"</div></div>"+
+          "<div class='exchev'>›</div></div>"+
+        "<div class='exbody'><p>"+esc(dr.cue)+"</p>"+steps+
+          "<button type='button' class='exdone'>"+doneLabel+"</button></div>"+
+      "</div>");
+  });
+  list.querySelectorAll('.exrow').forEach(function(row){
+    var i=+row.getAttribute('data-i');
+    row.querySelector('.exhead').addEventListener('click',function(){row.classList.toggle('open');});
+    row.querySelector('.exdone').addEventListener('click',function(ev){
+      ev.stopPropagation();
+      var p=loadProg(); p[i]=!p[i]; saveProg(p);
+      row.classList.toggle('done',!!p[i]);
+      this.textContent=p[i]?'Done ✓':'Mark done';
+    });
+  });
+}
+render();
+window.addEventListener('hashchange',function(){ if(location.hash==='#stick') render(); });
+})();
+</script>
+<script>(function(){
+/* ---- Player detail page (opened from a leaderboard row) ---- */
+function esc(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+/* position + card slug for the header */
+var INFO={Alder:{num:'71',pos:'F'},Brooklyn:{num:'92',pos:'D'},Dawson:{num:'19',pos:'D'},Dominic:{num:'98',pos:'F'},Eugene:{num:'3',pos:'D'},Evan:{num:'13',pos:'F'},Greyson:{num:'32',pos:'D'},Johnny:{num:'1',pos:'G'},Joziah:{num:'59',pos:'F'},Lewie:{num:'72',pos:'D'},Liam:{num:'29',pos:'D'},Maddux:{num:'18',pos:'F'},Oliver:{num:'90',pos:'F'},Teddy:{num:'11',pos:'F'},William:{num:'16',pos:'F'},Issac:{num:'53',pos:'F'}};
+var POSNAME={F:'Forward',D:'Defense',G:'Goalie'};
+/* Exercise catalogs per discipline (short lists for the completion view) */
+var CATALOG={
+  Stickhandling:['Side-to-Side','Figure-8 Around Cones','Toe Drag & Rescue','Eyes-Up Glancing','Cone Weave Course'],
+  Shooting:['Wrist Shots','Snap Shots','Backhand','Pick-a-Corner','Quick Release'],
+  Dryland:['Skater Jumps','Box Jumps','Wall Sit','Plank','Dead Bugs']
+};
+/* DEMO completion counts per player/timeframe (placeholder, real data Phase 4). */
+function demoDone(name,disc,tf){
+  var seed=0; for(var i=0;i<name.length;i++) seed+=name.charCodeAt(i);
+  seed+=disc.length + (tf==='all'?7:0);
+  var total=CATALOG[disc].length;
+  var base=(seed% (total+1));
+  if(tf==='all') base=Math.min(total, base+1);
+  return base;
+}
+function demoStreak(name,tf){ var s=0; for(var i=0;i<name.length;i++) s+=name.charCodeAt(i); return (s%6)+(tf==='all'?4:1); }
+
+var section=document.getElementById('player');
+var tfEl=document.getElementById('plTf');
+var current=null, tf='week';
+
+window.openPlayerPage=function(name){
+  current=name.trim();
+  tf='week';
+  if(tfEl) tfEl.querySelectorAll('.segbtn').forEach(function(x){var on=x.getAttribute('data-tf')==='week';x.classList.toggle('on',on);x.setAttribute('aria-selected',on?'true':'false');});
+  build();
+  location.hash='#player';
+};
+
+function build(){
+  if(!current)return;
+  var first=current.split(' ')[0];
+  var info=INFO[first]||{num:'',pos:'F'};
+  var slug=first.toLowerCase().replace(/[^a-z]/g,'');
+  var photo=document.getElementById('plPhoto');
+  if(photo){ photo.src='cards/'+slug+'_front.png'; photo.alt=esc(first)+' card'; }
+  var nm=document.getElementById('plName'); if(nm)nm.textContent=first;
+  var ps=document.getElementById('plPos'); if(ps)ps.textContent='#'+info.num+' · '+(POSNAME[info.pos]||'');
+  var streak=document.getElementById('plStreak'); if(streak)streak.innerHTML="<span class='plflame'>🔥</span> "+demoStreak(first,tf)+" day streak";
+  var wrap=document.getElementById('plDisc'); if(!wrap)return;
+  var DCOL={Stickhandling:'#8fd65e',Shooting:'#75B8FF',Dryland:'#FF9D4D'};
+  var DEMO={Stickhandling:'🏒',Shooting:'🥅',Dryland:'⚡'};
+  var discs=['Stickhandling','Shooting','Dryland'];
+
+  var visual='';
+  if(tf==='week'){
+    /* three chunky rings toward this week's goal */
+    visual="<div class='pl-rings'>"+discs.map(function(disc){
+      var done=demoDone(first,disc,'week'), goal=CATALOG[disc].length;
+      var r=32,circ=2*Math.PI*r,pct=Math.min(1,goal?done/goal:0),off=circ*(1-pct);
+      return "<div class='pl-ring' data-full='"+(pct>=1)+"'>"+
+        "<svg width='80' height='80' viewBox='0 0 80 80'>"+
+        "<circle cx='40' cy='40' r='"+r+"' fill='none' stroke='var(--soft)' stroke-width='9'/>"+
+        "<circle class='pl-ringfill' cx='40' cy='40' r='"+r+"' fill='none' stroke='"+DCOL[disc]+"' stroke-width='9' stroke-linecap='round' stroke-dasharray='"+circ+"' stroke-dashoffset='"+circ+"' data-off='"+off+"' transform='rotate(-90 40 40)'/>"+
+        "<text x='40' y='50' text-anchor='middle' font-size='24'>"+DEMO[disc]+"</text></svg>"+
+        "<div class='pl-ring-l'>"+disc+"</div><div class='pl-ring-n'>"+done+" / "+goal+"</div></div>";
+    }).join('')+"</div>";
+  } else {
+    /* all-time: glowing power triangle + big totals */
+    var cx=120,cy=112,R=80;
+    var maxv=1; var raw=discs.map(function(disc){var v=demoDone(first,disc,'all')*4+8;maxv=Math.max(maxv,v);return v;});
+    var grid='';
+    for(var g=1;g<=3;g++){var rr=R*g/3,p=[];for(var a=0;a<3;a++){var ang=-Math.PI/2+a*2*Math.PI/3;p.push((cx+rr*Math.cos(ang)).toFixed(1)+','+(cy+rr*Math.sin(ang)).toFixed(1));}grid+="<polygon points='"+p.join(' ')+"' fill='none' stroke='var(--line)' stroke-width='1.5'/>";}
+    var pts=[];for(var a=0;a<3;a++){var ang=-Math.PI/2+a*2*Math.PI/3;var vv=R*(raw[a]/maxv);pts.push((cx+vv*Math.cos(ang)).toFixed(1)+','+(cy+vv*Math.sin(ang)).toFixed(1));}
+    var labs=discs.map(function(disc,i){var ang=-Math.PI/2+i*2*Math.PI/3;return "<text x='"+(cx+(R+20)*Math.cos(ang)).toFixed(1)+"' y='"+(cy+(R+20)*Math.sin(ang)+6).toFixed(1)+"' text-anchor='middle' font-size='20'>"+DEMO[disc]+"</text>";}).join('');
+    visual="<div class='pl-radar-wrap'><svg width='240' height='224' viewBox='0 0 240 224'>"+grid+
+      "<polygon class='pl-radar-poly' points='"+pts.join(' ')+"' fill='rgba(185,240,107,.5)' stroke='#7bbf3a' stroke-width='3' stroke-linejoin='round'/>"+labs+"</svg></div>"+
+      "<div class='pl-totals'>"+discs.map(function(disc){return "<div class='pl-tot'><div class='te'>"+DEMO[disc]+"</div><div class='tn' style='color:"+DCOL[disc]+"'>"+(demoDone(first,disc,'all')*4+8)+"</div><div class='tl'>"+disc.slice(0,5)+"</div></div>";}).join('')+"</div>";
+  }
+
+  /* collapsible exercise detail underneath */
+  var list=discs.map(function(disc){
+    var exs=CATALOG[disc]; var done=demoDone(first,disc,tf);
+    var rows=exs.map(function(name,i){var isDone=i<done;return "<div class='pl-ex"+(isDone?' done':'')+"'><span class='pl-dot'>"+(isDone?'✓':'')+"</span>"+esc(name)+"</div>";}).join('');
+    return "<div class='pl-disc'><div class='pl-disc-h'><span class='pl-disc-name'>"+disc+"</span><span class='pl-disc-count'>"+done+" of "+exs.length+" done</span></div>"+rows+"</div>";
+  }).join('');
+  wrap.innerHTML=visual+"<details class='pl-details'><summary>See every exercise</summary>"+list+"</details>";
+
+  /* spring the rings, wire ring taps + THWAP */
+  if(tf==='week'){
+    var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    wrap.querySelectorAll('.pl-ringfill').forEach(function(c,i){ if(reduce){c.style.strokeDashoffset=c.getAttribute('data-off');} else setTimeout(function(){c.style.strokeDashoffset=c.getAttribute('data-off');},110*i+80); });
+    wrap.querySelectorAll('.pl-ring').forEach(function(rg){
+      rg.addEventListener('click',function(){
+        rg.classList.remove('pl-pop');void rg.offsetWidth;rg.classList.add('pl-pop');
+        if(rg.getAttribute('data-full')==='true'){var t=document.getElementById('plThwap');if(t){t.classList.remove('go');void t.offsetWidth;t.classList.add('go');}}
+      });
+    });
+  }
+}
+
+if(tfEl){
+  tfEl.querySelectorAll('.segbtn').forEach(function(b){
+    b.addEventListener('click',function(){
+      tf=b.getAttribute('data-tf');
+      tfEl.querySelectorAll('.segbtn').forEach(function(x){var on=(x===b);x.classList.toggle('on',on);x.setAttribute('aria-selected',on?'true':'false');});
+      build();
+    });
+  });
+}
+})();
+</script>
+<script>(function(){
+/* ---- Real today's date into every Today tooltip (was hardcoded) ---- */
+function fill(){
+  var d=new Date();
+  var full=d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
+  var wd=d.toLocaleDateString(undefined,{weekday:'long'});
+  document.querySelectorAll('.titletip-date').forEach(function(el){ el.textContent=full; });
+  var dd=document.getElementById('dayDate'); if(dd)dd.textContent=full;
+  /* home visible weekday label is the first text node of #dayTip, before the tooltip span */
+  var dt=document.getElementById('dayTip');
+  if(dt&&dt.firstChild&&dt.firstChild.nodeType===3){ dt.firstChild.textContent=wd; }
+}
+fill();
+})();
+</script>
+</body></html>
