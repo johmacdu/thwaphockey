@@ -568,6 +568,7 @@ function render(){
       ev.stopPropagation();
       var p=loadProg(w.id); p[i]=!p[i]; saveProg(w.id,p);
       row.classList.toggle('done',!!p[i]);
+      if(p[i]&&window.thwapMarkDone)window.thwapMarkDone('dryland');
       this.textContent=p[i]?'Done ✓':'Mark done';
     });
   });
@@ -584,9 +585,28 @@ var tf='week', disc='all';
 var board=document.getElementById('board');
 var scope=document.getElementById('boardscope');
 if(!board)return;
+/* LIVE holds real team counts from /api/board once loaded; until then (or if the
+   API is unreachable) we fall back to the demo DATA so nothing breaks. The backend
+   stores cumulative counts (no week/all split yet), so when live, week and all-time
+   show the same real totals. */
+var LIVE=null;
+function rowsFor(){
+  if(LIVE) return LIVE;            /* real data: same rows for week and all-time */
+  return DATA[tf];                 /* demo fallback keeps the week/all split */
+}
+function fetchBoard(){
+  try{
+    fetch('/api/board',{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(j){
+      if(j&&j.players&&j.players.length){
+        LIVE=j.players.map(function(p){ return {n:(p.id.charAt(0).toUpperCase()+p.id.slice(1)), stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0}; });
+        render();
+      }
+    }).catch(function(){});
+  }catch(e){}
+}
 function scoreOf(p){ return disc==='all' ? (p.stick+p.shoot+p.dryland) : p[disc]; }
 function render(){
-  var rows=DATA[tf].map(function(p){ return {n:p.n, s:scoreOf(p)}; });
+  var rows=rowsFor().map(function(p){ return {n:p.n, s:scoreOf(p)}; });
   rows.sort(function(a,b){ return b.s-a.s || a.n.localeCompare(b.n); });
   var max=rows.length?Math.max(1,rows[0].s):1;
   board.innerHTML=rows.map(function(r,i){
@@ -600,7 +620,7 @@ function render(){
     rw.addEventListener('click',function(){ if(window.openPlayerPage) window.openPlayerPage(rw.getAttribute('data-player')); });
   });
   var t={stick:0,shoot:0,dryland:0};
-  DATA[tf].forEach(function(p){ t.stick+=p.stick; t.shoot+=p.shoot; t.dryland+=p.dryland; });
+  DATA[tf]; var _src=rowsFor(); _src.forEach(function(p){ t.stick+=p.stick; t.shoot+=p.shoot; t.dryland+=p.dryland; });
   t.all=t.stick+t.shoot+t.dryland;
   ['all','stick','shoot','dryland'].forEach(function(k){
     var el=document.querySelector(".metric-num[data-total='"+k+"']"); if(el)el.textContent=t[k];
@@ -651,6 +671,8 @@ document.querySelectorAll('#metrics .metric').forEach(function(m){
   });
 });
 render();
+fetchBoard();
+window.addEventListener('hashchange',function(){ if(location.hash==='#progress') fetchBoard(); });
 })();</script>
 <script>(function(){var KEY='thwapTheme';function apply(t){var dark=(t==='dark');document.documentElement.setAttribute('data-theme',dark?'dark':'light');var i=document.getElementById('ttico'),l=document.getElementById('ttlabel');if(i)i.textContent=dark?'☀️':'🌙';if(l)l.textContent=dark?'Light':'Dark';}var saved='light';try{saved=localStorage.getItem(KEY)||'light';}catch(e){}apply(saved);var b=document.getElementById('themeToggle');if(b)b.addEventListener('click',function(){var cur='light';try{cur=localStorage.getItem(KEY)||'light';}catch(e){}var next=(cur==='dark'?'light':'dark');try{localStorage.setItem(KEY,next);}catch(e){}apply(next);});})();</script>
 <div class='cardoverlay' id='cardOverlay' hidden>
@@ -986,6 +1008,7 @@ function render(){
       ev.stopPropagation();
       var p=loadProg(); p[i]=!p[i]; saveProg(p);
       row.classList.toggle('done',!!p[i]);
+      if(p[i]&&window.thwapMarkDone)window.thwapMarkDone('stick');
       this.textContent=p[i]?'Done ✓':'Mark done';
     });
   });
@@ -1275,12 +1298,41 @@ function render(){
       ev.stopPropagation();
       var p=loadProg(); p[i]=!p[i]; saveProg(p);
       row.classList.toggle('done',!!p[i]);
+      if(p[i]&&window.thwapMarkDone)window.thwapMarkDone('shoot');
       this.textContent=p[i]?'Done ✓':'Mark done';
     });
   });
 }
 render();
 window.addEventListener('hashchange',function(){ if(location.hash==='#shoot') render(); });
+})();</script>
+
+<script>(function(){
+/* Global mark-done -> team leaderboard. When a drill is checked done, also count it
+   on the shared board via /api/done. Gated by the player's PIN (jersey number + season
+   year), asked once per browser session and cached. Fails silently if the API is not
+   reachable yet (e.g. before Vercel KV is provisioned), so the app keeps working. */
+var PLAYER='Lewie';          /* demo: pinned to Lewie. Phase 4: the chosen player. */
+function pinKey(){ return 'thwapPin:'+PLAYER.toLowerCase(); }
+function getPin(){
+  var k=pinKey(), v=null;
+  try{ v=sessionStorage.getItem(k); }catch(e){}
+  if(v) return v;
+  v=window.prompt("Enter "+PLAYER+"'s PIN to save to the team board\n(jersey number + season year, e.g. 722027):");
+  if(v){ try{ sessionStorage.setItem(k, v.trim()); }catch(e){} return v.trim(); }
+  return null;
+}
+window.thwapMarkDone=function(discipline){
+  var pin=getPin(); if(!pin) return;              /* cancelled: keep local-only */
+  try{
+    fetch('/api/done',{
+      method:'POST', headers:{'Content-Type':'application/json'}, cache:'no-store',
+      body:JSON.stringify({player:PLAYER.toLowerCase(), pin:pin, discipline:discipline})
+    }).then(function(r){
+      if(r.status===403){ try{ sessionStorage.removeItem(pinKey()); }catch(e){}  /* wrong PIN: forget it so they can retry */ }
+    }).catch(function(){});                        /* offline / no API yet: silent */
+  }catch(e){}
+};
 })();</script>
 
 </body></html>
