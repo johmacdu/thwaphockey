@@ -66,7 +66,7 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .exbadge{display:none;margin-left:8px;font-size:12px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:#0f1712;background:var(--exacc);border-radius:999px;padding:3px 10px;vertical-align:middle}
 .exrow.done .exbadge{display:inline-block}
 .exrow.done .exhead h3{color:var(--text)}
-.exbody{display:none;padding:0 16px 24px 84px}
+.exbody{display:none;padding:0 16px 20px 16px}
 .exrow.open .exbody{display:block}
 .exbody p{margin:0 0 12px;font-size:18px;color:var(--text2);line-height:1.55}
 .exvideo{position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;margin:0 0 12px;background:var(--soft);border:1px solid var(--line)}
@@ -294,9 +294,7 @@ button.row:active{background:var(--soft)}
 
 <section id='shoot' class='page'>
 <a class='glassclose' href='#home' aria-label='Close'>✕</a><div class='heroCard'><div class='big'>🥅</div><h1><button type='button' class='titletip' data-daytip>Today’s<span class='titletip-date'>Sunday, September 13</span></button> Shooting</h1><p>Purposeful shots, not just more shots.</p><div class='pills'><span class='pill'>about 15 min</span></div></div>
-<div class='nav soon'><div class='ico'>🎯</div><div><h2>Accuracy</h2><p>Pick a target before every shot.</p></div><div class='soontag'>Soon</div></div><div style='height:10px'></div>
-<div class='nav soon'><div class='ico'>⚡</div><div><h2>Quick Release</h2><p>Move the puck, change the angle and release.</p></div><div class='soontag'>Soon</div></div><div style='height:10px'></div>
-<div class='nav soon'><div class='ico'>↔️</div><div><h2>Change the Angle</h2><p>Pull around an obstacle before shooting.</p></div><div class='soontag'>Soon</div></div>
+<div id='shootList'></div>
 </section>
 
 <section id='roster' class='page'>
@@ -349,7 +347,7 @@ button.row:active{background:var(--soft)}
 </section>
 
 <section id='player' class='page'>
-<a class='glassback' href='#progress' aria-label='Back to leaderboard'>‹</a>
+<button type='button' class='glassback' id='plBack' aria-label='Back'>‹</button>
 <div class='pl-head'><img class='pl-photo' id='plPhoto' src='' alt=''><div><div class='pl-name' id='plName'>Player</div><div class='pl-pos' id='plPos'></div></div></div>
 <div class='seg' id='plTf' role='tablist' aria-label='Timeframe'>
 <button type='button' class='segbtn on' data-tf='week' role='tab' aria-selected='true'>This week</button>
@@ -362,7 +360,7 @@ button.row:active{background:var(--soft)}
 
 <section id='home'>
 <div class='wipnote'>👋 Early prototype. We're testing the look and feel. Training drills and stickers are still being built.</div>
-<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='logo.png' alt='Thwap Hockey Training' width='80' height='68' style='cursor:pointer'> Thwap Hockey Training</div><nav class='toplinks'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Change player</a><span class='topsep'>|</span><a class='link' href='#progress'>Leaderboard</a></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><a href='#stickers'>Stickers</a><a href='#roster'>Change player</a><a href='#progress'>Leaderboard</a></div></div>
+<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-skate-1.png' alt='Thwap Hockey Training' width='80' height='68' style='cursor:pointer'> Thwap Hockey Training</div><nav class='toplinks'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Change player</a><span class='topsep'>|</span><a class='link' href='#progress'>Leaderboard</a></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><a href='#stickers'>Stickers</a><a href='#roster'>Change player</a><a href='#progress'>Leaderboard</a></div></div>
 <div class='hero'><div class='kicker'>Rangers 10U</div><div class='forrow'><span class='forline'>Today’s <button type='button' class='daytip' id='dayTip' aria-label='Show today’s date'>Sunday<span class='daydate' id='dayDate'>Sunday, September 13</span></button> training for</span></div><button type='button' class='playername' id='homePlayer' aria-label='Open your player card'>Lewie M.</button><p>Three quick parts. About 30 minutes. Every drill counts.</p></div>
 <div class='cards'>
 <a class='nav' href='hockey_game_goals.html'><div class='ico'>🎯</div><div><h2>Game Day Goals</h2><p>Pick your 4 goals for today’s game</p></div><div class='chev'>›</div></a>
@@ -717,7 +715,7 @@ function buildFaces(){
       e.stopPropagation();
       var name=(p.first||'')+(p.last?' '+p.last:'');
       close();
-      setTimeout(function(){ if(window.openPlayerPage) window.openPlayerPage(name); },220);
+      setTimeout(function(){ if(window.openPlayerPage) window.openPlayerPage(name, 'card'); },220);
     });
   }
 }
@@ -760,6 +758,9 @@ function onKey(e){ if(e.key==='Escape') close(); }
 openBtn.addEventListener('click', open);
 closeBtn.addEventListener('click', close);
 overlay.addEventListener('click', function(e){ if(e.target===overlay) close(); });
+
+/* open the card already showing the back (used by the stats-page back button) */
+window.openPlayerCardToBack=function(){ open(); ry=180; flipped=true; rx=0; paint(); };
 
 /* free 3D rotation via pointer drag + momentum (desktop + mobile) */
 var dragging=false, lastX=0, lastY=0, moved=0, lastTap=0;
@@ -1024,16 +1025,31 @@ function demoStreak(name,tf){ var s=0; for(var i=0;i<name.length;i++) s+=name.ch
 
 var section=document.getElementById('player');
 var tfEl=document.getElementById('plTf');
-var current=null, tf='week', plFilter='all';
+var current=null, tf='week', plFilter='all', plFrom='leaderboard';
 
-window.openPlayerPage=function(name){
+window.openPlayerPage=function(name, from){
   current=name.trim();
+  plFrom=(from==='card')?'card':'leaderboard';
   tf='week';
   plFilter='all';
   if(tfEl) tfEl.querySelectorAll('.segbtn').forEach(function(x){var on=x.getAttribute('data-tf')==='week';x.classList.toggle('on',on);x.setAttribute('aria-selected',on?'true':'false');});
   build();
   location.hash='#player';
 };
+
+/* Context-aware back from the stats page: to the leaderboard if we came from there,
+   or home with this player's card re-opened on the back if we came from the card. */
+(function(){
+  var back=document.getElementById('plBack'); if(!back)return;
+  back.addEventListener('click',function(){
+    if(plFrom==='card'){
+      location.hash='#home';
+      setTimeout(function(){ if(window.openPlayerCardToBack) window.openPlayerCardToBack(); },60);
+    } else {
+      location.hash='#progress';
+    }
+  });
+})();
 
 function build(){
   if(!current)return;
@@ -1207,8 +1223,14 @@ document.addEventListener('click',function(e){
     var travel=Math.max(60, stopX - r.right - 12);
     logo.style.setProperty('--sass-travel', travel+'px');
     logo.classList.add('skating');
+    /* real moving legs: alternate the two stride frames while skating */
+    var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var flip=null;
+    if(!reduce){ var on2=false; flip=setInterval(function(){ on2=!on2; logo.src=on2?'sass-skate-2.png':'sass-skate-1.png'; },130); }
     logo.addEventListener('animationend',function done(ev){
       if(ev.animationName!=='sassAcross')return;
+      if(flip)clearInterval(flip);
+      logo.src='sass-skate-1.png';
       logo.classList.remove('skating');
       logo.style.transform=''; logo.style.marginTop=''; logo.style.removeProperty('--sass-travel');
       logo.removeEventListener('animationend',done);
@@ -1216,5 +1238,49 @@ document.addEventListener('click',function(e){
   });
 })();</script>
 
+
+<script>(function(){
+/* Shooting: same expandable-tile pattern as Stickhandling/Dryland. Placeholder drill names for now;
+   real cues/steps/videos drop in when provided (no invented content). */
+function esc(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+var SHOOT=[
+  {emoji:'🎯', name:'Wrist Shots'},
+  {emoji:'⚡', name:'Snap Shots'},
+  {emoji:'🔄', name:'Backhand'},
+  {emoji:'🥅', name:'Pick-a-Corner'},
+  {emoji:'⏱️', name:'Quick Release'}
+];
+function loadProg(){try{return JSON.parse(localStorage.getItem('thwapShootProg')||'{}');}catch(e){return {};}}
+function saveProg(p){try{localStorage.setItem('thwapShootProg',JSON.stringify(p));}catch(e){}}
+function render(){
+  var list=document.getElementById('shootList'); if(!list)return;
+  var prog=loadProg();
+  list.innerHTML='';
+  SHOOT.forEach(function(dr,i){
+    var done=prog[i]?' done':'';
+    var doneLabel=prog[i]?'Done ✓':'Mark done';
+    list.insertAdjacentHTML('beforeend',
+      "<div class='exrow"+done+"' data-i='"+i+"'>"+
+        "<div class='exhead'><div class='exem'>"+dr.emoji+"</div>"+
+          "<div><h3>"+esc(dr.name)+"<span class='exbadge'>Done</span></h3><div class='exdose'>Shooting</div></div>"+
+          "<div class='exchev'>›</div></div>"+
+        "<div class='exbody'><p style='color:var(--muted)'>Full drill details are coming soon.</p>"+
+          "<button type='button' class='exdone'>"+doneLabel+"</button></div>"+
+      "</div>");
+  });
+  list.querySelectorAll('.exrow').forEach(function(row){
+    var i=+row.getAttribute('data-i');
+    row.querySelector('.exhead').addEventListener('click',function(){row.classList.toggle('open');});
+    row.querySelector('.exdone').addEventListener('click',function(ev){
+      ev.stopPropagation();
+      var p=loadProg(); p[i]=!p[i]; saveProg(p);
+      row.classList.toggle('done',!!p[i]);
+      this.textContent=p[i]?'Done ✓':'Mark done';
+    });
+  });
+}
+render();
+window.addEventListener('hashchange',function(){ if(location.hash==='#shoot') render(); });
+})();</script>
 
 </body></html>
