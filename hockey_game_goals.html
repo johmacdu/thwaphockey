@@ -83,6 +83,26 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
   justify-content:center;
   white-space:nowrap;
 }
+.reset-label{
+  margin-left:auto;
+  border-radius:14px;
+  min-height:50px;
+  padding:0 18px;
+  background:var(--panel);
+  color:var(--text);
+  border:1px solid var(--line2);
+  font-family:inherit;
+  font-size:15px;
+  font-weight:900;
+  cursor:pointer;
+  transition:.15s ease;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  white-space:nowrap;
+}
+.reset-label:hover{background:var(--soft)}
+.reset-label + .create-label{margin-left:0}
 
 /* Pure CSS count */
 .app:has(.choice-input:checked) .selection-count::before{content:"1"}
@@ -760,6 +780,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
   .action-inner{gap:10px}
   .selection-count{font-size:13px;min-width:auto}
   .create-label{min-height:48px;padding:0 16px;font-size:14px}
+  .reset-label{min-height:48px;padding:0 14px;font-size:14px}
 }
 
 
@@ -1201,6 +1222,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
     <div class="actionbar">
       <div class="action-inner">
         <div class="selection-count"> of 4 selected</div>
+        <button type="button" id="resetGoals" class="reset-label">Reset goals</button>
         <label for="finalMode" class="create-label">Create game goals</label>
       </div>
     </div>
@@ -1582,5 +1604,54 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
     <label for="finalMode" class="back-label">← Pick different goals</label>
   </div>
 </div>
+<script>
+(function(){
+  var KEY = 'thwapGameGoals';
+  var LIMIT = 4;
+  // The 40 goal checkboxes, in document order (index 0 => #g1).
+  var boxes = Array.prototype.slice.call(document.querySelectorAll('.choice-input'));
+
+  function save(){
+    try{
+      var picked = [];
+      for(var i=0;i<boxes.length;i++){ if(boxes[i].checked) picked.push(boxes[i].id); }
+      localStorage.setItem(KEY, JSON.stringify(picked));
+    }catch(e){}
+  }
+
+  function restore(){
+    var saved = null;
+    try{ saved = JSON.parse(localStorage.getItem(KEY) || '[]'); }catch(e){ saved = []; }
+    if(!Array.isArray(saved)) saved = [];
+    var count = 0;
+    for(var i=0;i<saved.length;i++){
+      if(count >= LIMIT) break;               // preserve the 4-goal limit on restore
+      var el = document.getElementById(saved[i]);
+      if(el && el.classList.contains('choice-input') && !el.checked){
+        el.checked = true;                     // CSS re-applies the selected visual state
+        count++;
+      }
+    }
+  }
+
+  // Save whenever any goal selection changes.
+  for(var i=0;i<boxes.length;i++){
+    boxes[i].addEventListener('change', save);
+  }
+
+  // Reset: clear the saved selection and every on-screen selected state.
+  var reset = document.getElementById('resetGoals');
+  if(reset){
+    reset.addEventListener('click', function(){
+      for(var j=0;j<boxes.length;j++){ boxes[j].checked = false; }
+      var fm = document.getElementById('finalMode');
+      if(fm) fm.checked = false;              // leave the final view if it is open
+      try{ localStorage.removeItem(KEY); }catch(e){}
+    });
+  }
+
+  restore();
+})();
+</script>
 </body>
 </html>

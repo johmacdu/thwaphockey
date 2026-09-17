@@ -1,0 +1,10 @@
+{
+  "name": "thwaphockey",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Thwap Hockey static site with Vercel serverless API (leaderboard + per-player discipline tracking).",
+  "dependencies": {
+    "@vercel/kv": "3.0.0"
+  }
+}
