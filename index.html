@@ -1316,17 +1316,30 @@ document.addEventListener('click',function(e){
 /* Shooting: same expandable-tile pattern as Stickhandling/Dryland. Placeholder drill names for now;
    real cues/steps/videos drop in when provided (no invented content). */
 function esc(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
-var SHOOT=[
-  {emoji:'🎯', name:'Wrist Shots'},
-  {emoji:'⚡', name:'Snap Shots'},
-  {emoji:'🔄', name:'Backhand'},
-  {emoji:'🥅', name:'Pick-a-Corner'},
-  {emoji:'⏱️', name:'Quick Release'}
+function dayIndex(){var d=new Date();var base=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000);try{var m=location.search.match(/[?&]day=([^&]*)/);if(m){var raw=decodeURIComponent(m[1]).trim();if(/^[+-]/.test(m[1])||/^[+-]/.test(raw)){var o=parseInt(m[1].replace(/^ /,'+'),10);if(isNaN(o))o=parseInt(raw,10);if(!isNaN(o))return base+o;}var n=parseInt(raw,10);if(!isNaN(n))return n;}}catch(e){}return base;}
+/* Shooting: 3 rotating days, 2-3 goals each, sized for 10U-12U. Goal NAMES only
+   (short shooting focuses); full cues/steps/videos are real coaching content that
+   drops in when provided, so bodies stay "coming soon" (no invented content). */
+var SHOOT_DAYS=[
+  [ {emoji:'🎯', name:'Wrist Shots: hit the net'},
+    {emoji:'🥅', name:'Pick-a-Corner'},
+    {emoji:'🔄', name:'Backhand shots'} ],
+  [ {emoji:'⚡', name:'Snap Shots'},
+    {emoji:'⏱️', name:'Quick Release'},
+    {emoji:'🎯', name:'Shoot in stride'} ],
+  [ {emoji:'🏒', name:'One-timers'},
+    {emoji:'🥅', name:'Rebounds and tips'},
+    {emoji:'🎯', name:'Far pad, far corner'} ]
 ];
-function loadProg(){try{return JSON.parse(localStorage.getItem('thwapShootProg')||'{}');}catch(e){return {};}}
-function saveProg(p){try{localStorage.setItem('thwapShootProg',JSON.stringify(p));}catch(e){}}
+function shootDayI(){ return ((dayIndex()%SHOOT_DAYS.length)+SHOOT_DAYS.length)%SHOOT_DAYS.length; }
+var SHOOT=SHOOT_DAYS[shootDayI()];
+/* Progress keyed by which rotation day it is, so finishing today does not mark another day. */
+function shootKey(){ return 'thwapShootProg|day'+shootDayI(); }
+function loadProg(){try{return JSON.parse(localStorage.getItem(shootKey())||'{}');}catch(e){return {};}}
+function saveProg(p){try{localStorage.setItem(shootKey(),JSON.stringify(p));}catch(e){}}
 function render(){
   var list=document.getElementById('shootList'); if(!list)return;
+  SHOOT=SHOOT_DAYS[shootDayI()];   /* re-pick today's set on each render */
   var prog=loadProg();
   list.innerHTML='';
   SHOOT.forEach(function(dr,i){
