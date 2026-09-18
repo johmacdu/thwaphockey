@@ -121,7 +121,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 }
 
 /* Final screen */
-.final-view{display:none;padding:30px 16px 70px;max-width:900px;margin:auto}
+.final-view{display:none;padding:64px 16px 70px;max-width:900px;margin:auto}
 .final-intro{color:var(--muted);font-size:16px;line-height:1.5;margin:0 0 28px}
 .final-list{display:grid;gap:14px}
 .final-card{display:none;border:1px solid var(--line);border-radius:20px;background:linear-gradient(180deg,var(--panel),var(--panel2));padding:22px;grid-template-columns:54px 1fr;gap:15px}
@@ -133,13 +133,10 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 .reflect h2{font-size:24px;margin:0 0 8px}
 .reflect p{color:var(--muted);font-size:15px;line-height:1.55;margin:0;max-width:690px}
 .back-label{display:inline-block;margin-top:26px;color:var(--green2);font-weight:850;font-size:14px;cursor:pointer}
-/* Final-view nav: floating glass Back (matches the rest of the app) + footer-right New game goals */
+/* Final-view nav: floating glass Back (matches the rest of the app) */
 .glassback{display:none;position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:max(16px, calc(50vw - 534px));z-index:50;grid-auto-flow:column;gap:2px;place-items:center;height:44px;padding:0 16px;border-radius:999px;font-size:16px;line-height:1;font-weight:800;color:var(--text);cursor:pointer;text-decoration:none;background:var(--panel);border:1px solid var(--line);box-shadow:0 6px 20px var(--shadow)}
 .glassback:hover{background:var(--soft)}
 #finalMode:checked ~ .glassback{display:inline-grid}
-.fv-foot{margin-top:30px;padding-top:20px;border-top:1px solid var(--line);display:flex;justify-content:flex-end}
-.fv-new{min-height:44px;padding:0 18px;border-radius:14px;background:var(--panel);color:var(--text);border:1px solid var(--line2);font-family:inherit;font-size:15px;font-weight:900;cursor:pointer;display:inline-flex;align-items:center}
-.fv-new:hover{background:var(--soft)}
 
 #finalMode:checked ~ .builder{display:none}
 #finalMode:checked ~ .final-view{display:block}
@@ -805,9 +802,9 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 <body>
 <div class="app">
   <a class="glassclose" href="index.html" aria-label="Close" onclick="if(history.length>1){history.back();return false;}">✕</a>
-  <label for="finalMode" class="glassback" aria-label="Back to picking goals">Back</label>
   <input type="checkbox" id="finalMode" class="final-mode"><input type="checkbox" id="g1" class="choice-input"><input type="checkbox" id="g2" class="choice-input"><input type="checkbox" id="g3" class="choice-input"><input type="checkbox" id="g4" class="choice-input"><input type="checkbox" id="g5" class="choice-input"><input type="checkbox" id="g6" class="choice-input"><input type="checkbox" id="g7" class="choice-input"><input type="checkbox" id="g8" class="choice-input"><input type="checkbox" id="g9" class="choice-input"><input type="checkbox" id="g10" class="choice-input"><input type="checkbox" id="g11" class="choice-input"><input type="checkbox" id="g12" class="choice-input"><input type="checkbox" id="g13" class="choice-input"><input type="checkbox" id="g14" class="choice-input"><input type="checkbox" id="g15" class="choice-input"><input type="checkbox" id="g16" class="choice-input"><input type="checkbox" id="g17" class="choice-input"><input type="checkbox" id="g18" class="choice-input"><input type="checkbox" id="g19" class="choice-input"><input type="checkbox" id="g20" class="choice-input"><input type="checkbox" id="g21" class="choice-input"><input type="checkbox" id="g22" class="choice-input"><input type="checkbox" id="g23" class="choice-input"><input type="checkbox" id="g24" class="choice-input"><input type="checkbox" id="g25" class="choice-input"><input type="checkbox" id="g26" class="choice-input"><input type="checkbox" id="g27" class="choice-input"><input type="checkbox" id="g28" class="choice-input"><input type="checkbox" id="g29" class="choice-input"><input type="checkbox" id="g30" class="choice-input"><input type="checkbox" id="g31" class="choice-input"><input type="checkbox" id="g32" class="choice-input"><input type="checkbox" id="g33" class="choice-input"><input type="checkbox" id="g34" class="choice-input"><input type="checkbox" id="g35" class="choice-input"><input type="checkbox" id="g36" class="choice-input"><input type="checkbox" id="g37" class="choice-input"><input type="checkbox" id="g38" class="choice-input"><input type="checkbox" id="g39" class="choice-input"><input type="checkbox" id="g40" class="choice-input">
 
+  <label for="finalMode" class="glassback" aria-label="Back to picking goals">Back</label>
   <div class="builder">
     <header class="header">
       <div class="kicker">Game Day Goals</div>
@@ -1613,9 +1610,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
       <p>Notice something from the ice that Dad probably couldn’t see from the stands. After the game, explain what you saw, why it mattered, and how it changed what you did.</p>
     </section>
 
-    <div class="fv-foot"><button type="button" id="newGameGoals" class="fv-new">New game goals</button></div>
-  </div>
-</div>
+  </div></div>
 <script>
 (function(){
   var KEY = 'thwapGameGoals';
@@ -1668,15 +1663,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
       try{ localStorage.removeItem(KEY); localStorage.removeItem(FKEY); }catch(e){}
     });
   }
-  /* New game goals (on the Game Plan): clear everything and return to the grid. */
-  var ng = document.getElementById('newGameGoals');
-  if(ng){
-    ng.addEventListener('click', function(){
-      for(var j=0;j<boxes.length;j++){ boxes[j].checked = false; }
-      if(finalMode) finalMode.checked = false;
-      try{ localStorage.removeItem(KEY); localStorage.removeItem(FKEY); }catch(e){}
-    });
-  }
+  /* Reset (on the grid) clears everything; the Game Plan uses Back to return. */
 
   setName();
   restore();
