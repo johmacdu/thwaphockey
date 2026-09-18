@@ -587,6 +587,7 @@ function render(){
       var p=loadProg(w.id); p[i]=!p[i]; saveProg(w.id,p);
       row.classList.toggle('done',!!p[i]);
       if(p[i]&&window.thwapMarkDone)window.thwapMarkDone('dryland');
+      if(window.thwapStampToday)window.thwapStampToday('dryland',!!p[i]);
       this.textContent=p[i]?'Done ✓':'Mark done';
     });
   });
@@ -621,21 +622,25 @@ function countUp(el,target,fmt){
   }
   requestAnimationFrame(step);
 }
-/* LIVE holds real team counts from /api/board once loaded; until then (or if the
-   API is unreachable) we fall back to the demo DATA so nothing breaks. The backend
-   stores cumulative counts (no week/all split yet), so when live, week and all-time
-   show the same real totals. */
-var LIVE=null;
+/* LIVE.week / LIVE.all hold real team counts from the API per timeframe; until a
+   timeframe has loaded (or if the API is unreachable) we fall back to the demo DATA
+   for that timeframe so nothing breaks. The backend now serves a real Monday-based
+   weekly split at /api/board?tf=week and cumulative all-time at /api/board. */
+var LIVE={week:null, all:null};
+function mapPlayers(list){
+  return list.map(function(p){ return {n:(p.id.charAt(0).toUpperCase()+p.id.slice(1)), stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0}; });
+}
 function rowsFor(){
-  if(LIVE) return LIVE;            /* real data: same rows for week and all-time */
-  return DATA[tf];                 /* demo fallback keeps the week/all split */
+  return LIVE[tf] || DATA[tf];     /* real data for this timeframe, else demo fallback */
 }
 function fetchBoard(){
+  var url=(tf==='week')?'/api/board?tf=week':'/api/board';
+  var which=tf;
   try{
-    fetch('/api/board',{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(j){
+    fetch(url,{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.players&&j.players.length){
-        LIVE=j.players.map(function(p){ return {n:(p.id.charAt(0).toUpperCase()+p.id.slice(1)), stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0}; });
-        render();
+        LIVE[which]=mapPlayers(j.players);
+        if(which===tf) render();
       }
     }).catch(function(){});
   }catch(e){}
@@ -700,6 +705,7 @@ document.querySelectorAll('#timeframe .segbtn').forEach(function(b){
     tf=b.getAttribute('data-tf');
     document.querySelectorAll('#timeframe .segbtn').forEach(function(x){var on=(x===b);x.classList.toggle('on',on);x.setAttribute('aria-selected',on?'true':'false');});
     render();
+    if(!LIVE[tf]) fetchBoard();   /* lazy-load this timeframe from the real API if not cached yet */
   });
 });
 document.querySelectorAll('#metrics .metric').forEach(function(m){
@@ -1053,6 +1059,7 @@ function render(){
       var p=loadProg(); p[i]=!p[i]; saveProg(p);
       row.classList.toggle('done',!!p[i]);
       if(p[i]&&window.thwapMarkDone)window.thwapMarkDone('stick');
+      if(window.thwapStampToday)window.thwapStampToday('stick',!!p[i]);
       this.textContent=p[i]?'Done ✓':'Mark done';
     });
   });
@@ -1347,6 +1354,7 @@ function render(){
       var p=loadProg(); p[i]=!p[i]; saveProg(p);
       row.classList.toggle('done',!!p[i]);
       if(p[i]&&window.thwapMarkDone)window.thwapMarkDone('shoot');
+      if(window.thwapStampToday)window.thwapStampToday('shoot',!!p[i]);
       this.textContent=p[i]?'Done ✓':'Mark done';
     });
   });
@@ -1385,8 +1393,7 @@ window.thwapMarkDone=function(discipline){
 })();</script>
 
 <script>(function(){
-/* Micro-reward: tap the streak flame and it flares. Pure delight, no navigation. */
-var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* Micro-reward: tap the streak flame and it flares. Pure delight, no navigation. */var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 if(reduce)return;
 document.addEventListener('click',function(e){
   var f=e.target&&e.target.closest?e.target.closest('.plflame'):null; if(!f)return;
@@ -1395,5 +1402,51 @@ document.addEventListener('click',function(e){
   f.classList.add('flare');
   setTimeout(function(){ f.classList.remove('flare'); },520);
 });
+})();</script>
+<div class='today-done' id='todayDone' hidden>
+  <div class='today-done-card'>
+    <div class='today-done-emoji'>🏒 🥅 ⚡</div>
+    <div class='today-done-title'>TODAY COMPLETE</div>
+    <div class='today-done-sub' id='todayDoneSub'>Nice work!</div>
+    <button type='button' class='today-done-btn' id='todayDoneClose'>Sweet</button>
+  </div>
+</div>
+<style>
+.today-done{position:fixed;inset:0;z-index:120;display:grid;place-items:center;background:rgba(15,23,18,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);padding:24px}
+.today-done[hidden]{display:none}
+.today-done-card{background:var(--panel);border:2px solid var(--lime);border-radius:24px;padding:30px 26px;text-align:center;max-width:340px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.35);animation:tdpop .5s cubic-bezier(.2,1.1,.3,1)}
+.today-done-emoji{font-size:40px;letter-spacing:6px;margin-bottom:10px}
+.today-done-title{font-family:'Archivo Black',system-ui,sans-serif;font-size:30px;color:var(--green2);letter-spacing:.01em;line-height:1.05}
+.today-done-sub{font-size:16px;font-weight:800;color:var(--text);margin-top:8px}
+.today-done-btn{margin-top:18px;min-height:48px;width:100%;background:var(--lime);color:#0f1712;font-weight:900;font-size:17px;border:0;border-radius:14px;padding:14px 20px;cursor:pointer;font-family:inherit}
+@keyframes tdpop{0%{transform:scale(.8);opacity:0}100%{transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion: reduce){.today-done-card{animation:none}}
+</style>
+<script>(function(){
+/* Unified "today complete" signal. Each discipline stamps thwapDone|<today>|<disc>=1
+   on its LOCAL done toggle (independent of the PIN/API path), so this is the single
+   source of truth for "all three done today" and cannot misfire off the three different
+   drill-page storage schemes. Celebrates once per day. */
+function todayKey(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+var DISCS=['stick','shoot','dryland'];
+function doneKey(disc){ return 'thwapDone|'+todayKey()+'|'+disc; }
+function celebratedKey(){ return 'thwapTodayCelebrated|'+todayKey(); }
+function isDone(disc){ try{ return localStorage.getItem(doneKey(disc))==='1'; }catch(e){ return false; } }
+window.thwapStampToday=function(disc,done){
+  if(DISCS.indexOf(disc)<0) return;
+  try{ if(done){ localStorage.setItem(doneKey(disc),'1'); } else { localStorage.removeItem(doneKey(disc)); } }catch(e){}
+  if(done) window.thwapCheckToday();
+};
+window.thwapCheckToday=function(){
+  if(!DISCS.every(isDone)) return;                 /* not all three yet */
+  var ck=celebratedKey(); try{ if(localStorage.getItem(ck)==='1') return; }catch(e){}  /* once per day */
+  try{ localStorage.setItem(ck,'1'); }catch(e){}
+  var name='Lewie'; /* demo pin; Phase 4: the chosen player */
+  var el=document.getElementById('todayDone'), sub=document.getElementById('todayDoneSub');
+  if(sub) sub.textContent='Nice work, '+name+'.';
+  if(el) el.hidden=false;
+};
+var closeBtn=document.getElementById('todayDoneClose');
+if(closeBtn) closeBtn.addEventListener('click',function(){ var el=document.getElementById('todayDone'); if(el) el.hidden=true; });
 })();</script>
 </body></html>
