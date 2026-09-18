@@ -137,6 +137,9 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 .glassback{display:none;position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:max(16px, calc(50vw - 534px));z-index:50;grid-auto-flow:column;gap:2px;place-items:center;height:44px;padding:0 16px;border-radius:999px;font-size:16px;line-height:1;font-weight:800;color:var(--text);cursor:pointer;text-decoration:none;background:var(--panel);border:1px solid var(--line);box-shadow:0 6px 20px var(--shadow)}
 .glassback:hover{background:var(--soft)}
 #finalMode:checked ~ .glassback{display:inline-grid}
+.fv-foot{margin-top:30px;padding-top:20px;border-top:1px solid var(--line);display:flex;justify-content:flex-start}
+.fv-reset{background:none;border:0;padding:6px 0;font-family:inherit;font-size:15px;font-weight:850;color:var(--green2);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.fv-reset:hover{color:var(--text)}
 
 #finalMode:checked ~ .builder{display:none}
 #finalMode:checked ~ .final-view{display:block}
@@ -1610,6 +1613,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
       <p>Notice something from the ice that Dad probably couldn’t see from the stands. After the game, explain what you saw, why it mattered, and how it changed what you did.</p>
     </section>
 
+    <div class="fv-foot"><button type="button" id="resetForNext" class="fv-reset">Reset goals for next game</button></div>
   </div></div>
 <script>
 (function(){
@@ -1664,6 +1668,15 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
     });
   }
   /* Reset (on the grid) clears everything; the Game Plan uses Back to return. */
+  /* Reset goals for next game (on the Game Plan): clear all and return to the empty grid. */
+  var rfn = document.getElementById('resetForNext');
+  if(rfn){
+    rfn.addEventListener('click', function(){
+      for(var j=0;j<boxes.length;j++){ boxes[j].checked = false; }
+      if(finalMode) finalMode.checked = false;
+      try{ localStorage.removeItem(KEY); localStorage.removeItem(FKEY); }catch(e){}
+    });
+  }
 
   setName();
   restore();
