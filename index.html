@@ -129,6 +129,14 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .cardface{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:var(--r-player);overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.14)}
 .cardback{transform:rotateY(180deg)}
 .cardart{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;-webkit-user-drag:none;user-select:none}
+/* Frame overlay drawn over a player's own uploaded photo so it still reads as a Thwap card. */
+.cf-frame{position:absolute;inset:0;pointer-events:none;border:3px solid var(--acc,#F0645A);border-radius:var(--r-player);box-shadow:inset 0 0 0 2px rgba(0,0,0,.35)}
+.cf-frame .cf-num{position:absolute;top:10px;left:16px;font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(40px,16vw,84px);line-height:.9;color:#fff;text-shadow:0 3px 10px rgba(0,0,0,.6)}
+.cf-frame .cf-foot{position:absolute;left:0;right:0;bottom:0;padding:34px 16px 16px;background:linear-gradient(to top,rgba(0,0,0,.72),transparent)}
+.cf-frame .cf-nm{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(22px,8vw,40px);color:#fff;line-height:1;text-transform:uppercase;letter-spacing:.01em}
+.cf-frame .cf-sub{font-size:12px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--acc,#F0645A);margin-top:4px}
+.cf-photo-btn{position:absolute;top:12px;right:12px;z-index:6;min-height:40px;padding:0 14px;border:0;border-radius:999px;background:rgba(15,23,18,.72);color:#fff;font-family:inherit;font-weight:800;font-size:13px;cursor:pointer;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(6px)}
+.cf-photo-btn:active{transform:scale(.96)}
 /* holographic sheen driven by --sheen (0..1) */
 .cardface::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.28) 47%,rgba(185,240,107,.22) 52%,rgba(117,184,255,.22) 57%,transparent 72%);transform:translateX(calc((var(--sheen,.5) - .5) * 160%));mix-blend-mode:screen;opacity:.7}
 .cardhint{color:rgba(255,255,255,.72);font-size:13px;font-weight:700;letter-spacing:.02em}
@@ -770,8 +778,24 @@ function buildFaces(){
   var slug=p.first.toLowerCase().replace(/[^a-z]/g,'');
   front.className='cardface cardfront '+posCls;
   back.className='cardface cardback '+posCls;
-  /* Front: the real designed card art. */
-  front.innerHTML="<img class='cardart' src='cards/"+slug+"_front.png' alt='"+p.first+" card front'>";
+  /* Front: the player's own photo (local-only) if they added one, framed as a Thwap card;
+     otherwise the stock designed card art. The photo is stored on THIS device only
+     (localStorage), never uploaded and never shown on anyone else's card (COPPA-safe). */
+  var myPhoto=null;
+  try{ myPhoto=localStorage.getItem('thwapCardPhoto:'+slug); }catch(e){}
+  if(myPhoto){
+    front.innerHTML=
+      "<img class='cardart' src='"+myPhoto+"' alt='"+p.first+" photo'>"+
+      "<div class='cf-frame'>"+
+        "<div class='cf-num'>"+(p.num||'')+"</div>"+
+        "<div class='cf-foot'><div class='cf-nm'>"+p.first+"</div><div class='cf-sub'>Jr Rangers</div></div>"+
+      "</div>"+
+      "<button type='button' class='cf-photo-btn' id='cfPhotoBtn'>Change photo</button>";
+  } else {
+    front.innerHTML="<img class='cardart' src='cards/"+slug+"_front.png' alt='"+p.first+" card front'>"+
+      "<button type='button' class='cf-photo-btn' id='cfPhotoBtn'>Add your photo</button>";
+  }
+  wirePhotoButton(slug);
   /* Back: the real designed card art + chosen-sticker overlay + a See my stats button. */
   back.innerHTML="<img class='cardart' src='cards/"+slug+"_back.png' alt='"+p.first+" card back'>"+stickerStrip()+
     "<button type='button' class='cb-stats' id='cbStats'>See my stats</button>";
@@ -786,8 +810,51 @@ function buildFaces(){
     });
   }
 }
-function disc(icon,label,days,top){
-  return "<div class='cb-disc'>"+
+/* Photo add/change/remove for the player's OWN card. Local-only: the image is
+   read in the browser, downscaled, and stored as a data URL in localStorage on
+   THIS device. It is never uploaded, never sent to the server, and never shown on
+   another player's card. A parent-consent step gates the first add (COPPA). */
+function wirePhotoButton(slug){
+  var btn=document.getElementById('cfPhotoBtn'); if(!btn)return;
+  btn.addEventListener('pointerdown',function(e){ e.stopPropagation(); });
+  btn.addEventListener('click',function(e){
+    e.stopPropagation();
+    var has=false; try{ has=!!localStorage.getItem('thwapCardPhoto:'+slug); }catch(_){}
+    if(has){
+      var change=window.confirm('Change this photo? Tap OK to pick a new one, or Cancel to remove the photo and go back to the team card.');
+      if(!change){ try{ localStorage.removeItem('thwapCardPhoto:'+slug); }catch(_){} buildFaces(); paint(); return; }
+    } else {
+      var ok=window.confirm('Ask a parent first! A parent should say yes before adding a photo.\n\nYour photo stays only on this phone. It is not shared with the team or sent anywhere.');
+      if(!ok) return;
+    }
+    var inp=document.createElement('input');
+    inp.type='file'; inp.accept='image/*';
+    inp.addEventListener('change',function(){
+      var f=inp.files&&inp.files[0]; if(!f)return;
+      var rd=new FileReader();
+      rd.onload=function(){
+        var img=new Image();
+        img.onload=function(){
+          /* Downscale to a card-ish portrait so localStorage stays small. Cover-crop to the card ratio. */
+          var TW=560, TH=760;
+          var cv=document.createElement('canvas'); cv.width=TW; cv.height=TH;
+          var cx=cv.getContext('2d');
+          var s=Math.max(TW/img.width, TH/img.height);
+          var dw=img.width*s, dh=img.height*s;
+          cx.drawImage(img,(TW-dw)/2,(TH-dh)/2,dw,dh);
+          var url=cv.toDataURL('image/jpeg',0.82);
+          try{ localStorage.setItem('thwapCardPhoto:'+slug, url); }
+          catch(err){ window.alert('That photo is too big to save on this phone. Try a smaller one.'); return; }
+          buildFaces(); paint();
+        };
+        img.src=rd.result;
+      };
+      rd.readAsDataURL(f);
+    });
+    inp.click();
+  });
+}
+function disc(icon,label,days,top){  return "<div class='cb-disc'>"+
     "<div class='cb-disc-top'><span class='cb-disc-name'>"+icon+" "+label+"</span>"+
     "<span class='cb-disc-days'>🔥 "+days+" days</span></div>"+
     "<div class='cb-disc-most'>Most: "+top+"</div></div>";
