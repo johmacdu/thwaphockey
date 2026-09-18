@@ -313,7 +313,7 @@ button.row:active{background:var(--soft)}
 </div>
 
 <div class='lb-teamzone'>
-<div class='lb-streak' id='lbStreak'><span class='plflame'>🔥</span> <span id='lbStreakN'>6</span> day streak</div>
+<div class='lb-streak' id='lbStreak' style='display:none'><span class='plflame'>🔥</span> <span id='lbStreakN'>0</span> day streak</div>
 <div class='lb-goal'>
 <div class='lb-goal-lab' id='lbGoalLab'>This week, everybody together
 <button type='button' class='lb-info' id='lbInfo' aria-label='How the bar works'>i<span class='lb-tip' id='lbTip'>Every drill anybody on the team does fills this bar 💪</span></button>
@@ -649,7 +649,7 @@ function render(){
   if(scope)scope.textContent=(disc==='all')?'Everyone, all training':('Just '+discLabel);
 }
 /* team streak: only shows when >= 3 days (temporal reward). Demo value until Phase 4. */
-(function(){var TEAM_STREAK=6;var b=document.getElementById('lbStreak');var n=document.getElementById('lbStreakN');if(n)n.textContent=TEAM_STREAK;if(b)b.style.display=(TEAM_STREAK>=3)?'':'none';})();
+(function(){/* Team streak needs date-stamped activity we do not track yet; 0 until Phase 4, and the >=3 gate hides it. */var TEAM_STREAK=0;var b=document.getElementById('lbStreak');var n=document.getElementById('lbStreakN');if(n)n.textContent=TEAM_STREAK;if(b)b.style.display=(TEAM_STREAK>=3)?'':'none';})();
 /* info tooltip: tap toggles, outside tap / Escape closes */
 (function(){var info=document.getElementById('lbInfo');if(!info)return;
   info.addEventListener('click',function(e){e.stopPropagation();info.classList.toggle('open');});
@@ -1044,7 +1044,7 @@ function demoDone(name,disc,tf){
   if(tf==='all') base=Math.min(total, base+1);
   return base;
 }
-function demoStreak(name,tf){ var s=0; for(var i=0;i<name.length;i++) s+=name.charCodeAt(i); return (s%6)+3; }
+function demoStreak(name,tf){ return 0; } /* real per-day streak needs date-stamped activity (Phase 4); 0 until then */
 
 var section=document.getElementById('player');
 var tfEl=document.getElementById('plTf');
@@ -1083,7 +1083,7 @@ function build(){
   if(photo){ photo.src='cards/'+slug+'_front.png'; photo.alt=esc(first)+' card'; }
   var nm=document.getElementById('plName'); if(nm)nm.textContent=first;
   var ps=document.getElementById('plPos'); if(ps)ps.textContent='#'+info.num+'  '+(POSNAME[info.pos]||'');
-  var streak=document.getElementById('plStreak'); if(streak)streak.innerHTML="<span class='plflame'>🔥</span> "+demoStreak(first,tf)+" day streak";
+  var streak=document.getElementById('plStreak'); if(streak){var _sk=demoStreak(first,tf); if(_sk>=3){streak.style.display='';streak.innerHTML="<span class='plflame'>🔥</span> "+_sk+" day streak";}else{streak.style.display='none';streak.innerHTML='';}}
   var wrap=document.getElementById('plDisc'); if(!wrap)return;
   var DCOL={Stickhandling:'#8fd65e',Shooting:'#75B8FF',Dryland:'#FF9D4D'};
   var DEMO={Stickhandling:'🏒',Shooting:'🥅',Dryland:'⚡'};
