@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=Archivo+Black&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;0,6..12,800;0,6..12,900&display=swap' rel='stylesheet'><title>Thwap Hockey Training</title><link rel='icon' type='image/png' href='logo-64.png'><link rel='apple-touch-icon' href='logo-180.png'><style>
+<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=Archivo+Black&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;0,6..12,800;0,6..12,900&display=swap' rel='stylesheet'><title>Thwap Hockey</title><link rel='icon' type='image/png' href='logo-64.png'><link rel='apple-touch-icon' href='logo-180.png'><style>
 /* Keyboard focus ring: visible for keyboard/switch users, invisible to mouse taps.
    Uses a lime core with a dark ink halo so it reads on both light and dark themes. */
 a:focus-visible,button:focus-visible,[tabindex]:focus-visible,.row:focus-visible,.nav:focus-visible,.segbtn:focus-visible,.pl-tot:focus-visible{outline:3px solid var(--lime);outline-offset:2px;box-shadow:0 0 0 5px rgba(21,34,27,.55);border-radius:12px}
@@ -38,7 +38,7 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 .glassclose:hover{background:color-mix(in srgb,var(--panel) 78%,transparent)}
 .hero{padding:30px 0 15px}.kicker{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--green);font-weight:950}
 /* Kid-voice home hero: greeting + big "Your hockey today" + a tappable Today chip. */
-.hero-hey{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(30px,8vw,44px);line-height:1.05;letter-spacing:.005em;margin:8px 0 2px;color:var(--ink)}
+.hero-hey{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(26px,7vw,44px);line-height:1.05;letter-spacing:.005em;margin:8px 0 2px;color:var(--ink);white-space:nowrap}
 .playername-inline{font-family:inherit;font-size:inherit;font-weight:inherit;letter-spacing:inherit;color:var(--green2);background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .hero-wave{display:inline-block}
 .hero-today{font-size:clamp(20px,5.5vw,28px);font-weight:900;color:var(--text);margin:0 0 8px}
@@ -373,14 +373,14 @@ button.row:active{background:var(--soft)}
 
 <section id='home'>
 <div class='wipnote'>👋 Early prototype. We're testing the look and feel. Training drills and stickers are still being built.</div>
-<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-skate-1.png' alt='Thwap Hockey Training' width='80' height='68' style='cursor:pointer'> Thwap Hockey Training</div><nav class='toplinks'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Change player</a><span class='topsep'>|</span><a class='link' href='#progress'>Leaderboard</a></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><a href='#stickers'>Stickers</a><a href='#roster'>Change player</a><a href='#progress'>Leaderboard</a></div></div>
+<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-skate-1.png' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'> Thwap Hockey</div><nav class='toplinks'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Change player</a><span class='topsep'>|</span><a class='link' href='#progress'>Leaderboard</a></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><a href='#stickers'>Stickers</a><a href='#roster'>Change player</a><a href='#progress'>Leaderboard</a></div></div>
 <div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>Lewie</button> <span class='hero-wave'>👋</span></h1><div class='hero-today'>Your hockey today</div><div class='forrow'><span class='forline'>3 things, about 30 min</span><button type='button' class='daytip daytip-chip' id='dayTip' aria-label='Show today’s date'>Today<span class='daydate' id='dayDate'>Sunday, September 13</span></button></div></div>
 <div class='cards'>
 <a class='nav' href='hockey_game_goals.html'><div class='ico'>🎯</div><div><h2>Game Day Goals</h2><p>Pick your 4 goals for today’s game</p></div><div class='chev'>›</div></a>
 <a class='nav' href='#stick'><div class='ico'>🏒</div><div><h2>Stickhandling</h2><p>Hands + puck control, about 10-15 min</p></div><div class='chev'>›</div></a>
 <a class='nav' href='#shoot'><div class='ico'>🥅</div><div><h2>Shooting</h2><p>Accuracy + release, about 15 min</p></div><div class='chev'>›</div></a>
 <a class='nav' href='#dryland'><div class='ico'>⚡</div><div><h2>Dryland</h2><p>Speed + power + balance, about 15 min</p></div><div class='chev'>›</div></a>
-</div><div class='footer'><span class='slogan'>Compete. Improve. Have fun.</span><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button></div><div class='trademark'>Thwap Hockey Training&trade;</div>
+</div><div class='footer'><span class='slogan'>Compete. Improve. Have fun.</span><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button></div><div class='trademark'>Thwap Hockey&trade;</div>
 </section>
 </div><script>(function(){
 /* Player gate: tapping a drill card asks who you are, then continues to the drill. */
@@ -576,12 +576,18 @@ function render(){
   /* header taps toggle expand; Mark done toggles done + saves */
   list.querySelectorAll('.exrow').forEach(function(row){
     var i=+row.getAttribute('data-i');
-    row.querySelector('.exhead').addEventListener('click',function(){row.classList.toggle('open');});
+    row.querySelector('.exhead').addEventListener('click',function(){
+      var wasOpen=row.classList.contains('open');
+      /* single-open: close every other drill in this list first */
+      row.parentNode.querySelectorAll('.exrow.open').forEach(function(other){ if(other!==row) other.classList.remove('open'); });
+      row.classList.toggle('open', !wasOpen);
+    });
     row.querySelector('.exdone').addEventListener('click',function(ev){
       ev.stopPropagation();
       var p=loadProg(w.id); p[i]=!p[i]; saveProg(w.id,p);
       row.classList.toggle('done',!!p[i]);
       if(p[i]&&window.thwapMarkDone)window.thwapMarkDone('dryland');
+      if(window.thwapStampToday)window.thwapStampToday('dryland',!!p[i]);
       this.textContent=p[i]?'Done ✓':'Mark done';
     });
   });
@@ -616,21 +622,25 @@ function countUp(el,target,fmt){
   }
   requestAnimationFrame(step);
 }
-/* LIVE holds real team counts from /api/board once loaded; until then (or if the
-   API is unreachable) we fall back to the demo DATA so nothing breaks. The backend
-   stores cumulative counts (no week/all split yet), so when live, week and all-time
-   show the same real totals. */
-var LIVE=null;
+/* LIVE.week / LIVE.all hold real team counts from the API per timeframe; until a
+   timeframe has loaded (or if the API is unreachable) we fall back to the demo DATA
+   for that timeframe so nothing breaks. The backend now serves a real Monday-based
+   weekly split at /api/board?tf=week and cumulative all-time at /api/board. */
+var LIVE={week:null, all:null};
+function mapPlayers(list){
+  return list.map(function(p){ return {n:(p.id.charAt(0).toUpperCase()+p.id.slice(1)), stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0}; });
+}
 function rowsFor(){
-  if(LIVE) return LIVE;            /* real data: same rows for week and all-time */
-  return DATA[tf];                 /* demo fallback keeps the week/all split */
+  return LIVE[tf] || DATA[tf];     /* real data for this timeframe, else demo fallback */
 }
 function fetchBoard(){
+  var url=(tf==='week')?'/api/board?tf=week':'/api/board';
+  var which=tf;
   try{
-    fetch('/api/board',{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(j){
+    fetch(url,{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.players&&j.players.length){
-        LIVE=j.players.map(function(p){ return {n:(p.id.charAt(0).toUpperCase()+p.id.slice(1)), stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0}; });
-        render();
+        LIVE[which]=mapPlayers(j.players);
+        if(which===tf) render();
       }
     }).catch(function(){});
   }catch(e){}
@@ -695,6 +705,7 @@ document.querySelectorAll('#timeframe .segbtn').forEach(function(b){
     tf=b.getAttribute('data-tf');
     document.querySelectorAll('#timeframe .segbtn').forEach(function(x){var on=(x===b);x.classList.toggle('on',on);x.setAttribute('aria-selected',on?'true':'false');});
     render();
+    if(!LIVE[tf]) fetchBoard();   /* lazy-load this timeframe from the real API if not cached yet */
   });
 });
 document.querySelectorAll('#metrics .metric').forEach(function(m){
@@ -1037,12 +1048,18 @@ function render(){
   });
   list.querySelectorAll('.exrow').forEach(function(row){
     var i=+row.getAttribute('data-i');
-    row.querySelector('.exhead').addEventListener('click',function(){row.classList.toggle('open');});
+    row.querySelector('.exhead').addEventListener('click',function(){
+      var wasOpen=row.classList.contains('open');
+      /* single-open: close every other drill in this list first */
+      row.parentNode.querySelectorAll('.exrow.open').forEach(function(other){ if(other!==row) other.classList.remove('open'); });
+      row.classList.toggle('open', !wasOpen);
+    });
     row.querySelector('.exdone').addEventListener('click',function(ev){
       ev.stopPropagation();
       var p=loadProg(); p[i]=!p[i]; saveProg(p);
       row.classList.toggle('done',!!p[i]);
       if(p[i]&&window.thwapMarkDone)window.thwapMarkDone('stick');
+      if(window.thwapStampToday)window.thwapStampToday('stick',!!p[i]);
       this.textContent=p[i]?'Done ✓':'Mark done';
     });
   });
@@ -1299,17 +1316,30 @@ document.addEventListener('click',function(e){
 /* Shooting: same expandable-tile pattern as Stickhandling/Dryland. Placeholder drill names for now;
    real cues/steps/videos drop in when provided (no invented content). */
 function esc(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
-var SHOOT=[
-  {emoji:'🎯', name:'Wrist Shots'},
-  {emoji:'⚡', name:'Snap Shots'},
-  {emoji:'🔄', name:'Backhand'},
-  {emoji:'🥅', name:'Pick-a-Corner'},
-  {emoji:'⏱️', name:'Quick Release'}
+function dayIndex(){var d=new Date();var base=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000);try{var m=location.search.match(/[?&]day=([^&]*)/);if(m){var raw=decodeURIComponent(m[1]).trim();if(/^[+-]/.test(m[1])||/^[+-]/.test(raw)){var o=parseInt(m[1].replace(/^ /,'+'),10);if(isNaN(o))o=parseInt(raw,10);if(!isNaN(o))return base+o;}var n=parseInt(raw,10);if(!isNaN(n))return n;}}catch(e){}return base;}
+/* Shooting: 3 rotating days, 2-3 goals each, sized for 10U-12U. Goal NAMES only
+   (short shooting focuses); full cues/steps/videos are real coaching content that
+   drops in when provided, so bodies stay "coming soon" (no invented content). */
+var SHOOT_DAYS=[
+  [ {emoji:'🎯', name:'Wrist Shots: hit the net'},
+    {emoji:'🥅', name:'Pick-a-Corner'},
+    {emoji:'🔄', name:'Backhand shots'} ],
+  [ {emoji:'⚡', name:'Snap Shots'},
+    {emoji:'⏱️', name:'Quick Release'},
+    {emoji:'🎯', name:'Shoot in stride'} ],
+  [ {emoji:'🏒', name:'One-timers'},
+    {emoji:'🥅', name:'Rebounds and tips'},
+    {emoji:'🎯', name:'Far pad, far corner'} ]
 ];
-function loadProg(){try{return JSON.parse(localStorage.getItem('thwapShootProg')||'{}');}catch(e){return {};}}
-function saveProg(p){try{localStorage.setItem('thwapShootProg',JSON.stringify(p));}catch(e){}}
+function shootDayI(){ return ((dayIndex()%SHOOT_DAYS.length)+SHOOT_DAYS.length)%SHOOT_DAYS.length; }
+var SHOOT=SHOOT_DAYS[shootDayI()];
+/* Progress keyed by which rotation day it is, so finishing today does not mark another day. */
+function shootKey(){ return 'thwapShootProg|day'+shootDayI(); }
+function loadProg(){try{return JSON.parse(localStorage.getItem(shootKey())||'{}');}catch(e){return {};}}
+function saveProg(p){try{localStorage.setItem(shootKey(),JSON.stringify(p));}catch(e){}}
 function render(){
   var list=document.getElementById('shootList'); if(!list)return;
+  SHOOT=SHOOT_DAYS[shootDayI()];   /* re-pick today's set on each render */
   var prog=loadProg();
   list.innerHTML='';
   SHOOT.forEach(function(dr,i){
@@ -1326,12 +1356,18 @@ function render(){
   });
   list.querySelectorAll('.exrow').forEach(function(row){
     var i=+row.getAttribute('data-i');
-    row.querySelector('.exhead').addEventListener('click',function(){row.classList.toggle('open');});
+    row.querySelector('.exhead').addEventListener('click',function(){
+      var wasOpen=row.classList.contains('open');
+      /* single-open: close every other drill in this list first */
+      row.parentNode.querySelectorAll('.exrow.open').forEach(function(other){ if(other!==row) other.classList.remove('open'); });
+      row.classList.toggle('open', !wasOpen);
+    });
     row.querySelector('.exdone').addEventListener('click',function(ev){
       ev.stopPropagation();
       var p=loadProg(); p[i]=!p[i]; saveProg(p);
       row.classList.toggle('done',!!p[i]);
       if(p[i]&&window.thwapMarkDone)window.thwapMarkDone('shoot');
+      if(window.thwapStampToday)window.thwapStampToday('shoot',!!p[i]);
       this.textContent=p[i]?'Done ✓':'Mark done';
     });
   });
@@ -1370,8 +1406,7 @@ window.thwapMarkDone=function(discipline){
 })();</script>
 
 <script>(function(){
-/* Micro-reward: tap the streak flame and it flares. Pure delight, no navigation. */
-var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+/* Micro-reward: tap the streak flame and it flares. Pure delight, no navigation. */var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 if(reduce)return;
 document.addEventListener('click',function(e){
   var f=e.target&&e.target.closest?e.target.closest('.plflame'):null; if(!f)return;
@@ -1380,5 +1415,51 @@ document.addEventListener('click',function(e){
   f.classList.add('flare');
   setTimeout(function(){ f.classList.remove('flare'); },520);
 });
+})();</script>
+<div class='today-done' id='todayDone' hidden>
+  <div class='today-done-card'>
+    <div class='today-done-emoji'>🏒 🥅 ⚡</div>
+    <div class='today-done-title'>TODAY COMPLETE</div>
+    <div class='today-done-sub' id='todayDoneSub'>Nice work!</div>
+    <button type='button' class='today-done-btn' id='todayDoneClose'>Sweet</button>
+  </div>
+</div>
+<style>
+.today-done{position:fixed;inset:0;z-index:120;display:grid;place-items:center;background:rgba(15,23,18,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);padding:24px}
+.today-done[hidden]{display:none}
+.today-done-card{background:var(--panel);border:2px solid var(--lime);border-radius:24px;padding:30px 26px;text-align:center;max-width:340px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.35);animation:tdpop .5s cubic-bezier(.2,1.1,.3,1)}
+.today-done-emoji{font-size:40px;letter-spacing:6px;margin-bottom:10px}
+.today-done-title{font-family:'Archivo Black',system-ui,sans-serif;font-size:30px;color:var(--green2);letter-spacing:.01em;line-height:1.05}
+.today-done-sub{font-size:16px;font-weight:800;color:var(--text);margin-top:8px}
+.today-done-btn{margin-top:18px;min-height:48px;width:100%;background:var(--lime);color:#0f1712;font-weight:900;font-size:17px;border:0;border-radius:14px;padding:14px 20px;cursor:pointer;font-family:inherit}
+@keyframes tdpop{0%{transform:scale(.8);opacity:0}100%{transform:scale(1);opacity:1}}
+@media (prefers-reduced-motion: reduce){.today-done-card{animation:none}}
+</style>
+<script>(function(){
+/* Unified "today complete" signal. Each discipline stamps thwapDone|<today>|<disc>=1
+   on its LOCAL done toggle (independent of the PIN/API path), so this is the single
+   source of truth for "all three done today" and cannot misfire off the three different
+   drill-page storage schemes. Celebrates once per day. */
+function todayKey(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+var DISCS=['stick','shoot','dryland'];
+function doneKey(disc){ return 'thwapDone|'+todayKey()+'|'+disc; }
+function celebratedKey(){ return 'thwapTodayCelebrated|'+todayKey(); }
+function isDone(disc){ try{ return localStorage.getItem(doneKey(disc))==='1'; }catch(e){ return false; } }
+window.thwapStampToday=function(disc,done){
+  if(DISCS.indexOf(disc)<0) return;
+  try{ if(done){ localStorage.setItem(doneKey(disc),'1'); } else { localStorage.removeItem(doneKey(disc)); } }catch(e){}
+  if(done) window.thwapCheckToday();
+};
+window.thwapCheckToday=function(){
+  if(!DISCS.every(isDone)) return;                 /* not all three yet */
+  var ck=celebratedKey(); try{ if(localStorage.getItem(ck)==='1') return; }catch(e){}  /* once per day */
+  try{ localStorage.setItem(ck,'1'); }catch(e){}
+  var name='Lewie'; /* demo pin; Phase 4: the chosen player */
+  var el=document.getElementById('todayDone'), sub=document.getElementById('todayDoneSub');
+  if(sub) sub.textContent='Nice work, '+name+'.';
+  if(el) el.hidden=false;
+};
+var closeBtn=document.getElementById('todayDoneClose');
+if(closeBtn) closeBtn.addEventListener('click',function(){ var el=document.getElementById('todayDone'); if(el) el.hidden=true; });
 })();</script>
 </body></html>
