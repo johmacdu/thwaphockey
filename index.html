@@ -2019,22 +2019,20 @@ document.addEventListener('pointerleave',release,{passive:true,capture:true});
    long-press the net header to fire a puck through the net and off the left edge.
    Both reset themselves and are locked while playing so they cannot stack. */
 var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-var HOLD=500;
-function longpress(el,fire){
+/* Tap to fire, on mobile and desktop. Long-press proved unreliable on mobile
+   (the browser grabs it for text-select and the context menu), so a plain tap
+   runs the egg. It stays locked while playing so a fast double-tap cannot stack.
+   Long-press is reserved for the future Sass slapshot. */
+function tapEgg(el,fire){
   if(!el) return;
-  var t=null, playing=false;
-  function start(e){
+  var playing=false;
+  el.addEventListener('click',function(e){
     if(playing) return;
-    t=setTimeout(function(){ t=null; playing=true; fire(function(){playing=false;}); },HOLD);
-  }
-  function cancel(){ if(t){clearTimeout(t);t=null;} }
-  el.addEventListener('pointerdown',start,{passive:true});
-  el.addEventListener('pointerup',cancel,{passive:true});
-  el.addEventListener('pointerleave',cancel,{passive:true});
-  el.addEventListener('pointercancel',cancel,{passive:true});
+    playing=true; fire(function(){playing=false;});
+  });
 }
 /* Stickhandling dangle. */
-longpress(document.getElementById('eggStick'),function(done){
+tapEgg(document.getElementById('eggStick'),function(done){
   var el=document.getElementById('eggStick');
   if(reduce){ done(); return; }
   /* The header is an SVG stick + one puck. On press the puck weaves across the
@@ -2043,7 +2041,7 @@ longpress(document.getElementById('eggStick'),function(done){
   setTimeout(function(){ el.classList.remove('egg-go'); done(); },1550);
 });
 /* Shooting: puck flies in from the right, punches the net, exits left. */
-longpress(document.getElementById('eggNet'),function(done){
+tapEgg(document.getElementById('eggNet'),function(done){
   var el=document.getElementById('eggNet');
   if(reduce){ done(); return; }
   var r=el.getBoundingClientRect();
@@ -2064,7 +2062,7 @@ longpress(document.getElementById('eggNet'),function(done){
   },1250);
 });
 /* Dryland: charge the bolt, then fire energy sparks outward at the flash moment. */
-longpress(document.getElementById('eggBolt'),function(done){
+tapEgg(document.getElementById('eggBolt'),function(done){
   var el=document.getElementById('eggBolt');
   if(reduce){ done(); return; }
   el.classList.add('egg-zap');
