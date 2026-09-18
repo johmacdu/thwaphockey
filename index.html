@@ -661,6 +661,16 @@ var LIVE={week:null, all:null};
 function mapPlayers(list){
   return list.map(function(p){ return {n:(p.id.charAt(0).toUpperCase()+p.id.slice(1)), stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0}; });
 }
+/* Global real-data store so the stats page reads the SAME live numbers, not a
+   name-hash demo. Keyed by lowercase first name. streak is the honest computed
+   consecutive-day streak from the all-time board. */
+window.thwapBoard=window.thwapBoard||{ week:{}, all:{}, ready:false };
+function stashBoard(which, list){
+  var m={};
+  list.forEach(function(p){ m[String(p.id).toLowerCase()]={stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0, streak:p.streak||0}; });
+  window.thwapBoard[which]=m; window.thwapBoard.ready=true;
+  if(window.thwapStatsRefresh) window.thwapStatsRefresh();
+}
 function rowsFor(){
   return LIVE[tf] || DATA[tf];     /* real data for this timeframe, else demo fallback */
 }
@@ -671,6 +681,7 @@ function fetchBoard(){
     fetch(url,{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.players&&j.players.length){
         LIVE[which]=mapPlayers(j.players);
+        stashBoard(which, j.players);
         if(which===tf) render();
       }
     }).catch(function(){});
@@ -1225,9 +1236,32 @@ var EXICON={
   'Wrist Shots':'🎯','Snap Shots':'⚡','Backhand':'🔄','Pick-a-Corner':'🥅','Quick Release':'⏱️',
   'Skater Jumps':'🦘','Box Jumps':'📦','Wall Sit':'🧱','Plank':'🪵','Dead Bugs':'🐞'
 };
-/* DEMO completion counts per player/timeframe (placeholder, real data Phase 4). */
-function demoDone(name,disc,tf){ return 0; } /* clean slate: every player starts at 0. Real per-player counts will replace this when the stats page is wired to /api/board. */
-function demoStreak(name,tf){ return 0; } /* real per-day streak needs date-stamped activity (Phase 4); 0 until then */
+/* Real per-player completion counts, read from the same live board the leaderboard
+   uses (window.thwapBoard, populated below). disc is the display name; the board
+   keys are stick/shoot/dryland. Everyone reads 0 until the API responds. */
+var DKEY={Stickhandling:'stick',Shooting:'shoot',Dryland:'dryland'};
+function boardRow(name,tf){
+  var b=window.thwapBoard; if(!b) return null;
+  var m=(tf==='all')?b.all:b.week;
+  return (m && m[String(name).toLowerCase()]) || null;
+}
+function demoDone(name,disc,tf){ var r=boardRow(name,tf); return r? (r[DKEY[disc]]||0) : 0; }
+function demoStreak(name,tf){ var r=boardRow(name,'all'); return r? (r.streak||0) : 0; }  /* honest computed streak */
+/* Pull both timeframes for the stats page, independent of the leaderboard's own
+   lazy per-timeframe load, then refresh the open stats view when data lands. */
+function statsFetch(){
+  ['week','all'].forEach(function(which){
+    var url=(which==='week')?'/api/board?tf=week':'/api/board';
+    try{ fetch(url,{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(j){
+      if(j&&j.players&&j.players.length){
+        var m={}; j.players.forEach(function(p){ m[String(p.id).toLowerCase()]={stick:p.stick||0,shoot:p.shoot||0,dryland:p.dryland||0,streak:p.streak||0}; });
+        window.thwapBoard=window.thwapBoard||{week:{},all:{},ready:false};
+        window.thwapBoard[which]=m; window.thwapBoard.ready=true;
+        if(window.thwapStatsRefresh) window.thwapStatsRefresh();
+      }
+    }).catch(function(){}); }catch(e){}
+  });
+}
 
 var section=document.getElementById('player');
 var tfEl=document.getElementById('plTf');
@@ -1239,9 +1273,12 @@ window.openPlayerPage=function(name, from){
   tf='week';
   plFilter='all';
   if(tfEl) tfEl.querySelectorAll('.segbtn').forEach(function(x){var on=x.getAttribute('data-tf')==='week';x.classList.toggle('on',on);x.setAttribute('aria-selected',on?'true':'false');});
+  statsFetch();   /* pull real per-player numbers; build() re-renders when they land */
   build();
   location.hash='#player';
 };
+/* Re-render the open stats page when live board data arrives. */
+window.thwapStatsRefresh=function(){ if(current && location.hash==='#player') build(); };
 
 /* Context-aware back from the stats page: to the leaderboard if we came from there,
    or home with this player's card re-opened on the back if we came from the card. */
