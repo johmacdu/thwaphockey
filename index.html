@@ -576,7 +576,12 @@ function render(){
   /* header taps toggle expand; Mark done toggles done + saves */
   list.querySelectorAll('.exrow').forEach(function(row){
     var i=+row.getAttribute('data-i');
-    row.querySelector('.exhead').addEventListener('click',function(){row.classList.toggle('open');});
+    row.querySelector('.exhead').addEventListener('click',function(){
+      var wasOpen=row.classList.contains('open');
+      /* single-open: close every other drill in this list first */
+      row.parentNode.querySelectorAll('.exrow.open').forEach(function(other){ if(other!==row) other.classList.remove('open'); });
+      row.classList.toggle('open', !wasOpen);
+    });
     row.querySelector('.exdone').addEventListener('click',function(ev){
       ev.stopPropagation();
       var p=loadProg(w.id); p[i]=!p[i]; saveProg(w.id,p);
@@ -1037,7 +1042,12 @@ function render(){
   });
   list.querySelectorAll('.exrow').forEach(function(row){
     var i=+row.getAttribute('data-i');
-    row.querySelector('.exhead').addEventListener('click',function(){row.classList.toggle('open');});
+    row.querySelector('.exhead').addEventListener('click',function(){
+      var wasOpen=row.classList.contains('open');
+      /* single-open: close every other drill in this list first */
+      row.parentNode.querySelectorAll('.exrow.open').forEach(function(other){ if(other!==row) other.classList.remove('open'); });
+      row.classList.toggle('open', !wasOpen);
+    });
     row.querySelector('.exdone').addEventListener('click',function(ev){
       ev.stopPropagation();
       var p=loadProg(); p[i]=!p[i]; saveProg(p);
@@ -1326,7 +1336,12 @@ function render(){
   });
   list.querySelectorAll('.exrow').forEach(function(row){
     var i=+row.getAttribute('data-i');
-    row.querySelector('.exhead').addEventListener('click',function(){row.classList.toggle('open');});
+    row.querySelector('.exhead').addEventListener('click',function(){
+      var wasOpen=row.classList.contains('open');
+      /* single-open: close every other drill in this list first */
+      row.parentNode.querySelectorAll('.exrow.open').forEach(function(other){ if(other!==row) other.classList.remove('open'); });
+      row.classList.toggle('open', !wasOpen);
+    });
     row.querySelector('.exdone').addEventListener('click',function(ev){
       ev.stopPropagation();
       var p=loadProg(); p[i]=!p[i]; saveProg(p);
