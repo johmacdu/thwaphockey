@@ -165,6 +165,9 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .cb-disc-days{font-size:13px;font-weight:800;color:var(--orange);white-space:nowrap}
 .cb-disc-most{font-size:12px;font-weight:600;color:rgba(255,255,255,.7);margin-top:2px}
 .cb-stickers{position:absolute;right:14px;bottom:14px;display:flex;gap:-6px}
+.pl-decal{position:absolute;width:56px;height:56px;object-fit:contain;filter:drop-shadow(0 2px 5px rgba(0,0,0,.45));pointer-events:none;-webkit-user-drag:none;user-select:none;z-index:4}
+.pl-decal.editable{pointer-events:auto;cursor:grab;touch-action:none}
+.pl-decal.editable:active{cursor:grabbing}
 .cb-sticker{width:46px;height:46px;object-fit:contain;margin-left:-8px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));transform:rotate(-6deg)}
 .cb-sticker:nth-child(2){transform:rotate(5deg)}
 .cb-sticker:nth-child(3){transform:rotate(-3deg)}
@@ -801,8 +804,9 @@ function buildFaces(){
       "<button type='button' class='cf-photo-btn' id='cfPhotoBtn'>Add your photo</button>";
   }
   wirePhotoButton(slug);
-  /* Back: the real designed card art + chosen-sticker overlay + a See my stats button. */
-  back.innerHTML="<img class='cardart' src='cards/"+slug+"_back.png' alt='"+p.first+" card back'>"+stickerStrip()+
+  /* Back: the real designed card art + a See my stats button. Stickers now come from
+     the decorate placement system (rendered below), not the old pick-3 strip. */
+  back.innerHTML="<img class='cardart' src='cards/"+slug+"_back.png' alt='"+p.first+" card back'>"+
     "<button type='button' class='cb-stats' id='cbStats'>See my stats</button>";
   var sb=document.getElementById('cbStats');
   if(sb){
@@ -814,6 +818,9 @@ function buildFaces(){
       setTimeout(function(){ if(window.openPlayerPage) window.openPlayerPage(name, 'card'); },220);
     });
   }
+  /* Render the player's placed stickers on each face (non-interactive here; editing
+     happens in place-mode from the Sticker Book). */
+  if(window.thwapRenderPlaced){ window.thwapRenderPlaced('front', front, {interactive:true}); window.thwapRenderPlaced('back', back, {interactive:true}); }
 }
 /* Photo add/change/remove for the player's OWN card. Local-only: the image is
    read in the browser, downscaled, and stored as a data URL in localStorage on
@@ -1006,17 +1013,14 @@ fetch('stickers/stickers.json').then(function(r){return r.json();}).then(functio
     }
     if(earned){
       cell.addEventListener('click',function(){
-        var idx=chosen.indexOf(f);
-        if(idx>=0){ chosen.splice(idx,1); cell.classList.remove('on-card'); }
-        else{
-          if(chosen.length>=3){ chosen.shift(); }
-          chosen.push(f); cell.classList.add('on-card');
+        /* Place this sticker on the card front. The kid can then drag or peel it on
+           the card itself (card faces are interactive). Capped per surface. */
+        if(window.thwapPlaced){
+          window.thwapPlaced.add('front', f, 30+Math.random()*40, 30+Math.random()*40);
+          cell.classList.add('on-card');
           if(!reduce){ var img=cell.querySelector('img'); if(img){img.style.setProperty('--slap-rot',(Math.random()*10-5)+'deg'); img.classList.remove('slapped'); void img.offsetWidth; img.classList.add('slapped');} }
+          if(countEl){ var prev=countEl.textContent; countEl.textContent='Stuck on your card ✓  (open your card to move it)'; setTimeout(function(){ countEl.textContent=prev; },1800); }
         }
-        try{localStorage.setItem(CHOSEN_KEY,JSON.stringify(chosen));}catch(e){}
-        grid.querySelectorAll('.stickcell').forEach(function(c){
-          c.classList.toggle('on-card', chosen.indexOf(c.getAttribute('data-file'))>=0);
-        });
       });
     }
     grid.appendChild(cell);
@@ -1590,5 +1594,62 @@ window.thwapCheckToday=function(){
 };
 var closeBtn=document.getElementById('todayDoneClose');
 if(closeBtn) closeBtn.addEventListener('click',function(){ var el=document.getElementById('todayDone'); if(el) el.hidden=true; });
+})();</script>
+<script>(function(){
+/* ---- Sticker DECORATE system (Pillar 3) -------------------------------------
+   A player can peel an earned sticker and place it on their OWN card front, card
+   back, or stats page. Placements are stored LOCAL-only per player per surface as
+   {file,x,y,rot} with x/y as PERCENT of the surface (survives resize). Global so
+   the card IIFE and the stats IIFE share one store. */
+var SURFACES=['front','back','stats'];
+var CAP=5;   /* keep it tasteful */
+function pid(){ try{ return (localStorage.getItem('bfPlayer')||'guest').trim().split(/\s+/)[0].toLowerCase(); }catch(e){ return 'guest'; } }
+function key(surface){ return 'thwapPlaced:'+pid()+':'+surface; }
+window.thwapPlaced={
+  list:function(surface){ try{ var a=JSON.parse(localStorage.getItem(key(surface))||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } },
+  save:function(surface,arr){ try{ localStorage.setItem(key(surface), JSON.stringify(arr.slice(0,CAP))); }catch(e){} },
+  add:function(surface,file,x,y,rot){ var a=this.list(surface); if(a.length>=CAP) a.shift(); a.push({file:file,x:x,y:y,rot:rot||(Math.random()*16-8)}); this.save(surface,a); },
+  removeAt:function(surface,idx){ var a=this.list(surface); a.splice(idx,1); this.save(surface,a); },
+  cap:CAP, surfaces:SURFACES
+};
+/* Render placed stickers into a positioned container. reduce disables the peel wobble.
+   If interactive, each sticker can be dragged (repositions) and tapped (peels off). */
+window.thwapRenderPlaced=function(surface, container, opts){
+  opts=opts||{};
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  container.querySelectorAll('.pl-decal').forEach(function(n){ n.remove(); });
+  window.thwapPlaced.list(surface).forEach(function(p,idx){
+    var el=document.createElement('img');
+    el.className='pl-decal'; el.src='stickers/'+p.file; el.alt='';
+    el.style.left=p.x+'%'; el.style.top=p.y+'%';
+    el.style.transform='translate(-50%,-50%) rotate('+(p.rot||0)+'deg)';
+    if(opts.interactive){
+      el.classList.add('editable');
+      /* drag to move, quick tap to peel */
+      var moved=false, sx=0, sy=0;
+      el.addEventListener('pointerdown',function(e){
+        e.preventDefault(); e.stopPropagation(); moved=false; sx=e.clientX; sy=e.clientY;
+        el.setPointerCapture(e.pointerId);
+      });
+      el.addEventListener('pointermove',function(e){
+        if(e.pressure===0 && e.buttons===0) return;
+        if(!el.hasPointerCapture||!el.hasPointerCapture(e.pointerId)) return;
+        var r=container.getBoundingClientRect();
+        if(Math.abs(e.clientX-sx)+Math.abs(e.clientY-sy)>4) moved=true;
+        var nx=Math.max(4,Math.min(96,(e.clientX-r.left)/r.width*100));
+        var ny=Math.max(4,Math.min(96,(e.clientY-r.top)/r.height*100));
+        el.style.left=nx+'%'; el.style.top=ny+'%';
+        el._nx=nx; el._ny=ny;
+      });
+      el.addEventListener('pointerup',function(e){
+        e.stopPropagation();
+        var arr=window.thwapPlaced.list(surface);
+        if(!moved){ arr.splice(idx,1); window.thwapPlaced.save(surface,arr); window.thwapRenderPlaced(surface,container,opts); }
+        else if(el._nx!=null){ if(arr[idx]){ arr[idx].x=el._nx; arr[idx].y=el._ny; window.thwapPlaced.save(surface,arr); } }
+      });
+    }
+    container.appendChild(el);
+  });
+};
 })();</script>
 </body></html>
