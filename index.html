@@ -7,7 +7,7 @@ a:focus-visible,button:focus-visible,[tabindex]:focus-visible,.row:focus-visible
 /* Thwap brand palette */
 --ink:#15221B;--ice:#F3F7F4;--puck:#202522;--lime:#B9F06B;--blue:#75B8FF;--orange:#FF9D4D;--tape:#FFFFFF;--bench:#A5B0A9;--pnw:#315B43;--alert:#F0645A;
 /* Foundation = Ice light: dark Ink text on Ice bg, Lime reserved for go/active */
---bg:#F3F7F4;--bg2:#E9EFEA;--panel:#FFFFFF;--panel2:#FBFDFB;--line:#DCE5DE;--text:#15221B;--muted:#5F6F64;--green:#2F6B41;--green2:#2F6B41;--soft:#E7EEE8;--card:#FFFFFF;--card2:#F7FAF7;--cardgrad1:#FFFFFF;--cardgrad2:#F2F6F3;--line2:#C9D5CC;--line3:#DCE5DE;--linesel:#8FD65E;--text2:#2C3A31;--muted2:#5F6F64;--chev:#9AA8A0;--onaccent:#15221B;--shadow:rgba(20,40,25,.10);
+--bg:#F3F7F4;--bg2:#E9EFEA;--panel:#FFFFFF;--panel2:#FBFDFB;--line:#DCE5DE;--text:#15221B;--muted:#5F6F64;--green:#2F6B41;--green2:#2F6B41;--soft:#E7EEE8;--card:#FFFFFF;--card2:#F7FAF7;--cardgrad1:#FFFFFF;--cardgrad2:#F2F6F3;--line2:#C9D5CC;--line3:#DCE5DE;--linesel:#8FD65E;--text2:#2C3A31;--muted2:#5F6F64;--chev:#6E7B73;--onaccent:#FFFFFF;--shadow:rgba(20,40,25,.10);
 /* radii */
 --r-card:16px;--r-major:22px;--r-player:26px;--r-pill:999px}
 html[data-theme='dark']{
@@ -24,6 +24,7 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 .stickcell img{max-width:100%;max-height:100%;object-fit:contain;display:block;-webkit-user-drag:none}
 .stickcell.locked img{filter:grayscale(1) brightness(.35) contrast(.7);opacity:.5}
 .stickcell.locked::after{content:'🔒';position:absolute;font-size:20px;opacity:.65}
+.stickcell .stick-myst{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;color:var(--muted);opacity:.7}
 .stickcell.earned{border-color:var(--lime)}
 .stickcell.on-card{box-shadow:inset 0 0 0 2px var(--lime)}
 @keyframes stickSlap{0%{transform:scale(1.8) rotate(-14deg);opacity:0}60%{transform:scale(.9) rotate(4deg);opacity:1}100%{transform:scale(1) rotate(var(--slap-rot,-5deg))}}
@@ -38,7 +39,7 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 .glassclose:hover{background:color-mix(in srgb,var(--panel) 78%,transparent)}
 .hero{padding:30px 0 15px}.kicker{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--green);font-weight:950}
 /* Kid-voice home hero: greeting + big "Your hockey today" + a tappable Today chip. */
-.hero-hey{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(26px,7vw,44px);line-height:1.05;letter-spacing:.005em;margin:8px 0 2px;color:var(--ink);white-space:nowrap}
+.hero-hey{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(26px,7vw,44px);line-height:1.05;letter-spacing:.005em;margin:8px 0 2px;color:var(--text);white-space:nowrap}
 .hero-hey .playername-inline{display:inline;margin:0;font-family:inherit;font-size:inherit;font-weight:inherit;letter-spacing:inherit;color:var(--green2);background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .hero-wave{display:inline-block}
 .hero-today{font-size:clamp(20px,5.5vw,28px);font-weight:900;color:var(--text);margin:0 0 8px}
@@ -221,10 +222,10 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .metric.on{border-color:var(--lime);box-shadow:inset 0 0 0 2px var(--lime)}
 .metric-label{font-size:13px;font-weight:800;color:var(--muted);white-space:nowrap}
 .metric-num{font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;font-size:26px;color:var(--text);line-height:1}
-.metric.on .metric-num{color:var(--ink)}
+.metric.on .metric-num{color:var(--text)}
 /* Leaderboard team view */
 .lb-teamzone{margin-top:12px;margin-bottom:32px}
-.lb-streak{font-family:'Archivo Black',system-ui,sans-serif;font-size:18px;color:var(--orange);margin:0 0 16px}
+.lb-streak{font-family:'Archivo Black',system-ui,sans-serif;font-size:18px;color:var(--text);margin:0 0 16px}
 .lb-goal-lab{display:inline-flex;align-items:center;gap:8px;font-weight:800;color:var(--muted);font-size:15px;text-transform:uppercase;letter-spacing:.03em}
 .lb-info{position:relative;display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--soft);color:var(--green2);font-size:13px;font-weight:900;border:0;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent}
 .lb-tip{position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%) translateY(4px);width:240px;white-space:normal;text-align:left;background:var(--ink);color:#fff;font-size:14px;font-weight:700;text-transform:none;letter-spacing:0;line-height:1.4;padding:11px 13px;border-radius:10px;opacity:0;visibility:hidden;transition:opacity .15s ease,transform .15s ease;pointer-events:none;z-index:5;box-shadow:0 8px 24px var(--shadow)}
@@ -247,7 +248,7 @@ button.row:active{background:var(--soft)}
 .pl-photo{width:64px;height:88px;object-fit:cover;border-radius:12px;background:var(--card2);flex:0 0 auto}
 .pl-name{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;line-height:1.05}
 .pl-pos{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
-.pl-streak{font-family:'Archivo Black',system-ui,sans-serif;font-size:18px;color:var(--orange);margin:28px 0 14px}
+.pl-streak{font-family:'Archivo Black',system-ui,sans-serif;font-size:18px;color:var(--text);margin:28px 0 14px}
 .pl-disc{margin:0 0 22px}
 .pl-disc-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:12px}
 .pl-disc-name{font-size:18px;font-weight:900}
@@ -300,7 +301,7 @@ button.row:active{background:var(--soft)}
 .pl-thwap.go{animation:plthwap .7s ease}
 @keyframes plthwap{0%{transform:translate(-50%,-50%) rotate(-8deg) scale(0);opacity:0}30%{transform:translate(-50%,-50%) rotate(-8deg) scale(1.2);opacity:1}100%{transform:translate(-50%,-50%) rotate(-8deg) scale(1);opacity:0}}
 @media (prefers-reduced-motion: reduce){.plflame,.pl-radar-poly,.pl-radar-poly.grow,.pl-radar-wrap svg circle,.pl-spoke,.pl-thwap.go,.pl-ringfill{animation:none;transition:none}.pl-spoke{stroke-dashoffset:0}}.row:last-child{border-bottom:0}.row.me{background:rgba(185,240,107,.18);box-shadow:inset 3px 0 0 var(--lime)}.row-you{display:inline-block;margin-left:7px;font-size:10px;font-weight:900;letter-spacing:.05em;color:#0f1712;background:var(--lime);border-radius:999px;padding:2px 7px;vertical-align:middle}.bar{height:6px;background:var(--soft);border-radius:99px;overflow:hidden}.fill{height:100%;background:var(--lime)}.score{font-weight:950;color:var(--green2)}.note{padding:14px 2px 0;margin-top:16px;border-top:1px solid var(--line);color:var(--muted2);font-size:13px;line-height:1.5}.footer{text-align:center;color:var(--chev);font-size:11px;padding:28px 0}
-.footer{display:flex;align-items:center;justify-content:space-between;gap:14px;color:var(--muted);font-size:12px;padding:28px 4px}.footer .slogan{font-weight:800;letter-spacing:.01em}.trademark{text-align:center;color:var(--chev);font-size:11px;font-weight:700;letter-spacing:.02em;padding:0 4px 24px}.themetoggle{display:inline-flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit}.themetoggle:hover{border-color:var(--line2)}.themetoggle .ttico{font-size:14px;line-height:1}</style><script>try{if(localStorage.getItem('thwapTheme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script></head><body><div class='app'>
+.footer{display:flex;align-items:center;justify-content:space-between;gap:14px;color:var(--muted);font-size:12px;padding:28px 4px}.footer .slogan{font-weight:800;letter-spacing:.01em}.trademark{text-align:center;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.02em;padding:0 4px 24px}.themetoggle{display:inline-flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit}.themetoggle:hover{border-color:var(--line2)}.themetoggle .ttico{font-size:14px;line-height:1}</style><script>try{if(localStorage.getItem('thwapTheme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script></head><body><div class='app'>
 
 <section id='dryland' class='page'>
 <a class='glassclose' href='#home' aria-label='Close'>✕</a>
@@ -362,7 +363,7 @@ button.row:active{background:var(--soft)}
 
 <section id='stickers' class='page'>
 <a class='glassclose' href='#home' aria-label='Close'>✕</a>
-<div class='hero'><div class='kicker'>Rangers 10U</div><h1>Sticker Book</h1><p>Earn stickers by showing up. Tap one to stick it on your card.</p></div>
+<div class='hero'><div class='kicker'>Rangers 10U</div><h1>Sticker Book</h1><p>Earn stickers by training. Every drill you finish unlocks one. Tap an earned sticker to put it on your card.</p></div>
 <div class='stickcount' id='stickCount'></div>
 <div class='stickgrid' id='stickGrid'></div>
 </section>
@@ -393,17 +394,19 @@ button.row:active{background:var(--soft)}
 </div><script>(function(){
 /* Player gate: tapping a drill card asks who you are, then continues to the drill. */
 var PLAYER='bfPlayer';
+/* Real per-player identity: the chosen player is saved in localStorage on THIS device.
+   Until a kid picks, we show a friendly default and nudge them to choose. */
+function savedPlayer(){ try{ return localStorage.getItem(PLAYER)||''; }catch(e){ return ''; } }
+function firstNameOf(n){ return String(n||'').trim().split(/\s+/)[0]||''; }
 function showHomePlayer(){
   var el=document.getElementById('homePlayer'); if(!el)return;
-  /* DEMO phase: pin to Lewie (matches the leaderboard highlight). Real per-account
-     player selection returns in Phase 4; until then ignore any stale saved value. */
-  var saved='Lewie MacDuffie';
-  var parts=saved.trim().split(/\s+/);
-  el.textContent=parts[0];  /* kid-voice greeting uses first name only ("Hey Lewie") */
+  var saved=savedPlayer();
+  if(saved){ el.textContent=firstNameOf(saved); el.classList.remove('needpick'); }
+  else { el.textContent='there'; el.classList.add('needpick'); }  /* "Hey there" until they pick */
 }
 function pickPlayer(name,ev,el){
   try{localStorage.setItem(PLAYER,name);}catch(e){}
-  var go=function(){ showHomePlayer(); location.hash='#home'; };
+  var go=function(){ location.hash='#home'; location.reload(); };  /* reload so every view re-reads the chosen player */
   var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(ev){ev.preventDefault();}
   if(el&&!reduce){el.classList.add('tapped');setTimeout(go,160);}else{go();}
@@ -607,7 +610,7 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#dryland') 
 <script>(function(){
 /* ---- Leaderboard: DEMO DATA (placeholder, not real scores). Replace with real team data in Phase 4. ---- */
 var DATA={ week:[{n:'Alder',stick:3,shoot:2,dryland:2},{n:'Joziah',stick:2,shoot:2,dryland:2},{n:'Lewie',stick:2,shoot:1,dryland:2},{n:'Maddux',stick:2,shoot:2,dryland:1},{n:'Greyson',stick:1,shoot:1,dryland:2},{n:'Dawson',stick:2,shoot:1,dryland:1},{n:'Evan',stick:1,shoot:2,dryland:1},{n:'Oliver',stick:1,shoot:1,dryland:1},{n:'Teddy',stick:1,shoot:1,dryland:1},{n:'Brooklyn',stick:1,shoot:0,dryland:2},{n:'Dominic',stick:1,shoot:1,dryland:0},{n:'Issac',stick:0,shoot:1,dryland:1},{n:'Liam',stick:1,shoot:0,dryland:1},{n:'Eugene',stick:0,shoot:0,dryland:1},{n:'William',stick:1,shoot:0,dryland:0},{n:'Johnny',stick:0,shoot:0,dryland:0}], all:[{n:'Alder',stick:14,shoot:11,dryland:12},{n:'Joziah',stick:12,shoot:10,dryland:11},{n:'Lewie',stick:11,shoot:7,dryland:13},{n:'Maddux',stick:10,shoot:12,dryland:8},{n:'Greyson',stick:8,shoot:6,dryland:11},{n:'Dawson',stick:9,shoot:7,dryland:6},{n:'Evan',stick:7,shoot:9,dryland:6},{n:'Oliver',stick:6,shoot:5,dryland:7},{n:'Teddy',stick:5,shoot:6,dryland:6},{n:'Brooklyn',stick:6,shoot:3,dryland:8},{n:'Dominic',stick:5,shoot:5,dryland:3},{n:'Issac',stick:3,shoot:6,dryland:4},{n:'Liam',stick:5,shoot:2,dryland:5},{n:'Eugene',stick:2,shoot:3,dryland:4},{n:'William',stick:4,shoot:2,dryland:2},{n:'Johnny',stick:1,shoot:1,dryland:2}] };
-var ME='Lewie';
+var ME=(function(){try{var s=localStorage.getItem('bfPlayer')||'Lewie';return s.trim().split(/\s+/)[0];}catch(e){return 'Lewie';}})();
 var tf='week', disc='all';
 var board=document.getElementById('board');
 var scope=document.getElementById('boardscope');
@@ -762,13 +765,15 @@ var THISWEEK={
 };
 
 function currentPlayer(){
-  /* DEMO phase: pin to Lewie (real selection returns in Phase 4) */
-  var saved='Lewie MacDuffie';
-  /* known demo player facts (roster cards no longer expose inner num/pos nodes) */
-  var MAP={'lewie':{num:'72',pos:'D'}};
+  /* Real identity: the player chosen on this device (bfPlayer). Falls back to a
+     neutral prompt state if none picked yet. Full roster facts live in ROSTER_INFO. */
+  var saved='';
+  try{ saved=localStorage.getItem('bfPlayer')||''; }catch(e){}
+  var ROSTER_INFO={alder:{num:'71',pos:'F'},brooklyn:{num:'92',pos:'D'},dawson:{num:'19',pos:'D'},dominic:{num:'98',pos:'F'},eugene:{num:'3',pos:'D'},evan:{num:'13',pos:'F'},greyson:{num:'32',pos:'D'},johnny:{num:'1',pos:'G'},joziah:{num:'59',pos:'F'},lewie:{num:'72',pos:'D'},liam:{num:'29',pos:'D'},maddux:{num:'18',pos:'F'},oliver:{num:'90',pos:'F'},teddy:{num:'11',pos:'F'},william:{num:'16',pos:'F'},issac:{num:'53',pos:'F'}};
+  if(!saved) saved='Lewie';  /* neutral default so the card still renders before a pick */
   var parts=saved.trim().split(/\s+/);
   var key=parts[0].toLowerCase();
-  var info=MAP[key]||{num:'',pos:'F'};
+  var info=ROSTER_INFO[key]||{num:'',pos:'F'};
   var display=parts.length>1?parts[0]+' '+parts[parts.length-1].charAt(0)+'.':parts[0];
   return {name:saved, display:display, first:parts[0].toUpperCase(), num:info.num, pos:info.pos, photo:''};
 }
@@ -877,6 +882,9 @@ function paint(){
   back.style.setProperty('--sheen', 1-sheen);
 }
 function open(){
+  /* If no player is chosen yet on this device, send them to pick one first. */
+  var picked=''; try{ picked=localStorage.getItem('bfPlayer')||''; }catch(e){}
+  if(!picked){ location.hash='#roster'; return; }
   buildFaces(); rx=0; ry=0; flipped=false; paint();
   overlay.hidden=false;
   requestAnimationFrame(function(){ overlay.classList.add('show'); if(!reduce)card.classList.add('intro'); });
@@ -972,8 +980,12 @@ var chosen=[];
 try{chosen=JSON.parse(localStorage.getItem(CHOSEN_KEY)||'[]');}catch(e){chosen=[];}
 
 fetch('stickers/stickers.json').then(function(r){return r.json();}).then(function(files){
-  /* DEMO: first 22 are "earned", rest locked. Real unlock rules come in Phase 4. */
-  var EARNED=22;
+  /* Real earn: a sticker unlocks per drill completion this player has done.
+     Brand-new player = 0 earned (honest). Read the counter directly so we do not
+     depend on script load order. */
+  function playerId(){ try{ return (localStorage.getItem('bfPlayer')||'guest').trim().split(/\s+/)[0].toLowerCase(); }catch(e){ return 'guest'; } }
+  function earnedCount(){ try{ return parseInt(localStorage.getItem('thwapEarned:'+playerId())||'0',10)||0; }catch(e){ return 0; } }
+  var EARNED=Math.min(earnedCount(), files.length);
   var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   countEl.textContent=EARNED+' of '+files.length+' earned';
   files.forEach(function(f,i){
@@ -981,9 +993,17 @@ fetch('stickers/stickers.json').then(function(r){return r.json();}).then(functio
     var cell=document.createElement('button');
     cell.type='button';
     cell.className='stickcell '+(earned?'earned':'locked');
-    if(chosen.indexOf(f)>=0) cell.classList.add('on-card');
+    if(earned && chosen.indexOf(f)>=0) cell.classList.add('on-card');
     cell.setAttribute('data-file',f);
-    cell.innerHTML="<img src='stickers/"+f+"' alt='"+(earned?'sticker':'locked sticker')+"'>";
+    if(earned){
+      cell.innerHTML="<img src='stickers/"+f+"' alt='sticker'>";
+      cell.setAttribute('aria-label','Earned sticker. Tap to put it on your card.');
+    } else {
+      /* mystery: silhouette + a hint, no image so it reads as "not yet" */
+      cell.innerHTML="<span class='stick-myst'>?</span>";
+      cell.setAttribute('aria-label','Locked sticker. Keep training to unlock.');
+      cell.setAttribute('title','Keep training to unlock');
+    }
     if(earned){
       cell.addEventListener('click',function(){
         var idx=chosen.indexOf(f);
@@ -991,10 +1011,9 @@ fetch('stickers/stickers.json').then(function(r){return r.json();}).then(functio
         else{
           if(chosen.length>=3){ chosen.shift(); }
           chosen.push(f); cell.classList.add('on-card');
-          if(!reduce){ var img=cell.querySelector('img'); img.style.setProperty('--slap-rot',(Math.random()*10-5)+'deg'); img.classList.remove('slapped'); void img.offsetWidth; img.classList.add('slapped'); }
+          if(!reduce){ var img=cell.querySelector('img'); if(img){img.style.setProperty('--slap-rot',(Math.random()*10-5)+'deg'); img.classList.remove('slapped'); void img.offsetWidth; img.classList.add('slapped');} }
         }
         try{localStorage.setItem(CHOSEN_KEY,JSON.stringify(chosen));}catch(e){}
-        /* refresh on-card marks */
         grid.querySelectorAll('.stickcell').forEach(function(c){
           c.classList.toggle('on-card', chosen.indexOf(c.getAttribute('data-file'))>=0);
         });
@@ -1384,19 +1403,54 @@ document.addEventListener('click',function(e){
    real cues/steps/videos drop in when provided (no invented content). */
 function esc(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 function dayIndex(){var d=new Date();var base=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000);try{var m=location.search.match(/[?&]day=([^&]*)/);if(m){var raw=decodeURIComponent(m[1]).trim();if(/^[+-]/.test(m[1])||/^[+-]/.test(raw)){var o=parseInt(m[1].replace(/^ /,'+'),10);if(isNaN(o))o=parseInt(raw,10);if(!isNaN(o))return base+o;}var n=parseInt(raw,10);if(!isNaN(n))return n;}}catch(e){}return base;}
-/* Shooting: 3 rotating days, 2-3 goals each, sized for 10U-12U. Goal NAMES only
-   (short shooting focuses); full cues/steps/videos are real coaching content that
-   drops in when provided, so bodies stay "coming soon" (no invented content). */
+/* Shooting: 4 rotating days, 5 drills each, for 10U-12U. Real coaching content
+   supplied by the coach (verbatim). The four days are four problems to solve:
+   shoot while moving, use the backhand, finish in tight, handle game-like pucks. */
 var SHOOT_DAYS=[
-  [ {emoji:'🎯', name:'Wrist Shots: hit the net'},
-    {emoji:'🥅', name:'Pick-a-Corner'},
-    {emoji:'🔄', name:'Backhand shots'} ],
-  [ {emoji:'⚡', name:'Snap Shots'},
-    {emoji:'⏱️', name:'Quick Release'},
-    {emoji:'🎯', name:'Shoot in stride'} ],
-  [ {emoji:'🏒', name:'One-timers'},
-    {emoji:'🥅', name:'Rebounds and tips'},
-    {emoji:'🎯', name:'Far pad, far corner'} ]
+  /* Day 1: Shooting While Moving */
+  [ {emoji:'🏃', name:'Moving Warm-Up', theme:'Feet moving', cue:'Feet moving. Head up. Shoot.',
+     steps:['Start 15-20 feet from the net with a puck.','Begin moving toward the net.','Stickhandle while your feet keep moving.','Pick a corner.','Shoot without stopping your feet.','Grab another puck and repeat from a different angle.']},
+    {emoji:'📐', name:'Change the Angle', theme:'Create space', cue:'Move it. Shoot it.',
+     steps:['Place a cone or obstacle between you and the net.','Start with the puck in front of the obstacle.','Approach with your feet moving.','Pull or push the puck around the obstacle.','As soon as the puck clears it, shoot.','Alternate changing the angle to both sides.']},
+    {emoji:'🎯', name:'Random Target', theme:'Read and react', cue:'See it. Hit it.',
+     steps:['Create four target areas on the net.','Start moving with the puck.','Keep your head up.','Have Thwap, a parent, or partner call a target.','Find the target.','Shoot without stopping.','Reset and get a new random target.']},
+    {emoji:'⏱️', name:'Under Two Seconds', theme:'Quick release', cue:'Catch. Find. Fire.',
+     steps:['Start in a ready position with your stick on the ice.','Have someone pass you the puck or use a rebounder.','Receive the pass.','Control it.','Pick your target.','Release the shot in under two seconds.','Reset and repeat from different positions.']},
+    {emoji:'🔁', name:'Ten Different Goals', theme:'Change release', cue:"Don't repeat it.",
+     steps:['Start with a puck outside the net.','Choose a way to attack.','Move before shooting.','Score.','Change something on the next attempt: angle, feet, release point, forehand, backhand, pull or push.','Keep going until you score 10 different goals.']} ],
+  /* Day 2: Backhand */
+  [ {emoji:'🔄', name:'Backhand Basics', theme:'Feel blade', cue:'Cup it. Sweep it.',
+     steps:['Stand 8-10 feet from the net.','Put the puck on your backhand.','Cup the puck with the blade.','Bring your hands slightly away from your body.','Transfer your weight toward the net.','Sweep through the puck.','Finish with the blade pointing toward your target.']},
+    {emoji:'🥅', name:'Backhand Accuracy', theme:'Pick corners', cue:'Eyes first. Puck second.',
+     steps:['Start close to the net.','Put the puck on your backhand.','Look at your target before shooting.','Shoot for one corner.','Reset.','Choose a different target.','Work around all four target areas.']},
+    {emoji:'🏃', name:'Moving Backhand', theme:'Backhand moving', cue:'Keep moving.',
+     steps:['Start 15 feet from the net.','Carry the puck toward the net.','Keep your feet moving.','Move the puck to your backhand.','Get your hands away from your body.','Shoot without stopping.','Repeat from different approach angles.']},
+    {emoji:'↔️', name:'Forehand to Backhand', theme:'Change sides', cue:'Across. Backhand. Go.',
+     steps:['Approach with the puck on your forehand.','Keep your head and chest facing the net.','Pull the puck across your body.','Get it onto your backhand.','Do not add another unnecessary stickhandle.','Shoot immediately.','Try it from both straight and angled approaches.']},
+    {emoji:'🔂', name:'Backhand Only', theme:'Finish backhand', cue:'Find the backhand.',
+     steps:['Start with the puck on either side.','Move toward the net.','Stickhandle however you want.','Create an opening.','Move the puck to your backhand.','The goal only counts if the final shot is a backhand.','Try to score 10 backhand goals.']} ],
+  /* Day 3: In Close */
+  [ {emoji:'⚡', name:'Quick Hands', theme:'Tight space', cue:'Quick hands. Quick shot.',
+     steps:['Start a few feet from the net.','Keep the puck close to your body.','Make two or three quick stickhandles.','Move the puck outside your feet.','Shoot immediately.','Reset on the opposite side.']},
+    {emoji:'🧤', name:'Catch and Release', theme:'One touch', cue:'Catch. Fire.',
+     steps:['Start near the net with your stick ready.','Receive a pass from the side.','Cushion the puck onto your blade.','Do not add extra stickhandles.','Shoot immediately.','Change where the passes come from.']},
+    {emoji:'↔️', name:'Pull Across', theme:'Move goalie', cue:'Move it across.',
+     steps:['Start a few feet from the net.','Approach with the puck on one side.','Sell the shot from that position.','Pull the puck across your body.','Keep your hands away from your feet.','Shoot as soon as you have created the new angle.','Alternate directions.']},
+    {emoji:'🔀', name:'Forehand / Backhand Finish', theme:'Two options', cue:'Read it. Finish.',
+     steps:['Start with the puck in front of you.','Move toward the net.','Keep your head up.','At the last moment, choose forehand or backhand.','Move the puck to that side.','Finish quickly.','Alternate your decisions rather than always choosing your favorite.']},
+    {emoji:'🔁', name:'Rebound Finish', theme:'Second chance', cue:'Shot. Find it. Finish.',
+     steps:['Shoot low enough to create a rebound.','Do not watch your shot.','Immediately move toward the net.','Find the rebound.','Get your stick on it.','Finish with whichever side is available.','Reset only after the second attempt.']} ],
+  /* Day 4: Puck Skills + Shooting */
+  [ {emoji:'🔗', name:'Carry / Pass / Shoot', theme:'Pass and move', cue:'Pass and MOVE.',
+     steps:['Start with the puck away from the net.','Carry it forward with your feet moving.','Pass to a parent, partner, wall, or rebounder.','Move immediately after passing.','Present your stick for the return pass.','Receive the puck.','Get the shot off quickly.','Repeat from different angles.']},
+    {emoji:'🌀', name:'Bad Puck Challenge', theme:'Solve chaos', cue:'Find it. Fix it. Fire.',
+     steps:['Have a parent or partner send you an imperfect puck.','It can bounce, roll, arrive in your feet, be too far ahead, or come slightly behind you.','Find the puck.','Get your blade on it.','Control it as quickly as possible.','Shoot without trying to make everything perfect.','Get a different kind of bad puck each time.']},
+    {emoji:'📐', name:'Angle Attack', theme:'Escape obstacle', cue:'Attack. Escape. Shoot.',
+     steps:['Place a cone between you and the net.','Carry the puck toward it.','Wait until you are close to the cone.','Move the puck quickly to one side.','Move your body with it.','Shoot from the new lane.','Alternate sides.']},
+    {emoji:'🎯', name:'Random Target', theme:'React fast', cue:'See it. Shoot it.',
+     steps:['Start with a puck.','Begin moving toward the net.','Thwap randomly shows a target.','Find the target with your eyes.','Adjust the puck if necessary.','Shoot quickly.','Do not stop your feet just to hit the target.']},
+    {emoji:'⏱️', name:'Quick Release Challenge', theme:'Beat clock', cue:'Ready. Receive. Release.',
+     steps:['Start without the puck on your blade.','Receive a pass.','Control it.','Find the net.','Shoot in under two seconds.','A shot only counts if it is controlled and on target.','Try to string together 5 good quick releases.']} ]
 ];
 function shootDayI(){ return ((dayIndex()%SHOOT_DAYS.length)+SHOOT_DAYS.length)%SHOOT_DAYS.length; }
 var SHOOT=SHOOT_DAYS[shootDayI()];
@@ -1412,12 +1466,14 @@ function render(){
   SHOOT.forEach(function(dr,i){
     var done=prog[i]?' done':'';
     var doneLabel=prog[i]?'Done ✓':'Mark done';
+    var steps=(dr.steps&&dr.steps.length)?"<ol>"+dr.steps.map(function(s){return "<li>"+esc(s)+"</li>";}).join('')+"</ol>":'';
+    var cue=dr.cue?"<p><b>Coach cue:</b> "+esc(dr.cue)+"</p>":'';
     list.insertAdjacentHTML('beforeend',
       "<div class='exrow"+done+"' data-i='"+i+"'>"+
         "<div class='exhead'><div class='exem'>"+dr.emoji+"</div>"+
-          "<div><h3>"+esc(dr.name)+"<span class='exbadge'>Done</span></h3><div class='exdose'>Shooting</div></div>"+
+          "<div><h3>"+esc(dr.name)+"<span class='exbadge'>Done</span></h3><div class='exdose'>"+esc(dr.theme||'Shooting')+"</div></div>"+
           "<div class='exchev'>›</div></div>"+
-        "<div class='exbody'><p style='color:var(--muted)'>Full drill details are coming soon.</p>"+
+        "<div class='exbody'>"+steps+cue+
           "<button type='button' class='exdone'>"+doneLabel+"</button></div>"+
       "</div>");
   });
@@ -1448,7 +1504,7 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#shoot') re
    on the shared board via /api/done. Gated by the player's PIN (jersey number + season
    year), asked once per browser session and cached. Fails silently if the API is not
    reachable yet (e.g. before Vercel KV is provisioned), so the app keeps working. */
-var PLAYER='Lewie';          /* demo: pinned to Lewie. Phase 4: the chosen player. */
+var PLAYER=(function(){try{var s=localStorage.getItem('bfPlayer')||'Lewie';return s.trim().split(/\s+/)[0];}catch(e){return 'Lewie';}})();  /* the chosen player on this device */
 function pinKey(){ return 'thwapPin:'+PLAYER.toLowerCase(); }
 function getPin(){
   var k=pinKey(), v=null;
@@ -1512,16 +1568,22 @@ var DISCS=['stick','shoot','dryland'];
 function doneKey(disc){ return 'thwapDone|'+todayKey()+'|'+disc; }
 function celebratedKey(){ return 'thwapTodayCelebrated|'+todayKey(); }
 function isDone(disc){ try{ return localStorage.getItem(doneKey(disc))==='1'; }catch(e){ return false; } }
+/* Per-player cumulative count of real drill completions. Stickers are EARNED from
+   this (honest: a brand-new player has 0). Shared globally so the Sticker Book reads it. */
+window.thwapPlayerId=function(){ try{ return (localStorage.getItem('bfPlayer')||'guest').trim().split(/\s+/)[0].toLowerCase(); }catch(e){ return 'guest'; } };
+window.thwapEarnedKey=function(){ return 'thwapEarned:'+window.thwapPlayerId(); };
+window.thwapGetEarned=function(){ try{ return parseInt(localStorage.getItem(window.thwapEarnedKey())||'0',10)||0; }catch(e){ return 0; } };
+function bumpEarned(){ try{ localStorage.setItem(window.thwapEarnedKey(), String(window.thwapGetEarned()+1)); }catch(e){} }
 window.thwapStampToday=function(disc,done){
   if(DISCS.indexOf(disc)<0) return;
   try{ if(done){ localStorage.setItem(doneKey(disc),'1'); } else { localStorage.removeItem(doneKey(disc)); } }catch(e){}
-  if(done) window.thwapCheckToday();
+  if(done){ bumpEarned(); window.thwapCheckToday(); }  /* each completion unlocks another sticker */
 };
 window.thwapCheckToday=function(){
   if(!DISCS.every(isDone)) return;                 /* not all three yet */
   var ck=celebratedKey(); try{ if(localStorage.getItem(ck)==='1') return; }catch(e){}  /* once per day */
   try{ localStorage.setItem(ck,'1'); }catch(e){}
-  var name='Lewie'; /* demo pin; Phase 4: the chosen player */
+  var pid=window.thwapPlayerId(); var name=pid? pid.charAt(0).toUpperCase()+pid.slice(1) : 'friend';
   var el=document.getElementById('todayDone'), sub=document.getElementById('todayDoneSub');
   if(sub) sub.textContent='Nice work, '+name+'.';
   if(el) el.hidden=false;
