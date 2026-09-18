@@ -103,6 +103,9 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 }
 .reset-label:hover{background:var(--soft)}
 .reset-label + .create-label{margin-left:0}
+/* Reset is disabled until at least one goal is picked */
+.reset-label{opacity:.45;pointer-events:none}
+.app:has(.choice-input:checked) .reset-label{opacity:1;pointer-events:auto}
 
 /* Pure CSS count */
 .app:has(.choice-input:checked) .selection-count::before{content:"1"}
@@ -128,6 +131,13 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 .reflect h2{font-size:24px;margin:0 0 8px}
 .reflect p{color:var(--muted);font-size:15px;line-height:1.55;margin:0;max-width:690px}
 .back-label{display:inline-block;margin-top:26px;color:var(--green2);font-weight:850;font-size:14px;cursor:pointer}
+/* Final-view nav: floating glass Back (matches the rest of the app) + footer-right New game goals */
+.glassback{display:none;position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:max(16px, calc(50vw - 534px));z-index:50;grid-auto-flow:column;gap:2px;place-items:center;height:44px;padding:0 16px;border-radius:999px;font-size:16px;line-height:1;font-weight:800;color:var(--text);cursor:pointer;text-decoration:none;background:var(--panel);border:1px solid var(--line);box-shadow:0 6px 20px var(--shadow)}
+.glassback:hover{background:var(--soft)}
+#finalMode:checked ~ .glassback{display:inline-grid}
+.fv-foot{margin-top:30px;padding-top:20px;border-top:1px solid var(--line);display:flex;justify-content:flex-end}
+.fv-new{min-height:44px;padding:0 18px;border-radius:14px;background:var(--panel);color:var(--text);border:1px solid var(--line2);font-family:inherit;font-size:15px;font-weight:900;cursor:pointer;display:inline-flex;align-items:center}
+.fv-new:hover{background:var(--soft)}
 
 #finalMode:checked ~ .builder{display:none}
 #finalMode:checked ~ .final-view{display:block}
@@ -793,13 +803,14 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 <body>
 <div class="app">
   <a class="glassclose" href="index.html" aria-label="Close" onclick="if(history.length>1){history.back();return false;}">✕</a>
+  <label for="finalMode" class="glassback" aria-label="Back to picking goals">Back</label>
   <input type="checkbox" id="finalMode" class="final-mode"><input type="checkbox" id="g1" class="choice-input"><input type="checkbox" id="g2" class="choice-input"><input type="checkbox" id="g3" class="choice-input"><input type="checkbox" id="g4" class="choice-input"><input type="checkbox" id="g5" class="choice-input"><input type="checkbox" id="g6" class="choice-input"><input type="checkbox" id="g7" class="choice-input"><input type="checkbox" id="g8" class="choice-input"><input type="checkbox" id="g9" class="choice-input"><input type="checkbox" id="g10" class="choice-input"><input type="checkbox" id="g11" class="choice-input"><input type="checkbox" id="g12" class="choice-input"><input type="checkbox" id="g13" class="choice-input"><input type="checkbox" id="g14" class="choice-input"><input type="checkbox" id="g15" class="choice-input"><input type="checkbox" id="g16" class="choice-input"><input type="checkbox" id="g17" class="choice-input"><input type="checkbox" id="g18" class="choice-input"><input type="checkbox" id="g19" class="choice-input"><input type="checkbox" id="g20" class="choice-input"><input type="checkbox" id="g21" class="choice-input"><input type="checkbox" id="g22" class="choice-input"><input type="checkbox" id="g23" class="choice-input"><input type="checkbox" id="g24" class="choice-input"><input type="checkbox" id="g25" class="choice-input"><input type="checkbox" id="g26" class="choice-input"><input type="checkbox" id="g27" class="choice-input"><input type="checkbox" id="g28" class="choice-input"><input type="checkbox" id="g29" class="choice-input"><input type="checkbox" id="g30" class="choice-input"><input type="checkbox" id="g31" class="choice-input"><input type="checkbox" id="g32" class="choice-input"><input type="checkbox" id="g33" class="choice-input"><input type="checkbox" id="g34" class="choice-input"><input type="checkbox" id="g35" class="choice-input"><input type="checkbox" id="g36" class="choice-input"><input type="checkbox" id="g37" class="choice-input"><input type="checkbox" id="g38" class="choice-input"><input type="checkbox" id="g39" class="choice-input"><input type="checkbox" id="g40" class="choice-input">
 
   <div class="builder">
     <header class="header">
       <div class="kicker">Game Day Goals</div>
-      <h1>Choose four.</h1>
-      <p>Pick the four things the player wants to focus on today. Once all four are selected, create his game goals.</p>
+      <h1>Today’s Game Plan</h1>
+      <p>Pick 4 for your game plan.</p>
     </header>
 
     <section class="section"><div class="section-head"><h2>See &amp; Think the Game</h2><p>Read the play before the puck arrives.</p></div><div class="grid">
@@ -926,7 +937,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
   <div class="tick">✓</div>
 </label>
 </div></section>
-<section class="section"><div class="section-head"><h2>Modern D · Retrieval &amp; Breakout</h2><p>Keep possession and beat pressure.</p></div><div class="grid">
+<section class="section"><div class="section-head"><h2>Modern D: Retrieval &amp; Breakout</h2><p>Keep possession and beat pressure.</p></div><div class="grid">
 
 <label class="goal goal-13" for="g13">
   <div class="emoji">↩️</div>
@@ -978,7 +989,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
   <div class="tick">✓</div>
 </label>
 </div></section>
-<section class="section"><div class="section-head"><h2>Modern D · Activate</h2><p>Your play isn&#x27;t over after the breakout pass.</p></div><div class="grid">
+<section class="section"><div class="section-head"><h2>Modern D: Activate</h2><p>Your play isn&#x27;t over after the breakout pass.</p></div><div class="grid">
 
 <label class="goal goal-18" for="g18">
   <div class="emoji">🚀</div>
@@ -1229,8 +1240,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
   </div>
 
   <div class="final-view">
-    <div class="kicker">Game Plan</div>
-    <h1>Today’s four.</h1>
+    <h1><span id="planName">Lewie</span>’s Game Plan</h1>
     <p class="final-intro">These are the four things to notice, try, and compete on today. No grading. Just play, then talk about what happened.</p>
 
     <div class="final-list">
@@ -1601,15 +1611,16 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
       <p>Notice something from the ice that Dad probably couldn’t see from the stands. After the game, explain what you saw, why it mattered, and how it changed what you did.</p>
     </section>
 
-    <label for="finalMode" class="back-label">← Pick different goals</label>
+    <div class="fv-foot"><button type="button" id="newGameGoals" class="fv-new">New game goals</button></div>
   </div>
 </div>
 <script>
 (function(){
   var KEY = 'thwapGameGoals';
+  var FKEY = 'thwapGameGoalsFinal';   // remember whether the Game Plan view is open
   var LIMIT = 4;
-  // The 40 goal checkboxes, in document order (index 0 => #g1).
   var boxes = Array.prototype.slice.call(document.querySelectorAll('.choice-input'));
+  var finalMode = document.getElementById('finalMode');
 
   function save(){
     try{
@@ -1618,6 +1629,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
       localStorage.setItem(KEY, JSON.stringify(picked));
     }catch(e){}
   }
+  function saveFinal(){ try{ localStorage.setItem(FKEY, finalMode && finalMode.checked ? '1':'0'); }catch(e){} }
 
   function restore(){
     var saved = null;
@@ -1625,31 +1637,46 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
     if(!Array.isArray(saved)) saved = [];
     var count = 0;
     for(var i=0;i<saved.length;i++){
-      if(count >= LIMIT) break;               // preserve the 4-goal limit on restore
+      if(count >= LIMIT) break;
       var el = document.getElementById(saved[i]);
-      if(el && el.classList.contains('choice-input') && !el.checked){
-        el.checked = true;                     // CSS re-applies the selected visual state
-        count++;
-      }
+      if(el && el.classList.contains('choice-input') && !el.checked){ el.checked = true; count++; }
     }
+    /* Come back to the Game Plan if it was open and four goals are still picked. */
+    var wantFinal = false; try{ wantFinal = localStorage.getItem(FKEY) === '1'; }catch(e){}
+    if(finalMode && wantFinal && count >= LIMIT) finalMode.checked = true;
   }
 
-  // Save whenever any goal selection changes.
-  for(var i=0;i<boxes.length;i++){
-    boxes[i].addEventListener('change', save);
+  /* Show the chosen player's first name on the Game Plan. */
+  function setName(){
+    var el = document.getElementById('planName'); if(!el) return;
+    var n = 'Lewie';
+    try{ n = (localStorage.getItem('bfPlayer') || 'Lewie').trim().split(/\s+/)[0]; }catch(e){}
+    el.textContent = n || 'Lewie';
   }
 
-  // Reset: clear the saved selection and every on-screen selected state.
+  for(var i=0;i<boxes.length;i++){ boxes[i].addEventListener('change', save); }
+  if(finalMode) finalMode.addEventListener('change', saveFinal);
+
+  /* Reset (on the grid): clear picks and saved state. */
   var reset = document.getElementById('resetGoals');
   if(reset){
     reset.addEventListener('click', function(){
       for(var j=0;j<boxes.length;j++){ boxes[j].checked = false; }
-      var fm = document.getElementById('finalMode');
-      if(fm) fm.checked = false;              // leave the final view if it is open
-      try{ localStorage.removeItem(KEY); }catch(e){}
+      if(finalMode) finalMode.checked = false;
+      try{ localStorage.removeItem(KEY); localStorage.removeItem(FKEY); }catch(e){}
+    });
+  }
+  /* New game goals (on the Game Plan): clear everything and return to the grid. */
+  var ng = document.getElementById('newGameGoals');
+  if(ng){
+    ng.addEventListener('click', function(){
+      for(var j=0;j<boxes.length;j++){ boxes[j].checked = false; }
+      if(finalMode) finalMode.checked = false;
+      try{ localStorage.removeItem(KEY); localStorage.removeItem(FKEY); }catch(e){}
     });
   }
 
+  setName();
   restore();
 })();
 </script>
