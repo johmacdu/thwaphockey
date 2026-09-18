@@ -52,6 +52,8 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
   display:flex;
   align-items:center;
 }
+/* Footer appears only after the first goal is picked */
+.app:not(:has(.choice-input:checked)) .actionbar{display:none}
 .action-inner{
   width:100%;
   max-width:1068px;
