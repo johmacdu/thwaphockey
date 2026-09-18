@@ -148,8 +148,20 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .playername{font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;letter-spacing:.01em;font-size:34px;line-height:1.1;color:var(--ink);margin:2px 0 8px;display:block;background:none;border:0;padding:0;text-align:left;cursor:pointer;text-decoration:none;-webkit-tap-highlight-color:transparent}
 /* ---- Flippable player card overlay ---- */
 .cardoverlay{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:rgba(9,15,11,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;transition:opacity .2s ease;padding:20px}
-.cardoverlay.show{opacity:1}
-.cardoverlay[hidden]{display:none}
+.cardoverlay.show{opacity:1}.cardoverlay[hidden]{display:none}
+/* Parent email-OTP gate modal (persists across tab switches, unlike prompt). */
+.pgate{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(9,15,11,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;transition:opacity .2s ease}
+.pgate.show{opacity:1}
+.pgate-box{position:relative;width:100%;max-width:360px;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:24px 20px;box-shadow:0 18px 50px rgba(0,0,0,.5)}
+.pgate-x{position:absolute;top:10px;right:12px;width:34px;height:34px;border:0;border-radius:50%;background:var(--soft);color:var(--text);font-size:18px;cursor:pointer}
+.pgate-h{margin:0 0 6px;font-family:'Archivo Black',system-ui,sans-serif;font-size:20px;color:var(--text)}
+.pgate-p{margin:0 0 14px;font-size:14px;color:var(--muted);line-height:1.4}
+.pgate-in{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:12px;border:1px solid var(--line2);background:var(--card);color:var(--text);font-family:inherit;font-size:16px;margin-bottom:12px}
+.pgate-go{width:100%;padding:13px;border:0;border-radius:12px;background:var(--green);color:var(--onaccent);font-family:'Archivo Black',system-ui,sans-serif;font-size:15px;cursor:pointer}
+.pgate-go:active{transform:scale(.98)}
+.pgate-link{display:block;width:100%;margin-top:10px;background:none;border:0;color:var(--green2);font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;text-align:center}
+.pgate-msg{margin-top:10px;font-size:13px;color:var(--muted);min-height:18px;text-align:center}
+@media (prefers-reduced-motion: reduce){.pgate{transition:none}}
 .cardclose{position:absolute;top:16px;right:16px;width:44px;height:44px;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .cardscene{perspective:1400px;width:min(320px,86vw);display:flex;flex-direction:column;align-items:center;gap:16px}
 .card3d{position:relative;width:100%;aspect-ratio:5/7;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.7,.2,1);will-change:transform;touch-action:none;cursor:grab}
@@ -1916,23 +1928,72 @@ function uploadToServer(playerId, slug, dataUrl){
     .then(function(r){ return r.ok; }).catch(function(){ return false; });
 }
 
-/* Run the parent email-OTP gate. Resolves to true if verified (token cached). */
+/* Run the parent email-OTP gate. Resolves to true if verified (token cached).
+   Uses an in-page modal (not window.prompt) so the parent can switch to their
+   email tab to read the code and come back without the dialog vanishing. */
 function parentGate(playerId, slug){
-  var email=window.prompt('A parent adds the photo.\n\nEnter a parent email to get a one-time code:');
-  if(!email) return Promise.resolve(false);
-  return fetch('/api/photo/request-code',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:email, playerId:playerId})})
-    .then(function(r){
-      if(r.status===503) return 'unconfigured';
-      if(r.status===429){ window.alert('Too many tries. Please wait a bit and try again.'); return false; }
-      if(!r.ok){ window.alert('Please check the email and try again.'); return false; }
-      var code=window.prompt('We emailed a 6-digit code to '+email+'.\n\nEnter it here (it expires in 10 minutes):');
-      if(!code) return false;
-      return fetch('/api/photo/verify',{method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({email:email, playerId:playerId, code:String(code).trim()})})
-        .then(function(v){ return v.ok? v.json().then(function(j){ saveToken(slug, j.uploadToken); return true; })
-          : (window.alert('That code did not work. Try again.'), false); });
-    }).catch(function(){ return 'unconfigured'; });
+  return new Promise(function(resolve){
+    var wrap=document.createElement('div'); wrap.className='pgate';
+    wrap.innerHTML=
+      "<div class='pgate-box' role='dialog' aria-modal='true' aria-label='Add a photo'>"+
+        "<button type='button' class='pgate-x' aria-label='Close'>\u00d7</button>"+
+        "<div class='pgate-step' data-step='email'>"+
+          "<h3 class='pgate-h'>A parent adds the photo</h3>"+
+          "<p class='pgate-p'>Enter a parent email. We send a one-time code.</p>"+
+          "<input class='pgate-in' type='email' inputmode='email' autocomplete='email' placeholder='parent@email.com'>"+
+          "<button type='button' class='pgate-go' data-act='send'>Send code</button>"+
+          "<div class='pgate-msg' aria-live='polite'></div>"+
+        "</div>"+
+        "<div class='pgate-step' data-step='code' hidden>"+
+          "<h3 class='pgate-h'>Enter your code</h3>"+
+          "<p class='pgate-p'>We emailed a 6-digit code. Check your email, then type it here. It lasts 10 minutes.</p>"+
+          "<input class='pgate-in' type='text' inputmode='numeric' autocomplete='one-time-code' maxlength='6' placeholder='123456'>"+
+          "<button type='button' class='pgate-go' data-act='verify'>Verify</button>"+
+          "<button type='button' class='pgate-link' data-act='resend'>Send a new code</button>"+
+          "<div class='pgate-msg' aria-live='polite'></div>"+
+        "</div>"+
+      "</div>";
+    document.body.appendChild(wrap);
+    requestAnimationFrame(function(){ wrap.classList.add('show'); });
+    var email='';
+    var stepEmail=wrap.querySelector("[data-step='email']");
+    var stepCode=wrap.querySelector("[data-step='code']");
+    function msg(step,t){ step.querySelector('.pgate-msg').textContent=t||''; }
+    function done(v){ wrap.classList.remove('show'); setTimeout(function(){ if(wrap.parentNode)wrap.parentNode.removeChild(wrap); },200); resolve(v); }
+    function show(step){ stepEmail.hidden=(step!=='email'); stepCode.hidden=(step!=='code'); var i=wrap.querySelector("[data-step='"+step+"'] .pgate-in"); if(i) setTimeout(function(){i.focus();},60); }
+    function sendCode(){
+      var v=stepEmail.querySelector('.pgate-in').value.trim();
+      if(!v){ msg(stepEmail,'Please enter an email.'); return; }
+      email=v; msg(stepEmail,'Sending...');
+      fetch('/api/photo/request-code',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({email:email, playerId:playerId})})
+        .then(function(r){
+          if(r.status===503){ done('unconfigured'); return; }
+          if(r.status===429){ msg(stepEmail,'Too many tries. Wait a bit and try again.'); return; }
+          if(!r.ok){ msg(stepEmail,'Please check the email and try again.'); return; }
+          show('code');
+        }).catch(function(){ done('unconfigured'); });
+    }
+    function verify(){
+      var code=stepCode.querySelector('.pgate-in').value.trim();
+      if(!code){ msg(stepCode,'Enter the 6-digit code.'); return; }
+      msg(stepCode,'Checking...');
+      fetch('/api/photo/verify',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({email:email, playerId:playerId, code:String(code)})})
+        .then(function(v){ if(v.ok){ v.json().then(function(j){ saveToken(slug, j.uploadToken); done(true); }); }
+          else { msg(stepCode,'That code did not work. Try again.'); } })
+        .catch(function(){ msg(stepCode,'Something went wrong. Try again.'); });
+    }
+    wrap.addEventListener('click',function(e){
+      var act=e.target&&e.target.getAttribute&&e.target.getAttribute('data-act');
+      if(e.target.classList&&e.target.classList.contains('pgate-x')){ done(false); return; }
+      if(e.target===wrap){ done(false); return; }   /* click backdrop to close */
+      if(act==='send'||act==='resend') sendCode();
+      else if(act==='verify') verify();
+    });
+    wrap.addEventListener('keydown',function(e){ if(e.key==='Enter'){ if(!stepEmail.hidden) sendCode(); else if(!stepCode.hidden) verify(); } });
+    show('email');
+  });
 }
 
 /* PUBLIC: called by the card photo button. playerId = lowercase first name. */
