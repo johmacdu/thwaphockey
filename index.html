@@ -1367,7 +1367,7 @@ function build(){
   } else {
     /* all-time: glowing power triangle + big totals, bigger and numbered */
     var cx=150,cy=150,R=104;
-    var val=discs.map(function(disc){return demoDone(first,disc,'all')*4+8;});
+    var val=discs.map(function(disc){return demoDone(first,disc,'all');});
     var maxv=Math.max(1,val[0],val[1],val[2]);
     var grid='';
     for(var g=1;g<=3;g++){var rr=R*g/3,p=[];for(var a=0;a<3;a++){var ang=-Math.PI/2+a*2*Math.PI/3;p.push((cx+rr*Math.cos(ang)).toFixed(1)+','+(cy+rr*Math.sin(ang)).toFixed(1));}grid+="<polygon points='"+p.join(' ')+"' fill='none' stroke='var(--line)' stroke-width='1.5'/>";}
