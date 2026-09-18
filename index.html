@@ -38,6 +38,11 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 .deck-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;-webkit-user-drag:none}
 @keyframes stickSlap{0%{transform:scale(1.8) rotate(-14deg);opacity:0}60%{transform:scale(.9) rotate(4deg);opacity:1}100%{transform:scale(1) rotate(var(--slap-rot,-5deg))}}
 .slapped{animation:stickSlap .6s cubic-bezier(.2,.8,.2,1)}
+/* Shine sweep across a sticker when earned or slapped. */
+.stickcell.shine{overflow:hidden}
+.stickcell.shine::before{content:'';position:absolute;top:-40%;left:-60%;width:40%;height:180%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.75),transparent);transform:rotate(8deg);animation:stickShine .6s ease-out;pointer-events:none;z-index:3}
+@keyframes stickShine{0%{left:-60%}100%{left:130%}}
+@media (prefers-reduced-motion: reduce){.stickcell.shine::before{animation:none;display:none}}
 @media (prefers-reduced-motion: reduce){.slapped{animation:none}}
 .page{display:none}.page:target{display:block;padding-top:64px}.page:target~#home{display:none}#home{display:block}
 .topbar{height:68px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.01em}.brandlogo{height:68px;width:auto;object-fit:contain;display:block}.link{color:var(--green2);font-weight:900;font-size:13px}.back{display:inline-block;padding:20px 0 6px;color:var(--green2);font-weight:900}
@@ -193,6 +198,9 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .pl-decal{position:absolute;width:56px;height:56px;object-fit:contain;filter:drop-shadow(0 2px 5px rgba(0,0,0,.45));pointer-events:none;-webkit-user-drag:none;user-select:none;z-index:4}
 .pl-decalwrap{position:absolute;transform:translate(-50%,-50%);z-index:4;touch-action:none;cursor:grab}
 .pl-decalwrap:active{cursor:grabbing}
+.pl-decalwrap.placed-pop{animation:plPlacePop .4s cubic-bezier(.2,1.5,.4,1)}
+@keyframes plPlacePop{0%{transform:translate(-50%,-50%) scale(1.7)}55%{transform:translate(-50%,-50%) scale(.9)}100%{transform:translate(-50%,-50%) scale(1)}}
+@media (prefers-reduced-motion: reduce){.pl-decalwrap.placed-pop{animation:none}}
 .pl-decalwrap .pl-decal{position:static;display:block;pointer-events:none}
 .pl-decalx{position:absolute;top:-10px;right:-10px;width:26px;height:26px;border-radius:50%;border:2px solid #fff;background:#DC2626;color:#fff;font-size:16px;font-weight:900;line-height:1;display:none;align-items:center;justify-content:center;cursor:pointer;padding:0;box-shadow:0 2px 6px rgba(0,0,0,.5)}
 .pl-decalwrap.show-x .pl-decalx{display:flex}
@@ -300,6 +308,11 @@ button.row:active{background:var(--soft)}
 @media (prefers-reduced-motion: reduce){.pl-ex{animation:none}}
 .plflame{display:inline-block;transform-origin:50% 90%;animation:plflick .55s ease-in-out infinite;filter:drop-shadow(0 0 4px rgba(255,140,40,.7));cursor:pointer}
 .plflame.flare{animation:plflare .5s ease-out}
+/* Streak milestone tiers: the flame grows and glows more at 3, 5, 7+ days. */
+.plflame.m3{font-size:1.05em}
+.plflame.m5{font-size:1.2em;filter:drop-shadow(0 0 7px rgba(255,140,40,.85))}
+.plflame.m7{font-size:1.4em;filter:drop-shadow(0 0 12px rgba(255,120,20,.95))}
+.plfire-lab{font-family:'Archivo Black',system-ui,sans-serif;font-size:.7em;color:#FF7A1A;text-transform:uppercase;letter-spacing:.04em;margin-left:4px}
 @keyframes plflare{0%{transform:scale(1)}30%{transform:scale(1.6) rotate(-6deg);filter:drop-shadow(0 0 14px rgba(255,150,40,.95))}60%{transform:scale(1.3) rotate(5deg)}100%{transform:scale(1)}}
 @keyframes plflick{0%{transform:scale(1) rotate(-4deg);opacity:1}25%{transform:scale(1.18,1.24) rotate(3deg);opacity:.85}50%{transform:scale(.94,1.1) rotate(-2deg);opacity:1}75%{transform:scale(1.12,1.16) rotate(4deg);opacity:.9}100%{transform:scale(1) rotate(-4deg);opacity:1}}
 .pl-rings{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
@@ -1121,7 +1134,8 @@ fetch('stickers/stickers.json').then(function(r){return r.json();}).then(functio
     }
     if(earned){
       cell.addEventListener('pointerdown',function(e){
-        if(!reduce){ var img=cell.querySelector('img'); if(img){img.style.setProperty('--slap-rot',(Math.random()*10-5)+'deg'); img.classList.remove('slapped'); void img.offsetWidth; img.classList.add('slapped');} }
+        if(!reduce){ var img=cell.querySelector('img'); if(img){img.style.setProperty('--slap-rot',(Math.random()*10-5)+'deg'); img.classList.remove('slapped'); void img.offsetWidth; img.classList.add('slapped');}
+          cell.classList.remove('shine'); void cell.offsetWidth; cell.classList.add('shine'); }
         if(window.thwapStartTrayDrag) window.thwapStartTrayDrag(f, e);
       });
     }
@@ -1345,7 +1359,7 @@ function build(){
   if(photo){ photo.src='cards/'+slug+'_front.png'; photo.alt=esc(first)+' card'; }
   var nm=document.getElementById('plName'); if(nm)nm.textContent=first;
   var ps=document.getElementById('plPos'); if(ps)ps.textContent='#'+info.num+'  '+(POSNAME[info.pos]||'');
-  var streak=document.getElementById('plStreak'); if(streak){var _sk=demoStreak(first,tf); if(_sk>=3){streak.style.display='';streak.innerHTML="<span class='plflame'>🔥</span> "+_sk+" day streak";}else{streak.style.display='none';streak.innerHTML='';}}
+  var streak=document.getElementById('plStreak'); if(streak){var _sk=demoStreak(first,tf); if(_sk>=3){var _tier=_sk>=7?'m7':(_sk>=5?'m5':'m3');var _lab=_sk>=7?" <span class='plfire-lab'>On fire!</span>":"";streak.style.display='';streak.innerHTML="<span class='plflame "+_tier+"'>🔥</span> "+_sk+" day streak"+_lab;}else{streak.style.display='none';streak.innerHTML='';}}
   var wrap=document.getElementById('plDisc'); if(!wrap)return;
   var DCOL={Stickhandling:'#8fd65e',Shooting:'#75B8FF',Dryland:'#FF9D4D'};
   var DEMO={Stickhandling:'🏒',Shooting:'🥅',Dryland:'⚡'};
@@ -1830,6 +1844,7 @@ window.thwapStartTrayDrag=function(file, startEvent){
       var q=pct(fc.container,ev.clientX,ev.clientY);
       window.thwapPlaced.add(fc.surface, file, q.x, q.y);
       window.thwapDeckRedraw(); if(DECK.onchange) DECK.onchange();
+      if(!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)){ var ws=fc.container.querySelectorAll('.pl-decalwrap'); var last=ws[ws.length-1]; if(last){ last.classList.add('placed-pop'); setTimeout(function(){ last.classList.remove('placed-pop'); },420); } }
     }
   }
   document.addEventListener('pointermove',move,true);
