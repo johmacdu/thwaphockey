@@ -27,6 +27,15 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 .stickcell .stick-myst{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;color:var(--muted);opacity:.7}
 .stickcell.earned{border-color:var(--lime)}
 .stickcell.on-card{box-shadow:inset 0 0 0 2px var(--lime)}
+.stickcell.picked{box-shadow:inset 0 0 0 3px var(--lime);transform:scale(1.03)}
+.deck-wrap{margin:4px 0 18px;text-align:center}
+.deck-scene{width:64%;max-width:260px;margin:0 auto;aspect-ratio:5/7;perspective:1000px}
+.deck-3d{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.7,.2,1);will-change:transform;touch-action:none;cursor:grab}
+.deck-3d.dragging{transition:none;cursor:grabbing}
+.deck-face{position:absolute;inset:0;border-radius:18px;overflow:hidden;background:#0f1712;box-shadow:0 14px 40px rgba(0,0,0,.45);backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.deck-face.dragover{outline:3px dashed var(--lime);outline-offset:-3px}
+.deck-back{transform:rotateY(180deg)}
+.deck-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;-webkit-user-drag:none}
 @keyframes stickSlap{0%{transform:scale(1.8) rotate(-14deg);opacity:0}60%{transform:scale(.9) rotate(4deg);opacity:1}100%{transform:scale(1) rotate(var(--slap-rot,-5deg))}}
 .slapped{animation:stickSlap .6s cubic-bezier(.2,.8,.2,1)}
 @media (prefers-reduced-motion: reduce){.slapped{animation:none}}
@@ -166,6 +175,12 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .cb-disc-most{font-size:12px;font-weight:600;color:rgba(255,255,255,.7);margin-top:2px}
 .cb-stickers{position:absolute;right:14px;bottom:14px;display:flex;gap:-6px}
 .pl-decal{position:absolute;width:56px;height:56px;object-fit:contain;filter:drop-shadow(0 2px 5px rgba(0,0,0,.45));pointer-events:none;-webkit-user-drag:none;user-select:none;z-index:4}
+.pl-decalwrap{position:absolute;transform:translate(-50%,-50%);z-index:4;touch-action:none;cursor:grab}
+.pl-decalwrap:active{cursor:grabbing}
+.pl-decalwrap .pl-decal{position:static;display:block;pointer-events:none}
+.pl-decalx{position:absolute;top:-10px;right:-10px;width:26px;height:26px;border-radius:50%;border:2px solid #fff;background:#DC2626;color:#fff;font-size:16px;font-weight:900;line-height:1;display:none;align-items:center;justify-content:center;cursor:pointer;padding:0;box-shadow:0 2px 6px rgba(0,0,0,.5)}
+.pl-decalwrap.show-x .pl-decalx{display:flex}
+.pl-ghost{position:fixed;width:56px;height:56px;object-fit:contain;transform:translate(-50%,-50%);pointer-events:none;z-index:200;filter:drop-shadow(0 4px 10px rgba(0,0,0,.5));opacity:.92}
 .pl-decal.editable{pointer-events:auto;cursor:grab;touch-action:none}
 .pl-decal.editable:active{cursor:grabbing}
 .cb-sticker{width:46px;height:46px;object-fit:contain;margin-left:-8px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));transform:rotate(-6deg)}
@@ -245,7 +260,7 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .row{display:grid;grid-template-columns:30px 1fr 74px 28px;gap:9px;align-items:center;padding:13px 12px;border-bottom:1px solid var(--line)}
 button.row{width:100%;background:none;border:0;border-bottom:1px solid var(--line);text-align:left;font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
 button.row:active{background:var(--soft)}
-.glassback{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:max(16px, calc(50vw - 534px));z-index:50;display:inline-grid;place-items:center;width:44px;height:44px;border-radius:50%;font-size:26px;line-height:1;font-weight:700;color:var(--text);cursor:pointer;text-decoration:none;background:var(--panel);border:1px solid var(--line);box-shadow:0 6px 20px var(--shadow)}
+.glassback{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:max(16px, calc(50vw - 534px));z-index:50;display:inline-grid;grid-auto-flow:column;gap:2px;place-items:center;height:44px;padding:0 16px;border-radius:999px;font-size:16px;line-height:1;font-weight:800;color:var(--text);cursor:pointer;text-decoration:none;background:var(--panel);border:1px solid var(--line);box-shadow:0 6px 20px var(--shadow)}
 .glassback:hover{background:var(--soft)}
 .pl-head{display:flex;align-items:center;gap:14px;padding-top:56px;margin-bottom:6px}
 .pl-photo{width:64px;height:88px;object-fit:cover;border-radius:12px;background:var(--card2);flex:0 0 auto}
@@ -259,10 +274,11 @@ button.row:active{background:var(--soft)}
 .pl-ex{display:flex;align-items:center;gap:14px;padding:14px;margin-bottom:10px;border:1px solid var(--line);border-radius:16px;background:var(--card);font-size:17px;font-weight:800;animation:plexin .4s ease both}
 .pl-exicon{width:48px;height:48px;flex:0 0 auto;border-radius:14px;display:grid;place-items:center;font-size:26px;background:color-mix(in srgb,var(--dacc) 20%,transparent)}
 .pl-exname{flex:1 1 auto;min-width:0}
-.pl-exdot{width:28px;height:28px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;font-size:15px;font-weight:900;border:2px solid var(--line);color:var(--muted)}
+.pl-exdot{width:22px;height:22px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;font-size:15px;font-weight:900;background:var(--soft);color:transparent}
+.pl-ex:not(.done){opacity:.62}
 .pl-ex.done{border-color:var(--dacc);background:color-mix(in srgb,var(--dacc) 12%,var(--card))}
 .pl-ex.done .pl-exicon{background:var(--dacc)}
-.pl-ex.done .pl-exdot{background:var(--dacc);border-color:var(--dacc);color:#0f1712}
+.pl-ex.done .pl-exdot{width:28px;height:28px;background:var(--dacc);border-color:var(--dacc);color:#0f1712}
 @keyframes plexin{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
 .pl-ex:nth-child(2){animation-delay:.03s}.pl-ex:nth-child(3){animation-delay:.06s}.pl-ex:nth-child(4){animation-delay:.09s}.pl-ex:nth-child(5){animation-delay:.12s}.pl-ex:nth-child(6){animation-delay:.15s}
 @media (prefers-reduced-motion: reduce){.pl-ex{animation:none}}
@@ -366,13 +382,14 @@ button.row:active{background:var(--soft)}
 
 <section id='stickers' class='page'>
 <a class='glassclose' href='#home' aria-label='Close'>✕</a>
-<div class='hero'><div class='kicker'>Rangers 10U</div><h1>Sticker Book</h1><p>Earn stickers by training. Every drill you finish unlocks one. Tap an earned sticker to put it on your card.</p></div>
+<div class='hero'><div class='kicker'>Rangers 10U</div><h1>Sticker Book</h1><p>Finish drills to unlock stickers. Spin your card, drag a sticker onto it, and long-press a sticker to peel it off.</p></div>
 <div class='stickcount' id='stickCount'></div>
+<div class='deck-wrap'><div class='deck-scene'><div class='deck-3d' id='deck3d'><div class='deck-face deck-front' id='deckFront'><img class='deck-art' id='deckArtFront' src='' alt='Your card front'></div><div class='deck-face deck-back' id='deckBack'><img class='deck-art' id='deckArtBack' src='' alt='Your card back'></div></div></div></div>
 <div class='stickgrid' id='stickGrid'></div>
 </section>
 
 <section id='player' class='page'>
-<button type='button' class='glassback' id='plBack' aria-label='Back'>‹</button>
+<button type='button' class='glassback' id='plBack' aria-label='Back'>‹ Back</button>
 <div class='pl-head'><img class='pl-photo' id='plPhoto' src='' alt=''><div><div class='pl-name' id='plName'>Player</div><div class='pl-pos' id='plPos'></div></div></div>
 <div class='seg' id='plTf' role='tablist' aria-label='Timeframe'>
 <button type='button' class='segbtn on' data-tf='week' role='tab' aria-selected='true'>This week</button>
@@ -611,8 +628,8 @@ render();
 window.addEventListener('hashchange',function(){ if(location.hash==='#dryland') render(); });
 })();</script>
 <script>(function(){
-/* ---- Leaderboard: DEMO DATA (placeholder, not real scores). Replace with real team data in Phase 4. ---- */
-var DATA={ week:[{n:'Alder',stick:3,shoot:2,dryland:2},{n:'Joziah',stick:2,shoot:2,dryland:2},{n:'Lewie',stick:2,shoot:1,dryland:2},{n:'Maddux',stick:2,shoot:2,dryland:1},{n:'Greyson',stick:1,shoot:1,dryland:2},{n:'Dawson',stick:2,shoot:1,dryland:1},{n:'Evan',stick:1,shoot:2,dryland:1},{n:'Oliver',stick:1,shoot:1,dryland:1},{n:'Teddy',stick:1,shoot:1,dryland:1},{n:'Brooklyn',stick:1,shoot:0,dryland:2},{n:'Dominic',stick:1,shoot:1,dryland:0},{n:'Issac',stick:0,shoot:1,dryland:1},{n:'Liam',stick:1,shoot:0,dryland:1},{n:'Eugene',stick:0,shoot:0,dryland:1},{n:'William',stick:1,shoot:0,dryland:0},{n:'Johnny',stick:0,shoot:0,dryland:0}], all:[{n:'Alder',stick:14,shoot:11,dryland:12},{n:'Joziah',stick:12,shoot:10,dryland:11},{n:'Lewie',stick:11,shoot:7,dryland:13},{n:'Maddux',stick:10,shoot:12,dryland:8},{n:'Greyson',stick:8,shoot:6,dryland:11},{n:'Dawson',stick:9,shoot:7,dryland:6},{n:'Evan',stick:7,shoot:9,dryland:6},{n:'Oliver',stick:6,shoot:5,dryland:7},{n:'Teddy',stick:5,shoot:6,dryland:6},{n:'Brooklyn',stick:6,shoot:3,dryland:8},{n:'Dominic',stick:5,shoot:5,dryland:3},{n:'Issac',stick:3,shoot:6,dryland:4},{n:'Liam',stick:5,shoot:2,dryland:5},{n:'Eugene',stick:2,shoot:3,dryland:4},{n:'William',stick:4,shoot:2,dryland:2},{n:'Johnny',stick:1,shoot:1,dryland:2}] };
+/* ---- Leaderboard fallback: all players zero. Real team scores come from /api/board; this is only shown before the API responds or if it is unreachable, so it must not fabricate numbers. ---- */
+var DATA={ week:[{n:"Alder",stick:0,shoot:0,dryland:0},{n:"Joziah",stick:0,shoot:0,dryland:0},{n:"Lewie",stick:0,shoot:0,dryland:0},{n:"Maddux",stick:0,shoot:0,dryland:0},{n:"Greyson",stick:0,shoot:0,dryland:0},{n:"Dawson",stick:0,shoot:0,dryland:0},{n:"Evan",stick:0,shoot:0,dryland:0},{n:"Oliver",stick:0,shoot:0,dryland:0},{n:"Teddy",stick:0,shoot:0,dryland:0},{n:"Brooklyn",stick:0,shoot:0,dryland:0},{n:"Dominic",stick:0,shoot:0,dryland:0},{n:"Issac",stick:0,shoot:0,dryland:0},{n:"Liam",stick:0,shoot:0,dryland:0},{n:"Eugene",stick:0,shoot:0,dryland:0},{n:"William",stick:0,shoot:0,dryland:0},{n:"Johnny",stick:0,shoot:0,dryland:0}], all:[{n:"Alder",stick:0,shoot:0,dryland:0},{n:"Joziah",stick:0,shoot:0,dryland:0},{n:"Lewie",stick:0,shoot:0,dryland:0},{n:"Maddux",stick:0,shoot:0,dryland:0},{n:"Greyson",stick:0,shoot:0,dryland:0},{n:"Dawson",stick:0,shoot:0,dryland:0},{n:"Evan",stick:0,shoot:0,dryland:0},{n:"Oliver",stick:0,shoot:0,dryland:0},{n:"Teddy",stick:0,shoot:0,dryland:0},{n:"Brooklyn",stick:0,shoot:0,dryland:0},{n:"Dominic",stick:0,shoot:0,dryland:0},{n:"Issac",stick:0,shoot:0,dryland:0},{n:"Liam",stick:0,shoot:0,dryland:0},{n:"Eugene",stick:0,shoot:0,dryland:0},{n:"William",stick:0,shoot:0,dryland:0},{n:"Johnny",stick:0,shoot:0,dryland:0}] };
 var ME=(function(){try{var s=localStorage.getItem('bfPlayer')||'Lewie';return s.trim().split(/\s+/)[0];}catch(e){return 'Lewie';}})();
 var tf='week', disc='all';
 var board=document.getElementById('board');
@@ -772,7 +789,7 @@ function currentPlayer(){
      neutral prompt state if none picked yet. Full roster facts live in ROSTER_INFO. */
   var saved='';
   try{ saved=localStorage.getItem('bfPlayer')||''; }catch(e){}
-  var ROSTER_INFO={alder:{num:'71',pos:'F'},brooklyn:{num:'92',pos:'D'},dawson:{num:'19',pos:'D'},dominic:{num:'98',pos:'F'},eugene:{num:'3',pos:'D'},evan:{num:'13',pos:'F'},greyson:{num:'32',pos:'D'},johnny:{num:'1',pos:'G'},joziah:{num:'59',pos:'F'},lewie:{num:'72',pos:'D'},liam:{num:'29',pos:'D'},maddux:{num:'18',pos:'F'},oliver:{num:'90',pos:'F'},teddy:{num:'11',pos:'F'},william:{num:'16',pos:'F'},issac:{num:'53',pos:'F'}};
+  var ROSTER_INFO={alder:{num:'71',pos:'F'},brooklyn:{num:'92',pos:'D'},dawson:{num:'19',pos:'D'},dominic:{num:'98',pos:'F'},eugene:{num:'3',pos:'D'},evan:{num:'13',pos:'F'},greyson:{num:'32',pos:'D'},johnny:{num:'1',pos:'G'},joziah:{num:'59',pos:'F'},lewie:{num:'72',pos:'FD'},liam:{num:'29',pos:'D'},maddux:{num:'18',pos:'F'},oliver:{num:'90',pos:'F'},teddy:{num:'11',pos:'F'},william:{num:'16',pos:'F'},issac:{num:'53',pos:'F'}};
   if(!saved) saved='Lewie';  /* neutral default so the card still renders before a pick */
   var parts=saved.trim().split(/\s+/);
   var key=parts[0].toLowerCase();
@@ -820,8 +837,11 @@ function buildFaces(){
   }
   /* Render the player's placed stickers on each face (non-interactive here; editing
      happens in place-mode from the Sticker Book). */
-  if(window.thwapRenderPlaced){ window.thwapRenderPlaced('front', front, {interactive:true}); window.thwapRenderPlaced('back', back, {interactive:true}); }
+  if(window.thwapRenderPlaced){ window.thwapRenderPlaced('front', front, {}); window.thwapRenderPlaced('back', back, {}); }
 }
+/* Let other views (the Sticker Book) refresh the card after they change placements. */
+window.thwapRebuildCard=function(){ try{ buildFaces(); }catch(e){} };
+window.thwapOpenCard=function(){ try{ open(); }catch(e){} };
 /* Photo add/change/remove for the player's OWN card. Local-only: the image is
    read in the browser, downscaled, and stored as a data URL in localStorage on
    THIS device. It is never uploaded, never sent to the server, and never shown on
@@ -992,19 +1012,54 @@ fetch('stickers/stickers.json').then(function(r){return r.json();}).then(functio
      depend on script load order. */
   function playerId(){ try{ return (localStorage.getItem('bfPlayer')||'guest').trim().split(/\s+/)[0].toLowerCase(); }catch(e){ return 'guest'; } }
   function earnedCount(){ try{ return parseInt(localStorage.getItem('thwapEarned:'+playerId())||'0',10)||0; }catch(e){ return 0; } }
-  var EARNED=Math.min(earnedCount(), files.length);
+  var STARTER=3; /* every player starts with 3 stickers to unlock the fun; training earns more */
+  var EARNED=Math.min(Math.max(earnedCount(), STARTER), files.length);
   var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   countEl.textContent=EARNED+' of '+files.length+' earned';
+
+  /* --- Decorate: a real rotatable 3D card. Drag the card to spin it (front/back/any
+         angle); drag a tray sticker onto whichever face is showing; drag a placed
+         sticker to move it; long-press it for an x to peel it off. --- */
+  var deck3d=document.getElementById('deck3d');
+  var deckFront=document.getElementById('deckFront');
+  var deckBack=document.getElementById('deckBack');
+  var artFront=document.getElementById('deckArtFront');
+  var artBack=document.getElementById('deckArtBack');
+  var slug=playerId().replace(/[^a-z]/g,'');
+  var myPhoto=null; try{ myPhoto=localStorage.getItem('thwapCardPhoto:'+slug); }catch(e){}
+  if(artFront) artFront.src=myPhoto||('cards/'+slug+'_front.png');
+  if(artBack) artBack.src='cards/'+slug+'_back.png';
+
+  var drx=0, dry=0;
+  function deckPaint(){ if(deck3d) deck3d.style.transform='rotateX('+drx+'deg) rotateY('+dry+'deg)'; }
+  function visibleFace(){
+    var yy=((dry%360)+360)%360;               /* 0=front, 180=back */
+    return (yy>90 && yy<270) ? {surface:'back',container:deckBack} : {surface:'front',container:deckFront};
+  }
+  function afterChange(){ if(window.thwapRebuildCard) window.thwapRebuildCard(); }
+  if(window.thwapDecorateDeck && deckFront && deckBack){
+    window.thwapDecorateDeck([{surface:'front',container:deckFront},{surface:'back',container:deckBack}], visibleFace, afterChange);
+  }
+  /* rotate-drag on the card background (decals stop propagation, so they move instead) */
+  if(deck3d && !reduce){
+    var dg=false, lx=0, ly=0;
+    deck3d.addEventListener('pointerdown',function(e){ dg=true; lx=e.clientX; ly=e.clientY; deck3d.classList.add('dragging'); try{ deck3d.setPointerCapture(e.pointerId); }catch(_){} });
+    deck3d.addEventListener('pointermove',function(e){ if(!dg) return; var dx=e.clientX-lx, dy=e.clientY-ly; lx=e.clientX; ly=e.clientY; dry+=dx*0.6; drx+=-dy*0.6; drx=Math.max(-85,Math.min(85,drx)); deckPaint(); });
+    deck3d.addEventListener('pointerup',function(){ dg=false; deck3d.classList.remove('dragging'); });
+    deck3d.addEventListener('pointercancel',function(){ dg=false; deck3d.classList.remove('dragging'); });
+  }
+  deckPaint();
+
   files.forEach(function(f,i){
     var earned=i<EARNED;
     var cell=document.createElement('button');
     cell.type='button';
     cell.className='stickcell '+(earned?'earned':'locked');
-    if(earned && chosen.indexOf(f)>=0) cell.classList.add('on-card');
     cell.setAttribute('data-file',f);
     if(earned){
-      cell.innerHTML="<img src='stickers/"+f+"' alt='sticker'>";
-      cell.setAttribute('aria-label','Earned sticker. Tap to put it on your card.');
+      cell.innerHTML="<img src='stickers/"+f+"' alt='sticker' draggable='false'>";
+      cell.setAttribute('aria-label','Sticker. Drag it onto your card.');
+      cell.style.touchAction='none';
     } else {
       /* mystery: silhouette + a hint, no image so it reads as "not yet" */
       cell.innerHTML="<span class='stick-myst'>?</span>";
@@ -1012,15 +1067,9 @@ fetch('stickers/stickers.json').then(function(r){return r.json();}).then(functio
       cell.setAttribute('title','Keep training to unlock');
     }
     if(earned){
-      cell.addEventListener('click',function(){
-        /* Place this sticker on the card front. The kid can then drag or peel it on
-           the card itself (card faces are interactive). Capped per surface. */
-        if(window.thwapPlaced){
-          window.thwapPlaced.add('front', f, 30+Math.random()*40, 30+Math.random()*40);
-          cell.classList.add('on-card');
-          if(!reduce){ var img=cell.querySelector('img'); if(img){img.style.setProperty('--slap-rot',(Math.random()*10-5)+'deg'); img.classList.remove('slapped'); void img.offsetWidth; img.classList.add('slapped');} }
-          if(countEl){ var prev=countEl.textContent; countEl.textContent='Stuck on your card ✓  (open your card to move it)'; setTimeout(function(){ countEl.textContent=prev; },1800); }
-        }
+      cell.addEventListener('pointerdown',function(e){
+        if(!reduce){ var img=cell.querySelector('img'); if(img){img.style.setProperty('--slap-rot',(Math.random()*10-5)+'deg'); img.classList.remove('slapped'); void img.offsetWidth; img.classList.add('slapped');} }
+        if(window.thwapStartTrayDrag) window.thwapStartTrayDrag(f, e);
       });
     }
     grid.appendChild(cell);
@@ -1162,8 +1211,8 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#stick') re
 /* ---- Player detail page (opened from a leaderboard row) ---- */
 function esc(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 /* position + card slug for the header */
-var INFO={Alder:{num:'71',pos:'F'},Brooklyn:{num:'92',pos:'D'},Dawson:{num:'19',pos:'D'},Dominic:{num:'98',pos:'F'},Eugene:{num:'3',pos:'D'},Evan:{num:'13',pos:'F'},Greyson:{num:'32',pos:'D'},Johnny:{num:'1',pos:'G'},Joziah:{num:'59',pos:'F'},Lewie:{num:'72',pos:'D'},Liam:{num:'29',pos:'D'},Maddux:{num:'18',pos:'F'},Oliver:{num:'90',pos:'F'},Teddy:{num:'11',pos:'F'},William:{num:'16',pos:'F'},Issac:{num:'53',pos:'F'}};
-var POSNAME={F:'Forward',D:'Defense',G:'Goalie'};
+var INFO={Alder:{num:'71',pos:'F'},Brooklyn:{num:'92',pos:'D'},Dawson:{num:'19',pos:'D'},Dominic:{num:'98',pos:'F'},Eugene:{num:'3',pos:'D'},Evan:{num:'13',pos:'F'},Greyson:{num:'32',pos:'D'},Johnny:{num:'1',pos:'G'},Joziah:{num:'59',pos:'F'},Lewie:{num:'72',pos:'FD'},Liam:{num:'29',pos:'D'},Maddux:{num:'18',pos:'F'},Oliver:{num:'90',pos:'F'},Teddy:{num:'11',pos:'F'},William:{num:'16',pos:'F'},Issac:{num:'53',pos:'F'}};
+var POSNAME={F:'Forward',D:'Defense',G:'Goalie',FD:'Forward/Defense'};
 /* Exercise catalogs per discipline (short lists for the completion view) */
 var CATALOG={
   Stickhandling:['Side-to-Side','Figure-8 Around Cones','Toe Drag & Rescue','Eyes-Up Glancing','Cone Weave Course'],
@@ -1177,14 +1226,7 @@ var EXICON={
   'Skater Jumps':'🦘','Box Jumps':'📦','Wall Sit':'🧱','Plank':'🪵','Dead Bugs':'🐞'
 };
 /* DEMO completion counts per player/timeframe (placeholder, real data Phase 4). */
-function demoDone(name,disc,tf){
-  var seed=0; for(var i=0;i<name.length;i++) seed+=name.charCodeAt(i);
-  seed+=disc.length + (tf==='all'?7:0);
-  var total=CATALOG[disc].length;
-  var base=(seed% (total+1));
-  if(tf==='all') base=Math.min(total, base+1);
-  return base;
-}
+function demoDone(name,disc,tf){ return 0; } /* clean slate: every player starts at 0. Real per-player counts will replace this when the stats page is wired to /api/board. */
 function demoStreak(name,tf){ return 0; } /* real per-day streak needs date-stamped activity (Phase 4); 0 until then */
 
 var section=document.getElementById('player');
@@ -1514,7 +1556,7 @@ function getPin(){
   var k=pinKey(), v=null;
   try{ v=sessionStorage.getItem(k); }catch(e){}
   if(v) return v;
-  v=window.prompt("What is "+PLAYER+"'s secret number?\n(your jersey number and the year, like 722027. Ask your coach if you are not sure.)");
+  v=window.prompt("What is "+PLAYER+"'s secret number?\n(Ask your coach if you are not sure.)");
   if(v){ try{ sessionStorage.setItem(k, v.trim()); }catch(e){} return v.trim(); }
   return null;
 }
@@ -1608,48 +1650,111 @@ function key(surface){ return 'thwapPlaced:'+pid()+':'+surface; }
 window.thwapPlaced={
   list:function(surface){ try{ var a=JSON.parse(localStorage.getItem(key(surface))||'[]'); return Array.isArray(a)?a:[]; }catch(e){ return []; } },
   save:function(surface,arr){ try{ localStorage.setItem(key(surface), JSON.stringify(arr.slice(0,CAP))); }catch(e){} },
-  add:function(surface,file,x,y,rot){ var a=this.list(surface); if(a.length>=CAP) a.shift(); a.push({file:file,x:x,y:y,rot:rot||(Math.random()*16-8)}); this.save(surface,a); },
+  add:function(surface,file,x,y,rot){ var a=this.list(surface); if(a.length>=CAP) a.shift(); a.push({file:file,x:x,y:y,rot:(rot==null?(Math.random()*16-8):rot)}); this.save(surface,a); },
   removeAt:function(surface,idx){ var a=this.list(surface); a.splice(idx,1); this.save(surface,a); },
+  moveAt:function(surface,idx,x,y){ var a=this.list(surface); if(a[idx]){ a[idx].x=x; a[idx].y=y; this.save(surface,a); } },
   cap:CAP, surfaces:SURFACES
 };
-/* Render placed stickers into a positioned container. reduce disables the peel wobble.
-   If interactive, each sticker can be dragged (repositions) and tapped (peels off). */
+function pct(container,clientX,clientY){
+  var r=container.getBoundingClientRect();
+  return { x:Math.max(6,Math.min(94,(clientX-r.left)/r.width*100)),
+           y:Math.max(6,Math.min(94,(clientY-r.top)/r.height*100)) };
+}
+function pointInside(container,clientX,clientY){
+  var r=container.getBoundingClientRect();
+  return clientX>=r.left && clientX<=r.right && clientY>=r.top && clientY<=r.bottom;
+}
+/* The current decorate surface + preview, set by thwapDecorateSurface, so the tray
+   drag (started on a grid cell) knows where to drop. */
+var DECK=null;
+/* Render placed stickers into a positioned container.
+   Read-only by default (the live 3D card just shows them). When opts.editable is set
+   (the flat preview): drag a placed sticker to reposition it; long-press (~450ms) to
+   reveal an x button that peels it off (returns it to the sheet). Pointer events, so
+   this works on touch. */
 window.thwapRenderPlaced=function(surface, container, opts){
   opts=opts||{};
-  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  container.querySelectorAll('.pl-decal').forEach(function(n){ n.remove(); });
+  container.querySelectorAll('.pl-decal, .pl-decalwrap').forEach(function(n){ n.remove(); });
   window.thwapPlaced.list(surface).forEach(function(p,idx){
-    var el=document.createElement('img');
-    el.className='pl-decal'; el.src='stickers/'+p.file; el.alt='';
-    el.style.left=p.x+'%'; el.style.top=p.y+'%';
-    el.style.transform='translate(-50%,-50%) rotate('+(p.rot||0)+'deg)';
-    if(opts.interactive){
-      el.classList.add('editable');
-      /* drag to move, quick tap to peel */
-      var moved=false, sx=0, sy=0;
-      el.addEventListener('pointerdown',function(e){
-        e.preventDefault(); e.stopPropagation(); moved=false; sx=e.clientX; sy=e.clientY;
-        el.setPointerCapture(e.pointerId);
-      });
-      el.addEventListener('pointermove',function(e){
-        if(e.pressure===0 && e.buttons===0) return;
-        if(!el.hasPointerCapture||!el.hasPointerCapture(e.pointerId)) return;
-        var r=container.getBoundingClientRect();
-        if(Math.abs(e.clientX-sx)+Math.abs(e.clientY-sy)>4) moved=true;
-        var nx=Math.max(4,Math.min(96,(e.clientX-r.left)/r.width*100));
-        var ny=Math.max(4,Math.min(96,(e.clientY-r.top)/r.height*100));
-        el.style.left=nx+'%'; el.style.top=ny+'%';
-        el._nx=nx; el._ny=ny;
-      });
-      el.addEventListener('pointerup',function(e){
+    if(opts.editable){
+      var wrap=document.createElement('div');
+      wrap.className='pl-decalwrap';
+      wrap.style.left=p.x+'%'; wrap.style.top=p.y+'%';
+      var el=document.createElement('img');
+      el.className='pl-decal editable'; el.src='stickers/'+p.file; el.alt='';
+      el.style.transform='rotate('+(p.rot||0)+'deg)';
+      var x=document.createElement('button');
+      x.type='button'; x.className='pl-decalx'; x.setAttribute('aria-label','Remove sticker'); x.textContent='\u00d7';
+      x.addEventListener('pointerdown',function(e){ e.stopPropagation(); });
+      x.addEventListener('click',function(e){
         e.stopPropagation();
-        var arr=window.thwapPlaced.list(surface);
-        if(!moved){ arr.splice(idx,1); window.thwapPlaced.save(surface,arr); window.thwapRenderPlaced(surface,container,opts); }
-        else if(el._nx!=null){ if(arr[idx]){ arr[idx].x=el._nx; arr[idx].y=el._ny; window.thwapPlaced.save(surface,arr); } }
+        window.thwapPlaced.removeAt(surface,idx); window.thwapRenderPlaced(surface,container,opts);
+        if(opts.onchange) opts.onchange();
       });
+      wrap.appendChild(el); wrap.appendChild(x);
+      var moved=false, sx=0, sy=0, lpTimer=null;
+      wrap.addEventListener('pointerdown',function(e){
+        e.preventDefault(); e.stopPropagation(); moved=false; sx=e.clientX; sy=e.clientY;
+        try{ wrap.setPointerCapture(e.pointerId); }catch(_){}
+        lpTimer=setTimeout(function(){ wrap.classList.add('show-x'); },450);  /* long-press reveals x */
+      });
+      wrap.addEventListener('pointermove',function(e){
+        try{ if(!wrap.hasPointerCapture(e.pointerId)) return; }catch(_){ return; }
+        if(Math.abs(e.clientX-sx)+Math.abs(e.clientY-sy)>5){ moved=true; if(lpTimer){clearTimeout(lpTimer);lpTimer=null;} }
+        if(!moved) return;
+        var q=pct(container,e.clientX,e.clientY);
+        wrap.style.left=q.x+'%'; wrap.style.top=q.y+'%'; wrap._q=q;
+      });
+      wrap.addEventListener('pointerup',function(e){
+        e.stopPropagation();
+        if(lpTimer){ clearTimeout(lpTimer); lpTimer=null; }
+        if(moved && wrap._q){ window.thwapPlaced.moveAt(surface,idx,wrap._q.x,wrap._q.y); if(opts.onchange) opts.onchange(); }
+      });
+      container.appendChild(wrap);
+    } else {
+      var img=document.createElement('img');
+      img.className='pl-decal'; img.src='stickers/'+p.file; img.alt='';
+      img.style.left=p.x+'%'; img.style.top=p.y+'%';
+      img.style.transform='translate(-50%,-50%) rotate('+(p.rot||0)+'deg)';
+      container.appendChild(img);
     }
-    container.appendChild(el);
   });
+};
+/* Register the decorate deck: a list of faces [{surface, container}] and a resolver
+   that returns which face is currently visible (for tray drops). Placed stickers are
+   rendered on every face; a tray drop lands on the visible one. */
+window.thwapDecorateDeck=function(faces, getVisible, onchange){
+  DECK={ faces:faces, getVisible:(getVisible||function(){return faces[0];}), onchange:onchange };
+  window.thwapDeckRedraw=function(){ faces.forEach(function(fc){ window.thwapRenderPlaced(fc.surface, fc.container, {editable:true, onchange:onchange}); }); };
+  window.thwapDeckRedraw();
+};
+/* Start dragging a sticker FROM the tray. Called on a tray cell's pointerdown.
+   A ghost follows the finger; on release over the card it is placed there.
+   Works on touch and mouse (pointer events, no HTML5 drag-and-drop). */
+window.thwapStartTrayDrag=function(file, startEvent){
+  if(!DECK) return;
+  startEvent.preventDefault();
+  var ghost=document.createElement('img');
+  ghost.src='stickers/'+file; ghost.className='pl-ghost'; ghost.alt='';
+  ghost.style.left=startEvent.clientX+'px'; ghost.style.top=startEvent.clientY+'px';
+  document.body.appendChild(ghost);
+  function vis(){ return DECK.getVisible()||DECK.faces[0]; }
+  function move(ev){ ghost.style.left=ev.clientX+'px'; ghost.style.top=ev.clientY+'px';
+    var fc=vis(); DECK.faces.forEach(function(f){ f.container.classList.remove('dragover'); });
+    if(pointInside(fc.container,ev.clientX,ev.clientY)) fc.container.classList.add('dragover'); }
+  function up(ev){
+    document.removeEventListener('pointermove',move,true);
+    document.removeEventListener('pointerup',up,true);
+    ghost.remove();
+    var fc=vis(); DECK.faces.forEach(function(f){ f.container.classList.remove('dragover'); });
+    if(pointInside(fc.container,ev.clientX,ev.clientY)){
+      var q=pct(fc.container,ev.clientX,ev.clientY);
+      window.thwapPlaced.add(fc.surface, file, q.x, q.y);
+      window.thwapDeckRedraw(); if(DECK.onchange) DECK.onchange();
+    }
+  }
+  document.addEventListener('pointermove',move,true);
+  document.addEventListener('pointerup',up,true);
 };
 })();</script>
 </body></html>
