@@ -50,14 +50,18 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 /* Kid-voice home hero: greeting + big "Your hockey today" + a tappable Today chip. */
 .hero-hey{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(26px,7vw,44px);line-height:1.05;letter-spacing:.005em;margin:8px 0 2px;color:var(--text);white-space:nowrap}
 .hero-hey .playername-inline{display:inline;margin:0;font-family:inherit;font-size:inherit;font-weight:inherit;letter-spacing:inherit;color:var(--green2);background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.hero-wave{display:inline-block}
+.hero-wave{display:inline-block;transform-origin:70% 80%;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.hero-wave.waving{animation:heroWave .8s ease-in-out infinite}
+.hero-wave.wave-once{animation:heroWave .7s ease-in-out 1}
+@keyframes heroWave{0%,100%{transform:rotate(0)}20%{transform:rotate(16deg)}40%{transform:rotate(-8deg)}60%{transform:rotate(14deg)}80%{transform:rotate(-6deg)}}
+@media (prefers-reduced-motion: reduce){.hero-wave.waving{animation:none}}
 .hero-today{font-size:clamp(20px,5.5vw,28px);font-weight:900;color:var(--text);margin:0 0 8px}
 .daytip-chip{text-decoration:none;background:var(--soft);border-radius:999px;padding:6px 14px;min-height:36px;color:var(--muted);font-weight:800}h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(38px,10vw,54px);line-height:1.04;letter-spacing:.005em;margin:8px 0 11px}h2{letter-spacing:.01em}p{color:var(--text2);line-height:1.5}.hero p{margin:12px 0 0}.daytip{position:relative;display:inline-flex;align-items:center;font:inherit;font-size:14px;font-weight:600;color:var(--muted);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;-webkit-tap-highlight-color:transparent}
 .daydate{position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%) translateY(4px);white-space:nowrap;background:var(--ink);color:#fff;font-size:12px;font-weight:600;padding:6px 10px;border-radius:8px;opacity:0;visibility:hidden;transition:opacity .15s ease,transform .15s ease;pointer-events:none;z-index:5}
 .daydate::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--ink)}
 .daytip:hover .daydate,.daytip:focus-visible .daydate,.daytip.show .daydate{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
 .cards{display:grid;gap:12px;margin-top:20px;grid-template-columns:1fr}.nav{display:grid;grid-template-columns:50px 1fr auto;gap:14px;align-items:center;padding:16px 2px;min-height:auto;border-bottom:1px solid var(--line)}
-a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient(180deg,var(--panel2),var(--panel));padding:18px;min-height:94px;box-shadow:0 6px 18px var(--shadow)}.ico{width:50px;height:50px;border-radius:16px;background:var(--soft);display:grid;place-items:center;font-size:25px}.nav h2{margin:0;font-size:19px;font-weight:800;letter-spacing:.005em}.nav p{margin:5px 0 0;font-size:16px;color:var(--muted)}.chev{font-size:22px;color:var(--chev)}
+a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient(180deg,var(--panel2),var(--panel));padding:18px;min-height:94px;box-shadow:0 6px 18px var(--shadow)}.ico{width:50px;height:50px;border-radius:16px;background:var(--soft);display:grid;place-items:center;font-size:25px}.nav h2{margin:0;font-size:19px;font-weight:800;letter-spacing:.005em}.nav p{margin:5px 0 0;font-size:16px;color:var(--muted)}.chev{font-size:44px;color:var(--chev)}
 .nav.soon{cursor:default;opacity:.72}.nav.soon:hover{border-color:var(--line);transform:none}.soontag{font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--green);border:1px solid var(--line3);border-radius:999px;padding:4px 8px;align-self:center;white-space:nowrap}
 .heroCard{padding:6px 2px 4px;margin-top:6px}.heroCard h1{font-size:40px}.big{font-size:38px}.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.pill{padding:7px 10px;border-radius:999px;background:var(--soft);color:var(--green2);font-size:12px;font-weight:900}
 .pilltip{position:relative;padding:7px 12px;border-radius:999px;background:var(--soft);color:var(--green2);font:inherit;font-size:12px;font-weight:900;border:0;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;-webkit-tap-highlight-color:transparent}
@@ -77,7 +81,7 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .exhead .exem{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font-size:30px;line-height:1;background:color-mix(in srgb,var(--exacc) 22%,transparent)}
 .exhead h3{margin:0;font-size:22px;font-weight:800;letter-spacing:.005em}
 .exhead .exdose{font-size:12px;color:var(--muted);margin-top:4px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
-.exhead .exchev{font-size:22px;color:var(--chev);transition:transform .15s ease}
+.exhead .exchev{font-size:44px;color:var(--chev);transition:transform .15s ease}
 .exrow.open{border-color:var(--exacc);box-shadow:0 6px 20px var(--shadow)}
 .exrow.open .exhead .exchev{transform:rotate(90deg)}
 /* done state: filled accent tile with a check */
@@ -146,6 +150,7 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .cf-frame .cf-nm{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(22px,8vw,40px);color:#fff;line-height:1;text-transform:uppercase;letter-spacing:.01em}
 .cf-frame .cf-sub{font-size:12px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--acc,#F0645A);margin-top:4px}
 .cf-photo-btn{position:absolute;top:12px;right:12px;z-index:6;min-height:40px;padding:0 14px;border:0;border-radius:999px;background:rgba(15,23,18,.72);color:#fff;font-family:inherit;font-weight:800;font-size:13px;cursor:pointer;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(6px)}
+.card3d.showing-back .cf-photo-btn{display:none}
 .cf-photo-btn:active{transform:scale(.96)}
 /* holographic sheen driven by --sheen (0..1) */
 .cardface::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.28) 47%,rgba(185,240,107,.22) 52%,rgba(117,184,255,.22) 57%,transparent 72%);transform:translateX(calc((var(--sheen,.5) - .5) * 160%));mix-blend-mode:screen;opacity:.7}
@@ -403,7 +408,7 @@ button.row:active{background:var(--soft)}
 <section id='home'>
 <div class='wipnote'>👋 Early prototype. We're testing the look and feel. Training drills and stickers are still being built.</div>
 <div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-skate-1.png' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'> Thwap Hockey</div><nav class='toplinks'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Change player</a><span class='topsep'>|</span><a class='link' href='#progress'>Leaderboard</a></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><a href='#stickers'>Stickers</a><a href='#roster'>Change player</a><a href='#progress'>Leaderboard</a></div></div>
-<div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>Lewie</button> <span class='hero-wave'>👋</span></h1><div class='hero-today'>Your hockey today</div><div class='forrow'><span class='forline'>3 things, about 30 min</span><button type='button' class='daytip daytip-chip' id='dayTip' aria-label='Show today’s date'>Today<span class='daydate' id='dayDate'>Sunday, September 13</span></button></div></div>
+<div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>Lewie</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><div class='hero-today'>Your hockey today</div><div class='forrow'><span class='forline'>3 things, about 30 min</span><button type='button' class='daytip daytip-chip' id='dayTip' aria-label='Show today’s date'>Today<span class='daydate' id='dayDate'>Sunday, September 13</span></button></div></div>
 <div class='cards'>
 <a class='nav' href='hockey_game_goals.html'><div class='ico'>🎯</div><div><h2>Game Day Goals</h2><p>Pick your 4 goals for today’s game</p></div><div class='chev'>›</div></a>
 <a class='nav' href='#stick'><div class='ico'>🏒</div><div><h2>Stickhandling</h2><p>Hands + puck control, about 10-15 min</p></div><div class='chev'>›</div></a>
@@ -826,12 +831,30 @@ function buildFaces(){
         "<div class='cf-num'>"+(p.num||'')+"</div>"+
         "<div class='cf-foot'><div class='cf-nm'>"+p.first+"</div><div class='cf-sub'>Jr Rangers</div></div>"+
       "</div>"+
-      "<button type='button' class='cf-photo-btn' id='cfPhotoBtn'>Change photo</button>";
+      "<button type='button' class='cf-photo-btn' id='cfPhotoBtn'>Edit photo</button>";
   } else {
     front.innerHTML="<img class='cardart' src='cards/"+slug+"_front.png' alt='"+p.first+" card front'>"+
       "<button type='button' class='cf-photo-btn' id='cfPhotoBtn'>Add your photo</button>";
   }
   wirePhotoButton(slug);
+  /* Cross-device: if the server has a photo for this player (added by a parent
+     on any device), show it even if this device has no local copy. Async, so it
+     upgrades the card once it resolves without blocking the first paint. */
+  if(window.thwapPhotoResolve){
+    window.thwapPhotoResolve(slug, function(url){
+      if(!url) return;
+      var artImg=front.querySelector('.cardart');
+      if(artImg && artImg.getAttribute('src')!==url){
+        artImg.setAttribute('src', url); artImg.setAttribute('alt', p.first+' photo');
+        var pb=document.getElementById('cfPhotoBtn'); if(pb) pb.textContent='Edit photo';
+        if(!front.querySelector('.cf-frame')){
+          var fr=document.createElement('div'); fr.className='cf-frame';
+          fr.innerHTML="<div class='cf-num'>"+(p.num||'')+"</div><div class='cf-foot'><div class='cf-nm'>"+p.first+"</div><div class='cf-sub'>Jr Rangers</div></div>";
+          front.insertBefore(fr, front.querySelector('.cf-photo-btn'));
+        }
+      }
+    });
+  }
   /* Back: the real designed card art + a See my stats button. Stickers now come from
      the decorate placement system (rendered below), not the old pick-3 strip. */
   back.innerHTML="<img class='cardart' src='cards/"+slug+"_back.png' alt='"+p.first+" card back'>"+
@@ -864,37 +887,11 @@ function wirePhotoButton(slug){
     e.stopPropagation();
     var has=false; try{ has=!!localStorage.getItem('thwapCardPhoto:'+slug); }catch(_){}
     if(has){
-      var change=window.confirm('Change this photo? Tap OK to pick a new one, or Cancel to remove the photo and go back to the team card.');
-      if(!change){ try{ localStorage.removeItem('thwapCardPhoto:'+slug); }catch(_){} buildFaces(); paint(); return; }
-    } else {
-      var ok=window.confirm('Ask a parent first! A parent should say yes before adding a photo.\n\nYour photo stays only on this phone. It is not shared with the team or sent anywhere.');
-      if(!ok) return;
+      /* Edit: pick a new photo, or remove. Cancel keeps the current photo. */
+      var choice=window.confirm('Edit photo. Tap OK to pick a new one. Tap Cancel to keep the current photo.');
+      if(!choice) return;
     }
-    var inp=document.createElement('input');
-    inp.type='file'; inp.accept='image/*';
-    inp.addEventListener('change',function(){
-      var f=inp.files&&inp.files[0]; if(!f)return;
-      var rd=new FileReader();
-      rd.onload=function(){
-        var img=new Image();
-        img.onload=function(){
-          /* Downscale to a card-ish portrait so localStorage stays small. Cover-crop to the card ratio. */
-          var TW=560, TH=760;
-          var cv=document.createElement('canvas'); cv.width=TW; cv.height=TH;
-          var cx=cv.getContext('2d');
-          var s=Math.max(TW/img.width, TH/img.height);
-          var dw=img.width*s, dh=img.height*s;
-          cx.drawImage(img,(TW-dw)/2,(TH-dh)/2,dw,dh);
-          var url=cv.toDataURL('image/jpeg',0.82);
-          try{ localStorage.setItem('thwapCardPhoto:'+slug, url); }
-          catch(err){ window.alert('That photo is too big to save on this phone. Try a smaller one.'); return; }
-          buildFaces(); paint();
-        };
-        img.src=rd.result;
-      };
-      rd.readAsDataURL(f);
-    });
-    inp.click();
+    if(window.thwapPhotoEdit){ window.thwapPhotoEdit(slug, has, function(){ buildFaces(); paint(); }); }
   });
 }
 function disc(icon,label,days,top){  return "<div class='cb-disc'>"+
@@ -918,6 +915,12 @@ function paint(){
   card.style.transform='rotateX('+rx+'deg) rotateY('+ry+'deg)';
   front.style.setProperty('--sheen', sheen);
   back.style.setProperty('--sheen', 1-sheen);
+  /* Hide the front photo button whenever the BACK is toward the viewer. Safari can
+     bleed a z-indexed child of a backface-hidden face through the flip, so we
+     hide it explicitly rather than rely on backface-visibility. */
+  var yy=((ry%360)+360)%360;
+  var backShowing=(yy>90 && yy<270);
+  card.classList.toggle('showing-back', backShowing);
 }
 function open(){
   /* If no player is chosen yet on this device, send them to pick one first. */
@@ -1793,5 +1796,164 @@ window.thwapStartTrayDrag=function(file, startEvent){
   document.addEventListener('pointermove',move,true);
   document.addEventListener('pointerup',up,true);
 };
+})();</script>
+<script>(function(){
+/* ---- Parent-gated player photo (client) -------------------------------------
+   A parent adds/edits the player's card photo. Flow: enter a parent email, get a
+   one-time code by email, enter it, then pick a photo. The photo uploads to the
+   server and syncs to every device. A verified parent stays verified on this
+   device for 30 days (token cached locally), so editing later does not re-code.
+
+   Graceful fallback: if the photo service is not configured on the server (503)
+   or unreachable, we fall back to storing the photo LOCALLY on this device only,
+   exactly like before, so the app still works. */
+function slugOf(name){ return String(name||'').toLowerCase().replace(/[^a-z]/g,''); }
+function tokKey(slug){ return 'thwapPhotoTok:'+slug; }
+function localKey(slug){ return 'thwapCardPhoto:'+slug; }
+
+function getToken(slug){
+  try{ var raw=localStorage.getItem(tokKey(slug)); if(!raw) return null;
+    var t=JSON.parse(raw); return (t && t.exp>Date.now())? t.token : null; }catch(e){ return null; }
+}
+function saveToken(slug, token){
+  try{ localStorage.setItem(tokKey(slug), JSON.stringify({token:token, exp:Date.now()+30*24*60*60*1000})); }catch(e){}
+}
+
+/* Crop + downscale a File to the card portrait, return a jpeg data URL. */
+function processFile(file, cb){
+  var rd=new FileReader();
+  rd.onload=function(){
+    var img=new Image();
+    img.onload=function(){
+      var TW=560, TH=760;
+      var cv=document.createElement('canvas'); cv.width=TW; cv.height=TH;
+      var cx=cv.getContext('2d');
+      var s=Math.max(TW/img.width, TH/img.height);
+      var dw=img.width*s, dh=img.height*s;
+      cx.drawImage(img,(TW-dw)/2,(TH-dh)/2,dw,dh);
+      cb(cv.toDataURL('image/jpeg',0.82));
+    };
+    img.onerror=function(){ cb(null); };
+    img.src=rd.result;
+  };
+  rd.onerror=function(){ cb(null); };
+  rd.readAsDataURL(file);
+}
+
+function pickFile(cb){
+  var inp=document.createElement('input');
+  inp.type='file'; inp.accept='image/*';
+  inp.addEventListener('change',function(){ var f=inp.files&&inp.files[0]; if(f) processFile(f,cb); });
+  inp.click();
+}
+
+function saveLocal(slug, dataUrl){
+  try{ localStorage.setItem(localKey(slug), dataUrl); return true; }
+  catch(e){ window.alert('That photo is too big to save on this device. Try a smaller one.'); return false; }
+}
+
+/* Try to upload to the server with a verified token. Returns a promise of true
+   (uploaded) or false (fall back to local). */
+function uploadToServer(playerId, slug, dataUrl){
+  var token=getToken(slug);
+  if(!token) return Promise.resolve(false);
+  return fetch('/api/photo/upload',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+    body:JSON.stringify({playerId:playerId, imageData:dataUrl})})
+    .then(function(r){ return r.ok; }).catch(function(){ return false; });
+}
+
+/* Run the parent email-OTP gate. Resolves to true if verified (token cached). */
+function parentGate(playerId, slug){
+  var email=window.prompt('A parent adds the photo.\n\nEnter a parent email to get a one-time code:');
+  if(!email) return Promise.resolve(false);
+  return fetch('/api/photo/request-code',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:email, playerId:playerId})})
+    .then(function(r){
+      if(r.status===503) return 'unconfigured';
+      if(r.status===429){ window.alert('Too many tries. Please wait a bit and try again.'); return false; }
+      if(!r.ok){ window.alert('Please check the email and try again.'); return false; }
+      var code=window.prompt('We emailed a 6-digit code to '+email+'.\n\nEnter it here (it expires in 10 minutes):');
+      if(!code) return false;
+      return fetch('/api/photo/verify',{method:'POST',headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({email:email, playerId:playerId, code:String(code).trim()})})
+        .then(function(v){ return v.ok? v.json().then(function(j){ saveToken(slug, j.uploadToken); return true; })
+          : (window.alert('That code did not work. Try again.'), false); });
+    }).catch(function(){ return 'unconfigured'; });
+}
+
+/* PUBLIC: called by the card photo button. playerId = lowercase first name. */
+window.thwapPhotoEdit=function(playerId, hasPhoto, onDone){
+  var slug=slugOf(playerId);
+  function afterPick(dataUrl){
+    if(!dataUrl) return;
+    uploadToServer(playerId, slug, dataUrl).then(function(uploaded){
+      if(!uploaded) saveLocal(slug, dataUrl);   /* fallback: local only */
+      if(onDone) onDone();
+    });
+  }
+  /* Already verified on this device: skip the gate, go straight to picking. */
+  if(getToken(slug)){ pickFile(afterPick); return; }
+  parentGate(playerId, slug).then(function(ok){
+    if(ok==='unconfigured'){
+      /* Server not set up: local-only path, parent-consent reminder. */
+      var consent=window.confirm('Ask a parent first. A parent should say yes before adding a photo.\n\nYour photo stays only on this device. It is not shared with the team.');
+      if(consent) pickFile(afterPick);
+      return;
+    }
+    if(ok) pickFile(afterPick);
+  });
+};
+
+/* PUBLIC: remove the photo (server if verified, else local). */
+window.thwapPhotoRemove=function(playerId, onDone){
+  var slug=slugOf(playerId);
+  try{ localStorage.removeItem(localKey(slug)); }catch(e){}
+  var token=getToken(slug);
+  var done=function(){ if(onDone) onDone(); };
+  if(token){ fetch('/api/photo/remove',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({playerId:playerId})}).then(done).catch(done); }
+  else done();
+};
+
+/* PUBLIC: resolve the best photo URL for a player. Prefers the server photo,
+   falls back to a locally-stored data URL. Calls cb(url|null). */
+window.thwapPhotoResolve=function(playerId, cb){
+  var slug=slugOf(playerId);
+  var local=null; try{ local=localStorage.getItem(localKey(slug)); }catch(e){}
+  fetch('/api/photo/get?playerId='+encodeURIComponent(playerId),{cache:'no-store'})
+    .then(function(r){ return r.ok? r.json() : null; })
+    .then(function(j){ cb((j&&j.url)||local||null); })
+    .catch(function(){ cb(local||null); });
+};
+})();</script>
+<script>(function(){
+/* Easter egg: the greeting hand waves when the mouse comes near it (desktop),
+   or when you tap it (touch). It stops when the mouse leaves. Reuses the wave
+   emoji already in the greeting, adds no visible control. Cheap: the mousemove
+   listener only does a distance check, and is not attached on touch devices. */
+var wave=document.getElementById('heroWave');
+if(wave){
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var NEAR=120; /* px */
+  var hasHover=window.matchMedia&&window.matchMedia('(hover: hover)').matches;
+
+  /* Tap (works everywhere, the whole point on touch): one wave burst. */
+  wave.addEventListener('click',function(){
+    wave.classList.remove('wave-once'); void wave.offsetWidth; wave.classList.add('wave-once');
+  });
+
+  /* Desktop proximity: wave while the cursor is near, and lean toward it. */
+  if(hasHover && !reduce){
+    var onMove=function(e){
+      var r=wave.getBoundingClientRect();
+      var cx=r.left+r.width/2, cy=r.top+r.height/2;
+      var dx=e.clientX-cx, dy=e.clientY-cy;
+      var dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist<NEAR){ wave.classList.add('waving'); }
+      else{ wave.classList.remove('waving'); }
+    };
+    window.addEventListener('mousemove', onMove, {passive:true});
+  }
+}
 })();</script>
 </body></html>
