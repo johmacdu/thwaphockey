@@ -4,7 +4,15 @@
   "private": true,
   "type": "module",
   "description": "Thwap Hockey static site with Vercel serverless API (leaderboard + per-player discipline tracking).",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
   "dependencies": {
     "@upstash/redis": "1.38.4"
+  },
+  "devDependencies": {
+    "vitest": "2.1.9",
+    "jsdom": "25.0.1"
   }
 }
