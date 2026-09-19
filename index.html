@@ -207,8 +207,8 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .cb-disc-days{font-size:13px;font-weight:800;color:var(--orange);white-space:nowrap}
 .cb-disc-most{font-size:12px;font-weight:600;color:rgba(255,255,255,.7);margin-top:2px}
 .cb-stickers{position:absolute;right:14px;bottom:14px;display:flex;gap:-6px}
-.pl-decal{position:absolute;width:56px;height:56px;object-fit:contain;filter:drop-shadow(0 2px 5px rgba(0,0,0,.45));pointer-events:none;-webkit-user-drag:none;user-select:none;z-index:4}
-.pl-decalwrap{position:absolute;transform:translate(-50%,-50%);z-index:4;touch-action:none;cursor:grab}
+.pl-decal{position:absolute;width:56px;height:56px;object-fit:contain;filter:drop-shadow(0 2px 5px rgba(0,0,0,.45));pointer-events:none;-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none;z-index:4}
+.pl-decalwrap{position:absolute;transform:translate(-50%,-50%);z-index:4;touch-action:none;cursor:grab;-webkit-touch-callout:none}
 .pl-decalwrap:active{cursor:grabbing}
 .pl-decalwrap.placed-pop{animation:plPlacePop .4s cubic-bezier(.2,1.5,.4,1)}
 @keyframes plPlacePop{0%{transform:translate(-50%,-50%) scale(1.7)}55%{transform:translate(-50%,-50%) scale(.9)}100%{transform:translate(-50%,-50%) scale(1)}}
@@ -1798,6 +1798,7 @@ window.thwapRenderPlaced=function(surface, container, opts){
       });
       wrap.appendChild(el); wrap.appendChild(x);
       var moved=false, sx=0, sy=0, lpTimer=null;
+      wrap.addEventListener('contextmenu',function(e){ e.preventDefault(); });  /* stop the iOS image save/copy menu on long-press */
       wrap.addEventListener('pointerdown',function(e){
         e.preventDefault(); e.stopPropagation(); moved=false; sx=e.clientX; sy=e.clientY;
         try{ wrap.setPointerCapture(e.pointerId); }catch(_){}
