@@ -389,7 +389,51 @@ button.row:active{background:var(--soft)}
 .eggspark{position:fixed;top:0;left:0;width:4px;height:14px;border-radius:2px;background:linear-gradient(180deg,#FFE08A,#FF9D4D);box-shadow:0 0 6px #FFC24A;pointer-events:none;z-index:120;opacity:0;will-change:transform,opacity}
 .eggspark.fire{animation:eggSparkFly .6s ease-out forwards}
 @keyframes eggSparkFly{0%{transform:translate(var(--sx),var(--sy)) rotate(var(--sa)) scale(.5);opacity:0}15%{opacity:1}100%{transform:translate(calc(var(--sx) + var(--dx)),calc(var(--sy) + var(--dy))) rotate(var(--sa)) scale(1);opacity:0}}
-@media (prefers-reduced-motion: reduce){.eggstick.egg-go,.eggbolt.egg-zap,.eggspark.fire,.eggshot.fly,.eggnet.egg-hit,.eggnet .egghole.punch{animation:none}}</style><script>try{if(localStorage.getItem('thwapTheme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script></head><body><div class='app'>
+@media (prefers-reduced-motion: reduce){.eggstick.egg-go,.eggbolt.egg-zap,.eggspark.fire,.eggshot.fly,.eggnet.egg-hit,.eggnet .egghole.punch{animation:none}}</style>
+<style id='login-splash-css'>
+/* ---- Break the Ice: login splash overlay (Pass 1 foundation) ----
+   A full-screen frosted layer that sits OVER the real homepage. #home renders
+   underneath untouched; the empty #loginStage is the mount point where the Sass
+   animation, frost texture and THWAP! impact graphic land in a later pass. */
+#loginOverlay{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:24px;padding-top:calc(env(safe-area-inset-top,0px) + 24px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 24px)}
+#loginOverlay[hidden]{display:none}
+/* frozen glass: blur + a cool ice/blue wash over the live homepage */
+.login-frost{position:absolute;inset:0;background:linear-gradient(180deg,rgba(243,247,244,.62),rgba(117,184,255,.30)),radial-gradient(120% 90% at 50% -12%,rgba(255,255,255,.55),transparent 60%);backdrop-filter:blur(14px) saturate(115%);-webkit-backdrop-filter:blur(14px) saturate(115%)}
+html[data-theme='dark'] .login-frost{background:linear-gradient(180deg,rgba(16,26,20,.60),rgba(48,91,67,.34)),radial-gradient(120% 90% at 50% -12%,rgba(117,184,255,.18),transparent 60%)}
+.login-frost::after{content:'';position:absolute;inset:0;box-shadow:inset 0 0 120px rgba(255,255,255,.35),inset 0 0 0 1px rgba(255,255,255,.25);pointer-events:none}
+.login-stage{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.login-modal{position:relative;z-index:2;width:100%;max-width:360px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-major);padding:26px 22px 22px;box-shadow:0 24px 70px rgba(9,15,11,.45)}
+.login-h{font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;font-size:26px;line-height:1.05;margin:0;color:var(--text)}
+.login-sub{margin:6px 0 18px;font-size:14px;color:var(--muted)}
+.login-field{display:block;margin-bottom:12px}
+.login-lab{display:block;font-size:12px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.login-in{width:100%;box-sizing:border-box;padding:13px 14px;border-radius:12px;border:1px solid var(--line2);background:var(--card);color:var(--text);font-family:inherit;font-size:16px}
+.age-chips{display:flex;flex-wrap:wrap;gap:8px}
+.age-chip{position:relative;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.age-chip input{position:absolute;opacity:0;width:0;height:0}
+.age-chip span{display:inline-flex;align-items:center;gap:5px;padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid var(--line2);background:var(--card);color:var(--text);font-size:15px;font-weight:800;line-height:1;transition:background .12s ease,border-color .12s ease,color .12s ease}
+.age-chip span em{font-style:normal;font-weight:700;color:var(--muted);font-size:12px}
+.age-chip input:checked+span{background:var(--green);border-color:var(--green);color:var(--onaccent)}
+.age-chip input:checked+span em{color:var(--onaccent);opacity:.85}
+.age-chip input:focus-visible+span{outline:3px solid var(--lime);outline-offset:2px}
+.login-done{margin:2px 0 0;font-size:14px;font-weight:800;color:var(--green2);text-align:center;line-height:1.4}
+.login-pwwrap{position:relative;display:block}
+.login-pwwrap .login-in{padding-right:60px}
+.login-eye{position:absolute;top:50%;right:8px;transform:translateY(-50%);min-width:44px;height:40px;border:0;background:none;color:var(--muted);font-size:13px;font-weight:800;cursor:pointer;border-radius:10px}
+.login-eye:hover{color:var(--text)}
+.login-row{display:flex;align-items:center;gap:9px;margin:6px 0 16px}
+.login-row input{width:18px;height:18px;accent-color:var(--green)}
+.login-row label{font-size:14px;color:var(--text2);font-weight:600}
+.login-go{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;background:var(--green);color:var(--onaccent);font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;font-size:16px;border:0;border-radius:14px;cursor:pointer;transition:transform .08s ease,filter .12s ease}
+.login-go:hover{filter:brightness(1.04)}
+.login-go:active{transform:scale(.98)}
+.login-err{min-height:18px;margin:10px 0 0;font-size:13px;font-weight:700;color:var(--alert);text-align:center}
+.login-alt{margin:15px 0 0;font-size:14px;color:var(--muted);text-align:center}
+.login-alt a{color:var(--green2);font-weight:800;text-decoration:underline;text-underline-offset:3px}
+body.login-locked{overflow:hidden}
+@media (prefers-reduced-motion: reduce){.login-go{transition:none}}
+@media (max-width:420px){.login-modal{max-width:none}.login-h{font-size:23px}}
+</style><script>try{if(localStorage.getItem('thwapTheme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script></head><body><div class='app'>
 
 <section id='dryland' class='page'>
 <a class='glassclose' href='.' aria-label='Close'>✕</a>
@@ -480,7 +524,64 @@ button.row:active{background:var(--soft)}
 <a class='nav nav-dryland' href='#dryland'><div class='ico'>⚡</div><div><h2>Dryland</h2><p>Speed + power + balance, about 15 min</p></div><div class='chev'>›</div></a>
 </div><div class='footer'><span class='slogan'>Compete. Improve. Have fun.</span><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button></div><div class='trademark'>Thwap Hockey&trade;</div>
 </section>
-</div><script>(function(){
+</div>
+<!-- Break the Ice login splash: a full-screen overlay OVER the real homepage.
+     Not a <section> (keeps hash-nav + the 8-section contract intact). The empty
+     #loginStage is reserved for the Pass 2/3 Sass animation, frost + THWAP! burst. -->
+<div id='loginOverlay' hidden aria-hidden='true'>
+  <div class='login-frost'></div>
+  <div class='login-stage' id='loginStage' aria-hidden='true'></div>
+  <form class='login-modal' id='loginForm' role='dialog' aria-modal='true' aria-labelledby='loginTitle' novalidate>
+    <h2 class='login-h' id='loginTitle'>Welcome back!</h2>
+    <p class='login-sub'>Sign in to your team.</p>
+    <label class='login-field'>
+      <span class='login-lab'>Parent email</span>
+      <input class='login-in' id='loginEmail' type='email' inputmode='email' autocomplete='email' placeholder='parent@email.com' required>
+    </label>
+    <label class='login-field'>
+      <span class='login-lab'>Password</span>
+      <span class='login-pwwrap'>
+        <input class='login-in' id='loginPw' type='password' autocomplete='current-password' placeholder='••••••' required>
+        <button type='button' class='login-eye' id='loginEye' aria-label='Show password'>Show</button>
+      </span>
+    </label>
+    <div class='login-row'>
+      <input type='checkbox' id='loginKeep' checked>
+      <label for='loginKeep'>Keep me signed in</label>
+    </div>
+    <button type='submit' class='login-go'>Sign In &#8594;</button>
+    <p class='login-err' id='loginErr' aria-live='polite'></p>
+    <p class='login-alt'>New to THWAP? <a href='#' id='loginWaitlist'>Join the waitlist.</a></p>
+  </form>
+  <form class='login-modal' id='waitForm' role='dialog' aria-modal='true' aria-labelledby='waitTitle' hidden novalidate>
+    <h2 class='login-h' id='waitTitle'>Join the waitlist</h2>
+    <p class='login-sub' id='waitSub'>Tell us where you play. We will reach out when THWAP opens for your team.</p>
+    <div id='waitFields'>
+      <label class='login-field'>
+        <span class='login-lab'>Association</span>
+        <input class='login-in' id='waitAssoc' type='text' autocomplete='organization' placeholder='e.g. Vancouver Jr. Rangers' required>
+      </label>
+      <div class='login-field'>
+        <span class='login-lab'>Age level (pick all that apply)</span>
+        <div class='age-chips' id='waitAgeGroup' role='group' aria-label='Age level'>
+          <label class='age-chip'><input type='checkbox' name='age' value='6U'><span data-age='6U'>6U <em>(mini-mite)</em></span></label>
+          <label class='age-chip'><input type='checkbox' name='age' value='8U'><span data-age='8U'>8U <em>(mite)</em></span></label>
+          <label class='age-chip'><input type='checkbox' name='age' value='10U'><span data-age='10U'>10U <em>(squirt)</em></span></label>
+          <label class='age-chip'><input type='checkbox' name='age' value='12U'><span data-age='12U'>12U <em>(peewee)</em></span></label>
+        </div>
+      </div>
+      <label class='login-field'>
+        <span class='login-lab'>Email</span>
+        <input class='login-in' id='waitEmail' type='email' inputmode='email' autocomplete='email' placeholder='you@email.com' required>
+      </label>
+      <button type='submit' class='login-go'>Join the waitlist</button>
+    </div>
+    <p class='login-err' id='waitErr' aria-live='polite'></p>
+    <p class='login-done' id='waitDone' hidden>You are on the list. We will be in touch.</p>
+    <p class='login-alt'>Already have a team? <a href='#' id='waitBack'>Back to sign in.</a></p>
+  </form>
+</div>
+<script>(function(){
 /* Player gate: tapping a drill card asks who you are, then continues to the drill. */
 var PLAYER='bfPlayer';
 /* Real per-player identity: the chosen player is saved in localStorage on THIS device.
@@ -2166,5 +2267,172 @@ tapEgg(document.getElementById('eggBolt'),function(done){
     done();
   },1120);
 });
+})();</script>
+<script>(function(){
+/* ---- Break the Ice: login gate (Pass 1 foundation) ----
+   Real password auth against the temporary team password: the player's jersey
+   number followed by the season year (e.g. #72 in the 2026-27 season -> 722027).
+   The check is client-side for this pass; it is structured to move behind a
+   serverless endpoint that issues an HTTP-only session cookie later. */
+var SEASON_YEAR=2027;                 /* 2026-27 season */
+/* Jersey number by first name. Mirrors ROSTER_INFO in currentPlayer() and the
+   ROSTER in api/store.js; kept local so the gate never depends on load order. */
+var NUMS={alder:'71',brooklyn:'92',dawson:'19',dominic:'98',eugene:'3',evan:'13',greyson:'32',johnny:'1',joziah:'59',lewie:'72',liam:'29',maddux:'18',oliver:'90',teddy:'11',william:'16',issac:'53'};
+var AUTH_KEY='thwapAuth';
+var overlay=document.getElementById('loginOverlay');
+if(!overlay)return;
+var form=document.getElementById('loginForm');
+var emailEl=document.getElementById('loginEmail');
+var pwEl=document.getElementById('loginPw');
+var keepEl=document.getElementById('loginKeep');
+var errEl=document.getElementById('loginErr');
+var eyeEl=document.getElementById('loginEye');
+
+function readAuth(){
+  try{ var raw=localStorage.getItem(AUTH_KEY)||sessionStorage.getItem(AUTH_KEY); return raw?JSON.parse(raw):null; }
+  catch(e){ return null; }
+}
+function isAuthed(){ var a=readAuth(); return !!(a&&a.pid); }
+
+/* Build { "<number>": {pid, name} } from the roster in the DOM + exposed numbers. */
+function credentials(){
+  var byNum={};
+  document.querySelectorAll('#roster .pcard[data-name]').forEach(function(card){
+    var full=(card.getAttribute('data-name')||'').trim();
+    var key=full.split(/\s+/)[0].toLowerCase();
+    var num=NUMS[key];
+    if(num){ byNum[String(num)]={pid:key,name:full}; }
+  });
+  return byNum;
+}
+function playerForPassword(pw){
+  var p=String(pw||'').trim(), suf=String(SEASON_YEAR);
+  if(p.length<=suf.length||p.slice(-suf.length)!==suf) return null;
+  var num=p.slice(0,p.length-suf.length);
+  return credentials()[num]||null;
+}
+function validEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v||'').trim()); }
+
+function show(){
+  overlay.hidden=false; overlay.setAttribute('aria-hidden','false');
+  document.body.classList.add('login-locked');
+  setTimeout(function(){ if(emailEl) emailEl.focus(); },60);
+}
+function hide(){
+  overlay.hidden=true; overlay.setAttribute('aria-hidden','true');
+  document.body.classList.remove('login-locked');
+}
+function signIn(player,email,keep){
+  var rec={pid:player.pid,name:player.name,email:String(email||'').trim(),year:SEASON_YEAR,ts:Date.now()};
+  try{
+    var json=JSON.stringify(rec);
+    if(keep){ localStorage.setItem(AUTH_KEY,json); sessionStorage.removeItem(AUTH_KEY); }
+    else { sessionStorage.setItem(AUTH_KEY,json); localStorage.removeItem(AUTH_KEY); }
+    localStorage.setItem('bfPlayer',player.name); /* land them in their own team experience */
+  }catch(e){}
+  hide();
+  if(location.hash==='#login'){ location.hash='#home'; }
+  location.reload(); /* reload so every view re-reads the chosen player, like pickPlayer */
+}
+
+if(form){
+  form.addEventListener('submit',function(e){
+    e.preventDefault(); errEl.textContent='';
+    if(!validEmail(emailEl.value)){ errEl.textContent='Enter a parent email.'; emailEl.focus(); return; }
+    var player=playerForPassword(pwEl.value);
+    if(!player){ errEl.textContent='That password did not match. It is the player number plus the season year.'; pwEl.focus(); pwEl.select(); return; }
+    signIn(player,emailEl.value,keepEl.checked);
+  });
+}
+if(eyeEl&&pwEl){
+  eyeEl.addEventListener('click',function(){
+    var showing=pwEl.type==='text';
+    pwEl.type=showing?'password':'text';
+    eyeEl.textContent=showing?'Show':'Hide';
+    eyeEl.setAttribute('aria-label',showing?'Show password':'Hide password');
+  });
+}
+/* ---- Waitlist: swap the same overlay between the sign-in card and a short
+   Association / Age level(s) / Email form that POSTs to /api/waitlist. Age
+   labels follow the visitor's region (US 6U/8U/10U/12U, Canada U7/U9/U11/U13),
+   but the CANONICAL 6U/8U/10U/12U codes are what get stored. ---- */
+var waitForm=document.getElementById('waitForm');
+var waitAssoc=document.getElementById('waitAssoc');
+var waitEmail=document.getElementById('waitEmail');
+var waitErr=document.getElementById('waitErr');
+var US_AGE={'6U':{label:'6U',term:'mini-mite'},'8U':{label:'8U',term:'mite'},'10U':{label:'10U',term:'squirt'},'12U':{label:'12U',term:'peewee'}};
+var CA_AGE={'6U':{label:'U7',term:'initiation'},'8U':{label:'U9',term:'novice'},'10U':{label:'U11',term:'atom'},'12U':{label:'U13',term:'peewee'}};
+var waitRegion='US', geoAsked=false;
+function applyRegion(region){
+  waitRegion=(region==='CA')?'CA':'US';
+  var map=(waitRegion==='CA')?CA_AGE:US_AGE;
+  document.querySelectorAll('#waitAgeGroup .age-chip span[data-age]').forEach(function(sp){
+    var m=map[sp.getAttribute('data-age')]; if(!m)return;
+    sp.innerHTML=m.label+' <em>('+m.term+')</em>';
+  });
+}
+function loadGeo(){
+  if(geoAsked)return; geoAsked=true;
+  try{ var c=sessionStorage.getItem('thwapRegion'); if(c) applyRegion(c); }catch(e){}
+  fetch('/api/geo',{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(j){
+    if(!j)return; var reg=j.canada?'CA':'US'; applyRegion(reg);
+    try{ sessionStorage.setItem('thwapRegion',reg); }catch(e){}
+  }).catch(function(){});
+}
+function checkedAges(){
+  var out=[];
+  waitForm.querySelectorAll('input[name="age"]:checked').forEach(function(cb){ out.push(cb.value); });
+  return out;
+}
+function showWait(){
+  if(form) form.hidden=true;
+  if(waitForm) waitForm.hidden=false;
+  loadGeo();
+  setTimeout(function(){ if(waitAssoc) waitAssoc.focus(); },60);
+}
+function showSignin(){
+  if(waitForm) waitForm.hidden=true;
+  if(form){ form.hidden=false; setTimeout(function(){ if(emailEl) emailEl.focus(); },60); }
+}
+function waitSuccess(email){
+  var fields=document.getElementById('waitFields'); if(fields) fields.hidden=true;
+  if(waitErr) waitErr.textContent='';
+  var sub=document.getElementById('waitSub'); if(sub) sub.textContent='Thanks for signing up.';
+  var done=document.getElementById('waitDone');
+  if(done){ done.textContent='You are on the list ('+email+'). We will be in touch.'; done.hidden=false; }
+}
+var waitlist=document.getElementById('loginWaitlist');
+if(waitlist){ waitlist.addEventListener('click',function(e){ e.preventDefault(); showWait(); }); }
+var waitBack=document.getElementById('waitBack');
+if(waitBack){ waitBack.addEventListener('click',function(e){ e.preventDefault(); showSignin(); }); }
+if(waitForm){
+  waitForm.addEventListener('submit',function(e){
+    e.preventDefault(); waitErr.textContent='';
+    var assoc=(waitAssoc.value||'').trim(), ages=checkedAges(), email=(waitEmail.value||'').trim();
+    if(!assoc){ waitErr.textContent='Enter your association.'; waitAssoc.focus(); return; }
+    if(!ages.length){ waitErr.textContent='Pick at least one age level.'; return; }
+    if(!validEmail(email)){ waitErr.textContent='Enter a valid email.'; waitEmail.focus(); return; }
+    var btn=waitForm.querySelector('.login-go');
+    if(btn){ btn.disabled=true; btn.textContent='Joining...'; }
+    function reset(){ if(btn){ btn.disabled=false; btn.textContent='Join the waitlist'; } }
+    fetch('/api/waitlist',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({association:assoc,ageLevels:ages,region:waitRegion,email:email})})
+      .then(function(r){
+        if(r.ok){ waitSuccess(email); return; }
+        if(r.status===503){ waitErr.textContent='The waitlist is not open yet. Please try again soon.'; }
+        else { waitErr.textContent='Something went wrong. Please try again.'; }
+        reset();
+      })
+      .catch(function(){ waitErr.textContent='Something went wrong. Please try again.'; reset(); });
+  });
+}
+/* Gate on load: authed players skip the splash and go to their team experience;
+   everyone else sees it over the real homepage. #login always re-shows it. */
+function gate(){
+  if(location.hash==='#login'){ show(); return; }
+  if(isAuthed()){ hide(); } else { show(); }
+}
+window.addEventListener('hashchange',function(){ if(location.hash==='#login') show(); });
+gate();
 })();</script>
 </body></html>
