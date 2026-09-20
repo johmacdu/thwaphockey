@@ -31,9 +31,9 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 .deck-wrap{margin:4px 0 18px;text-align:center}
 .stickerbook-card{text-align:center}
 @media (min-width:860px){
-  .stickerbook{display:flex;align-items:flex-start;gap:28px}
-  .stickerbook-card{flex:0 0 300px;position:sticky;top:16px}
-  .stickerbook .stickgrid{flex:1;margin-top:0}
+  .stickerbook.is-open{display:flex;align-items:flex-start;gap:28px}
+  .stickerbook.is-open .stickerbook-card{flex:0 0 300px;position:sticky;top:16px}
+  .stickerbook.is-open .stickgrid{flex:1;margin-top:0}
 }
 .cardthumb{display:inline-flex;flex-direction:column;align-items:center;gap:10px;margin:6px auto 20px;background:none;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;color:var(--text)}
 .cardthumb[hidden]{display:none}
@@ -187,7 +187,7 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .pgate-msg{margin-top:10px;font-size:13px;color:var(--muted);min-height:18px;text-align:center}
 @media (prefers-reduced-motion: reduce){.pgate{transition:none}}
 .cardclose{position:absolute;top:16px;right:16px;width:44px;height:44px;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.cardscene{perspective:1400px;width:min(380px,94vw);display:flex;flex-direction:column;align-items:center;gap:16px}
+.cardscene{perspective:1400px;width:min(380px,94vw);display:flex;flex-direction:column;align-items:center;gap:16px;position:relative}
 .card3d{position:relative;width:100%;aspect-ratio:5/7;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.7,.2,1);will-change:transform;touch-action:none;cursor:grab}
 .card3d.dragging{transition:none;cursor:grabbing}
 .card3d.intro{animation:cardIn .5s cubic-bezier(.2,.9,.2,1)}
@@ -237,7 +237,8 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .cb-stat .n{font-family:'Archivo Black',system-ui,sans-serif;font-size:30px}
 .cb-stat .l{font-size:12px;font-weight:800;letter-spacing:.06em;color:rgba(255,255,255,.7);text-transform:uppercase}
 .cb-streak{margin-top:auto;font-family:'Archivo Black',system-ui,sans-serif;font-size:22px;color:var(--orange)}
-.cb-stats{position:absolute;left:50%;bottom:27px;transform:translateX(-50%);z-index:4;display:inline-flex;align-items:center;gap:6px;background:var(--lime);color:#0f1712;font-family:'Nunito Sans',system-ui,sans-serif;font-weight:900;font-size:12px;border:0;border-radius:999px;padding:8px 16px;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.4);-webkit-tap-highlight-color:transparent}
+.cb-stats{position:absolute;left:50%;top:calc(min(380px,94vw) * 1.4 - 46px);transform:translateX(-50%);z-index:20;display:none;align-items:center;gap:6px;background:var(--lime);color:#0f1712;font-family:'Nunito Sans',system-ui,sans-serif;font-weight:900;font-size:12px;border:0;border-radius:999px;padding:8px 16px;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.4);-webkit-tap-highlight-color:transparent}
+.cardscene.on-back .cb-stats{display:inline-flex}
 .cb-stats::before{content:'📊'}
 .cb-stats:hover{filter:brightness(1.05)}
 .cb-stats:active{transform:translateX(-50%) scale(.96)}
@@ -786,6 +787,14 @@ function pickPlayer(name,ev,el){
       var expect=String(pending.info.num)+String(SEASON_YEAR);
       if(String(cd.value||'').trim()!==expect){ er.textContent='That code did not match. It is the player number plus '+SEASON_YEAR+'.'; cd.focus(); cd.select(); return; }
       try{ localStorage.setItem(PLAYER, pending.info.name); }catch(_){}
+      /* also log this player in via the auth cookie so the gate stays in sync */
+      try{
+        var rec=JSON.stringify({pid:pending.slug,name:pending.info.name,email:String(em.value||'').trim(),year:SEASON_YEAR,ts:Date.now()});
+        var ck='thwapAuth='+encodeURIComponent(rec)+';path=/;samesite=lax';
+        var d=new Date(); d.setTime(d.getTime()+180*864e5); ck+=';expires='+d.toUTCString();
+        if(location.protocol==='https:') ck+=';secure';
+        document.cookie=ck;
+      }catch(_){}
       location.hash='#home'; location.reload();
     });
   }
@@ -1147,6 +1156,7 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#progress')
       <div class='cardface cardfront' id='cardFront'></div>
       <div class='cardface cardback' id='cardBack'></div>
     </div>
+    <button type='button' class='cb-stats' id='cbStats'>See my stats</button>
     <div class='cardhint' id='cardHint' hidden></div>
     <div class='cardctl' id='cardCtl'>
       <div class='cardctl-row' id='cardCtlMain'>
@@ -1171,6 +1181,14 @@ var scene=document.getElementById('cardScene');
 var card=document.getElementById('card3d');
 var front=document.getElementById('cardFront');
 var back=document.getElementById('cardBack');
+var statsBtn=document.getElementById('cbStats');
+if(statsBtn){ statsBtn.addEventListener('click',function(e){
+  e.preventDefault(); e.stopPropagation();
+  var cp=(typeof currentPlayer==='function')?currentPlayer():null;
+  var name=cp?(cp.name||cp.display||cp.first):'';
+  close();
+  setTimeout(function(){ if(window.openPlayerPage) window.openPlayerPage(name,'card'); },220);
+}); }
 var closeBtn=document.getElementById('cardClose');
 var openBtn=document.getElementById('homePlayer');
 var hint=document.getElementById('cardHint');
@@ -1321,21 +1339,8 @@ function buildFaces(){
   /* Back: coded card (replaces the per-player _back.png). Live per-player stats, one
      of 6 dark color themes assigned deterministically by name so it is stable. */
   function renderBack(){
-    back.innerHTML=buildBack(p,slug)+
-      "<button type='button' class='cb-stats' id='cbStats'>See my stats</button>";
-    wireStatsBtn();
+    back.innerHTML=buildBack(p,slug);
     if(window.thwapRenderPlaced){ window.thwapRenderPlaced('back', back, {}); }
-  }
-  function wireStatsBtn(){
-    var sb=document.getElementById('cbStats');
-    if(!sb) return;
-    sb.addEventListener('pointerdown',function(e){ e.stopPropagation(); });
-    sb.addEventListener('click',function(e){
-      e.stopPropagation();
-      var name=p.name||p.display||p.first||'';
-      close();
-      setTimeout(function(){ if(window.openPlayerPage) window.openPlayerPage(name, 'card'); },220);
-    });
   }
   renderBack();
   /* Pull live stats so the back is real; rebuild it when data lands. */
@@ -1445,6 +1450,7 @@ function paint(){
   var yy=((ry%360)+360)%360;
   var backShowing=(yy>90 && yy<270);
   card.classList.toggle('showing-back', backShowing);
+  var scene=document.getElementById('cardScene'); if(scene) scene.classList.toggle('on-back', backShowing);
 }
 function open(){
   /* If no player is chosen yet on this device, send them to pick one first. */
@@ -1618,21 +1624,14 @@ fetch('stickers/stickers.json').then(function(r){return r.json();}).then(functio
       thumbMini.innerHTML="<img src='cards/lewie_front.png' alt='' style='width:104px;height:146px;object-fit:cover'>";
     }
   }
-  function openCard(){ if(deckWrap) deckWrap.hidden=false; if(cardThumb) cardThumb.hidden=true; }
-  function closeCard(){ if(deckWrap) deckWrap.hidden=true; if(cardThumb) cardThumb.hidden=false; }
-  var isDesktop=window.matchMedia&&window.matchMedia('(min-width:860px)').matches;
+  function openCard(){ if(deckWrap) deckWrap.hidden=false; if(cardThumb) cardThumb.hidden=true; if(stickerBook) stickerBook.classList.add('is-open'); }
+  function closeCard(){ if(deckWrap) deckWrap.hidden=true; if(cardThumb) cardThumb.hidden=false; if(stickerBook) stickerBook.classList.remove('is-open'); }
+  var stickerBook=document.getElementById('stickerBook');
   var hasPlaced=false;
   try{ hasPlaced=(window.thwapPlaced && (window.thwapPlaced.list('front').length || window.thwapPlaced.list('back').length)); }catch(_){}
-  if(isDesktop){
-    /* Desktop split: card and stickers show side by side, so the card is always
-       open. No mini card, no put-away. */
-    openCard();
-    if(cardAway) cardAway.hidden=true;
-  } else {
-    if(hasPlaced){ openCard(); }
-    if(cardThumb && !cardThumb._wired){ cardThumb._wired=1; cardThumb.addEventListener('click',function(){ openCard(); }); }
-    if(cardAway && !cardAway._wired){ cardAway._wired=1; cardAway.addEventListener('click',function(){ closeCard(); }); }
-  }
+  if(hasPlaced){ openCard(); }   /* returning player: their decorated card greets them */
+  if(cardThumb && !cardThumb._wired){ cardThumb._wired=1; cardThumb.addEventListener('click',function(){ openCard(); }); }
+  if(cardAway && !cardAway._wired){ cardAway._wired=1; cardAway.addEventListener('click',function(){ closeCard(); }); }
 
   files.forEach(function(f,i){
     var earned=i<EARNED;
@@ -2765,9 +2764,27 @@ var pwEl=document.getElementById('loginPw');
 var keepEl=document.getElementById('loginKeep');
 var errEl=document.getElementById('loginErr');
 var eyeEl=document.getElementById('loginEye');
+function cookieGet(name){
+  var m=document.cookie.match(new RegExp('(?:^|; )'+name.replace(/([.$?*|{}()\[\]\\\/\+^])/g,'\\$1')+'=([^;]*)'));
+  return m?decodeURIComponent(m[1]):null;
+}
+function cookieSet(name,value,days){
+  var s=name+'='+encodeURIComponent(value)+';path=/;samesite=lax';
+  if(days){ var d=new Date(); d.setTime(d.getTime()+days*864e5); s+=';expires='+d.toUTCString(); }
+  if(location.protocol==='https:') s+=';secure';
+  document.cookie=s;
+}
+function cookieDel(name){ document.cookie=name+'=;path=/;max-age=0'; }
 function readAuth(){
-  try{ var raw=localStorage.getItem(AUTH_KEY)||sessionStorage.getItem(AUTH_KEY); return raw?JSON.parse(raw):null; }
-  catch(e){ return null; }
+  /* Cookie is the source of truth: the splash appears unless the browser holds
+     the login cookie. Fall back to legacy storage once, then migrate to cookie. */
+  try{
+    var c=cookieGet(AUTH_KEY);
+    if(c) return JSON.parse(c);
+    var raw=localStorage.getItem(AUTH_KEY)||sessionStorage.getItem(AUTH_KEY);
+    if(raw){ var rec=JSON.parse(raw); if(rec&&rec.pid){ cookieSet(AUTH_KEY,raw,180); } return rec; }
+    return null;
+  }catch(e){ return null; }
 }
 function isAuthed(){ var a=readAuth(); return !!(a&&a.pid); }
 function credentials(){
@@ -2800,8 +2817,8 @@ function signIn(player,email,keep){
   var rec={pid:player.pid,name:player.name,email:String(email||'').trim(),year:SEASON_YEAR,ts:Date.now()};
   try{
     var json=JSON.stringify(rec);
-    if(keep){ localStorage.setItem(AUTH_KEY,json); sessionStorage.removeItem(AUTH_KEY); }
-    else { sessionStorage.setItem(AUTH_KEY,json); localStorage.removeItem(AUTH_KEY); }
+    cookieSet(AUTH_KEY, json, keep?180:0);   /* keep -> 180-day cookie; else session cookie */
+    localStorage.removeItem(AUTH_KEY); sessionStorage.removeItem(AUTH_KEY);
     localStorage.setItem('bfPlayer',player.name);
   }catch(e){}
   hide();
