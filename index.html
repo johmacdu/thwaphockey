@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=Archivo+Black&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;0,6..12,800;0,6..12,900&display=swap' rel='stylesheet'><title>Thwap Hockey</title><link rel='icon' type='image/png' href='logo-64.png'><link rel='apple-touch-icon' href='logo-180.png'><style>
+<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Oswald:wght@500;600;700&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;0,6..12,800;0,6..12,900&display=swap' rel='stylesheet'><title>Thwap Hockey</title><link rel='icon' type='image/png' href='logo-64.png'><link rel='apple-touch-icon' href='logo-180.png'><style>
 /* Keyboard focus ring: visible for keyboard/switch users, invisible to mouse taps.
    Uses a lime core with a dark ink halo so it reads on both light and dark themes. */
 a:focus-visible,button:focus-visible,[tabindex]:focus-visible,.row:focus-visible,.nav:focus-visible,.segbtn:focus-visible,.pl-tot:focus-visible{outline:3px solid var(--lime);outline-offset:2px;box-shadow:0 0 0 5px rgba(21,34,27,.55);border-radius:12px}
@@ -45,7 +45,7 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 @media (prefers-reduced-motion: reduce){.stickcell.shine::before{animation:none;display:none}}
 @media (prefers-reduced-motion: reduce){.slapped{animation:none}}
 .page{display:none}.page:target{display:block;padding-top:64px}.page:target~#home{display:none}#home{display:block}
-.topbar{height:68px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.01em}.brandlogo{height:68px;width:auto;object-fit:contain;display:block}.link{color:var(--green2);font-weight:900;font-size:13px}.back{display:inline-block;padding:20px 0 6px;color:var(--green2);font-weight:900}
+.topbar{min-height:68px;padding:6px 0;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}.brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.01em}.brandlogo{height:68px;width:auto;object-fit:contain;display:block}.brandmark{height:72px;width:auto;object-fit:contain;display:block;margin-left:-12px}@media (max-width:560px){.brandmark{height:54px;margin-left:-8px}.brandlogo{height:54px}}.link{color:var(--green2);font-weight:900;font-size:13px}.back{display:inline-block;padding:20px 0 6px;color:var(--green2);font-weight:900}
 
 
 
@@ -207,6 +207,59 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .cb-disc-days{font-size:13px;font-weight:800;color:var(--orange);white-space:nowrap}
 .cb-disc-most{font-size:12px;font-weight:600;color:rgba(255,255,255,.7);margin-top:2px}
 .cb-stickers{position:absolute;right:14px;bottom:14px;display:flex;gap:-6px}
+/* ---- Coded card back: themed art PLATE (cards/plate_back_<theme>.svg) as the
+   background, with the header (name + red underline + position + tagline), the THIS
+   WEEK live-stat tiles, and the GOOD HABITS + crest footer overlaid in matching type. */
+.cb2{position:absolute;inset:0;color:#fff;background:#161F30;font-family:'Oswald',system-ui,sans-serif;overflow:hidden}
+.cb2-plate{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;pointer-events:none;-webkit-user-drag:none}
+.cb2-in{position:absolute;inset:0;z-index:2;padding:22px 20px 18px;display:flex;flex-direction:column}
+.cb2-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.cb2-name{font-family:'Anton',system-ui,sans-serif;font-size:clamp(28px,10vw,42px);line-height:.86;text-transform:uppercase;letter-spacing:.005em;color:#FAFBFC}
+.cb2-name i{display:block;width:150px;max-width:90%;height:5px;background:#C0252A;margin:5px 0 4px}
+.cb2-pos{font-family:'Oswald',system-ui,sans-serif;font-weight:500;font-size:clamp(11px,3.6vw,15px);text-transform:uppercase;letter-spacing:.13em;color:#E7ECF0;margin-top:2px}
+.cb2-tag{text-align:right;font-family:'Oswald',system-ui,sans-serif;font-weight:600;font-style:italic;font-size:11px;line-height:1.2;text-transform:uppercase;letter-spacing:.02em;color:#B7C3CE}
+.cb2-tag i{display:block;width:34px;height:4px;background:#C0252A;transform:skewX(-14deg);margin:6px 0 0 auto}
+.cb2-panel{margin-top:16px;border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:12px;background:rgba(10,15,22,.52);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
+.cb2-eyebrow{font-family:'Anton',system-ui,sans-serif;font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:#fff;margin:0 2px 10px}
+.cb2-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cb2-tile{border:1px solid rgba(255,255,255,.14);border-radius:12px;background:rgba(0,0,0,.4);padding:12px 12px;display:flex;align-items:center;gap:10px}
+.cb2-ico{width:34px;height:34px;flex:0 0 34px;color:#C0252A}
+.cb2-ico svg{width:100%;height:100%;display:block}
+.cb2-ico.mut{color:rgba(255,255,255,.85)}
+.cb2-n{font-family:'Anton',system-ui,sans-serif;font-size:32px;line-height:.9;margin-left:auto;color:#FAFBFC}
+.cb2-l{font-family:'Oswald',system-ui,sans-serif;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.78);width:100%;flex-basis:100%;margin-top:-2px}
+.cb2-tile{flex-wrap:wrap}
+.cb2-wide{grid-column:1/-1;display:flex;align-items:center;gap:12px}
+.cb2-bars{display:flex;align-items:flex-end;gap:3px;height:24px}
+.cb2-bars i{width:5px;background:#C0252A;border-radius:1px}
+.cb2-wide .cb2-n{margin-left:0}
+.cb2-wide .cb2-l{width:auto;flex-basis:auto;margin:0}
+.cb2-ft{margin-top:auto;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding-top:14px}
+.cb2-habits{font-family:'Oswald',system-ui,sans-serif;font-weight:700;font-style:italic;font-size:20px;line-height:.98;color:#B7C3CE;text-transform:uppercase}
+.cb2-habits i{display:block;width:70px;height:4px;background:#C0252A;transform:skewX(-16deg);margin-top:6px}
+.cb2-crest{width:70px;height:82px;flex:0 0 70px}
+.cb2-crest svg{width:100%;height:100%;display:block;filter:drop-shadow(0 3px 8px rgba(0,0,0,.5))}
+@media (max-width:340px){.cb2-in{padding:16px 14px}.cb2-n{font-size:26px}}
+/* ---- Coded card FRONT: real text-free art plate (cards/card_front_plate.svg,
+   viewBox 756x1024) as the background, the player's own consented photo composited
+   over it when present, and live number / name / position / association overlaid to
+   match Lewie's front. The PLAY LEARN IMPROVE REPEAT tagline is baked into the plate. */
+.cf2{position:absolute;inset:0;overflow:hidden;font-family:'Oswald',system-ui,sans-serif;color:#fff;background:#161F30}
+.cf2-plate{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;pointer-events:none;-webkit-user-drag:none}
+.cf2-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;z-index:2}
+.cf2-photo-mask{position:absolute;inset:0;z-index:3;pointer-events:none;background:
+  linear-gradient(100deg,rgba(22,31,48,.92) 0%,rgba(22,31,48,.35) 26%,transparent 46%),
+  linear-gradient(0deg,rgba(22,31,48,.85) 0%,transparent 30%)}
+/* keeps the number and name legible over any plate/photo */
+.cf2-scrim{position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(0deg,rgba(10,14,12,.62) 0%,transparent 26%)}
+.cf2-num{position:absolute;top:6px;left:18px;z-index:4;font-family:'Anton',system-ui,sans-serif;font-size:clamp(56px,23vw,116px);line-height:.8;color:#FAFBFC;text-shadow:0 3px 16px rgba(0,0,0,.55);letter-spacing:-.02em}
+.cf2-tagline{position:absolute;left:20px;top:clamp(78px,29vw,150px);z-index:4;font-family:'Oswald',system-ui,sans-serif;font-weight:600;font-style:italic;font-size:clamp(13px,4.6vw,19px);line-height:1.04;text-transform:uppercase;letter-spacing:.02em;color:#B7C3CE}
+.cf2-tagline i{display:block;width:36px;height:4px;background:#C0252A;transform:skewX(-16deg);margin-top:6px}
+.cf2-foot{position:absolute;left:0;right:0;bottom:0;z-index:4;padding:16px 20px 22px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.cf2-nm{font-family:'Anton',system-ui,sans-serif;font-size:clamp(30px,11vw,52px);line-height:.86;text-transform:uppercase;letter-spacing:.005em;color:#FAFBFC}
+.cf2-nm i{display:block;width:200px;max-width:96%;height:6px;background:#C0252A;margin:6px 0 7px}
+.cf2-pos{font-family:'Oswald',system-ui,sans-serif;font-weight:500;font-size:clamp(12px,4vw,17px);text-transform:uppercase;letter-spacing:.14em;color:#E7ECF0}
+.cf2-team{text-align:right;font-family:'Oswald',system-ui,sans-serif;font-weight:600;font-size:clamp(9px,2.8vw,12px);line-height:1.35;text-transform:uppercase;letter-spacing:.12em;color:#DCE2E8;white-space:nowrap}
 .pl-decal{position:absolute;width:56px;height:56px;object-fit:contain;filter:drop-shadow(0 2px 5px rgba(0,0,0,.45));pointer-events:none;-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none;z-index:4}
 .pl-decalwrap{position:absolute;transform:translate(-50%,-50%);z-index:4;touch-action:none;cursor:grab;-webkit-touch-callout:none}
 .pl-decalwrap:active{cursor:grabbing}
@@ -389,51 +442,7 @@ button.row:active{background:var(--soft)}
 .eggspark{position:fixed;top:0;left:0;width:4px;height:14px;border-radius:2px;background:linear-gradient(180deg,#FFE08A,#FF9D4D);box-shadow:0 0 6px #FFC24A;pointer-events:none;z-index:120;opacity:0;will-change:transform,opacity}
 .eggspark.fire{animation:eggSparkFly .6s ease-out forwards}
 @keyframes eggSparkFly{0%{transform:translate(var(--sx),var(--sy)) rotate(var(--sa)) scale(.5);opacity:0}15%{opacity:1}100%{transform:translate(calc(var(--sx) + var(--dx)),calc(var(--sy) + var(--dy))) rotate(var(--sa)) scale(1);opacity:0}}
-@media (prefers-reduced-motion: reduce){.eggstick.egg-go,.eggbolt.egg-zap,.eggspark.fire,.eggshot.fly,.eggnet.egg-hit,.eggnet .egghole.punch{animation:none}}</style>
-<style id='login-splash-css'>
-/* ---- Break the Ice: login splash overlay (Pass 1 foundation) ----
-   A full-screen frosted layer that sits OVER the real homepage. #home renders
-   underneath untouched; the empty #loginStage is the mount point where the Sass
-   animation, frost texture and THWAP! impact graphic land in a later pass. */
-#loginOverlay{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:24px;padding-top:calc(env(safe-area-inset-top,0px) + 24px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 24px)}
-#loginOverlay[hidden]{display:none}
-/* frozen glass: blur + a cool ice/blue wash over the live homepage */
-.login-frost{position:absolute;inset:0;background:linear-gradient(180deg,rgba(243,247,244,.62),rgba(117,184,255,.30)),radial-gradient(120% 90% at 50% -12%,rgba(255,255,255,.55),transparent 60%);backdrop-filter:blur(14px) saturate(115%);-webkit-backdrop-filter:blur(14px) saturate(115%)}
-html[data-theme='dark'] .login-frost{background:linear-gradient(180deg,rgba(16,26,20,.60),rgba(48,91,67,.34)),radial-gradient(120% 90% at 50% -12%,rgba(117,184,255,.18),transparent 60%)}
-.login-frost::after{content:'';position:absolute;inset:0;box-shadow:inset 0 0 120px rgba(255,255,255,.35),inset 0 0 0 1px rgba(255,255,255,.25);pointer-events:none}
-.login-stage{position:absolute;inset:0;pointer-events:none;overflow:hidden}
-.login-modal{position:relative;z-index:2;width:100%;max-width:360px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-major);padding:26px 22px 22px;box-shadow:0 24px 70px rgba(9,15,11,.45)}
-.login-h{font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;font-size:26px;line-height:1.05;margin:0;color:var(--text)}
-.login-sub{margin:6px 0 18px;font-size:14px;color:var(--muted)}
-.login-field{display:block;margin-bottom:12px}
-.login-lab{display:block;font-size:12px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
-.login-in{width:100%;box-sizing:border-box;padding:13px 14px;border-radius:12px;border:1px solid var(--line2);background:var(--card);color:var(--text);font-family:inherit;font-size:16px}
-.age-chips{display:flex;flex-wrap:wrap;gap:8px}
-.age-chip{position:relative;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.age-chip input{position:absolute;opacity:0;width:0;height:0}
-.age-chip span{display:inline-flex;align-items:center;gap:5px;padding:10px 14px;min-height:44px;border-radius:999px;border:1px solid var(--line2);background:var(--card);color:var(--text);font-size:15px;font-weight:800;line-height:1;transition:background .12s ease,border-color .12s ease,color .12s ease}
-.age-chip span em{font-style:normal;font-weight:700;color:var(--muted);font-size:12px}
-.age-chip input:checked+span{background:var(--green);border-color:var(--green);color:var(--onaccent)}
-.age-chip input:checked+span em{color:var(--onaccent);opacity:.85}
-.age-chip input:focus-visible+span{outline:3px solid var(--lime);outline-offset:2px}
-.login-done{margin:2px 0 0;font-size:14px;font-weight:800;color:var(--green2);text-align:center;line-height:1.4}
-.login-pwwrap{position:relative;display:block}
-.login-pwwrap .login-in{padding-right:60px}
-.login-eye{position:absolute;top:50%;right:8px;transform:translateY(-50%);min-width:44px;height:40px;border:0;background:none;color:var(--muted);font-size:13px;font-weight:800;cursor:pointer;border-radius:10px}
-.login-eye:hover{color:var(--text)}
-.login-row{display:flex;align-items:center;gap:9px;margin:6px 0 16px}
-.login-row input{width:18px;height:18px;accent-color:var(--green)}
-.login-row label{font-size:14px;color:var(--text2);font-weight:600}
-.login-go{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;background:var(--green);color:var(--onaccent);font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;font-size:16px;border:0;border-radius:14px;cursor:pointer;transition:transform .08s ease,filter .12s ease}
-.login-go:hover{filter:brightness(1.04)}
-.login-go:active{transform:scale(.98)}
-.login-err{min-height:18px;margin:10px 0 0;font-size:13px;font-weight:700;color:var(--alert);text-align:center}
-.login-alt{margin:15px 0 0;font-size:14px;color:var(--muted);text-align:center}
-.login-alt a{color:var(--green2);font-weight:800;text-decoration:underline;text-underline-offset:3px}
-body.login-locked{overflow:hidden}
-@media (prefers-reduced-motion: reduce){.login-go{transition:none}}
-@media (max-width:420px){.login-modal{max-width:none}.login-h{font-size:23px}}
-</style><script>try{if(localStorage.getItem('thwapTheme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script></head><body><div class='app'>
+@media (prefers-reduced-motion: reduce){.eggstick.egg-go,.eggbolt.egg-zap,.eggspark.fire,.eggshot.fly,.eggnet.egg-hit,.eggnet .egghole.punch{animation:none}}</style><script>try{if(localStorage.getItem('thwapTheme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script></head><body><div class='app'>
 
 <section id='dryland' class='page'>
 <a class='glassclose' href='.' aria-label='Close'>✕</a>
@@ -515,7 +524,7 @@ body.login-locked{overflow:hidden}
 
 <section id='home'>
 <div class='wipnote'>👋 Early prototype. We're testing the look and feel. Training drills and stickers are still being built.</div>
-<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-skate-1.png' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'> Thwap Hockey</div><nav class='toplinks'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Change player</a><span class='topsep'>|</span><a class='link' href='#progress'>Leaderboard</a></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><a href='#stickers'>Stickers</a><a href='#roster'>Change player</a><a href='#progress'>Leaderboard</a></div></div>
+<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-skate-1.png' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Change player</a><span class='topsep'>|</span><a class='link' href='#progress'>Leaderboard</a></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><a href='#stickers'>Stickers</a><a href='#roster'>Change player</a><a href='#progress'>Leaderboard</a></div></div>
 <div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>Lewie</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><div class='forrow'><span class='forline'>3 things, about 30 min</span><button type='button' class='daytip daytip-chip' id='dayTip' aria-label='Show today’s date'>Today<span class='daydate' id='dayDate'>Sunday, September 13</span></button></div></div>
 <div class='cards'>
 <a class='nav' href='hockey_game_goals.html'><div class='ico'>🎯</div><div><h2>Game Day Goals</h2><p>Pick your 4 goals for today’s game</p></div><div class='chev'>›</div></a>
@@ -524,64 +533,7 @@ body.login-locked{overflow:hidden}
 <a class='nav nav-dryland' href='#dryland'><div class='ico'>⚡</div><div><h2>Dryland</h2><p>Speed + power + balance, about 15 min</p></div><div class='chev'>›</div></a>
 </div><div class='footer'><span class='slogan'>Compete. Improve. Have fun.</span><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button></div><div class='trademark'>Thwap Hockey&trade;</div>
 </section>
-</div>
-<!-- Break the Ice login splash: a full-screen overlay OVER the real homepage.
-     Not a <section> (keeps hash-nav + the 8-section contract intact). The empty
-     #loginStage is reserved for the Pass 2/3 Sass animation, frost + THWAP! burst. -->
-<div id='loginOverlay' hidden aria-hidden='true'>
-  <div class='login-frost'></div>
-  <div class='login-stage' id='loginStage' aria-hidden='true'></div>
-  <form class='login-modal' id='loginForm' role='dialog' aria-modal='true' aria-labelledby='loginTitle' novalidate>
-    <h2 class='login-h' id='loginTitle'>Welcome back!</h2>
-    <p class='login-sub'>Sign in to your team.</p>
-    <label class='login-field'>
-      <span class='login-lab'>Parent email</span>
-      <input class='login-in' id='loginEmail' type='email' inputmode='email' autocomplete='email' placeholder='parent@email.com' required>
-    </label>
-    <label class='login-field'>
-      <span class='login-lab'>Password</span>
-      <span class='login-pwwrap'>
-        <input class='login-in' id='loginPw' type='password' autocomplete='current-password' placeholder='••••••' required>
-        <button type='button' class='login-eye' id='loginEye' aria-label='Show password'>Show</button>
-      </span>
-    </label>
-    <div class='login-row'>
-      <input type='checkbox' id='loginKeep' checked>
-      <label for='loginKeep'>Keep me signed in</label>
-    </div>
-    <button type='submit' class='login-go'>Sign In &#8594;</button>
-    <p class='login-err' id='loginErr' aria-live='polite'></p>
-    <p class='login-alt'>New to THWAP? <a href='#' id='loginWaitlist'>Join the waitlist.</a></p>
-  </form>
-  <form class='login-modal' id='waitForm' role='dialog' aria-modal='true' aria-labelledby='waitTitle' hidden novalidate>
-    <h2 class='login-h' id='waitTitle'>Join the waitlist</h2>
-    <p class='login-sub' id='waitSub'>Tell us where you play. We will reach out when THWAP opens for your team.</p>
-    <div id='waitFields'>
-      <label class='login-field'>
-        <span class='login-lab'>Association</span>
-        <input class='login-in' id='waitAssoc' type='text' autocomplete='organization' placeholder='e.g. Vancouver Jr. Rangers' required>
-      </label>
-      <div class='login-field'>
-        <span class='login-lab'>Age level (pick all that apply)</span>
-        <div class='age-chips' id='waitAgeGroup' role='group' aria-label='Age level'>
-          <label class='age-chip'><input type='checkbox' name='age' value='6U'><span data-age='6U'>6U <em>(mini-mite)</em></span></label>
-          <label class='age-chip'><input type='checkbox' name='age' value='8U'><span data-age='8U'>8U <em>(mite)</em></span></label>
-          <label class='age-chip'><input type='checkbox' name='age' value='10U'><span data-age='10U'>10U <em>(squirt)</em></span></label>
-          <label class='age-chip'><input type='checkbox' name='age' value='12U'><span data-age='12U'>12U <em>(peewee)</em></span></label>
-        </div>
-      </div>
-      <label class='login-field'>
-        <span class='login-lab'>Email</span>
-        <input class='login-in' id='waitEmail' type='email' inputmode='email' autocomplete='email' placeholder='you@email.com' required>
-      </label>
-      <button type='submit' class='login-go'>Join the waitlist</button>
-    </div>
-    <p class='login-err' id='waitErr' aria-live='polite'></p>
-    <p class='login-done' id='waitDone' hidden>You are on the list. We will be in touch.</p>
-    <p class='login-alt'>Already have a team? <a href='#' id='waitBack'>Back to sign in.</a></p>
-  </form>
-</div>
-<script>(function(){
+</div><script>(function(){
 /* Player gate: tapping a drill card asks who you are, then continues to the drill. */
 var PLAYER='bfPlayer';
 /* Real per-player identity: the chosen player is saved in localStorage on THIS device.
@@ -931,7 +883,7 @@ render();
 fetchBoard();
 window.addEventListener('hashchange',function(){ if(location.hash==='#progress') fetchBoard(); });
 })();</script>
-<script>(function(){var KEY='thwapTheme';function apply(t){var dark=(t==='dark');document.documentElement.setAttribute('data-theme',dark?'dark':'light');var i=document.getElementById('ttico'),l=document.getElementById('ttlabel');if(i)i.textContent=dark?'☀️':'🌙';if(l)l.textContent=dark?'Light':'Dark';}var saved='light';try{saved=localStorage.getItem(KEY)||'light';}catch(e){}apply(saved);var b=document.getElementById('themeToggle');if(b)b.addEventListener('click',function(){var cur='light';try{cur=localStorage.getItem(KEY)||'light';}catch(e){}var next=(cur==='dark'?'light':'dark');try{localStorage.setItem(KEY,next);}catch(e){}apply(next);});})();</script>
+<script>(function(){var KEY='thwapTheme';function apply(t){var dark=(t==='dark');document.documentElement.setAttribute('data-theme',dark?'dark':'light');var i=document.getElementById('ttico'),l=document.getElementById('ttlabel');if(i)i.textContent=dark?'☀️':'🌙';if(l)l.textContent=dark?'Light':'Dark';var bm=document.getElementById('brandMark');if(bm)bm.setAttribute('src',dark?'wordmark-dark.svg':'wordmark-light.svg');}var saved='light';try{saved=localStorage.getItem(KEY)||'light';}catch(e){}apply(saved);var b=document.getElementById('themeToggle');if(b)b.addEventListener('click',function(){var cur='light';try{cur=localStorage.getItem(KEY)||'light';}catch(e){}var next=(cur==='dark'?'light':'dark');try{localStorage.setItem(KEY,next);}catch(e){}apply(next);});})();</script>
 <div class='cardoverlay' id='cardOverlay' hidden>
   <button type='button' class='cardclose' id='cardClose' aria-label='Close card'>✕</button>
   <div class='cardscene' id='cardScene'>
@@ -978,6 +930,72 @@ function currentPlayer(){
   var display=parts.length>1?parts[0]+' '+parts[parts.length-1].charAt(0)+'.':parts[0];
   return {name:saved, display:display, first:parts[0].toUpperCase(), num:info.num, pos:info.pos, photo:''};
 }
+/* Coded card faces: real text-free art PLATES per color theme, with live per-player
+   fields (number/name/position/association) and live weekly stats overlaid in the
+   matching type (Anton display + Oswald labels + red underline). 6 color themes,
+   assigned per player by name (stable). Plates arrive as cards/plate_<face>_<theme>.svg;
+   a missing plate falls back to red so nothing breaks. */
+var CB2_THEMES=['red','blue','forest','plum','teal','gold'];
+var CB2_HAVE={ front:{red:1}, back:{red:1,blue:1} };  /* which plate SVGs exist on disk */
+function cb2Theme(slug){ var h=0; for(var i=0;i<slug.length;i++){ h=(h*31+slug.charCodeAt(i))>>>0; } return CB2_THEMES[h%CB2_THEMES.length]; }
+function cb2Plate(face,slug){ var t=cb2Theme(slug); if(!(CB2_HAVE[face]&&CB2_HAVE[face][t])) t='red'; return 'cards/plate_'+face+'_'+t+'.svg'; }
+function cb2PosLabel(pos){ return pos==='G'?'Goalie':pos==='D'?'Defense':pos==='FD'?'Forward & Defense':pos==='DF'?'Defense & Forward':'Forward'; }
+function cb2Stat(slug,disc){ try{ var b=window.thwapBoard; if(b&&b.week&&b.week[slug]) return b.week[slug][disc]||0; }catch(e){} return 0; }
+function cb2Streak(slug){ try{ var b=window.thwapBoard; if(b&&b.all&&b.all[slug]) return b.all[slug].streak||0; }catch(e){} return 0; }
+var CB2_ICONS={
+  stick:"<svg viewBox='0 0 40 40' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M11 6 L26 27 L33 33'/><path d='M26 27 L18 31'/></svg>",
+  shoot:"<svg viewBox='0 0 40 40' fill='none' stroke='currentColor' stroke-width='2.4'><rect x='7' y='9' width='26' height='22' rx='1.5'/><path d='M7 15h26M7 21h26M13 9v22M20 9v22M27 9v22' stroke-width='1.4'/></svg>",
+  dryland:"<svg viewBox='0 0 40 40' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round'><path d='M6 20h28'/><rect x='4' y='14' width='5' height='12' rx='1.5' fill='currentColor' stroke='none'/><rect x='31' y='14' width='5' height='12' rx='1.5' fill='currentColor' stroke='none'/><rect x='10' y='16' width='4' height='8' rx='1.5' fill='currentColor' stroke='none'/><rect x='26' y='16' width='4' height='8' rx='1.5' fill='currentColor' stroke='none'/></svg>",
+  streak:"<svg viewBox='0 0 40 40' fill='currentColor'><path d='M21 4c1 6-3 8-5 12-1 2-1 4 0 6 .6-2 2-3 3-4 0 3 3 4 3 8a8 8 0 1 1-14-3c1-2 3-3 4-6 1 4 3 3 4 6 1-4-2-6 0-11 1-3 3-5 5-8z'/></svg>",
+  bars:"<span class='cb2-bars'><i style='height:35%'></i><i style='height:55%'></i><i style='height:78%'></i><i style='height:100%'></i></span>"
+};
+var CB2_CREST="<svg viewBox='0 0 70 82' fill='none'><path d='M6 4 H64 V50 Q64 68 35 80 Q6 68 6 50 Z' fill='#fff'/><path d='M9 7 H61 V50 Q61 66 35 76 Q9 66 9 50 Z' fill='#0e2a63'/><rect x='9' y='7' width='52' height='15' fill='#C8102E'/><path d='M9 50 Q35 76 61 50 V44 H9 Z' fill='#C8102E'/><text x='35' y='19' font-family=\"Anton, system-ui, sans-serif\" font-size='9' fill='#fff' text-anchor='middle'>VANCOUVER</text><text x='35' y='38' font-family=\"Anton, system-ui, sans-serif\" font-size='12' fill='#fff' text-anchor='middle'>RANGERS</text></svg>";
+/* Coded card FRONT: themed art plate + optional consented photo + live fields, matching
+   Lewie's front (Anton display, red underline, tracked position, JR RANGERS bottom-right,
+   PLAY LEARN IMPROVE REPEAT tagline with red slash). */
+function buildFront(p,slug,photoUrl){
+  var photo = photoUrl
+    ? "<img class='cf2-photo' src='"+photoUrl+"' alt='"+p.first+" photo'><div class='cf2-photo-mask'></div>"
+    : "";
+  return "<div class='cf2'>"+
+      "<img class='cf2-plate' src='"+cb2Plate('front',slug)+"' alt=''>"+
+      photo+
+      "<div class='cf2-scrim'></div>"+
+      "<div class='cf2-num'>"+(p.num||'')+"</div>"+
+      "<div class='cf2-tagline'>Play<br>Learn<br>Improve<br>Repeat<i></i></div>"+
+      "<div class='cf2-foot'>"+
+        "<div><div class='cf2-nm'>"+p.first+"<i></i></div>"+
+          "<div class='cf2-pos'>"+cb2PosLabel(p.pos)+"</div></div>"+
+        "<div class='cf2-team'>Jr Rangers<br>Vancouver WA</div>"+
+      "</div>"+
+    "</div>";
+}
+function buildBack(p,slug){
+  var stick=cb2Stat(slug,'stick'), shoot=cb2Stat(slug,'shoot'), dry=cb2Stat(slug,'dryland');
+  var streak=cb2Streak(slug), sessions=stick+shoot+dry;
+  var tile=function(icoKey,mut,n,label){
+    return "<div class='cb2-tile'><span class='cb2-ico"+(mut?' mut':'')+"'>"+CB2_ICONS[icoKey]+"</span>"+
+      "<span class='cb2-n'>"+n+"</span><span class='cb2-l'>"+label+"</span></div>";
+  };
+  return "<div class='cb2' role='img' aria-label='"+p.first+" weekly stats card'>"+
+    "<img class='cb2-plate' src='"+cb2Plate('back',slug)+"' alt=''>"+
+    "<div class='cb2-in'>"+
+      "<div class='cb2-hd'><div><div class='cb2-name'>"+p.first+"<i></i></div>"+
+        "<div class='cb2-pos'>"+cb2PosLabel(p.pos)+"</div></div>"+
+        "<div class='cb2-tag'>Same waters.<br>Stronger<br>players.<i></i></div></div>"+
+      "<div class='cb2-panel'><div class='cb2-eyebrow'>This week</div>"+
+        "<div class='cb2-grid'>"+
+          tile('stick',false,stick,'Stickhandling')+
+          tile('shoot',false,shoot,'Shooting')+
+          tile('dryland',true,dry,'Dryland')+
+          tile('streak',false,streak,'Day Streak')+
+          "<div class='cb2-tile cb2-wide'><span class='cb2-ico'>"+CB2_ICONS.bars+"</span>"+
+            "<span class='cb2-n'>"+sessions+"</span><span class='cb2-l'>Sessions this week</span></div>"+
+        "</div></div>"+
+      "<div class='cb2-ft'><div class='cb2-habits'>Good<br>Habits<br>Big Plays<i></i></div>"+
+        "<span class='cb2-crest'>"+CB2_CREST+"</span></div>"+
+    "</div></div>";
+}
 function buildFaces(){
   var p=currentPlayer();
   var posCls=p.pos==='G'?'pos-goalie':p.pos==='D'?'pos-def':'pos-fwd';
@@ -987,45 +1005,37 @@ function buildFaces(){
   /* Front: the player's own photo (local-only) if they added one, framed as a Thwap card;
      otherwise the stock designed card art. The photo is stored on THIS device only
      (localStorage), never uploaded and never shown on anyone else's card (COPPA-safe). */
+  /* Front: coded card matching Lewie's style for every player. Over the player's own
+     consented photo (local-only, or server-resolved if a parent added one on any
+     device), or a designed photo-less fallback. Never shows another child's photo. */
   var myPhoto=null;
   try{ myPhoto=localStorage.getItem('thwapCardPhoto:'+slug); }catch(e){}
-  if(myPhoto){
-    front.innerHTML=
-      "<img class='cardart' src='"+myPhoto+"' alt='"+p.first+" photo'>"+
-      "<div class='cf-frame'>"+
-        "<div class='cf-num'>"+(p.num||'')+"</div>"+
-        "<div class='cf-foot'><div class='cf-nm'>"+p.first+"</div><div class='cf-sub'>Jr Rangers</div></div>"+
-      "</div>"+
-      "<button type='button' class='cf-photo-btn' id='cfPhotoBtn'>Edit photo</button>";
-  } else {
-    front.innerHTML="<img class='cardart' src='cards/"+slug+"_front.png' alt='"+p.first+" card front'>"+
-      "<button type='button' class='cf-photo-btn' id='cfPhotoBtn'>Add your photo</button>";
+  function renderFront(photoUrl){
+    front.innerHTML=buildFront(p,slug,photoUrl)+
+      "<button type='button' class='cf-photo-btn' id='cfPhotoBtn'>"+(photoUrl?'Edit photo':'Add your photo')+"</button>";
+    wirePhotoButton(slug);
+    if(window.thwapRenderPlaced){ window.thwapRenderPlaced('front', front, {}); }
   }
-  wirePhotoButton(slug);
+  renderFront(myPhoto);
   /* Cross-device: if the server has a photo for this player (added by a parent
      on any device), show it even if this device has no local copy. Async, so it
      upgrades the card once it resolves without blocking the first paint. */
   if(window.thwapPhotoResolve){
     window.thwapPhotoResolve(slug, function(url){
-      if(!url) return;
-      var artImg=front.querySelector('.cardart');
-      if(artImg && artImg.getAttribute('src')!==url){
-        artImg.setAttribute('src', url); artImg.setAttribute('alt', p.first+' photo');
-        var pb=document.getElementById('cfPhotoBtn'); if(pb) pb.textContent='Edit photo';
-        if(!front.querySelector('.cf-frame')){
-          var fr=document.createElement('div'); fr.className='cf-frame';
-          fr.innerHTML="<div class='cf-num'>"+(p.num||'')+"</div><div class='cf-foot'><div class='cf-nm'>"+p.first+"</div><div class='cf-sub'>Jr Rangers</div></div>";
-          front.insertBefore(fr, front.querySelector('.cf-photo-btn'));
-        }
-      }
+      if(url && url!==myPhoto){ renderFront(url); }
     });
   }
-  /* Back: the real designed card art + a See my stats button. Stickers now come from
-     the decorate placement system (rendered below), not the old pick-3 strip. */
-  back.innerHTML="<img class='cardart' src='cards/"+slug+"_back.png' alt='"+p.first+" card back'>"+
-    "<button type='button' class='cb-stats' id='cbStats'>See my stats</button>";
-  var sb=document.getElementById('cbStats');
-  if(sb){
+  /* Back: coded card (replaces the per-player _back.png). Live per-player stats, one
+     of 6 dark color themes assigned deterministically by name so it is stable. */
+  function renderBack(){
+    back.innerHTML=buildBack(p,slug)+
+      "<button type='button' class='cb-stats' id='cbStats'>See my stats</button>";
+    wireStatsBtn();
+    if(window.thwapRenderPlaced){ window.thwapRenderPlaced('back', back, {}); }
+  }
+  function wireStatsBtn(){
+    var sb=document.getElementById('cbStats');
+    if(!sb) return;
     sb.addEventListener('pointerdown',function(e){ e.stopPropagation(); });
     sb.addEventListener('click',function(e){
       e.stopPropagation();
@@ -1034,9 +1044,12 @@ function buildFaces(){
       setTimeout(function(){ if(window.openPlayerPage) window.openPlayerPage(name, 'card'); },220);
     });
   }
-  /* Render the player's placed stickers on each face (non-interactive here; editing
-     happens in place-mode from the Sticker Book). */
-  if(window.thwapRenderPlaced){ window.thwapRenderPlaced('front', front, {}); window.thwapRenderPlaced('back', back, {}); }
+  renderBack();
+  /* Pull live stats so the back is real; rebuild it when data lands. */
+  window.thwapCardBackRefresh=renderBack;
+  if(window.thwapEnsureBoard) window.thwapEnsureBoard();
+  /* Front and back stickers are rendered by renderFront / renderBack above (each
+     re-runs when a photo or live stats arrive), so nothing to re-render here. */
 }
 /* Let other views (the Sticker Book) refresh the card after they change placements. */
 window.thwapRebuildCard=function(){ try{ buildFaces(); }catch(e){} };
@@ -1427,10 +1440,12 @@ function statsFetch(){
         window.thwapBoard=window.thwapBoard||{week:{},all:{},ready:false};
         window.thwapBoard[which]=m; window.thwapBoard.ready=true;
         if(window.thwapStatsRefresh) window.thwapStatsRefresh();
+        if(window.thwapCardBackRefresh) window.thwapCardBackRefresh();
       }
     }).catch(function(){}); }catch(e){}
   });
 }
+window.thwapEnsureBoard=statsFetch;  /* let the card back pull live stats on open */
 
 var section=document.getElementById('player');
 var tfEl=document.getElementById('plTf');
@@ -2267,172 +2282,5 @@ tapEgg(document.getElementById('eggBolt'),function(done){
     done();
   },1120);
 });
-})();</script>
-<script>(function(){
-/* ---- Break the Ice: login gate (Pass 1 foundation) ----
-   Real password auth against the temporary team password: the player's jersey
-   number followed by the season year (e.g. #72 in the 2026-27 season -> 722027).
-   The check is client-side for this pass; it is structured to move behind a
-   serverless endpoint that issues an HTTP-only session cookie later. */
-var SEASON_YEAR=2027;                 /* 2026-27 season */
-/* Jersey number by first name. Mirrors ROSTER_INFO in currentPlayer() and the
-   ROSTER in api/store.js; kept local so the gate never depends on load order. */
-var NUMS={alder:'71',brooklyn:'92',dawson:'19',dominic:'98',eugene:'3',evan:'13',greyson:'32',johnny:'1',joziah:'59',lewie:'72',liam:'29',maddux:'18',oliver:'90',teddy:'11',william:'16',issac:'53'};
-var AUTH_KEY='thwapAuth';
-var overlay=document.getElementById('loginOverlay');
-if(!overlay)return;
-var form=document.getElementById('loginForm');
-var emailEl=document.getElementById('loginEmail');
-var pwEl=document.getElementById('loginPw');
-var keepEl=document.getElementById('loginKeep');
-var errEl=document.getElementById('loginErr');
-var eyeEl=document.getElementById('loginEye');
-
-function readAuth(){
-  try{ var raw=localStorage.getItem(AUTH_KEY)||sessionStorage.getItem(AUTH_KEY); return raw?JSON.parse(raw):null; }
-  catch(e){ return null; }
-}
-function isAuthed(){ var a=readAuth(); return !!(a&&a.pid); }
-
-/* Build { "<number>": {pid, name} } from the roster in the DOM + exposed numbers. */
-function credentials(){
-  var byNum={};
-  document.querySelectorAll('#roster .pcard[data-name]').forEach(function(card){
-    var full=(card.getAttribute('data-name')||'').trim();
-    var key=full.split(/\s+/)[0].toLowerCase();
-    var num=NUMS[key];
-    if(num){ byNum[String(num)]={pid:key,name:full}; }
-  });
-  return byNum;
-}
-function playerForPassword(pw){
-  var p=String(pw||'').trim(), suf=String(SEASON_YEAR);
-  if(p.length<=suf.length||p.slice(-suf.length)!==suf) return null;
-  var num=p.slice(0,p.length-suf.length);
-  return credentials()[num]||null;
-}
-function validEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v||'').trim()); }
-
-function show(){
-  overlay.hidden=false; overlay.setAttribute('aria-hidden','false');
-  document.body.classList.add('login-locked');
-  setTimeout(function(){ if(emailEl) emailEl.focus(); },60);
-}
-function hide(){
-  overlay.hidden=true; overlay.setAttribute('aria-hidden','true');
-  document.body.classList.remove('login-locked');
-}
-function signIn(player,email,keep){
-  var rec={pid:player.pid,name:player.name,email:String(email||'').trim(),year:SEASON_YEAR,ts:Date.now()};
-  try{
-    var json=JSON.stringify(rec);
-    if(keep){ localStorage.setItem(AUTH_KEY,json); sessionStorage.removeItem(AUTH_KEY); }
-    else { sessionStorage.setItem(AUTH_KEY,json); localStorage.removeItem(AUTH_KEY); }
-    localStorage.setItem('bfPlayer',player.name); /* land them in their own team experience */
-  }catch(e){}
-  hide();
-  if(location.hash==='#login'){ location.hash='#home'; }
-  location.reload(); /* reload so every view re-reads the chosen player, like pickPlayer */
-}
-
-if(form){
-  form.addEventListener('submit',function(e){
-    e.preventDefault(); errEl.textContent='';
-    if(!validEmail(emailEl.value)){ errEl.textContent='Enter a parent email.'; emailEl.focus(); return; }
-    var player=playerForPassword(pwEl.value);
-    if(!player){ errEl.textContent='That password did not match. It is the player number plus the season year.'; pwEl.focus(); pwEl.select(); return; }
-    signIn(player,emailEl.value,keepEl.checked);
-  });
-}
-if(eyeEl&&pwEl){
-  eyeEl.addEventListener('click',function(){
-    var showing=pwEl.type==='text';
-    pwEl.type=showing?'password':'text';
-    eyeEl.textContent=showing?'Show':'Hide';
-    eyeEl.setAttribute('aria-label',showing?'Show password':'Hide password');
-  });
-}
-/* ---- Waitlist: swap the same overlay between the sign-in card and a short
-   Association / Age level(s) / Email form that POSTs to /api/waitlist. Age
-   labels follow the visitor's region (US 6U/8U/10U/12U, Canada U7/U9/U11/U13),
-   but the CANONICAL 6U/8U/10U/12U codes are what get stored. ---- */
-var waitForm=document.getElementById('waitForm');
-var waitAssoc=document.getElementById('waitAssoc');
-var waitEmail=document.getElementById('waitEmail');
-var waitErr=document.getElementById('waitErr');
-var US_AGE={'6U':{label:'6U',term:'mini-mite'},'8U':{label:'8U',term:'mite'},'10U':{label:'10U',term:'squirt'},'12U':{label:'12U',term:'peewee'}};
-var CA_AGE={'6U':{label:'U7',term:'initiation'},'8U':{label:'U9',term:'novice'},'10U':{label:'U11',term:'atom'},'12U':{label:'U13',term:'peewee'}};
-var waitRegion='US', geoAsked=false;
-function applyRegion(region){
-  waitRegion=(region==='CA')?'CA':'US';
-  var map=(waitRegion==='CA')?CA_AGE:US_AGE;
-  document.querySelectorAll('#waitAgeGroup .age-chip span[data-age]').forEach(function(sp){
-    var m=map[sp.getAttribute('data-age')]; if(!m)return;
-    sp.innerHTML=m.label+' <em>('+m.term+')</em>';
-  });
-}
-function loadGeo(){
-  if(geoAsked)return; geoAsked=true;
-  try{ var c=sessionStorage.getItem('thwapRegion'); if(c) applyRegion(c); }catch(e){}
-  fetch('/api/geo',{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(j){
-    if(!j)return; var reg=j.canada?'CA':'US'; applyRegion(reg);
-    try{ sessionStorage.setItem('thwapRegion',reg); }catch(e){}
-  }).catch(function(){});
-}
-function checkedAges(){
-  var out=[];
-  waitForm.querySelectorAll('input[name="age"]:checked').forEach(function(cb){ out.push(cb.value); });
-  return out;
-}
-function showWait(){
-  if(form) form.hidden=true;
-  if(waitForm) waitForm.hidden=false;
-  loadGeo();
-  setTimeout(function(){ if(waitAssoc) waitAssoc.focus(); },60);
-}
-function showSignin(){
-  if(waitForm) waitForm.hidden=true;
-  if(form){ form.hidden=false; setTimeout(function(){ if(emailEl) emailEl.focus(); },60); }
-}
-function waitSuccess(email){
-  var fields=document.getElementById('waitFields'); if(fields) fields.hidden=true;
-  if(waitErr) waitErr.textContent='';
-  var sub=document.getElementById('waitSub'); if(sub) sub.textContent='Thanks for signing up.';
-  var done=document.getElementById('waitDone');
-  if(done){ done.textContent='You are on the list ('+email+'). We will be in touch.'; done.hidden=false; }
-}
-var waitlist=document.getElementById('loginWaitlist');
-if(waitlist){ waitlist.addEventListener('click',function(e){ e.preventDefault(); showWait(); }); }
-var waitBack=document.getElementById('waitBack');
-if(waitBack){ waitBack.addEventListener('click',function(e){ e.preventDefault(); showSignin(); }); }
-if(waitForm){
-  waitForm.addEventListener('submit',function(e){
-    e.preventDefault(); waitErr.textContent='';
-    var assoc=(waitAssoc.value||'').trim(), ages=checkedAges(), email=(waitEmail.value||'').trim();
-    if(!assoc){ waitErr.textContent='Enter your association.'; waitAssoc.focus(); return; }
-    if(!ages.length){ waitErr.textContent='Pick at least one age level.'; return; }
-    if(!validEmail(email)){ waitErr.textContent='Enter a valid email.'; waitEmail.focus(); return; }
-    var btn=waitForm.querySelector('.login-go');
-    if(btn){ btn.disabled=true; btn.textContent='Joining...'; }
-    function reset(){ if(btn){ btn.disabled=false; btn.textContent='Join the waitlist'; } }
-    fetch('/api/waitlist',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({association:assoc,ageLevels:ages,region:waitRegion,email:email})})
-      .then(function(r){
-        if(r.ok){ waitSuccess(email); return; }
-        if(r.status===503){ waitErr.textContent='The waitlist is not open yet. Please try again soon.'; }
-        else { waitErr.textContent='Something went wrong. Please try again.'; }
-        reset();
-      })
-      .catch(function(){ waitErr.textContent='Something went wrong. Please try again.'; reset(); });
-  });
-}
-/* Gate on load: authed players skip the splash and go to their team experience;
-   everyone else sees it over the real homepage. #login always re-shows it. */
-function gate(){
-  if(location.hash==='#login'){ show(); return; }
-  if(isAuthed()){ hide(); } else { show(); }
-}
-window.addEventListener('hashchange',function(){ if(location.hash==='#login') show(); });
-gate();
 })();</script>
 </body></html>
