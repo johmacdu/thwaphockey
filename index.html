@@ -29,15 +29,15 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 .stickcell.on-card{box-shadow:inset 0 0 0 2px var(--lime)}
 .stickcell.picked{box-shadow:inset 0 0 0 3px var(--lime);transform:scale(1.03)}
 .deck-wrap{margin:4px 0 18px;text-align:center}
-.cardthumb{display:inline-flex;flex-direction:column;align-items:center;gap:10px;margin:6px auto 20px;background:none;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;color:#fff}
+.cardthumb{display:inline-flex;flex-direction:column;align-items:center;gap:10px;margin:6px auto 20px;background:none;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;color:var(--text)}
 .cardthumb:active .cardthumb-mini{transform:rotate(-7deg) scale(.96)}
 .cardthumb-mini{width:104px;height:146px;border-radius:12px;overflow:hidden;transform:rotate(-7deg);box-shadow:0 10px 26px rgba(0,0,0,.5);position:relative;transition:transform .18s ease}
 .cardthumb-scale{position:absolute;top:0;left:0;width:104px;height:146px}
 .cardthumb-scale .cf2{border-radius:12px}
-.cardthumb-lbl{font-weight:900;font-size:15px;color:#fff}
-.cardaway{margin:14px auto 0;min-height:44px;padding:0 20px;border:0;border-radius:999px;background:rgba(255,255,255,.14);color:#fff;font-family:inherit;font-weight:900;font-size:15px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.cardthumb-lbl{font-weight:900;font-size:15px;color:var(--text)}
+.cardaway{margin:0 auto 12px;min-height:44px;padding:0 20px;border:1px solid var(--line2);border-radius:999px;background:var(--soft);color:var(--text);font-family:inherit;font-weight:900;font-size:15px;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .cardaway:active{transform:scale(.97)}
-.deck-tip{color:rgba(255,255,255,.78);font-size:13px;font-weight:700;line-height:1.4;max-width:300px;margin:0 auto 12px}
+.deck-tip{color:var(--muted);font-size:13px;font-weight:700;line-height:1.4;max-width:300px;margin:12px auto 0}
 @keyframes cardPop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
 .deck-wrap:not([hidden]) .deck-scene{animation:cardPop .28s ease}
 .deck-scene{width:64%;max-width:260px;margin:0 auto;aspect-ratio:5/7;perspective:1000px}
@@ -104,6 +104,8 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 /* Drill rows: chunky, discipline-colored tiles (do-and-check-off). Accent set per section below. */
 .restday{text-align:center;padding:36px 22px}
 .restday-msg{color:var(--muted);font-weight:700;font-size:16px;line-height:1.5;max-width:320px;margin:0 auto}
+.bonusday{text-align:center;padding:22px 22px 8px}
+.bonusday-msg{color:var(--muted);font-weight:700;font-size:15px;line-height:1.5;max-width:340px;margin:0 auto}
 .exrow{--exacc:var(--lime);--exacc2:#8fd65e;border:2px solid var(--line);border-radius:20px;background:var(--card);margin:0 0 12px;overflow:hidden;transition:border-color .15s ease,box-shadow .15s ease,transform .08s ease}
 .exrow:active{transform:scale(.995)}
 .exhead{display:grid;grid-template-columns:56px 1fr auto;gap:14px;align-items:center;padding:18px 16px;cursor:pointer;min-height:72px}
@@ -165,6 +167,8 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 /* Parent email-OTP gate modal (persists across tab switches, unlike prompt). */
 .pgate{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(9,15,11,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;transition:opacity .2s ease}
 .pgate.show{opacity:1}
+#switchGate:not([hidden]){opacity:1}
+#switchGate[hidden]{display:none}
 .pgate-box{position:relative;width:100%;max-width:360px;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:24px 20px;box-shadow:0 18px 50px rgba(0,0,0,.5)}
 .pgate-x{position:absolute;top:10px;right:12px;width:34px;height:34px;border:0;border-radius:50%;background:var(--soft);color:var(--text);font-size:18px;cursor:pointer}
 .pgate-h{margin:0 0 6px;font-family:'Archivo Black',system-ui,sans-serif;font-size:20px;color:var(--text)}
@@ -597,6 +601,17 @@ body.login-locked{overflow:hidden}
 <div class='hero'><div class='kicker'>Jr Rangers 10U, 16 Rangers</div><h1>Who’s hitting the ice?</h1><p>Tap your card so your work counts.</p></div>
 <div class='roster' id='roster-grid'><a href='#home' class='pcard' data-name='Alder Reese'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>71</span><span class='pcard-bnname'>Alder</span></div></a><a href='#home' class='pcard' data-name='Brooklyn Coughlan'><div class='pcard-bignum pos-def'><span class='pcard-bn'>92</span><span class='pcard-bnname'>Brooklyn</span></div></a><a href='#home' class='pcard' data-name='Dawson Huffman'><div class='pcard-bignum pos-def'><span class='pcard-bn'>19</span><span class='pcard-bnname'>Dawson</span></div></a><a href='#home' class='pcard' data-name='Dominic Cinque'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>98</span><span class='pcard-bnname'>Dominic</span></div></a><a href='#home' class='pcard' data-name='Eugene Kuhn'><div class='pcard-bignum pos-def'><span class='pcard-bn'>3</span><span class='pcard-bnname'>Eugene</span></div></a><a href='#home' class='pcard' data-name='Evan Ewing'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>13</span><span class='pcard-bnname'>Evan</span></div></a><a href='#home' class='pcard' data-name='Greyson Wertz'><div class='pcard-bignum pos-def'><span class='pcard-bn'>32</span><span class='pcard-bnname'>Greyson</span></div></a><a href='#home' class='pcard' data-name='Issac Moyer'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>53</span><span class='pcard-bnname'>Issac</span></div></a><a href='#home' class='pcard' data-name='Johnny Eraman'><div class='pcard-bignum pos-goalie'><span class='pcard-bn'>1</span><span class='pcard-bnname'>Johnny</span></div></a><a href='#home' class='pcard' data-name='Joziah Soto'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>59</span><span class='pcard-bnname'>Joziah</span></div></a><a href='#home' class='pcard pcard-you-card' data-name='Lewie'><img class='pcard-cardart' src='cards/lewie_front.png' alt='Lewie'></a><a href='#home' class='pcard' data-name='Liam Delatorre'><div class='pcard-bignum pos-def'><span class='pcard-bn'>29</span><span class='pcard-bnname'>Liam</span></div></a><a href='#home' class='pcard' data-name='Maddux Jones'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>18</span><span class='pcard-bnname'>Maddux</span></div></a><a href='#home' class='pcard' data-name='Oliver Moyer'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>90</span><span class='pcard-bnname'>Oliver</span></div></a><a href='#home' class='pcard' data-name='Teddy Diss'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>11</span><span class='pcard-bnname'>Teddy</span></div></a><a href='#home' class='pcard' data-name='William Schnell'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>16</span><span class='pcard-bnname'>William</span></div></a></div>
 <div class='rsearch-empty' id='rsearchEmpty' hidden></div>
+<div class='pgate' id='switchGate' hidden>
+  <form class='pgate-box' id='switchGateForm' novalidate>
+    <button type='button' class='pgate-x' id='switchGateX' aria-label='Close'>&#215;</button>
+    <h2 class='pgate-h' id='switchGateTitle'>Switch player</h2>
+    <p class='pgate-p'>Ask a parent. Enter their email and the player code (jersey number + season year, like 722027) to log work as this player.</p>
+    <input class='pgate-in' id='switchEmail' type='email' inputmode='email' autocomplete='email' placeholder='parent@email.com' required>
+    <input class='pgate-in' id='switchCode' type='text' inputmode='numeric' autocomplete='off' placeholder='Player code' required>
+    <button type='submit' class='pgate-go'>Switch player</button>
+    <p class='pgate-msg' id='switchErr' aria-live='polite'></p>
+  </form>
+</div>
 </section>
 
 <section id='progress' class='page'>
@@ -640,12 +655,12 @@ body.login-locked{overflow:hidden}
 <div class='stickcount' id='stickCount'></div>
 <button type='button' class='cardthumb' id='cardThumb' aria-label='Open your player card'>
   <div class='cardthumb-mini'><div class='cardthumb-scale' id='cardThumbMini'></div></div>
-  <span class='cardthumb-lbl'>Tap your card <span aria-hidden='true'>✨</span></span>
+  <span class='cardthumb-lbl'>Tap your card</span>
 </button>
 <div class='deck-wrap' id='deckWrap' hidden>
-<p class='deck-tip'>Spin your card, drag a sticker onto it, and hold a sticker to peel it off.</p>
-<div class='deck-scene'><div class='deck-3d' id='deck3d'><div class='deck-face deck-front' id='deckFront'><img class='deck-art' id='deckArtFront' src='' alt='Your card front'></div><div class='deck-face deck-back' id='deckBack'><img class='deck-art' id='deckArtBack' src='' alt='Your card back'></div></div></div>
 <button type='button' class='cardaway' id='cardAway'>Put card away</button>
+<div class='deck-scene'><div class='deck-3d' id='deck3d'><div class='deck-face deck-front' id='deckFront'><img class='deck-art' id='deckArtFront' src='' alt='Your card front'></div><div class='deck-face deck-back' id='deckBack'><img class='deck-art' id='deckArtBack' src='' alt='Your card back'></div></div></div>
+<p class='deck-tip'>Spin your card, drag a sticker onto it.</p>
 </div>
 <div class='stickgrid' id='stickGrid'></div>
 </section>
@@ -665,7 +680,7 @@ body.login-locked{overflow:hidden}
 <section id='home'>
 <div class='wipnote'>👋 Early prototype. We're testing the look and feel. Training drills and stickers are still being built.</div>
 <div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.svg' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Change player</a><span class='topsep'>|</span><a class='link' href='#progress'>Leaderboard</a></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><a href='#stickers'>Stickers</a><a href='#roster'>Change player</a><a href='#progress'>Leaderboard</a></div></div>
-<div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>Lewie</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><div class='forrow'><span class='forline'>3 things, about 30 min</span><button type='button' class='daytip daytip-chip' id='dayTip' aria-label='Show today’s date'>Today<span class='daydate' id='dayDate'>Sunday, September 13</span></button></div></div>
+<div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>there</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><script>(function(){try{var p=localStorage.getItem('bfPlayer');var b=document.getElementById('homePlayer');if(b){if(p){b.textContent=p.trim().split(/\s+/)[0];}else{b.classList.add('needpick');}}}catch(e){}})();</script><div class='forrow'><span class='forline'>3 things, about 30 min</span><button type='button' class='daytip daytip-chip' id='dayTip' aria-label='Show today’s date'>Today<span class='daydate' id='dayDate'>Sunday, September 13</span></button></div></div>
 <div class='cards'>
 <a class='nav' href='hockey_game_goals.html'><div class='ico'>🎯</div><div><h2>Game Day Goals</h2><p>Pick your 4 goals for today’s game</p></div><div class='chev'>›</div></a>
 <a class='nav nav-stick' href='#stick'><div class='ico'>🏒</div><div><h2>Stickhandling</h2><p>Hands + puck control, about 10-15 min</p></div><div class='chev'>›</div></a>
@@ -693,9 +708,69 @@ function pickPlayer(name,ev,el){
   if(ev){ev.preventDefault();}
   if(el&&!reduce){el.classList.add('tapped');setTimeout(go,160);}else{go();}
 }
-document.querySelectorAll('#roster .pcard').forEach(function(cardEl){
-  cardEl.addEventListener('click',function(ev){ pickPlayer(cardEl.getAttribute('data-name'),ev,cardEl); });
-});
+/* Change-player roster: show the SAME coded card as the home page for every
+   player, and gate a switch behind the parent email + player code (jersey number
+   + season year, e.g. 722027) so a kid cannot start logging work as someone else. */
+(function(){
+  var ROSTER={alder:{num:'71',pos:'F'},brooklyn:{num:'92',pos:'D'},dawson:{num:'19',pos:'D'},dominic:{num:'98',pos:'F'},eugene:{num:'3',pos:'D'},evan:{num:'13',pos:'F'},greyson:{num:'32',pos:'D'},johnny:{num:'1',pos:'G'},joziah:{num:'59',pos:'F'},lewie:{num:'72',pos:'FD'},liam:{num:'29',pos:'D'},maddux:{num:'18',pos:'F'},oliver:{num:'90',pos:'F'},teddy:{num:'11',pos:'F'},william:{num:'16',pos:'F'},issac:{num:'53',pos:'F'}};
+  var SEASON_YEAR=2027;
+  function infoFor(name){
+    var parts=String(name||'').trim().split(/\s+/);
+    var key=parts[0].toLowerCase().replace(/[^a-z]/g,'');
+    var r=ROSTER[key]||{num:'',pos:'F'};
+    var display=parts.length>1?parts[0]+' '+parts[parts.length-1].charAt(0)+'.':parts[0];
+    return {slug:key, info:{name:name, display:display, first:parts[0].toUpperCase(), num:r.num, pos:r.pos, photo:''}};
+  }
+  function init(){
+  /* Render the coded home-card front into each roster cell (scaled to fill). */
+  document.querySelectorAll('#roster .pcard').forEach(function(cardEl){
+    var built=infoFor(cardEl.getAttribute('data-name'));
+    var photo=null; try{ photo=localStorage.getItem('thwapCardPhoto:'+built.slug); }catch(e){}
+    if(window.buildFront){
+      var base=280;
+      cardEl.innerHTML="<div class='pcard-card' style='position:absolute;inset:0;overflow:hidden'>"+
+        "<div style='position:absolute;top:0;left:0;width:"+base+"px;height:"+(base*7/5)+"px;transform-origin:top left' data-pcbase='"+base+"'>"+
+        window.buildFront(built.info, built.slug, photo)+"</div></div>";
+      requestAnimationFrame(function(){
+        var scaler=cardEl.querySelector('[data-pcbase]'); if(!scaler)return;
+        var w=cardEl.clientWidth||150; scaler.style.transform='scale('+(w/base)+')';
+      });
+    }
+  });
+  /* Parent-email + player-code gate before switching player. */
+  var gate=document.getElementById('switchGate');
+  var pending=null;
+  function openGate(name){
+    pending=infoFor(name);
+    var title=document.getElementById('switchGateTitle');
+    if(title) title.textContent='Switch to '+pending.info.display;
+    var em=document.getElementById('switchEmail'), cd=document.getElementById('switchCode'), er=document.getElementById('switchErr');
+    if(em)em.value=''; if(cd)cd.value=''; if(er)er.textContent='';
+    if(gate){ gate.hidden=false; setTimeout(function(){ if(em)em.focus(); },60); }
+  }
+  function closeGate(){ if(gate) gate.hidden=true; pending=null; }
+  function validEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v||'').trim()); }
+  document.querySelectorAll('#roster .pcard').forEach(function(cardEl){
+    cardEl.addEventListener('click',function(ev){ ev.preventDefault(); openGate(cardEl.getAttribute('data-name')); });
+  });
+  var form=document.getElementById('switchGateForm');
+  if(form){
+    form.addEventListener('submit',function(e){
+      e.preventDefault();
+      var em=document.getElementById('switchEmail'), cd=document.getElementById('switchCode'), er=document.getElementById('switchErr');
+      if(!pending){ closeGate(); return; }
+      if(!validEmail(em.value)){ er.textContent='Enter a parent email.'; em.focus(); return; }
+      var expect=String(pending.info.num)+String(SEASON_YEAR);
+      if(String(cd.value||'').trim()!==expect){ er.textContent='That code did not match. It is the player number plus '+SEASON_YEAR+'.'; cd.focus(); cd.select(); return; }
+      try{ localStorage.setItem(PLAYER, pending.info.name); }catch(_){}
+      location.hash='#home'; location.reload();
+    });
+  }
+  var gx=document.getElementById('switchGateX'); if(gx) gx.addEventListener('click',closeGate);
+  if(gate) gate.addEventListener('click',function(e){ if(e.target===gate) closeGate(); });
+  }
+  if(document.readyState==='complete'){ init(); } else { window.addEventListener('load', init); }
+})();
 showHomePlayer();
 window.addEventListener('hashchange',function(){ if(location.hash===''||location.hash==='#home') showHomePlayer(); });
 /* Day tooltip: tap toggles it; tapping it again, outside, or Escape closes it (4s auto-hide fallback) */
@@ -807,8 +882,15 @@ function todayKey(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)
 window.thwapWeekday=function(){ return ((((dayIndex()%7)+7)%7)+4)%7; };  /* 0=Sun..6=Sat */
 window.thwapIsRestDay=function(){ var w=window.thwapWeekday(); return w===0||w===6; };
 window.thwapWeekdaySlot=function(){ var w=window.thwapWeekday(); return (w>=1&&w<=5)?(w-1):-1; };  /* Mon0..Fri4, weekend -1 */
+window.thwapIsWeekend=function(){ var w=window.thwapWeekday(); return w===0||w===6; };
 window.thwapRestCard=function(){
   return "<div class='restday'><div class='restday-msg'>No training today. Rest up and come back Monday.</div></div>";
+};
+/* Weekend = no scheduled plan, but stickhandling and shooting are low-load skill
+   work a keen player can do for fun. Framed as optional bonus reps, never a makeup
+   list, and never required for a streak. Dryland (load) stays a rest day. */
+window.thwapWeekendBonus=function(){
+  return "<div class='bonusday'><div class='bonusday-msg'>Weekend bonus. No training needed today. Want some extra reps? Go for it.</div></div>";
 };
 function player(){try{return localStorage.getItem('bfPlayer')||'guest';}catch(e){return 'guest';}}
 function progKey(wid){return 'bfDryland|'+player()+'|'+todayKey()+'|'+wid;}
@@ -1456,14 +1538,16 @@ fetch('stickers/stickers.json').then(function(r){return r.json();}).then(functio
   var deckBack=document.getElementById('deckBack');
   var artFront=document.getElementById('deckArtFront');
   var artBack=document.getElementById('deckArtBack');
-  var slug=playerId().replace(/[^a-z]/g,'');
-  var myPhoto=null; try{ myPhoto=localStorage.getItem('thwapCardPhoto:'+slug); }catch(e){}
-  /* Use the SAME coded faces as the home card so the deck matches exactly. */
+  /* Use the SAME coded faces as the home card so the deck matches exactly.
+     Derive the slug from the current player (not a separate guest-defaulting id)
+     so the theme, plate and photo are identical to the home card. */
   var pInfo=(window.thwapCurrentPlayer&&window.thwapCurrentPlayer())||null;
+  var slug=pInfo?String(pInfo.name||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,''):playerId().replace(/[^a-z]/g,'');
+  var myPhoto=null; try{ myPhoto=localStorage.getItem('thwapCardPhoto:'+slug); }catch(e){}
   if(deckFront && window.buildFront && pInfo){ deckFront.innerHTML=window.buildFront(pInfo,slug,myPhoto); }
   else if(artFront){ artFront.src=myPhoto||(slug==='lewie'?'cards/lewie_front.png':''); }
   if(deckBack && window.buildBack && pInfo){ deckBack.innerHTML=window.buildBack(pInfo,slug); }
-  else if(artBack){ artBack.src='cards/'+slug+'_back.png'; }
+  else if(artBack){ artBack.src=slug==='lewie'?'cards/lewie_back.png':''; }
 
   var drx=0, dry=0;
   function deckPaint(){ if(deck3d) deck3d.style.transform='rotateX('+drx+'deg) rotateY('+dry+'deg)'; }
@@ -1637,7 +1721,8 @@ function render(){
   var list=document.getElementById('stickList'); if(!list)return;
   var picks=twoForToday(); var prog=loadProg();
   list.innerHTML='';
-  if(window.thwapIsRestDay&&window.thwapIsRestDay()){ list.innerHTML=window.thwapRestCard(); var sp=document.getElementById('stickTime'); if(sp)sp.style.display='none'; return; }
+  var weekend=window.thwapIsWeekend&&window.thwapIsWeekend();
+  if(weekend){ list.innerHTML=window.thwapWeekendBonus(); var sp0=document.getElementById('stickTime'); if(sp0)sp0.style.display='none'; }
   picks.forEach(function(dr,i){
     var done=prog[i]?' done':'';
     var steps="<ol>"+dr.steps.map(function(s){var ci=s.indexOf(':');if(ci>0&&ci<28){return "<li><b>"+esc(s.slice(0,ci))+"</b>"+esc(s.slice(ci))+"</li>";}return "<li>"+esc(s)+"</li>";}).join('')+"</ol>";
@@ -1880,7 +1965,10 @@ function fill(){
   document.querySelectorAll('.titletip-date').forEach(function(el){ el.textContent=full; });
   var dd=document.getElementById('dayDate'); if(dd)dd.textContent=full;
   var fl=document.querySelector('.forline');
-  if(fl){ fl.textContent=(window.thwapIsRestDay&&window.thwapIsRestDay())?'No training today':'3 things, about 30 min'; }
+  var weekend=(window.thwapIsWeekend&&window.thwapIsWeekend());
+  if(fl){ fl.textContent=weekend?'Weekend: bonus skills, no dryland':'3 things, about 30 min'; }
+  /* Weekend: dryland (load) rests, so hide its card. Skills stay available. */
+  var dl=document.querySelector('.nav-dryland'); if(dl) dl.style.display=weekend?'none':'';
   /* Home chip label stays "Today"; the weekday+date live only in the tap-reveal (#dayDate),
      so the weekday is never shown twice. */
 }
@@ -2021,7 +2109,8 @@ function render(){
   SHOOT=SHOOT_DAYS[shootDayI()];   /* re-pick today's set on each render */
   var prog=loadProg();
   list.innerHTML='';
-  if(window.thwapIsRestDay&&window.thwapIsRestDay()){ list.innerHTML=window.thwapRestCard(); var hp=document.getElementById('shootTime'); if(hp)hp.style.display='none'; return; }
+  var weekend=window.thwapIsWeekend&&window.thwapIsWeekend();
+  if(weekend){ list.innerHTML=window.thwapWeekendBonus(); var hp0=document.getElementById('shootTime'); if(hp0)hp0.style.display='none'; }
   SHOOT.forEach(function(dr,i){
     var done=prog[i]?' done':'';
     var doneLabel=prog[i]?'Done ✓':'Mark done';
