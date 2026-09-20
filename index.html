@@ -31,7 +31,7 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 .deck-wrap{margin:4px 0 18px;text-align:center}
 .stickerbook-card{text-align:left}
 .hero-sticker{text-align:left;margin-bottom:14px}
-.stickerbook-head{display:flex;align-items:center;gap:24px;justify-content:flex-start}
+.stickerbook-head{display:flex;align-items:center;gap:24px;justify-content:flex-start;padding-bottom:32px}
 .stickerbook-headtext{display:flex;flex-direction:column;gap:8px}
 .stickerbook-lead{margin:0;color:var(--text);font-weight:800;font-size:16px;line-height:1.3}
 .stickerbook-head .stickcount{margin:0}
@@ -40,7 +40,7 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
   .stickerbook.is-open .stickerbook-card{flex:0 0 360px;position:sticky;top:16px}
   .stickerbook.is-open .stickgrid{flex:1;margin-top:0}
 }
-.cardthumb{display:inline-flex;flex-direction:column;align-items:center;gap:10px;margin:6px auto 20px;background:none;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;color:var(--text)}
+.cardthumb{display:inline-flex;flex-direction:column;align-items:center;gap:10px;margin:0;background:none;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;color:var(--text)}
 .cardthumb[hidden]{display:none}
 .cardthumb:active .cardthumb-mini{transform:rotate(-7deg) scale(.96)}
 .cardthumb-mini{width:104px;height:146px;border-radius:12px;overflow:hidden;transform:rotate(-7deg);box-shadow:0 10px 26px rgba(0,0,0,.5);position:relative;transition:transform .18s ease}
@@ -102,7 +102,7 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .nav-stick{--dc:#8fd65e}.nav-shoot{--dc:#75B8FF}.nav-dryland{--dc:#FF9D4D}
 .nav-stick,.nav-shoot,.nav-dryland{border-left:5px solid var(--dc)}
 .nav-stick .ico,.nav-shoot .ico,.nav-dryland .ico{background:color-mix(in srgb,var(--dc) 26%,transparent)}.soontag{font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--green);border:1px solid var(--line3);border-radius:999px;padding:4px 8px;align-self:center;white-space:nowrap}
-.heroCard{padding:6px 2px 4px;margin-top:6px}.heroCard h1{font-size:40px}.big{font-size:38px}.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.pill{padding:7px 10px;border-radius:999px;background:var(--soft);color:var(--green2);font-size:12px;font-weight:900}
+.heroCard{padding:6px 2px 4px;margin-top:6px}.heroCard h1{font-size:40px}.big{font-size:38px}.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;margin-bottom:16px}.pill{padding:7px 10px;border-radius:999px;background:var(--soft);color:var(--green2);font-size:12px;font-weight:900}
 .pill-optional{background:var(--green);color:var(--onaccent)}
 .pill-optional[hidden]{display:none}
 .pilltip{position:relative;padding:7px 12px;border-radius:999px;background:var(--soft);color:var(--green2);font:inherit;font-size:12px;font-weight:900;border:0;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;-webkit-tap-highlight-color:transparent}
@@ -480,7 +480,7 @@ button.row:active{background:var(--soft)}
 /* Shooting: a puck flies in from the right, hits the post at the goal, then
    ricochets straight up and off the top of the screen. The goal is front-facing,
    so it deflects up rather than passing through. */
-.eggshot{position:fixed;top:0;left:0;width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#3a3a3a,#0a0a0a 70%);box-shadow:0 2px 7px rgba(0,0,0,.5);pointer-events:none;z-index:120;will-change:transform}
+.eggshot{position:fixed;top:0;left:0;width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#3a3a3a,#0a0a0a 70%);border:1.5px solid rgba(255,255,255,.85);box-shadow:0 0 0 1px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.55);pointer-events:none;z-index:120;will-change:transform}
 .eggshot.fly{animation:eggShotFly 1.05s linear forwards}
 @keyframes eggShotFly{0%{transform:translate(105vw,var(--shoty)) rotate(0)}42%{transform:translate(var(--goalx),var(--shoty)) rotate(-360deg)}100%{transform:translate(var(--goalx),-16vh) rotate(-900deg)}}
 .eggnet.egg-hit{animation:eggNetShake .5s ease-out}
@@ -671,7 +671,7 @@ body.login-locked{overflow:hidden}
 <div class='stickerbook-card'>
 <div class='stickerbook-head' id='stickerHead'>
 <div class='stickerbook-headtext'>
-<p class='stickerbook-lead'>Finish drills to unlock stickers.</p>
+<p class='stickerbook-lead'>Finish drills to<br>unlock stickers.</p>
 <div class='stickcount' id='stickCount'></div>
 </div>
 <button type='button' class='cardthumb' id='cardThumb' aria-label='Open your player card'>
@@ -1463,6 +1463,11 @@ function paint(){
   var yy=((ry%360)+360)%360;
   var backShowing=(yy>90 && yy<270);
   card.classList.toggle('showing-back', backShowing);
+  /* WebKit can bleed a backface-hidden face through the flip when it has a
+     positioned subtree, so hide the away-facing face explicitly. This is what
+     guarantees the BACK (stats) shows on the back and not a ghost of the front. */
+  front.style.visibility=backShowing?'hidden':'visible';
+  back.style.visibility=backShowing?'visible':'hidden';
   var scene=document.getElementById('cardScene'); if(scene) scene.classList.toggle('on-back', backShowing);
   /* The stats button lives in a card-sized layer in the scene (so it stays
      clickable and the card drag cannot capture it). We rotate that layer in
@@ -1604,7 +1609,12 @@ fetch('stickers/stickers.json').then(function(r){return r.json();}).then(functio
   else if(artBack){ artBack.src=slug==='lewie'?'cards/lewie_back.png':''; }
 
   var drx=0, dry=0;
-  function deckPaint(){ if(deck3d) deck3d.style.transform='rotateX('+drx+'deg) rotateY('+dry+'deg)'; }
+  function deckPaint(){
+    if(deck3d) deck3d.style.transform='rotateX('+drx+'deg) rotateY('+dry+'deg)';
+    var yy=((dry%360)+360)%360; var backShowing=(yy>90 && yy<270);
+    if(deckFront) deckFront.style.visibility=backShowing?'hidden':'visible';
+    if(deckBack) deckBack.style.visibility=backShowing?'visible':'hidden';
+  }
   function visibleFace(){
     var yy=((dry%360)+360)%360;               /* 0=front, 180=back */
     return (yy>90 && yy<270) ? {surface:'back',container:deckBack} : {surface:'front',container:deckFront};
