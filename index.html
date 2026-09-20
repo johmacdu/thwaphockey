@@ -29,7 +29,14 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 .stickcell.on-card{box-shadow:inset 0 0 0 2px var(--lime)}
 .stickcell.picked{box-shadow:inset 0 0 0 3px var(--lime);transform:scale(1.03)}
 .deck-wrap{margin:4px 0 18px;text-align:center}
+.stickerbook-card{text-align:center}
+@media (min-width:860px){
+  .stickerbook{display:flex;align-items:flex-start;gap:28px}
+  .stickerbook-card{flex:0 0 300px;position:sticky;top:16px}
+  .stickerbook .stickgrid{flex:1;margin-top:0}
+}
 .cardthumb{display:inline-flex;flex-direction:column;align-items:center;gap:10px;margin:6px auto 20px;background:none;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent;font-family:inherit;color:var(--text)}
+.cardthumb[hidden]{display:none}
 .cardthumb:active .cardthumb-mini{transform:rotate(-7deg) scale(.96)}
 .cardthumb-mini{width:104px;height:146px;border-radius:12px;overflow:hidden;transform:rotate(-7deg);box-shadow:0 10px 26px rgba(0,0,0,.5);position:relative;transition:transform .18s ease}
 .cardthumb-scale{position:absolute;top:0;left:0;width:104px;height:146px}
@@ -653,16 +660,19 @@ body.login-locked{overflow:hidden}
 <a class='glassclose' href='.' aria-label='Close'>✕</a>
 <div class='hero'><div class='kicker'>Rangers 10U</div><h1>Sticker Book</h1><p>Finish drills to unlock stickers.</p></div>
 <div class='stickcount' id='stickCount'></div>
+<div class='stickerbook' id='stickerBook'>
+<div class='stickerbook-card'>
 <button type='button' class='cardthumb' id='cardThumb' aria-label='Open your player card'>
   <div class='cardthumb-mini'><div class='cardthumb-scale' id='cardThumbMini'></div></div>
-  <span class='cardthumb-lbl'>Tap your card</span>
 </button>
 <div class='deck-wrap' id='deckWrap' hidden>
 <button type='button' class='cardaway' id='cardAway'>Put card away</button>
 <div class='deck-scene'><div class='deck-3d' id='deck3d'><div class='deck-face deck-front' id='deckFront'><img class='deck-art' id='deckArtFront' src='' alt='Your card front'></div><div class='deck-face deck-back' id='deckBack'><img class='deck-art' id='deckArtBack' src='' alt='Your card back'></div></div></div>
 <p class='deck-tip'>Spin your card, drag a sticker onto it.</p>
 </div>
+</div>
 <div class='stickgrid' id='stickGrid'></div>
+</div>
 </section>
 
 <section id='player' class='page'>
@@ -722,21 +732,34 @@ function pickPlayer(name,ev,el){
     return {slug:key, info:{name:name, display:display, first:parts[0].toUpperCase(), num:r.num, pos:r.pos, photo:''}};
   }
   function init(){
-  /* Render the coded home-card front into each roster cell (scaled to fill). */
+  /* Render the coded home-card front into each roster cell, scaled to the cell.
+     The card has fixed internal font sizes tuned for the full card, so it must
+     be rendered at a base width and scaled down. Scaling is (re)applied when the
+     roster page is visible; measuring while it is display:none gives width 0. */
+  var BASE=300;
+  function rescaleRoster(){
+    document.querySelectorAll('#roster .pcard [data-pcbase]').forEach(function(scaler){
+      var cell=scaler.closest('.pcard'); if(!cell)return;
+      var w=cell.clientWidth; if(!w) return;   /* still hidden; skip */
+      scaler.style.transform='scale('+(w/BASE)+')';
+    });
+  }
+  window.thwapRescaleRoster=rescaleRoster;
   document.querySelectorAll('#roster .pcard').forEach(function(cardEl){
     var built=infoFor(cardEl.getAttribute('data-name'));
     var photo=null; try{ photo=localStorage.getItem('thwapCardPhoto:'+built.slug); }catch(e){}
+    if(!photo && built.slug==='lewie'){ photo='cards/lewie_front.png'; }  /* Lewie's photo ships; show it */
     if(window.buildFront){
-      var base=280;
       cardEl.innerHTML="<div class='pcard-card' style='position:absolute;inset:0;overflow:hidden'>"+
-        "<div style='position:absolute;top:0;left:0;width:"+base+"px;height:"+(base*7/5)+"px;transform-origin:top left' data-pcbase='"+base+"'>"+
-        window.buildFront(built.info, built.slug, photo)+"</div></div>";
-      requestAnimationFrame(function(){
-        var scaler=cardEl.querySelector('[data-pcbase]'); if(!scaler)return;
-        var w=cardEl.clientWidth||150; scaler.style.transform='scale('+(w/base)+')';
-      });
+        "<div style='position:absolute;top:0;left:0;width:"+BASE+"px;height:"+(BASE*7/5)+"px;transform-origin:top left' data-pcbase='1'>"+
+        window.buildFront(built.info, built.slug, photo, 'red')+"</div></div>";
     }
   });
+  rescaleRoster();
+  window.addEventListener('resize', rescaleRoster);
+  window.addEventListener('load', function(){ setTimeout(rescaleRoster,0); });
+  window.addEventListener('hashchange', function(){ if(location.hash==='#roster') setTimeout(rescaleRoster,0); });
+  if(location.hash==='#roster') setTimeout(rescaleRoster,60);
   /* Parent-email + player-code gate before switching player. */
   var gate=document.getElementById('switchGate');
   var pending=null;
@@ -890,7 +913,7 @@ window.thwapRestCard=function(){
    work a keen player can do for fun. Framed as optional bonus reps, never a makeup
    list, and never required for a streak. Dryland (load) stays a rest day. */
 window.thwapWeekendBonus=function(){
-  return "<div class='bonusday'><div class='bonusday-msg'>Weekend bonus. No training needed today. Want some extra reps? Go for it.</div></div>";
+  return "<div class='bonusday'><div class='bonusday-msg'>Weekend bonus. Extra reps if you want.</div></div>";
 };
 function player(){try{return localStorage.getItem('bfPlayer')||'guest';}catch(e){return 'guest';}}
 function progKey(wid){return 'bfDryland|'+player()+'|'+todayKey()+'|'+wid;}
@@ -1222,12 +1245,14 @@ var CB2_CREST="<svg viewBox='0 0 70 82' fill='none'><path d='M6 4 H64 V50 Q64 68
 /* Coded card FRONT: themed art plate + optional consented photo + live fields, matching
    Lewie's front (Anton display, red underline, tracked position, JR RANGERS bottom-right,
    PLAY LEARN IMPROVE REPEAT tagline with red slash). */
-function buildFront(p,slug,photoUrl){
+function buildFront(p,slug,photoUrl,themeOverride){
   var photo = photoUrl
     ? "<img class='cf2-photo' src='"+photoUrl+"' alt='"+p.first+" photo'><div class='cf2-photo-mask'></div>"
     : "";
-  return "<div class='cf2 cb2-th-"+cb2Theme(slug)+"'>"+
-      "<img class='cf2-plate' src='"+cb2Plate('front',slug)+"' alt=''>"+
+  var th=themeOverride||cb2Theme(slug);
+  var plate=themeOverride?('cards/plate_front_'+themeOverride+'.svg'):cb2Plate('front',slug);
+  return "<div class='cf2 cb2-th-"+th+"'>"+
+      "<img class='cf2-plate' src='"+plate+"' alt=''>"+
       photo+
       "<div class='cf2-scrim'></div>"+
       "<div class='cf2-num'>"+(p.num||'')+"</div>"+
@@ -1307,7 +1332,7 @@ function buildFaces(){
     sb.addEventListener('pointerdown',function(e){ e.stopPropagation(); });
     sb.addEventListener('click',function(e){
       e.stopPropagation();
-      var name=(p.first||'')+(p.last?' '+p.last:'');
+      var name=p.name||p.display||p.first||'';
       close();
       setTimeout(function(){ if(window.openPlayerPage) window.openPlayerPage(name, 'card'); },220);
     });
@@ -1450,6 +1475,10 @@ var vrx=0, vry=0, lastT=0, momentum=null;
 if(!reduce){
   function stopMomentum(){ if(momentum){ cancelAnimationFrame(momentum); momentum=null; } }
   card.addEventListener('pointerdown', function(e){
+    /* Do not hijack a tap that landed on an interactive control (the back's
+       "See my stats" button, theme swatches, image button). Let its click fire
+       instead of capturing the pointer for a card spin. */
+    if(e.target.closest('button, a, .cb-stats, .cardsw, input')) return;
     stopMomentum();
     dragging=true; moved=0; lastX=e.clientX; lastY=e.clientY; lastT=e.timeStamp||Date.now();
     vrx=0; vry=0;
@@ -1591,11 +1620,19 @@ fetch('stickers/stickers.json').then(function(r){return r.json();}).then(functio
   }
   function openCard(){ if(deckWrap) deckWrap.hidden=false; if(cardThumb) cardThumb.hidden=true; }
   function closeCard(){ if(deckWrap) deckWrap.hidden=true; if(cardThumb) cardThumb.hidden=false; }
+  var isDesktop=window.matchMedia&&window.matchMedia('(min-width:860px)').matches;
   var hasPlaced=false;
   try{ hasPlaced=(window.thwapPlaced && (window.thwapPlaced.list('front').length || window.thwapPlaced.list('back').length)); }catch(_){}
-  if(hasPlaced){ openCard(); }
-  if(cardThumb && !cardThumb._wired){ cardThumb._wired=1; cardThumb.addEventListener('click',function(){ openCard(); }); }
-  if(cardAway && !cardAway._wired){ cardAway._wired=1; cardAway.addEventListener('click',function(){ closeCard(); }); }
+  if(isDesktop){
+    /* Desktop split: card and stickers show side by side, so the card is always
+       open. No mini card, no put-away. */
+    openCard();
+    if(cardAway) cardAway.hidden=true;
+  } else {
+    if(hasPlaced){ openCard(); }
+    if(cardThumb && !cardThumb._wired){ cardThumb._wired=1; cardThumb.addEventListener('click',function(){ openCard(); }); }
+    if(cardAway && !cardAway._wired){ cardAway._wired=1; cardAway.addEventListener('click',function(){ closeCard(); }); }
+  }
 
   files.forEach(function(f,i){
     var earned=i<EARNED;
