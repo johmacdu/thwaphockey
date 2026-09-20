@@ -29,6 +29,9 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 .stickcell.on-card{box-shadow:inset 0 0 0 2px var(--lime)}
 .stickcell.picked{box-shadow:inset 0 0 0 3px var(--lime);transform:scale(1.03)}
 .deck-wrap{margin:4px 0 18px;text-align:center}
+.cardreveal{display:inline-flex;align-items:center;gap:8px;margin:6px 0 20px;min-height:48px;padding:0 22px;border:0;border-radius:999px;background:var(--lime);color:#0f1712;font-family:'Nunito Sans',system-ui,sans-serif;font-weight:900;font-size:16px;cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.cardreveal:active{transform:scale(.97)}
+.deck-tip{color:rgba(255,255,255,.78);font-size:13px;font-weight:700;line-height:1.4;max-width:300px;margin:0 auto 12px}
 .deck-scene{width:64%;max-width:260px;margin:0 auto;aspect-ratio:5/7;perspective:1000px}
 .deck-3d{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.7,.2,1);will-change:transform;touch-action:none;cursor:grab}
 .deck-3d.dragging{transition:none;cursor:grabbing}
@@ -91,6 +94,8 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .donebanner{display:none;align-items:center;gap:10px;padding:14px 16px;margin-top:12px;border-radius:14px;background:var(--soft);color:var(--green2);font-weight:900;font-size:14px}
 .donebanner.show{display:flex}
 /* Drill rows: chunky, discipline-colored tiles (do-and-check-off). Accent set per section below. */
+.restday{text-align:center;padding:36px 22px}
+.restday-msg{color:var(--muted);font-weight:700;font-size:16px;line-height:1.5;max-width:320px;margin:0 auto}
 .exrow{--exacc:var(--lime);--exacc2:#8fd65e;border:2px solid var(--line);border-radius:20px;background:var(--card);margin:0 0 12px;overflow:hidden;transition:border-color .15s ease,box-shadow .15s ease,transform .08s ease}
 .exrow:active{transform:scale(.995)}
 .exhead{display:grid;grid-template-columns:56px 1fr auto;gap:14px;align-items:center;padding:18px 16px;cursor:pointer;min-height:72px}
@@ -163,7 +168,7 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .pgate-msg{margin-top:10px;font-size:13px;color:var(--muted);min-height:18px;text-align:center}
 @media (prefers-reduced-motion: reduce){.pgate{transition:none}}
 .cardclose{position:absolute;top:16px;right:16px;width:44px;height:44px;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-.cardscene{perspective:1400px;width:min(320px,86vw);display:flex;flex-direction:column;align-items:center;gap:16px}
+.cardscene{perspective:1400px;width:min(380px,94vw);display:flex;flex-direction:column;align-items:center;gap:16px}
 .card3d{position:relative;width:100%;aspect-ratio:5/7;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.7,.2,1);will-change:transform;touch-action:none;cursor:grab}
 .card3d.dragging{transition:none;cursor:grabbing}
 .card3d.intro{animation:cardIn .5s cubic-bezier(.2,.9,.2,1)}
@@ -183,8 +188,18 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 /* holographic sheen driven by --sheen (0..1) */
 .cardface::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.28) 47%,rgba(185,240,107,.22) 52%,rgba(117,184,255,.22) 57%,transparent 72%);transform:translateX(calc((var(--sheen,.5) - .5) * 160%));mix-blend-mode:screen;opacity:.7}
 .cardhint{color:rgba(255,255,255,.72);font-size:13px;font-weight:700;letter-spacing:.02em}
-.cardthemes{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;padding:4px 0 2px}
-.cardsw{width:34px;height:34px;border-radius:50%;border:2px solid rgba(255,255,255,.35);cursor:pointer;padding:0;position:relative;background:var(--sw,#333);box-shadow:0 2px 6px rgba(0,0,0,.4);transition:transform .12s ease}
+.cardctl{width:100%;display:flex;flex-direction:column;align-items:center;margin-top:4px}
+.cardctl-row{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
+.cardctl-row[hidden]{display:none}
+.cardctl-theme{display:flex;flex-direction:column;align-items:center;gap:14px}
+.cardctl-theme[hidden]{display:none}
+.cardbtn{min-height:44px;padding:0 18px;border:0;border-radius:999px;background:var(--lime);color:#0f1712;font-family:'Nunito Sans',system-ui,sans-serif;font-weight:900;font-size:15px;cursor:pointer;-webkit-tap-highlight-color:transparent;box-shadow:0 4px 14px rgba(0,0,0,.35);display:inline-flex;align-items:center;gap:6px}
+.cardbtn:active{transform:scale(.96)}
+.cardbtn:disabled,.cardbtn[disabled]{background:rgba(255,255,255,.14);color:rgba(255,255,255,.4);box-shadow:none;cursor:default}
+.cardbtn:disabled:active,.cardbtn[disabled]:active{transform:none}
+.cardbtn-icon{padding:0;width:44px;justify-content:center;background:rgba(255,255,255,.18);color:#fff}
+.cardthemes{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;padding:0 4px}
+.cardsw{width:30px;height:30px;border-radius:50%;border:2px solid rgba(255,255,255,.35);cursor:pointer;padding:0;position:relative;background:var(--sw,#333);box-shadow:0 2px 6px rgba(0,0,0,.4);transition:transform .12s ease}
 .cardsw:active{transform:scale(.92)}
 .cardsw.sel{border-color:#fff;box-shadow:0 0 0 3px var(--lime),0 2px 6px rgba(0,0,0,.4)}
 .cardsw.locked{cursor:default;opacity:.5}
@@ -203,7 +218,7 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .cb-stat .n{font-family:'Archivo Black',system-ui,sans-serif;font-size:30px}
 .cb-stat .l{font-size:12px;font-weight:800;letter-spacing:.06em;color:rgba(255,255,255,.7);text-transform:uppercase}
 .cb-streak{margin-top:auto;font-family:'Archivo Black',system-ui,sans-serif;font-size:22px;color:var(--orange)}
-.cb-stats{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:4;display:inline-flex;align-items:center;gap:7px;background:var(--lime);color:#0f1712;font-family:'Nunito Sans',system-ui,sans-serif;font-weight:900;font-size:14px;border:0;border-radius:999px;padding:11px 22px;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.4);-webkit-tap-highlight-color:transparent}
+.cb-stats{position:absolute;left:50%;bottom:27px;transform:translateX(-50%);z-index:4;display:inline-flex;align-items:center;gap:6px;background:var(--lime);color:#0f1712;font-family:'Nunito Sans',system-ui,sans-serif;font-weight:900;font-size:12px;border:0;border-radius:999px;padding:8px 16px;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.4);-webkit-tap-highlight-color:transparent}
 .cb-stats::before{content:'📊'}
 .cb-stats:hover{filter:brightness(1.05)}
 .cb-stats:active{transform:translateX(-50%) scale(.96)}
@@ -217,55 +232,61 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
    background, with the header (name + red underline + position + tagline), the THIS
    WEEK live-stat tiles, and the GOOD HABITS + crest footer overlaid in matching type. */
 .cb2{position:absolute;inset:0;color:#fff;background:#161F30;font-family:'Oswald',system-ui,sans-serif;overflow:hidden}
+/* per-theme base color behind the plate art, so a stretched/undersized plate never shows black */
+.cb2-th-red{background:#050E11}
+.cb2-th-blue{background:#031C2E}
+.cb2-th-gold{background:#071216}
+.cb2-th-rainbow{background:#0A191D}
+.cb2-th-grunge{background:#0A171A}
+.cb2-th-amber{background:#051217}
+.cb2-th-fire{background:#0F1315}
 .cb2-plate{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;pointer-events:none;-webkit-user-drag:none}
-.cb2-in{position:absolute;inset:0;z-index:2;padding:22px 20px 18px;display:flex;flex-direction:column}
+.cb2-in{position:absolute;inset:0;z-index:2;padding:14px 14px 66px;display:flex;flex-direction:column}
 .cb2-hd{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
-.cb2-name{font-family:'Anton',system-ui,sans-serif;font-size:clamp(28px,10vw,42px);line-height:.86;text-transform:uppercase;letter-spacing:.005em;color:#FAFBFC}
-.cb2-name i{display:block;width:150px;max-width:90%;height:5px;background:#C0252A;margin:5px 0 4px}
-.cb2-pos{font-family:'Oswald',system-ui,sans-serif;font-weight:500;font-size:clamp(11px,3.6vw,15px);text-transform:uppercase;letter-spacing:.13em;color:#E7ECF0;margin-top:2px}
-.cb2-tag{text-align:right;font-family:'Oswald',system-ui,sans-serif;font-weight:600;font-style:italic;font-size:11px;line-height:1.2;text-transform:uppercase;letter-spacing:.02em;color:#B7C3CE}
-.cb2-tag i{display:block;width:34px;height:4px;background:#C0252A;transform:skewX(-14deg);margin:6px 0 0 auto}
-.cb2-panel{margin-top:16px;border:1px solid rgba(255,255,255,.16);border-radius:16px;padding:12px;background:rgba(10,15,22,.52);backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
-.cb2-eyebrow{font-family:'Anton',system-ui,sans-serif;font-size:14px;letter-spacing:.04em;text-transform:uppercase;color:#fff;margin:0 2px 10px}
-.cb2-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.cb2-tile{border:1px solid rgba(255,255,255,.14);border-radius:12px;background:rgba(0,0,0,.4);padding:12px 12px;display:flex;align-items:center;gap:10px}
-.cb2-ico{width:34px;height:34px;flex:0 0 34px;color:#C0252A}
+.cb2-name{font-family:'Anton',system-ui,sans-serif;font-size:26px;line-height:.86;text-transform:uppercase;letter-spacing:.005em;color:#FAFBFC}
+.cb2-name i{display:block;width:96px;max-width:90%;height:4px;background:#C0252A;margin:4px 0 3px}
+.cb2-pos{font-family:'Oswald',system-ui,sans-serif;font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#E7ECF0;margin-top:1px}
+.cb2-tag{text-align:right;font-family:'Oswald',system-ui,sans-serif;font-weight:600;font-style:italic;font-size:9px;line-height:1.15;text-transform:uppercase;letter-spacing:.02em;color:#B7C3CE}
+.cb2-tag i{display:block;width:26px;height:3px;background:#C0252A;transform:skewX(-14deg);margin:4px 0 0 auto}
+.cb2-panel{margin-top:9px;border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:11px;background:rgba(10,15,22,.72)}
+.cb2-eyebrow{font-family:'Anton',system-ui,sans-serif;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:#fff;margin:0 2px 9px}
+.cb2-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.cb2-tile{border:1px solid rgba(255,255,255,.14);border-radius:11px;background:rgba(0,0,0,.42);padding:11px 11px;display:flex;align-items:center;gap:10px}
+.cb2-ico{width:30px;height:30px;flex:0 0 30px;color:#C0252A}
 .cb2-ico svg{width:100%;height:100%;display:block}
 .cb2-ico.mut{color:rgba(255,255,255,.85)}
 .cb2-n{font-family:'Anton',system-ui,sans-serif;font-size:32px;line-height:.9;margin-left:auto;color:#FAFBFC}
-.cb2-l{font-family:'Oswald',system-ui,sans-serif;font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.78);width:100%;flex-basis:100%;margin-top:-2px}
+.cb2-l{font-family:'Oswald',system-ui,sans-serif;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.82);width:100%;flex-basis:100%;margin-top:0}
 .cb2-tile{flex-wrap:wrap}
 .cb2-wide{grid-column:1/-1;display:flex;align-items:center;gap:12px}
-.cb2-bars{display:flex;align-items:flex-end;gap:3px;height:24px}
-.cb2-bars i{width:5px;background:#C0252A;border-radius:1px}
+.cb2-bars{display:flex;align-items:flex-end;gap:2px;height:16px}
+.cb2-bars i{width:4px;background:#C0252A;border-radius:1px}
 .cb2-wide .cb2-n{margin-left:0}
 .cb2-wide .cb2-l{width:auto;flex-basis:auto;margin:0}
-.cb2-ft{margin-top:auto;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding-top:14px}
-.cb2-habits{font-family:'Oswald',system-ui,sans-serif;font-weight:700;font-style:italic;font-size:20px;line-height:.98;color:#B7C3CE;text-transform:uppercase}
-.cb2-habits i{display:block;width:70px;height:4px;background:#C0252A;transform:skewX(-16deg);margin-top:6px}
-.cb2-crest{width:70px;height:82px;flex:0 0 70px}
+.cb2-ft{margin-top:auto;display:flex;align-items:flex-end;justify-content:space-between;gap:8px;padding-top:8px}
+.cb2-habits{font-family:'Oswald',system-ui,sans-serif;font-weight:700;font-style:italic;font-size:14px;line-height:.98;color:#B7C3CE;text-transform:uppercase}
+.cb2-habits i{display:block;width:48px;height:3px;background:#C0252A;transform:skewX(-16deg);margin-top:4px}
+.cb2-crest{width:50px;height:59px;flex:0 0 50px}
 .cb2-crest svg{width:100%;height:100%;display:block;filter:drop-shadow(0 3px 8px rgba(0,0,0,.5))}
-@media (max-width:340px){.cb2-in{padding:16px 14px}.cb2-n{font-size:26px}}
+@media (max-width:340px){.cb2-in{padding:12px 12px 12px}}
 /* ---- Coded card FRONT: real text-free art plate (cards/card_front_plate.svg,
    viewBox 756x1024) as the background, the player's own consented photo composited
    over it when present, and live number / name / position / association overlaid to
    match Lewie's front. The PLAY LEARN IMPROVE REPEAT tagline is baked into the plate. */
 .cf2{position:absolute;inset:0;overflow:hidden;font-family:'Oswald',system-ui,sans-serif;color:#fff;background:#161F30}
 .cf2-plate{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;pointer-events:none;-webkit-user-drag:none}
-.cf2-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;z-index:2}
-.cf2-photo-mask{position:absolute;inset:0;z-index:3;pointer-events:none;background:
-  linear-gradient(100deg,rgba(22,31,48,.92) 0%,rgba(22,31,48,.35) 26%,transparent 46%),
-  linear-gradient(0deg,rgba(22,31,48,.85) 0%,transparent 30%)}
+.cf2-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:bottom center;z-index:2}
+.cf2-photo-mask{position:absolute;left:0;right:0;bottom:0;height:34%;z-index:2;pointer-events:none;background:linear-gradient(0deg,rgba(10,14,12,.55) 0%,transparent 100%)}
 /* keeps the number and name legible over any plate/photo */
 .cf2-scrim{position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(0deg,rgba(10,14,12,.62) 0%,transparent 26%)}
-.cf2-num{position:absolute;top:6px;left:18px;z-index:4;font-family:'Anton',system-ui,sans-serif;font-size:clamp(56px,23vw,116px);line-height:.8;color:#FAFBFC;text-shadow:0 3px 16px rgba(0,0,0,.55);letter-spacing:-.02em}
-.cf2-tagline{position:absolute;left:20px;top:clamp(78px,29vw,150px);z-index:4;font-family:'Oswald',system-ui,sans-serif;font-weight:600;font-style:italic;font-size:clamp(13px,4.6vw,19px);line-height:1.04;text-transform:uppercase;letter-spacing:.02em;color:#B7C3CE}
+.cf2-num{position:absolute;top:16px;left:14px;z-index:4;font-family:'Anton',system-ui,sans-serif;font-size:clamp(48px,20vw,92px);line-height:.8;color:#FAFBFC;text-shadow:0 3px 16px rgba(0,0,0,.55);letter-spacing:-.02em}
+.cf2-tagline{position:absolute;left:16px;top:clamp(78px,27vw,132px);z-index:4;font-family:'Oswald',system-ui,sans-serif;font-weight:600;font-style:italic;font-size:clamp(11px,3.8vw,16px);line-height:1.04;text-transform:uppercase;letter-spacing:.02em;color:#B7C3CE}
 .cf2-tagline i{display:block;width:36px;height:4px;background:#C0252A;transform:skewX(-16deg);margin-top:6px}
-.cf2-foot{position:absolute;left:0;right:0;bottom:0;z-index:4;padding:16px 20px 22px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
-.cf2-nm{font-family:'Anton',system-ui,sans-serif;font-size:clamp(30px,11vw,52px);line-height:.86;text-transform:uppercase;letter-spacing:.005em;color:#FAFBFC}
+.cf2-foot{position:absolute;left:0;right:0;bottom:0;z-index:4;padding:12px 16px 16px;display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.cf2-nm{font-family:'Anton',system-ui,sans-serif;font-size:clamp(26px,9vw,42px);line-height:.86;text-transform:uppercase;letter-spacing:.005em;color:#FAFBFC;min-width:0;overflow:hidden}
 .cf2-nm i{display:block;width:200px;max-width:96%;height:6px;background:#C0252A;margin:6px 0 7px}
 .cf2-pos{font-family:'Oswald',system-ui,sans-serif;font-weight:500;font-size:clamp(12px,4vw,17px);text-transform:uppercase;letter-spacing:.14em;color:#E7ECF0}
-.cf2-team{text-align:right;font-family:'Oswald',system-ui,sans-serif;font-weight:600;font-size:clamp(9px,2.8vw,12px);line-height:1.35;text-transform:uppercase;letter-spacing:.12em;color:#DCE2E8;white-space:nowrap}
+.cf2-team{text-align:right;font-family:'Oswald',system-ui,sans-serif;font-weight:600;font-size:11px;line-height:1.3;text-transform:uppercase;letter-spacing:.08em;color:#DCE2E8;flex:0 0 auto;white-space:nowrap}
 .pl-decal{position:absolute;width:56px;height:56px;object-fit:contain;filter:drop-shadow(0 2px 5px rgba(0,0,0,.45));pointer-events:none;-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none;z-index:4}
 .pl-decalwrap{position:absolute;transform:translate(-50%,-50%);z-index:4;touch-action:none;cursor:grab;-webkit-touch-callout:none}
 .pl-decalwrap:active{cursor:grabbing}
@@ -420,7 +441,7 @@ button.row:active{background:var(--soft)}
 .pl-thwap.go{animation:plthwap .7s ease}
 @keyframes plthwap{0%{transform:translate(-50%,-50%) rotate(-8deg) scale(0);opacity:0}30%{transform:translate(-50%,-50%) rotate(-8deg) scale(1.2);opacity:1}100%{transform:translate(-50%,-50%) rotate(-8deg) scale(1);opacity:0}}
 @media (prefers-reduced-motion: reduce){.plflame,.pl-radar-poly,.pl-radar-poly.grow,.pl-radar-wrap svg circle,.pl-spoke,.pl-thwap.go,.pl-ringfill{animation:none;transition:none}.pl-spoke{stroke-dashoffset:0}}.row:last-child{border-bottom:0}.row.me{background:rgba(185,240,107,.18);box-shadow:inset 3px 0 0 var(--lime)}.row-you{display:inline-block;margin-left:7px;font-size:11px;font-weight:900;letter-spacing:.05em;color:#0f1712;background:var(--lime);border-radius:999px;padding:2px 7px;vertical-align:middle}.bar{height:6px;background:var(--soft);border-radius:99px;overflow:hidden}.fill{height:100%;background:var(--lime)}.score{font-weight:950;color:var(--green2)}.note{padding:14px 2px 0;margin-top:16px;border-top:1px solid var(--line);color:var(--muted2);font-size:13px;line-height:1.5}.footer{text-align:center;color:var(--chev);font-size:11px;padding:28px 0}
-.footer{display:flex;align-items:center;justify-content:space-between;gap:14px;color:var(--muted);font-size:12px;padding:28px 4px}.footer .slogan{font-weight:800;letter-spacing:.01em}.trademark{text-align:center;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.02em;padding:0 4px 24px}.themetoggle{display:inline-flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit}.themetoggle:hover{border-color:var(--line2)}.themetoggle .ttico{font-size:14px;line-height:1}
+.footer{display:flex;align-items:center;justify-content:space-between;gap:14px;color:var(--muted);font-size:12px;padding:28px 4px}.footer .slogan{font-weight:800;letter-spacing:.01em}.trademark{text-align:center;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.02em;padding:0 4px 24px}.trademark-mark{height:52px;width:auto;object-fit:contain;display:inline-block;opacity:.75}.themetoggle{display:inline-flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit}.themetoggle:hover{border-color:var(--line2)}.themetoggle .ttico{font-size:14px;line-height:1}
 /* Easter eggs on the drill pages. Long-press the header emoji to fire, then it
    resets. Reduced motion disables both (see the JS guard + the media block). */
 .eggstick,.eggnet{cursor:pointer;-webkit-user-select:none;user-select:none;touch-action:manipulation;position:relative;display:inline-block}
@@ -457,12 +478,12 @@ button.row:active{background:var(--soft)}
 </section>
 
 <section id='stick' class='page'>
-<a class='glassclose' href='.' aria-label='Close'>✕</a><div class='heroCard'><div class='big eggstick' id='eggStick' role='img' aria-label='Hockey stick'>🏒</div><h1><button type='button' class='titletip' data-daytip>Today’s<span class='titletip-date'>Sunday, September 13</span></button> Stickhandling</h1><p>Head up, soft hands and clean puck movement.</p><div class='pills'><span class='pill'>about 10-15 min</span></div></div>
+<a class='glassclose' href='.' aria-label='Close'>✕</a><div class='heroCard'><div class='big eggstick' id='eggStick' role='img' aria-label='Hockey stick'>🏒</div><h1><button type='button' class='titletip' data-daytip>Today’s<span class='titletip-date'>Sunday, September 13</span></button> Stickhandling</h1><p>Head up, soft hands and clean puck movement.</p><div class='pills'><span class='pill' id='stickTime'>about 10-15 min</span></div></div>
 <div id='stickList'></div>
 </section>
 
 <section id='shoot' class='page'>
-<a class='glassclose' href='.' aria-label='Close'>✕</a><div class='heroCard'><div class='big eggnet' id='eggNet' role='img' aria-label='Hockey net'>🥅</div><h1><button type='button' class='titletip' data-daytip>Today’s<span class='titletip-date'>Sunday, September 13</span></button> Shooting</h1><p>Purposeful shots, not just more shots.</p><div class='pills'><span class='pill'>about 15 min</span></div></div>
+<a class='glassclose' href='.' aria-label='Close'>✕</a><div class='heroCard'><div class='big eggnet' id='eggNet' role='img' aria-label='Hockey net'>🥅</div><h1><button type='button' class='titletip' data-daytip>Today’s<span class='titletip-date'>Sunday, September 13</span></button> Shooting</h1><p>Purposeful shots, not just more shots.</p><div class='pills'><span class='pill' id='shootTime'>about 15 min</span></div></div>
 <div id='shootList'></div>
 </section>
 
@@ -510,9 +531,13 @@ button.row:active{background:var(--soft)}
 
 <section id='stickers' class='page'>
 <a class='glassclose' href='.' aria-label='Close'>✕</a>
-<div class='hero'><div class='kicker'>Rangers 10U</div><h1>Sticker Book</h1><p>Finish drills to unlock stickers. Spin your card, drag a sticker onto it, and long-press a sticker to peel it off.</p></div>
+<div class='hero'><div class='kicker'>Rangers 10U</div><h1>Sticker Book</h1><p>Finish drills to unlock stickers.</p></div>
 <div class='stickcount' id='stickCount'></div>
-<div class='deck-wrap'><div class='deck-scene'><div class='deck-3d' id='deck3d'><div class='deck-face deck-front' id='deckFront'><img class='deck-art' id='deckArtFront' src='' alt='Your card front'></div><div class='deck-face deck-back' id='deckBack'><img class='deck-art' id='deckArtBack' src='' alt='Your card back'></div></div></div></div>
+<button type='button' class='cardreveal' id='cardReveal'>Put stickers on your player card <span aria-hidden='true'>✨</span></button>
+<div class='deck-wrap' id='deckWrap' hidden>
+<p class='deck-tip'>Spin your card, drag a sticker onto it, and hold a sticker to peel it off.</p>
+<div class='deck-scene'><div class='deck-3d' id='deck3d'><div class='deck-face deck-front' id='deckFront'><img class='deck-art' id='deckArtFront' src='' alt='Your card front'></div><div class='deck-face deck-back' id='deckBack'><img class='deck-art' id='deckArtBack' src='' alt='Your card back'></div></div></div>
+</div>
 <div class='stickgrid' id='stickGrid'></div>
 </section>
 
@@ -530,14 +555,14 @@ button.row:active{background:var(--soft)}
 
 <section id='home'>
 <div class='wipnote'>👋 Early prototype. We're testing the look and feel. Training drills and stickers are still being built.</div>
-<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-skate-1.png' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Change player</a><span class='topsep'>|</span><a class='link' href='#progress'>Leaderboard</a></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><a href='#stickers'>Stickers</a><a href='#roster'>Change player</a><a href='#progress'>Leaderboard</a></div></div>
+<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.svg' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Change player</a><span class='topsep'>|</span><a class='link' href='#progress'>Leaderboard</a></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><a href='#stickers'>Stickers</a><a href='#roster'>Change player</a><a href='#progress'>Leaderboard</a></div></div>
 <div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>Lewie</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><div class='forrow'><span class='forline'>3 things, about 30 min</span><button type='button' class='daytip daytip-chip' id='dayTip' aria-label='Show today’s date'>Today<span class='daydate' id='dayDate'>Sunday, September 13</span></button></div></div>
 <div class='cards'>
 <a class='nav' href='hockey_game_goals.html'><div class='ico'>🎯</div><div><h2>Game Day Goals</h2><p>Pick your 4 goals for today’s game</p></div><div class='chev'>›</div></a>
 <a class='nav nav-stick' href='#stick'><div class='ico'>🏒</div><div><h2>Stickhandling</h2><p>Hands + puck control, about 10-15 min</p></div><div class='chev'>›</div></a>
 <a class='nav nav-shoot' href='#shoot'><div class='ico'>🥅</div><div><h2>Shooting</h2><p>Accuracy + release, about 15 min</p></div><div class='chev'>›</div></a>
 <a class='nav nav-dryland' href='#dryland'><div class='ico'>⚡</div><div><h2>Dryland</h2><p>Speed + power + balance, about 15 min</p></div><div class='chev'>›</div></a>
-</div><div class='footer'><span class='slogan'>Compete. Improve. Have fun.</span><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button></div><div class='trademark'>Thwap Hockey&trade;</div>
+</div><div class='footer'><span class='slogan'>Compete. Improve. Have fun.</span><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div>
 </section>
 </div><script>(function(){
 /* Player gate: tapping a drill card asks who you are, then continues to the drill. */
@@ -666,6 +691,16 @@ var WORKOUTS=[
 
 function dayIndex(){var d=new Date();var base=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000);try{var m=location.search.match(/[?&]day=([^&]*)/);if(m){var raw=decodeURIComponent(m[1]).trim();if(/^[+-]/.test(m[1])||/^[+-]/.test(raw)){var o=parseInt(m[1].replace(/^ /,'+'),10);if(isNaN(o))o=parseInt(raw,10);if(!isNaN(o))return base+o;}var n=parseInt(raw,10);if(!isNaN(n))return n;}}catch(e){}return base;}
 function todayKey(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+/* Fixed weekly training plan (Option A): Monday-Friday are slots 0-4, the SAME plan
+   every week; Saturday and Sunday are rest / game days with no drills. Derived from
+   dayIndex() so the ?day= test override still works. dayIndex 0 = Thu 1970-01-01,
+   so weekday = (dayIndex+4) mod 7 with 0=Sun..6=Sat. */
+window.thwapWeekday=function(){ return ((((dayIndex()%7)+7)%7)+4)%7; };  /* 0=Sun..6=Sat */
+window.thwapIsRestDay=function(){ var w=window.thwapWeekday(); return w===0||w===6; };
+window.thwapWeekdaySlot=function(){ var w=window.thwapWeekday(); return (w>=1&&w<=5)?(w-1):-1; };  /* Mon0..Fri4, weekend -1 */
+window.thwapRestCard=function(){
+  return "<div class='restday'><div class='restday-msg'>No training today. Rest up and come back Monday.</div></div>";
+};
 function player(){try{return localStorage.getItem('bfPlayer')||'guest';}catch(e){return 'guest';}}
 function progKey(wid){return 'bfDryland|'+player()+'|'+todayKey()+'|'+wid;}
 function loadProg(wid){try{return JSON.parse(localStorage.getItem(progKey(wid))||'{}');}catch(e){return {};}}
@@ -681,7 +716,7 @@ function videoBlock(dr){
   }
   return "<div class='exvideo placeholder'><span>▶</span><small>Video coming soon</small></div>";
 }
-function todaysWorkout(){return WORKOUTS[dayIndex()%WORKOUTS.length];}
+function todaysWorkout(){var s=window.thwapWeekdaySlot();return WORKOUTS[(s<0?0:s)%WORKOUTS.length];}
 
 /* Build a balanced ~15-min block: 1-2 exercises from each category present today,
    capped at 6, in a sensible order. Which ones (when a category has several) rotates by day. */
@@ -713,6 +748,7 @@ function render(){
 
   var list=document.getElementById('drylandList'); if(!list)return;
   list.innerHTML='';
+  if(window.thwapIsRestDay&&window.thwapIsRestDay()){ list.innerHTML=window.thwapRestCard(); var tt=document.getElementById('drylandTime'); if(tt)tt.style.display='none'; return; }
   if(!drills.length){
     list.innerHTML="<p style='color:var(--muted);font-size:16px;padding:14px 2px'>Exercises for this workout are on the way.</p>";
     return;
@@ -889,7 +925,7 @@ render();
 fetchBoard();
 window.addEventListener('hashchange',function(){ if(location.hash==='#progress') fetchBoard(); });
 })();</script>
-<script>(function(){var KEY='thwapTheme';function apply(t){var dark=(t==='dark');document.documentElement.setAttribute('data-theme',dark?'dark':'light');var i=document.getElementById('ttico'),l=document.getElementById('ttlabel');if(i)i.textContent=dark?'☀️':'🌙';if(l)l.textContent=dark?'Light':'Dark';var bm=document.getElementById('brandMark');if(bm)bm.setAttribute('src',dark?'wordmark-dark.svg':'wordmark-light.svg');}var saved='light';try{saved=localStorage.getItem(KEY)||'light';}catch(e){}apply(saved);var b=document.getElementById('themeToggle');if(b)b.addEventListener('click',function(){var cur='light';try{cur=localStorage.getItem(KEY)||'light';}catch(e){}var next=(cur==='dark'?'light':'dark');try{localStorage.setItem(KEY,next);}catch(e){}apply(next);});})();</script>
+<script>(function(){var KEY='thwapTheme';function apply(t){var dark=(t==='dark');document.documentElement.setAttribute('data-theme',dark?'dark':'light');var i=document.getElementById('ttico'),l=document.getElementById('ttlabel');if(i)i.textContent=dark?'☀️':'🌙';if(l)l.textContent=dark?'Light':'Dark';var bm=document.getElementById('brandMark');if(bm)bm.setAttribute('src',dark?'wordmark-dark.svg':'wordmark-light.svg');var fm=document.getElementById('footerMark');if(fm)fm.setAttribute('src',dark?'wordmark-tm-dark.svg':'wordmark-tm-light.svg');}var saved='light';try{saved=localStorage.getItem(KEY)||'light';}catch(e){}apply(saved);var b=document.getElementById('themeToggle');if(b)b.addEventListener('click',function(){var cur='light';try{cur=localStorage.getItem(KEY)||'light';}catch(e){}var next=(cur==='dark'?'light':'dark');try{localStorage.setItem(KEY,next);}catch(e){}apply(next);});})();</script>
 <div class='cardoverlay' id='cardOverlay' hidden>
   <button type='button' class='cardclose' id='cardClose' aria-label='Close card'>✕</button>
   <div class='cardscene' id='cardScene'>
@@ -898,7 +934,19 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#progress')
       <div class='cardface cardback' id='cardBack'></div>
     </div>
     <div class='cardhint' id='cardHint' hidden></div>
-    <div class='cardthemes' id='cardThemes' role='group' aria-label='Card color'></div>
+    <div class='cardctl' id='cardCtl'>
+      <div class='cardctl-row' id='cardCtlMain'>
+        <button type='button' class='cardbtn' id='cardThemeBtn'></button>
+        <button type='button' class='cardbtn' id='cardImageBtn'></button>
+      </div>
+      <div class='cardctl-theme' id='cardCtlTheme' hidden>
+        <div class='cardthemes' id='cardThemes' role='group' aria-label='Card color'></div>
+        <div class='cardctl-row'>
+          <button type='button' class='cardbtn cardbtn-icon' id='cardThemeBack' aria-label='Back'><span aria-hidden='true'>&larr;</span></button>
+          <button type='button' class='cardbtn' id='cardThemeSave' disabled aria-disabled='true'>Save <span aria-hidden='true'>&rarr;</span></button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 <script>(function(){
@@ -987,7 +1035,7 @@ function buildFront(p,slug,photoUrl){
   var photo = photoUrl
     ? "<img class='cf2-photo' src='"+photoUrl+"' alt='"+p.first+" photo'><div class='cf2-photo-mask'></div>"
     : "";
-  return "<div class='cf2'>"+
+  return "<div class='cf2 cb2-th-"+cb2Theme(slug)+"'>"+
       "<img class='cf2-plate' src='"+cb2Plate('front',slug)+"' alt=''>"+
       photo+
       "<div class='cf2-scrim'></div>"+
@@ -1007,7 +1055,7 @@ function buildBack(p,slug){
     return "<div class='cb2-tile'><span class='cb2-ico"+(mut?' mut':'')+"'>"+CB2_ICONS[icoKey]+"</span>"+
       "<span class='cb2-n'>"+n+"</span><span class='cb2-l'>"+label+"</span></div>";
   };
-  return "<div class='cb2' role='img' aria-label='"+p.first+" weekly stats card'>"+
+  return "<div class='cb2 cb2-th-"+cb2Theme(slug)+"' role='img' aria-label='"+p.first+" weekly stats card'>"+
     "<img class='cb2-plate' src='"+cb2Plate('back',slug)+"' alt=''>"+
     "<div class='cb2-in'>"+
       "<div class='cb2-hd'><div><div class='cb2-name'>"+p.first+"<i></i></div>"+
@@ -1022,10 +1070,11 @@ function buildBack(p,slug){
           "<div class='cb2-tile cb2-wide'><span class='cb2-ico'>"+CB2_ICONS.bars+"</span>"+
             "<span class='cb2-n'>"+sessions+"</span><span class='cb2-l'>Sessions this week</span></div>"+
         "</div></div>"+
-      "<div class='cb2-ft'><div class='cb2-habits'>Good<br>Habits<br>Big Plays<i></i></div>"+
-        "<span class='cb2-crest'>"+CB2_CREST+"</span></div>"+
+      "<div class='cb2-ft'><div class='cb2-habits'>Good<br>Habits<br>Big Plays<i></i></div></div>"+
     "</div></div>";
 }
+/* expose the coded faces + current player so the sticker deck renders the SAME card */
+window.buildFront=buildFront; window.buildBack=buildBack; window.thwapCurrentPlayer=currentPlayer;
 function buildFaces(){
   var p=currentPlayer();
   var posCls=p.pos==='G'?'pos-goalie':p.pos==='D'?'pos-def':'pos-fwd';
@@ -1041,9 +1090,7 @@ function buildFaces(){
   var myPhoto=null;
   try{ myPhoto=localStorage.getItem('thwapCardPhoto:'+slug); }catch(e){}
   function renderFront(photoUrl){
-    front.innerHTML=buildFront(p,slug,photoUrl)+
-      "<button type='button' class='cf-photo-btn' id='cfPhotoBtn'>"+(photoUrl?'Edit photo':'Add your photo')+"</button>";
-    wirePhotoButton(slug);
+    front.innerHTML=buildFront(p,slug,photoUrl);
     if(window.thwapRenderPlaced){ window.thwapRenderPlaced('front', front, {}); }
   }
   renderFront(myPhoto);
@@ -1087,27 +1134,54 @@ window.thwapRebuildCard=function(){ try{ buildFaces(); }catch(e){} };
    switch the card's front and back to that theme, saved per player. Locked ones
    show a lock (unlock later via the earned/sticker system). */
 function buildThemePicker(){
-  var row=document.getElementById('cardThemes'); if(!row) return;
-  var slug=cb2Slug(); var cur=cb2Theme(slug); var unlocked=cb2Unlocked();
-  row.innerHTML='';
-  CB2_THEMES.forEach(function(t){
-    var b=document.createElement('button'); b.type='button';
-    b.className='cardsw'+(t===cur?' sel':'')+(unlocked[t]?'':' locked');
-    b.style.setProperty('--sw', CB2_META[t]?CB2_META[t].sw:'#333');
-    b.setAttribute('aria-label', t+(unlocked[t]?(t===cur?', selected':''):', locked'));
-    b.setAttribute('aria-pressed', t===cur?'true':'false');
-    if(unlocked[t]){
-      b.addEventListener('pointerdown',function(e){ e.stopPropagation(); });
-      b.addEventListener('click',function(e){
-        e.stopPropagation();
-        if(t===cb2Theme(slug)) return;
-        cb2SetTheme(slug,t); buildFaces(); buildThemePicker();
-      });
-    } else {
-      b.addEventListener('click',function(e){ e.stopPropagation(); });
-    }
-    row.appendChild(b);
-  });
+  var main=document.getElementById('cardCtlMain'), themeRow=document.getElementById('cardCtlTheme');
+  var row=document.getElementById('cardThemes');
+  var themeBtn=document.getElementById('cardThemeBtn'), imageBtn=document.getElementById('cardImageBtn');
+  var backBtn=document.getElementById('cardThemeBack'), saveBtn=document.getElementById('cardThemeSave');
+  if(!row||!main||!themeRow) return;
+  var slug=cb2Slug();
+  /* image button label: pencil if a photo exists, + if not */
+  var hasPhoto=false; try{ hasPhoto=!!localStorage.getItem('thwapCardPhoto:'+slug); }catch(_){}
+  if(themeBtn){ themeBtn.innerHTML='\u270F\uFE0F Theme'; }
+  if(imageBtn){ imageBtn.innerHTML=hasPhoto?'\u270F\uFE0F image':'+ image'; }
+  var dirty=false;
+  function setSave(){ if(saveBtn){ saveBtn.disabled=!dirty; saveBtn.setAttribute('aria-disabled', dirty?'false':'true'); } }
+  function showMain(){ main.hidden=false; themeRow.hidden=true; }
+  function showThemes(){ main.hidden=true; themeRow.hidden=false; dirty=false; setSave(); renderSwatches(); }
+  function renderSwatches(){
+    var cur=cb2Theme(slug), unlocked=cb2Unlocked();
+    row.innerHTML='';
+    CB2_THEMES.forEach(function(t){
+      var b=document.createElement('button'); b.type='button';
+      b.className='cardsw'+(t===cur?' sel':'')+(unlocked[t]?'':' locked');
+      b.style.setProperty('--sw', CB2_META[t]?CB2_META[t].sw:'#333');
+      b.setAttribute('aria-label', t+(unlocked[t]?(t===cur?', selected':''):', locked'));
+      if(unlocked[t]){
+        b.addEventListener('pointerdown',function(e){ e.stopPropagation(); });
+        b.addEventListener('click',function(e){ e.stopPropagation(); if(t===cb2Theme(slug)) return; cb2SetTheme(slug,t); dirty=true; setSave(); buildFaces(); renderSwatches(); });
+      } else { b.addEventListener('click',function(e){ e.stopPropagation(); }); }
+      row.appendChild(b);
+    });
+  }
+  /* wire once (idempotent: replace handlers by cloning would be heavy; use flags) */
+  if(themeBtn && !themeBtn._wired){ themeBtn._wired=1;
+    themeBtn.addEventListener('pointerdown',function(e){e.stopPropagation();});
+    themeBtn.addEventListener('click',function(e){ e.stopPropagation(); showThemes(); }); }
+  if(backBtn && !backBtn._wired){ backBtn._wired=1;
+    backBtn.addEventListener('pointerdown',function(e){e.stopPropagation();});
+    backBtn.addEventListener('click',function(e){ e.stopPropagation(); showMain(); }); }
+  if(saveBtn && !saveBtn._wired){ saveBtn._wired=1;
+    saveBtn.addEventListener('pointerdown',function(e){e.stopPropagation();});
+    saveBtn.addEventListener('click',function(e){ e.stopPropagation(); if(saveBtn.disabled) return; showMain(); }); }  /* choice already persisted on tap */
+  if(imageBtn && !imageBtn._wired){ imageBtn._wired=1;
+    imageBtn.addEventListener('pointerdown',function(e){e.stopPropagation();});
+    imageBtn.addEventListener('click',function(e){ e.stopPropagation();
+      var s=cb2Slug(); var has=false; try{ has=!!localStorage.getItem('thwapCardPhoto:'+s); }catch(_){}
+      /* parent-consent + photo flow. On success land in the theme-controls view
+         with Save active, so the player can confirm the added image. */
+      if(window.thwapPhotoEdit){ window.thwapPhotoEdit(s, has, function(){ buildFaces(); paint(); main.hidden=true; themeRow.hidden=false; renderSwatches(); dirty=true; setSave(); }); }
+    }); }
+  showMain();
 }
 window.thwapOpenCard=function(){ try{ open(); }catch(e){} };
 /* Photo add/change/remove for the player's OWN card. Local-only: the image is
@@ -1275,8 +1349,12 @@ fetch('stickers/stickers.json').then(function(r){return r.json();}).then(functio
   var artBack=document.getElementById('deckArtBack');
   var slug=playerId().replace(/[^a-z]/g,'');
   var myPhoto=null; try{ myPhoto=localStorage.getItem('thwapCardPhoto:'+slug); }catch(e){}
-  if(artFront) artFront.src=myPhoto||('cards/'+slug+'_front.png');
-  if(artBack) artBack.src='cards/'+slug+'_back.png';
+  /* Use the SAME coded faces as the home card so the deck matches exactly. */
+  var pInfo=(window.thwapCurrentPlayer&&window.thwapCurrentPlayer())||null;
+  if(deckFront && window.buildFront && pInfo){ deckFront.innerHTML=window.buildFront(pInfo,slug,myPhoto); }
+  else if(artFront){ artFront.src=myPhoto||('cards/'+slug+'_front.png'); }
+  if(deckBack && window.buildBack && pInfo){ deckBack.innerHTML=window.buildBack(pInfo,slug); }
+  else if(artBack){ artBack.src='cards/'+slug+'_back.png'; }
 
   var drx=0, dry=0;
   function deckPaint(){ if(deck3d) deck3d.style.transform='rotateX('+drx+'deg) rotateY('+dry+'deg)'; }
@@ -1297,6 +1375,18 @@ fetch('stickers/stickers.json').then(function(r){return r.json();}).then(functio
     deck3d.addEventListener('pointercancel',function(){ dg=false; deck3d.classList.remove('dragging'); });
   }
   deckPaint();
+
+  /* The card is hidden until the player chooses to decorate it. Tapping the
+     reveal link shows the card + tip. If they already placed stickers on a
+     previous visit, show it straight away so their work is not hidden. */
+  var deckWrap=document.getElementById('deckWrap');
+  var cardReveal=document.getElementById('cardReveal');
+  function revealCard(){ if(deckWrap) deckWrap.hidden=false; if(cardReveal) cardReveal.hidden=true; }
+  var hasPlaced=false;
+  try{ hasPlaced=(window.thwapPlaced && (window.thwapPlaced.list('front').length || window.thwapPlaced.list('back').length)); }catch(_){}
+  if(hasPlaced){ revealCard(); }
+  if(cardReveal && !cardReveal._wired){ cardReveal._wired=1;
+    cardReveal.addEventListener('click',function(){ revealCard(); }); }
 
   files.forEach(function(f,i){
     var earned=i<EARNED;
@@ -1411,8 +1501,9 @@ var DRILLS=[
 ];
 
 function twoForToday(){
-  var di=dayIndex(), n=DRILLS.length;
-  var a=di%n, b=(di+1)%n;
+  var s=window.thwapWeekdaySlot(); if(s<0) s=0;
+  var n=DRILLS.length;
+  var a=(s*2)%n, b=(s*2+1)%n;
   if(b===a) b=(a+1)%n;
   return [DRILLS[a], DRILLS[b]];
 }
@@ -1421,6 +1512,7 @@ function render(){
   var list=document.getElementById('stickList'); if(!list)return;
   var picks=twoForToday(); var prog=loadProg();
   list.innerHTML='';
+  if(window.thwapIsRestDay&&window.thwapIsRestDay()){ list.innerHTML=window.thwapRestCard(); var sp=document.getElementById('stickTime'); if(sp)sp.style.display='none'; return; }
   picks.forEach(function(dr,i){
     var done=prog[i]?' done':'';
     var steps="<ol>"+dr.steps.map(function(s){var ci=s.indexOf(':');if(ci>0&&ci<28){return "<li><b>"+esc(s.slice(0,ci))+"</b>"+esc(s.slice(ci))+"</li>";}return "<li>"+esc(s)+"</li>";}).join('')+"</ol>";
@@ -1657,6 +1749,8 @@ function fill(){
   var wd=d.toLocaleDateString(undefined,{weekday:'long'});
   document.querySelectorAll('.titletip-date').forEach(function(el){ el.textContent=full; });
   var dd=document.getElementById('dayDate'); if(dd)dd.textContent=full;
+  var fl=document.querySelector('.forline');
+  if(fl){ fl.textContent=(window.thwapIsRestDay&&window.thwapIsRestDay())?'No training today':'3 things, about 30 min'; }
   /* Home chip label stays "Today"; the weekday+date live only in the tap-reveal (#dayDate),
      so the weekday is never shown twice. */
 }
@@ -1712,7 +1806,7 @@ document.addEventListener('click',function(e){
     logo.addEventListener('animationend',function done(ev){
       if(ev.animationName!=='sassAcross')return;
       if(flip)clearInterval(flip);
-      logo.src='sass-skate-1.png';
+      logo.src='sass-logo.svg';
       logo.classList.remove('skating');
       logo.style.transform=''; logo.style.marginTop=''; logo.style.removeProperty('--sass-travel');
       logo.removeEventListener('animationend',done);
@@ -1773,9 +1867,20 @@ var SHOOT_DAYS=[
     {emoji:'🎯', name:'Random Target', theme:'React fast', cue:'Let Thwap decide where your shot goes after the play has already started.',
      steps:['Go: Start with a puck. Move toward the net.','Target: Thwap randomly shows a target.','Find it: Look at the target with your eyes.','Shoot: Adjust the puck if you need to and shoot quickly.','Keep moving: Don\'t stop your feet just to hit the target.']},
     {emoji:'⏱️', name:'Quick Release Challenge', theme:'Beat clock', cue:'See how fast you can turn a pass into a quality shot.',
-     steps:['Start empty: No puck on your blade.','Get: Get a pass. Control it. Find the net.','Fire: Shoot in under two seconds.','Quality: It only counts if it\'s smooth and on target.','Streak: Try to string together 5 good quick releases in a row.']} ]
+     steps:['Start empty: No puck on your blade.','Get: Get a pass. Control it. Find the net.','Fire: Shoot in under two seconds.','Quality: It only counts if it\'s smooth and on target.','Streak: Try to string together 5 good quick releases in a row.']} ],
+  /* Day 5: Mixed Review (pulls one proven drill from each earlier day) */
+  [ {emoji:'🏃', name:'Moving Warm-Up', theme:'Feet moving', cue:'Get comfortable shooting without stopping your feet.',
+     steps:['Start: 15-20 feet from the net with a puck.','Move: Stickhandle toward the net. Keep your feet moving the whole time.','Pick a corner: Don\'t stop. Shoot with your feet still going.','Reset: Grab another puck and go again from a different angle.']},
+    {emoji:'🥅', name:'Backhand Accuracy', theme:'Pick corners', cue:'Use your backhand to hit different spots on the net on purpose.',
+     steps:['Start close: Get near the net. Puck on your backhand.','Look first: Look at your target before you shoot.','Shoot: Aim for one corner.','Reset: Pick a different target.','All four: Work your way around all four corners.']},
+    {emoji:'🧤', name:'Catch and Release', theme:'One touch', cue:'Get a pass near the net and release it before the goalie can reset.',
+     steps:['Ready: Start near the net with your stick ready.','Get: Get a pass from the side. Catch it soft on your blade.','No extras: Don\'t add extra stickhandles.','Fire: Shoot right away.','Mix it up: Change where the passes come from each time.']},
+    {emoji:'🔗', name:'Carry / Pass / Shoot', theme:'Pass and move', cue:'Connect carrying, passing, and shooting into one play.',
+     steps:['Carry: Start away from the net. Move the puck forward with your feet going.','Pass: Pass to a parent, partner, wall, or rebounder.','Move: Move right after you pass. Get your stick ready for the return.','Get and shoot: Get the puck back and shoot quickly.']},
+    {emoji:'🔁', name:'Ten Different Goals', theme:'Change release', cue:'Score 10 goals without using the same release twice in a row.',
+     steps:['Start: Grab a puck. Move before you shoot.','Score: Pick a way to attack and score a goal.','Change it: On the next one, change something: angle, release point, forehand, backhand, pull, or push.','Keep going: Score 10 different goals. If you repeat yourself, it doesn\'t count!']} ]
 ];
-function shootDayI(){ return ((dayIndex()%SHOOT_DAYS.length)+SHOOT_DAYS.length)%SHOOT_DAYS.length; }
+function shootDayI(){ var s=window.thwapWeekdaySlot(); if(s<0) s=0; return s%SHOOT_DAYS.length; }
 var SHOOT=SHOOT_DAYS[shootDayI()];
 /* Progress keyed by which rotation day it is, so finishing today does not mark another day. */
 function shootKey(){ return 'thwapShootProg|day'+shootDayI(); }
@@ -1786,6 +1891,7 @@ function render(){
   SHOOT=SHOOT_DAYS[shootDayI()];   /* re-pick today's set on each render */
   var prog=loadProg();
   list.innerHTML='';
+  if(window.thwapIsRestDay&&window.thwapIsRestDay()){ list.innerHTML=window.thwapRestCard(); var hp=document.getElementById('shootTime'); if(hp)hp.style.display='none'; return; }
   SHOOT.forEach(function(dr,i){
     var done=prog[i]?' done':'';
     var doneLabel=prog[i]?'Done ✓':'Mark done';
@@ -1903,6 +2009,7 @@ window.thwapStampToday=function(disc,done){
   if(done){ bumpEarned(); window.thwapCheckToday(); }  /* each completion unlocks another sticker */
 };
 window.thwapCheckToday=function(){
+  if(window.thwapIsRestDay&&window.thwapIsRestDay()) return;   /* weekend: rest day, nothing required */
   if(!DISCS.every(isDone)) return;                 /* not all three yet */
   var ck=celebratedKey(); try{ if(localStorage.getItem(ck)==='1') return; }catch(e){}  /* once per day */
   try{ localStorage.setItem(ck,'1'); }catch(e){}
@@ -2058,7 +2165,27 @@ function saveToken(slug, token){
   try{ localStorage.setItem(tokKey(slug), JSON.stringify({token:token, exp:Date.now()+30*24*60*60*1000})); }catch(e){}
 }
 
-/* Crop + downscale a File to the card portrait, return a jpeg data URL. */
+/* Crop + downscale a File to the card portrait, then remove the background ON-DEVICE
+   so only the player shows over the card art. Returns a transparent PNG data URL.
+   The photo never leaves the device: segmentation runs in-browser (WASM). Falls back
+   to the plain cropped photo if the library or segmentation is unavailable. */
+var _bgRemovePromise=null;
+function loadBgRemover(){
+  if(_bgRemovePromise) return _bgRemovePromise;
+  _bgRemovePromise=import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/dist/index.mjs')
+    .then(function(m){ return m.removeBackground||(m.default&&m.default.removeBackground)||m.default; })
+    .catch(function(){ return null; });
+  return _bgRemovePromise;
+}
+function showPhotoBusy(on){
+  var id='thwapPhotoBusy', el=document.getElementById(id);
+  if(on){
+    if(!el){ el=document.createElement('div'); el.id=id;
+      el.style.cssText='position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;background:rgba(15,23,18,.62);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);color:#fff;font-family:inherit;font-weight:800;font-size:16px;text-align:center;padding:24px';
+      el.innerHTML="<div><div style='font-size:34px;margin-bottom:10px'>\u2702\uFE0F</div>Cutting out the background\u2026<div style='font-weight:700;font-size:13px;opacity:.8;margin-top:6px'>Stays on your device. First time takes a few seconds.</div></div>";
+      document.body.appendChild(el); }
+  } else if(el){ el.remove(); }
+}
 function processFile(file, cb){
   var rd=new FileReader();
   rd.onload=function(){
@@ -2070,7 +2197,33 @@ function processFile(file, cb){
       var s=Math.max(TW/img.width, TH/img.height);
       var dw=img.width*s, dh=img.height*s;
       cx.drawImage(img,(TW-dw)/2,(TH-dh)/2,dw,dh);
-      cb(cv.toDataURL('image/jpeg',0.82));
+      var croppedJpeg=cv.toDataURL('image/jpeg',0.82);
+      /* Background removal on the cropped canvas. Transparent PNG on success. */
+      showPhotoBusy(true);
+      loadBgRemover().then(function(removeBackground){
+        if(typeof removeBackground!=='function'){ showPhotoBusy(false); cb(croppedJpeg); return; }
+        cv.toBlob(function(blob){
+          if(!blob){ showPhotoBusy(false); cb(croppedJpeg); return; }
+          removeBackground(blob).then(function(outBlob){
+            /* Re-encode the transparent cutout smaller so it fits the server's ~400KB
+               cap (a full-size PNG of a person often exceeds it). Keeps transparency. */
+            var url=URL.createObjectURL(outBlob);
+            var cut=new Image();
+            cut.onload=function(){
+              URL.revokeObjectURL(url);
+              var OW=460, OH=624;
+              var c2=document.createElement('canvas'); c2.width=OW; c2.height=OH;
+              var x2=c2.getContext('2d');
+              var s2=Math.min(OW/cut.width, OH/cut.height);
+              var w2=cut.width*s2, h2=cut.height*s2;
+              x2.drawImage(cut,(OW-w2)/2,OH-h2,w2,h2);   /* bottom-anchored */
+              showPhotoBusy(false); cb(c2.toDataURL('image/png'));
+            };
+            cut.onerror=function(){ URL.revokeObjectURL(url); showPhotoBusy(false); cb(croppedJpeg); };
+            cut.src=url;
+          }).catch(function(){ showPhotoBusy(false); cb(croppedJpeg); });
+        }, 'image/png');
+      });
     };
     img.onerror=function(){ cb(null); };
     img.src=rd.result;
