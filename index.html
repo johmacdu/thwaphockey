@@ -183,6 +183,12 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 /* holographic sheen driven by --sheen (0..1) */
 .cardface::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.28) 47%,rgba(185,240,107,.22) 52%,rgba(117,184,255,.22) 57%,transparent 72%);transform:translateX(calc((var(--sheen,.5) - .5) * 160%));mix-blend-mode:screen;opacity:.7}
 .cardhint{color:rgba(255,255,255,.72);font-size:13px;font-weight:700;letter-spacing:.02em}
+.cardthemes{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;padding:4px 0 2px}
+.cardsw{width:34px;height:34px;border-radius:50%;border:2px solid rgba(255,255,255,.35);cursor:pointer;padding:0;position:relative;background:var(--sw,#333);box-shadow:0 2px 6px rgba(0,0,0,.4);transition:transform .12s ease}
+.cardsw:active{transform:scale(.92)}
+.cardsw.sel{border-color:#fff;box-shadow:0 0 0 3px var(--lime),0 2px 6px rgba(0,0,0,.4)}
+.cardsw.locked{cursor:default;opacity:.5}
+.cardsw.locked::after{content:'🔒';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;filter:grayscale(1)}
 /* faces are dark/immersive per spec */
 .cardfront{color:#fff;background:#0f1712}.cardback{color:#fff;background:linear-gradient(160deg,#1d2a21,#0f1712)}/* position accent themes on the front */.cardfront.pos-fwd,.cardback.pos-fwd{--acc:#F0B429;--acc2:#B98216}.cardfront.pos-def,.cardback.pos-def{--acc:#75B8FF;--acc2:#3E7DC4}.cardfront.pos-goalie,.cardback.pos-goalie{--acc:#F0645A;--acc2:#B23F38}/* mountain/gradient backdrop (Big Number cards + behind photos) */.cf-bg{position:absolute;inset:0;background:linear-gradient(165deg,var(--acc2,#334) 0%,#0f1712 62%)}.cf-bg::after{content:'';position:absolute;left:0;right:0;bottom:0;height:52%;background:linear-gradient(160deg,transparent,rgba(0,0,0,.35)),conic-gradient(from 210deg at 30% 100%, rgba(255,255,255,.08), transparent 40%);clip-path:polygon(0 100%,18% 46%,32% 70%,52% 28%,70% 62%,86% 40%,100% 66%,100% 100%);opacity:.5}
 .cf-num{font-family:'Archivo Black',system-ui,sans-serif;font-size:64px;line-height:.82;color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.25)}
@@ -892,6 +898,7 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#progress')
       <div class='cardface cardback' id='cardBack'></div>
     </div>
     <div class='cardhint' id='cardHint' hidden></div>
+    <div class='cardthemes' id='cardThemes' role='group' aria-label='Card color'></div>
   </div>
 </div>
 <script>(function(){
@@ -935,9 +942,32 @@ function currentPlayer(){
    matching type (Anton display + Oswald labels + red underline). 6 color themes,
    assigned per player by name (stable). Plates arrive as cards/plate_<face>_<theme>.svg;
    a missing plate falls back to red so nothing breaks. */
-var CB2_THEMES=['red','blue','forest','plum','teal','gold'];
-var CB2_HAVE={ front:{red:1}, back:{red:1,blue:1} };  /* which plate SVGs exist on disk */
-function cb2Theme(slug){ var h=0; for(var i=0;i<slug.length;i++){ h=(h*31+slug.charCodeAt(i))>>>0; } return CB2_THEMES[h%CB2_THEMES.length]; }
+var CB2_THEMES=['red','blue','gold','rainbow','grunge','amber','fire'];
+/* swatch color shown in the picker + which are unlocked to start (red, blue).
+   Others unlock later via the earned/sticker system (window.thwapThemeUnlocked). */
+var CB2_META={
+  red:{sw:'#C0252A'}, blue:{sw:'#2E7DC4'}, gold:{sw:'#C9A227'}, rainbow:{sw:'linear-gradient(135deg,#ff5f6d,#ffc371,#2ec5ce,#a06cd5)'},
+  grunge:{sw:'#8A8F94'}, amber:{sw:'#E8A317'}, fire:{sw:'#E24A26'}
+};
+var CB2_START_UNLOCKED=['red','blue'];
+var CB2_HAVE={ front:{red:1,blue:1,gold:1,rainbow:1,grunge:1,amber:1,fire:1}, back:{red:1,blue:1,gold:1,rainbow:1,grunge:1,amber:1,fire:1} };
+function cb2Slug(){ try{ return (localStorage.getItem('bfPlayer')||'guest').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,'')||'guest'; }catch(e){ return 'guest'; } }
+function cb2Unlocked(){ /* returns the set of unlocked theme keys for this player */
+  var set={}; CB2_START_UNLOCKED.forEach(function(t){set[t]=1;});
+  try{ var extra=window.thwapThemeUnlocked&&window.thwapThemeUnlocked(); if(extra) extra.forEach(function(t){set[t]=1;}); }catch(e){}
+  return set;
+}
+function cb2Hash(slug){ var h=0; for(var i=0;i<slug.length;i++){ h=(h*31+slug.charCodeAt(i))>>>0; } return h; }
+function cb2Theme(slug){ /* stored per-player choice, else a stable pick among unlocked */
+  slug=slug||cb2Slug();
+  var unlocked=cb2Unlocked();
+  var chosen=null; try{ chosen=localStorage.getItem('thwapCardTheme:'+slug); }catch(e){}
+  if(chosen && CB2_THEMES.indexOf(chosen)>=0 && unlocked[chosen]) return chosen;
+  var keys=CB2_THEMES.filter(function(t){return unlocked[t];});
+  if(!keys.length) keys=['red'];
+  return keys[cb2Hash(slug)%keys.length];
+}
+function cb2SetTheme(slug,theme){ try{ localStorage.setItem('thwapCardTheme:'+slug, theme); }catch(e){} }
 function cb2Plate(face,slug){ var t=cb2Theme(slug); if(!(CB2_HAVE[face]&&CB2_HAVE[face][t])) t='red'; return 'cards/plate_'+face+'_'+t+'.svg'; }
 function cb2PosLabel(pos){ return pos==='G'?'Goalie':pos==='D'?'Defense':pos==='FD'?'Forward & Defense':pos==='DF'?'Defense & Forward':'Forward'; }
 function cb2Stat(slug,disc){ try{ var b=window.thwapBoard; if(b&&b.week&&b.week[slug]) return b.week[slug][disc]||0; }catch(e){} return 0; }
@@ -1053,6 +1083,32 @@ function buildFaces(){
 }
 /* Let other views (the Sticker Book) refresh the card after they change placements. */
 window.thwapRebuildCard=function(){ try{ buildFaces(); }catch(e){} };
+/* Theme picker: a row of color circles under the card. Tap an unlocked one to
+   switch the card's front and back to that theme, saved per player. Locked ones
+   show a lock (unlock later via the earned/sticker system). */
+function buildThemePicker(){
+  var row=document.getElementById('cardThemes'); if(!row) return;
+  var slug=cb2Slug(); var cur=cb2Theme(slug); var unlocked=cb2Unlocked();
+  row.innerHTML='';
+  CB2_THEMES.forEach(function(t){
+    var b=document.createElement('button'); b.type='button';
+    b.className='cardsw'+(t===cur?' sel':'')+(unlocked[t]?'':' locked');
+    b.style.setProperty('--sw', CB2_META[t]?CB2_META[t].sw:'#333');
+    b.setAttribute('aria-label', t+(unlocked[t]?(t===cur?', selected':''):', locked'));
+    b.setAttribute('aria-pressed', t===cur?'true':'false');
+    if(unlocked[t]){
+      b.addEventListener('pointerdown',function(e){ e.stopPropagation(); });
+      b.addEventListener('click',function(e){
+        e.stopPropagation();
+        if(t===cb2Theme(slug)) return;
+        cb2SetTheme(slug,t); buildFaces(); buildThemePicker();
+      });
+    } else {
+      b.addEventListener('click',function(e){ e.stopPropagation(); });
+    }
+    row.appendChild(b);
+  });
+}
 window.thwapOpenCard=function(){ try{ open(); }catch(e){} };
 /* Photo add/change/remove for the player's OWN card. Local-only: the image is
    read in the browser, downscaled, and stored as a data URL in localStorage on
@@ -1104,7 +1160,7 @@ function open(){
   /* If no player is chosen yet on this device, send them to pick one first. */
   var picked=''; try{ picked=localStorage.getItem('bfPlayer')||''; }catch(e){}
   if(!picked){ location.hash='#roster'; return; }
-  buildFaces(); rx=0; ry=0; flipped=false; paint();
+  buildFaces(); buildThemePicker(); rx=0; ry=0; flipped=false; paint();
   overlay.hidden=false;
   requestAnimationFrame(function(){ overlay.classList.add('show'); if(!reduce)card.classList.add('intro'); });
   document.addEventListener('keydown', onKey);
