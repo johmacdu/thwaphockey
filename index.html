@@ -701,15 +701,18 @@ body.login-locked{overflow:hidden}
       <span class='login-lab'>Parent email</span>
       <input class='login-in' id='loginEmail' type='email' inputmode='email' autocomplete='email' placeholder='parent@email.com' required>
     </label>
-    <label class='login-field' id='loginCodeField' hidden>
-      <span class='login-lab'>Your 6-digit code</span>
-      <input class='login-in' id='loginCode' type='text' inputmode='numeric' autocomplete='one-time-code' maxlength='6' placeholder='123456'>
+    <label class='login-field'>
+      <span class='login-lab'>Password</span>
+      <span class='login-pwwrap'>
+        <input class='login-in' id='loginPw' type='password' autocomplete='current-password' placeholder='&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;' required>
+        <button type='button' class='login-eye' id='loginEye' aria-label='Show password'>Show</button>
+      </span>
     </label>
     <div class='login-row'>
       <input type='checkbox' id='loginKeep' checked>
       <label for='loginKeep'>Keep me signed in</label>
     </div>
-    <button type='submit' class='login-go' id='loginGo'>Send me a code &#8594;</button>
+    <button type='submit' class='login-go' id='loginGo'>Sign In &#8594;</button>
     <p class='login-err' id='loginErr' aria-live='polite'></p>
     <p class='login-alt'>New to <img class='login-wordmark' id='loginMark' src='wordmark-tm-light.svg' alt='Thwap Hockey'>? <a href='#' id='loginWaitlist'>Join the waitlist.</a></p>
   </form>
@@ -2984,8 +2987,8 @@ if(!overlay)return;
 var backdrop=document.getElementById('loginBackdrop');
 var form=document.getElementById('loginForm');
 var emailEl=document.getElementById('loginEmail');
-var codeEl=document.getElementById('loginCode');
-var codeField=document.getElementById('loginCodeField');
+var pwEl=document.getElementById('loginPw');
+var eyeEl=document.getElementById('loginEye');
 var goBtn=document.getElementById('loginGo');
 var keepEl=document.getElementById('loginKeep');
 var errEl=document.getElementById('loginErr');
@@ -3114,74 +3117,26 @@ function signIn(player,email,keep){
   if(location.hash==='#login'){ location.hash='#home'; }
   location.reload();
 }
-/* ---- Email-code sign in (Phase 1 server sessions) --------------------------
-   Step 1: parent picks their player + enters email -> POST /api/login?action=request-code.
-   Step 2: parent enters the 6-digit code -> POST /api/login?action=verify, which sets an
-   HTTP-only session cookie server-side. The client then writes its own thwapAuth
-   marker (the gate + greeting read it) and reloads.
-   If the API is not available (local file/http.server, or a network error), fall
-   back to signing in directly with the selected player so dev still works. */
+/* ---- Player-code sign in (client-side, temporary) --------------------------
+   The parent enters their email + the team password (player jersey number
+   followed by the season year, e.g. #72 in 2026-27 -> 722027). Checked in the
+   browser and written to the thwapAuth cookie. The email-code server flow
+   (/api/login) stays in the repo, unused, until it is re-enabled. */
 if(form){
-  var codeSent=false;
-  /* No player dropdown in the sign-in sheet: the parent proves the account with
-     email + code, and the ACTIVE player is the device's chosen one (bfPlayer,
-     set on the Players screen; defaults to Lewie). The backend still needs a
-     playerId, so we send the current player. */
-  function selectedPlayer(){
-    var pid=cb2Slug(); /* current player slug from bfPlayer, or 'guest' */
-    var creds=credentials();
-    var match=null;
-    Object.keys(creds).forEach(function(num){ if(creds[num].pid===pid) match=creds[num]; });
-    if(match) return match;
-    var name=''; try{ name=(localStorage.getItem('bfPlayer')||'').trim(); }catch(_){}
-    return { pid:(pid&&pid!=='guest')?pid:'lewie', name:name||'Lewie' };
-  }
-  function toCodeStep(){
-    codeSent=true;
-    if(codeField) codeField.hidden=false;
-    if(goBtn) goBtn.innerHTML='Verify &amp; sign in \u2192';
-    if(codeEl) setTimeout(function(){ codeEl.focus(); },40);
-  }
-  function setBusy(b, label){ if(goBtn){ goBtn.disabled=b; if(label) goBtn.textContent=label; } }
   form.addEventListener('submit',function(e){
     e.preventDefault(); errEl.textContent='';
-    var email=String(emailEl.value||'').trim();
-    if(!validEmail(email)){ errEl.textContent='Enter a parent email.'; emailEl.focus(); return; }
-    var player=selectedPlayer();
-
-    if(!codeSent){
-      /* Step 1: request a code */
-      setBusy(true,'Sending...');
-      fetch('/api/login?action=request-code',{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({email:email, playerId:player.pid})})
-        .then(function(r){
-          if(r.ok){ setBusy(false,'Verify & sign in \u2192'); toCodeStep(); return; }
-          if(r.status===429){ setBusy(false,'Send me a code \u2192'); errEl.textContent='Too many tries. Wait a bit and try again.'; return; }
-          /* 503 = login not configured (e.g. local dev) -> fall back to direct sign in */
-          setBusy(false); signIn(player,email,keepEl.checked);
-        })
-        .catch(function(){ /* offline / no API -> dev fallback */ setBusy(false); signIn(player,email,keepEl.checked); });
-      return;
-    }
-
-    /* Step 2: verify the code */
-    var code=String(codeEl.value||'').trim();
-    if(!/^\d{6}$/.test(code)){ errEl.textContent='Enter the 6-digit code from your email.'; codeEl.focus(); return; }
-    setBusy(true,'Checking...');
-    fetch('/api/login?action=verify',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:email, playerId:player.pid, code:code, keep:keepEl.checked})})
-      .then(function(r){ return r.json().then(function(j){ return {ok:r.ok, body:j}; }); })
-      .then(function(res){
-        if(res.ok && res.body && res.body.ok){
-          var p=res.body.player||player;
-          signIn({pid:p.id||player.pid, name:p.name||player.name}, email, keepEl.checked);
-          return;
-        }
-        setBusy(false,'Verify & sign in \u2192');
-        errEl.textContent='That code did not match. Check your email and try again.';
-        if(codeEl){ codeEl.focus(); codeEl.select(); }
-      })
-      .catch(function(){ setBusy(false,'Verify & sign in \u2192'); errEl.textContent='Something went wrong. Please try again.'; });
+    if(!validEmail(emailEl.value)){ errEl.textContent='Enter a parent email.'; emailEl.focus(); return; }
+    var player=playerForPassword(pwEl.value);
+    if(!player){ errEl.textContent='That password did not match. It is the player number plus the season year.'; pwEl.focus(); pwEl.select(); return; }
+    signIn(player,emailEl.value,keepEl.checked);
+  });
+}
+if(eyeEl&&pwEl){
+  eyeEl.addEventListener('click',function(){
+    var showing=pwEl.type==='text';
+    pwEl.type=showing?'password':'text';
+    eyeEl.textContent=showing?'Show':'Hide';
+    eyeEl.setAttribute('aria-label',showing?'Show password':'Hide password');
   });
 }
 var waitForm=document.getElementById('waitForm');
