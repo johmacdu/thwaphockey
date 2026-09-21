@@ -35,6 +35,7 @@ import {
   getTeamPlan, setTeamPlan,
   listTeamCoaches, ensureHeadCoach, addAssistantCoach, removeAssistantCoach, MAX_ASSISTANTS,
 } from '../lib/teams_store.js';
+import { ensureSchedule, getSchedule, addEvent as addScheduleEvent, nextEvent } from '../lib/schedule_store.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -280,10 +281,44 @@ async function join(req, res) {
 
 async function schedule(req, res) {
   if (!methodGuard(req, res, 'GET')) return;
-  // Read-only this phase: the app's day rotation is the schedule. Return a marker
-  // so the client can render "your team follows the Thwap weekly rotation".
+  const code = (req.query && req.query.code) || SEED_TEAM_CODE;
+  if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  const sched = await ensureSchedule(code);
   res.setHeader('Cache-Control', 'no-store');
-  return res.status(200).json({ ok: true, mode: 'rotation', note: 'Team follows the Thwap weekly rotation.' });
+  return res.status(200).json({ ok: true, schedule: sched, next: nextEvent(sched) });
+}
+
+// POST add one event to the schedule (head/assistant coach). Manual add today;
+// the same handler is the write target for a future TeamSnap sync.
+async function addEvent(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  const coach = await requireCoach(req, res); if (!coach) return;
+  const { code, event } = parseBody(req);
+  if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  if (!event || !event.date) return res.status(400).json({ error: 'event date required' });
+  const sched = await addScheduleEvent(code, event);
+  return res.status(200).json({ ok: true, schedule: sched, next: nextEvent(sched) });
+}
+
+// POST set the signed-in coach's own name + photo (data URL). Enriches the
+// team-visible coaches strip.
+async function setCoachProfile(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  const coach = await requireCoach(req, res); if (!coach) return;
+  const { name, photo } = parseBody(req);
+  const cleanName = String(name || '').trim().slice(0, 60);
+  if (!cleanName) return res.status(400).json({ error: 'name required' });
+  const photoStr = typeof photo === 'string' && photo.startsWith('data:image/') ? photo.slice(0, 400000) : (coach.photo || '');
+  await setCoach(coach.email, { ...coach, name: cleanName, photo: photoStr });
+  // Return the refreshed coaches list for whatever team the coach names.
+  const body = parseBody(req);
+  let coaches = [];
+  if (body.code && (await getTeam(body.code))) {
+    const team = await getTeam(body.code);
+    if (team.coachEmail) await ensureHeadCoach(body.code, team.coachEmail);
+    coaches = await enrichCoaches(body.code);
+  }
+  return res.status(200).json({ ok: true, coaches });
 }
 
 // GET the team's weekly plan (which categories are on each weekday). Public read
@@ -308,6 +343,17 @@ async function setPlan(req, res) {
 
 // GET the team's coach roster (head + assistants). Seeds the head from the team's
 // coachEmail on first read. Public read (coaches list is not sensitive).
+// Enrich a team's coach roster with each coach's name + photo (from coach:<email>).
+async function enrichCoaches(code) {
+  const list = await listTeamCoaches(code);
+  const out = [];
+  for (const c of list) {
+    const rec = await getCoach(c.email);
+    out.push({ email: c.email, role: c.role, name: (rec && rec.name && rec.name !== 'Coach') ? rec.name : '', photo: (rec && rec.photo) || '' });
+  }
+  return out;
+}
+
 async function teamCoaches(req, res) {
   if (!methodGuard(req, res, 'GET')) return;
   const code = (req.query && req.query.code) || SEED_TEAM_CODE;
@@ -315,7 +361,7 @@ async function teamCoaches(req, res) {
   if (!team) return res.status(404).json({ error: 'unknown team' });
   if (team.coachEmail) await ensureHeadCoach(code, team.coachEmail);
   res.setHeader('Cache-Control', 'no-store');
-  return res.status(200).json({ ok: true, coaches: await listTeamCoaches(code), maxAssistants: MAX_ASSISTANTS });
+  return res.status(200).json({ ok: true, coaches: await enrichCoaches(code), maxAssistants: MAX_ASSISTANTS });
 }
 
 // POST invite an assistant coach (head only, capped at MAX_ASSISTANTS). Adds them
@@ -403,6 +449,8 @@ export default async function handler(req, res) {
     case 'player': return playerRollup(req, res);
     case 'join': return join(req, res);
     case 'schedule': return schedule(req, res);
+    case 'add-event': return addEvent(req, res);
+    case 'set-coach-profile': return setCoachProfile(req, res);
     case 'get-plan': return getPlan(req, res);
     case 'set-plan': return setPlan(req, res);
     case 'team-coaches': return teamCoaches(req, res);
@@ -422,5 +470,6 @@ export const _handlers = {
   join, schedule, setIdp, idpGoal, logGoal, gameGoalLogRead,
   getPlan, setPlan,
   teamCoaches, inviteCoach, removeCoach,
+  addEvent, setCoachProfile,
 };
 export const _seed = { SEED_TEAM_CODE, SEED_COACH_EMAIL, SEED_COACH_PASSWORD, SEED_CHILD_PLAYER_ID, ensureSeed, mintCoachToken };
