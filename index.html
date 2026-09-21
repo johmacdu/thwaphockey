@@ -1075,7 +1075,24 @@ var WORKOUTS=window.WORKOUTS=[
    drills:[d('will','20 seconds / sequence'),d('stairs','10 yards, 4 reps'),d('sprint','3 reps'),d('reaction','ball drop, before the second bounce'),d('splitsquat','2 × 15 seconds'),d('calf','10 × (2 reps)'),d('mcdavid','60 seconds (3 reps)')]}
 ];
 
-function dayIndex(){var d=new Date();var base=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000);try{var m=location.search.match(/[?&]day=([^&]*)/);if(m){var raw=decodeURIComponent(m[1]).trim();if(/^[+-]/.test(m[1])||/^[+-]/.test(raw)){var o=parseInt(m[1].replace(/^ /,'+'),10);if(isNaN(o))o=parseInt(raw,10);if(!isNaN(o))return base+o;}var n=parseInt(raw,10);if(!isNaN(n))return n;}}catch(e){}return base;}
+/* Date override: view any day's drills via ?d=MDDYYYY (e.g. ?d=9222027 = Sep 22 2027)
+   or the bare path /9222027 (needs the Vercel rewrite). Returns a UTC day number, or
+   null when no valid date is present. Month 1-12, day 1-31, year 2000-2100. On window
+   so all three dayIndex() IIFEs share one parser. */
+window.thwapDateOverride=window.thwapDateOverride||function(){
+  try{
+    var raw=null;
+    var q=location.search.match(/[?&]d=([0-9]{7,8})(?:&|$)/);
+    if(q){ raw=q[1]; }
+    else { var p=location.pathname.match(/^\/([0-9]{7,8})\/?$/); if(p){ raw=p[1]; } }
+    if(!raw) return null;
+    var s=(raw.length===7)?('0'+raw):raw;      /* MDDYYYY -> MMDDYYYY */
+    var mo=parseInt(s.slice(0,2),10), da=parseInt(s.slice(2,4),10), yr=parseInt(s.slice(4,8),10);
+    if(mo<1||mo>12||da<1||da>31||yr<2000||yr>2100) return null;
+    return Math.floor(Date.UTC(yr,mo-1,da)/86400000);
+  }catch(e){ return null; }
+};
+function dayIndex(){var ov=window.thwapDateOverride&&window.thwapDateOverride();if(ov!==null&&ov!==undefined)return ov;var d=new Date();var base=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000);try{var m=location.search.match(/[?&]day=([^&]*)/);if(m){var raw=decodeURIComponent(m[1]).trim();if(/^[+-]/.test(m[1])||/^[+-]/.test(raw)){var o=parseInt(m[1].replace(/^ /,'+'),10);if(isNaN(o))o=parseInt(raw,10);if(!isNaN(o))return base+o;}var n=parseInt(raw,10);if(!isNaN(n))return n;}}catch(e){}return base;}
 function todayKey(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
 /* Fixed weekly training plan (Option A): Monday-Friday are slots 0-4, the SAME plan
    every week; Saturday and Sunday are rest / game days with no drills. Derived from
@@ -1904,7 +1921,7 @@ document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeAll(n
 <script>(function(){
 /* ---- Stickhandling: real drill library, 2 per day, expand + mark-done ---- */
 function esc(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
-function dayIndex(){var d=new Date();var base=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000);try{var m=location.search.match(/[?&]day=([^&]*)/);if(m){var raw=decodeURIComponent(m[1]).trim();if(/^[+-]/.test(m[1])||/^[+-]/.test(raw)){var o=parseInt(m[1].replace(/^ /,'+'),10);if(isNaN(o))o=parseInt(raw,10);if(!isNaN(o))return base+o;}var n=parseInt(raw,10);if(!isNaN(n))return n;}}catch(e){}return base;}
+function dayIndex(){var ov=window.thwapDateOverride&&window.thwapDateOverride();if(ov!==null&&ov!==undefined)return ov;var d=new Date();var base=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000);try{var m=location.search.match(/[?&]day=([^&]*)/);if(m){var raw=decodeURIComponent(m[1]).trim();if(/^[+-]/.test(m[1])||/^[+-]/.test(raw)){var o=parseInt(m[1].replace(/^ /,'+'),10);if(isNaN(o))o=parseInt(raw,10);if(!isNaN(o))return base+o;}var n=parseInt(raw,10);if(!isNaN(n))return n;}}catch(e){}return base;}
 function player(){try{return localStorage.getItem('bfPlayer')||'guest';}catch(e){return 'guest';}}
 function todayKey(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
 function progKey(){return 'bfStick|'+player()+'|'+todayKey();}
@@ -2309,7 +2326,7 @@ document.addEventListener('click',function(e){
 /* Shooting: same expandable-tile pattern as Stickhandling/Dryland. Placeholder drill names for now;
    real cues/steps/videos drop in when provided (no invented content). */
 function esc(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
-function dayIndex(){var d=new Date();var base=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000);try{var m=location.search.match(/[?&]day=([^&]*)/);if(m){var raw=decodeURIComponent(m[1]).trim();if(/^[+-]/.test(m[1])||/^[+-]/.test(raw)){var o=parseInt(m[1].replace(/^ /,'+'),10);if(isNaN(o))o=parseInt(raw,10);if(!isNaN(o))return base+o;}var n=parseInt(raw,10);if(!isNaN(n))return n;}}catch(e){}return base;}
+function dayIndex(){var ov=window.thwapDateOverride&&window.thwapDateOverride();if(ov!==null&&ov!==undefined)return ov;var d=new Date();var base=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000);try{var m=location.search.match(/[?&]day=([^&]*)/);if(m){var raw=decodeURIComponent(m[1]).trim();if(/^[+-]/.test(m[1])||/^[+-]/.test(raw)){var o=parseInt(m[1].replace(/^ /,'+'),10);if(isNaN(o))o=parseInt(raw,10);if(!isNaN(o))return base+o;}var n=parseInt(raw,10);if(!isNaN(n))return n;}}catch(e){}return base;}
 /* Shooting: 4 rotating days, 5 drills each, for 10U-12U. Real coaching content
    supplied by the coach (verbatim). The four days are four problems to solve:
    shoot while moving, use the backhand, finish in tight, handle game-like pucks. */
