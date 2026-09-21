@@ -32,6 +32,7 @@ import { ROSTER, weekBoard } from '../lib/store.js';
 import {
   getTeam, setTeam, listMembers, addMember, getMember, removeMember,
   getCoach, setCoach, getIdpGoal, setIdpGoal, getGameGoalLog, logGameGoal,
+  getTeamPlan, setTeamPlan,
 } from '../lib/teams_store.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -252,6 +253,26 @@ async function schedule(req, res) {
   return res.status(200).json({ ok: true, mode: 'rotation', note: 'Team follows the Thwap weekly rotation.' });
 }
 
+// GET the team's weekly plan (which categories are on each weekday). Public read
+// so the kid app can shape today's home; defaults to all-3-every-day when unset.
+async function getPlan(req, res) {
+  if (!methodGuard(req, res, 'GET')) return;
+  const code = (req.query && req.query.code) || SEED_TEAM_CODE;
+  if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  res.setHeader('Cache-Control', 'no-store');
+  return res.status(200).json({ ok: true, plan: await getTeamPlan(code) });
+}
+
+// POST the team's weekly plan. Coach-only.
+async function setPlan(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  const coach = await requireCoach(req, res); if (!coach) return;
+  const { code, plan } = parseBody(req);
+  if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  const saved = await setTeamPlan(code, plan);
+  return res.status(200).json({ ok: true, plan: saved });
+}
+
 async function setIdp(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
   const { playerId, text, setBy } = parseBody(req);
@@ -297,6 +318,8 @@ export default async function handler(req, res) {
     case 'player': return playerRollup(req, res);
     case 'join': return join(req, res);
     case 'schedule': return schedule(req, res);
+    case 'get-plan': return getPlan(req, res);
+    case 'set-plan': return setPlan(req, res);
     case 'set-idp-goal': return setIdp(req, res);
     case 'idp-goal': return idpGoal(req, res);
     case 'log-game-goal': return logGoal(req, res);
@@ -309,5 +332,6 @@ export default async function handler(req, res) {
 export const _handlers = {
   coachLogin, createTeam, addPlayer, removePlayer, roster, playerRollup,
   join, schedule, setIdp, idpGoal, logGoal, gameGoalLogRead,
+  getPlan, setPlan,
 };
 export const _seed = { SEED_TEAM_CODE, SEED_COACH_EMAIL, SEED_COACH_PASSWORD, SEED_CHILD_PLAYER_ID, ensureSeed, mintCoachToken };

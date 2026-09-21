@@ -166,3 +166,36 @@ describe('join by team code', () => {
     expect(bad.statusCode).toBe(404);
   });
 });
+
+describe('team weekly plan', () => {
+  it('defaults to all three categories every day when unset', async () => {
+    await loginSeedCoach();
+    const res = makeRes();
+    await _handlers.getPlan(get({ code: _seed.SEED_TEAM_CODE }), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.plan.mon).toEqual(['stick', 'shoot', 'dryland']);
+    expect(res.body.plan.sun).toEqual(['stick', 'shoot', 'dryland']);
+  });
+
+  it('coach sets a plan and it reads back, ignoring unknown cats', async () => {
+    const login = await loginSeedCoach();
+    const token = login.body.token;
+    const setRes = makeRes();
+    await _handlers.setPlan(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, plan: { mon: ['stick', 'bogus'], tue: [], wed: ['shoot', 'dryland'] } }), setRes);
+    expect(setRes.statusCode).toBe(200);
+    expect(setRes.body.plan.mon).toEqual(['stick']);   // bogus dropped
+    expect(setRes.body.plan.tue).toEqual([]);            // an off day
+
+    const getRes = makeRes();
+    await _handlers.getPlan(get({ code: _seed.SEED_TEAM_CODE }), getRes);
+    expect(getRes.body.plan.mon).toEqual(['stick']);
+    expect(getRes.body.plan.wed).toEqual(['shoot', 'dryland']);
+  });
+
+  it('blocks set-plan without a coach token', async () => {
+    await loginSeedCoach();
+    const res = makeRes();
+    await _handlers.setPlan(post({ code: _seed.SEED_TEAM_CODE, plan: { mon: [] } }), res);
+    expect(res.statusCode).toBe(401);
+  });
+});
