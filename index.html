@@ -378,6 +378,16 @@ body.login-locked .topbar{position:relative;z-index:120}
 .pcard-you{display:inline-block;margin-left:6px;font-size:11px;font-weight:900;color:var(--ink);background:var(--lime);border-radius:999px;padding:2px 8px;vertical-align:middle}
 .pcard-streak{font-size:12px;font-weight:800;color:var(--green2)}
 
+.coachbar{margin-top:16px;padding:16px;border:1px solid var(--line);border-radius:18px;background:var(--card2)}
+.coachbar-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.coachbar-title{font-weight:800;font-size:14px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
+.coachbar-team{display:block;font-family:'Archivo Black',system-ui,sans-serif;font-size:18px;text-transform:none;letter-spacing:0;color:var(--text);margin-top:2px}
+.coachbar-signout{font-family:inherit;font-size:12px;font-weight:800;color:var(--muted);background:none;border:1px solid var(--line);border-radius:10px;padding:6px 10px;cursor:pointer}
+.coachpart{margin-top:12px;text-align:center;padding:12px;border-radius:14px;background:var(--card)}
+.coachpart-num{font-family:'Archivo Black',system-ui,sans-serif;font-size:30px;color:var(--text)}
+.coachpart-lab{font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.02em;color:var(--muted);margin-top:2px}
+.coachpart-sub{font-size:13px;color:var(--muted);margin-top:6px}
+.coachbar-hint{font-size:13px;color:var(--muted);margin:10px 2px 0}
 .roster{display:grid;gap:12px;margin-top:15px;grid-template-columns:repeat(2,minmax(0,1fr))}
 @media(min-width:560px){.roster{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(min-width:900px){.roster{grid-template-columns:repeat(4,minmax(0,1fr))}}.avatar{width:54px;height:54px;border-radius:50%;object-fit:cover;background:var(--soft)}
@@ -715,6 +725,22 @@ body.login-locked{overflow:hidden}
     <button type='submit' class='login-go' id='loginGo'>Sign In &#8594;</button>
     <p class='login-err' id='loginErr' aria-live='polite'></p>
     <p class='login-alt'>New to <img class='login-wordmark' id='loginMark' src='wordmark-tm-light.svg' alt='Thwap Hockey'>? <a href='#' id='loginWaitlist'>Join the waitlist.</a></p>
+    <p class='login-alt'><a href='#' id='coachSignInLink'>Coach sign in</a></p>
+  </form>
+  <form class='login-modal' id='coachForm' role='dialog' aria-modal='true' aria-labelledby='coachTitle' hidden novalidate>
+    <h2 class='login-h' id='coachTitle'>Coach sign in</h2>
+    <p class='login-sub'>Sign in to manage your team.</p>
+    <label class='login-field'>
+      <span class='login-lab'>Coach email</span>
+      <input class='login-in' id='coachEmail' type='email' inputmode='email' autocomplete='email' placeholder='coach@email.com' required>
+    </label>
+    <label class='login-field'>
+      <span class='login-lab'>Password</span>
+      <input class='login-in' id='coachPw' type='password' autocomplete='current-password' placeholder='&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;' required>
+    </label>
+    <button type='submit' class='login-go' id='coachGo'>Sign In &#8594;</button>
+    <p class='login-err' id='coachErr' aria-live='polite'></p>
+    <p class='login-alt'><a href='#' id='coachBackLink'>Back to player sign in.</a></p>
   </form>
   <form class='login-modal' id='waitForm' role='dialog' aria-modal='true' aria-labelledby='waitTitle' hidden novalidate>
     <h2 class='login-h' id='waitTitle'>Join the waitlist</h2>
@@ -768,6 +794,18 @@ body.login-locked{overflow:hidden}
 <section id='roster' class='page'>
 <a class='glassclose' href='.' aria-label='Close'>✕</a>
 <div class='hero'><div class='kicker'>Jr Rangers 10U, 16 Rangers</div><h1>Who’s hitting the ice?</h1><p>Tap your card so your work counts.</p></div>
+<div class='coachbar' id='coachBar' hidden>
+  <div class='coachbar-top'>
+    <div class='coachbar-title'>Coach view <span class='coachbar-team' id='coachTeamName'>Jr Rangers 10U</span></div>
+    <button type='button' class='coachbar-signout' id='coachSignOut'>Sign out</button>
+  </div>
+  <div class='coachpart' id='coachPart'>
+    <div class='coachpart-num'><span id='coachTrained'>0</span> of <span id='coachTotal'>0</span></div>
+    <div class='coachpart-lab'>players trained this week</div>
+    <div class='coachpart-sub' id='coachTwice'></div>
+  </div>
+  <p class='coachbar-hint'>Tap a player below to see their month goal and game-day focus.</p>
+</div>
 <div class='roster' id='roster-grid'><a href='#home' class='pcard' data-name='Alder Reese'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>71</span><span class='pcard-bnname'>Alder</span></div></a><a href='#home' class='pcard' data-name='Brooklyn Coughlan'><div class='pcard-bignum pos-def'><span class='pcard-bn'>92</span><span class='pcard-bnname'>Brooklyn</span></div></a><a href='#home' class='pcard' data-name='Dawson Huffman'><div class='pcard-bignum pos-def'><span class='pcard-bn'>19</span><span class='pcard-bnname'>Dawson</span></div></a><a href='#home' class='pcard' data-name='Dominic Cinque'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>98</span><span class='pcard-bnname'>Dominic</span></div></a><a href='#home' class='pcard' data-name='Eugene Kuhn'><div class='pcard-bignum pos-def'><span class='pcard-bn'>3</span><span class='pcard-bnname'>Eugene</span></div></a><a href='#home' class='pcard' data-name='Evan Ewing'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>13</span><span class='pcard-bnname'>Evan</span></div></a><a href='#home' class='pcard' data-name='Greyson Wertz'><div class='pcard-bignum pos-def'><span class='pcard-bn'>32</span><span class='pcard-bnname'>Greyson</span></div></a><a href='#home' class='pcard' data-name='Issac Moyer'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>53</span><span class='pcard-bnname'>Issac</span></div></a><a href='#home' class='pcard' data-name='Johnny Eraman'><div class='pcard-bignum pos-goalie'><span class='pcard-bn'>1</span><span class='pcard-bnname'>Johnny</span></div></a><a href='#home' class='pcard' data-name='Joziah Soto'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>59</span><span class='pcard-bnname'>Joziah</span></div></a><a href='#home' class='pcard pcard-you-card' data-name='Lewie'><img class='pcard-cardart' src='cards/lewie_photo.png' alt='Lewie'></a><a href='#home' class='pcard' data-name='Liam Delatorre'><div class='pcard-bignum pos-def'><span class='pcard-bn'>29</span><span class='pcard-bnname'>Liam</span></div></a><a href='#home' class='pcard' data-name='Maddux Jones'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>18</span><span class='pcard-bnname'>Maddux</span></div></a><a href='#home' class='pcard' data-name='Oliver Moyer'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>90</span><span class='pcard-bnname'>Oliver</span></div></a><a href='#home' class='pcard' data-name='Teddy Diss'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>11</span><span class='pcard-bnname'>Teddy</span></div></a><a href='#home' class='pcard' data-name='William Schnell'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>16</span><span class='pcard-bnname'>William</span></div></a></div>
 <div class='rsearch-empty' id='rsearchEmpty' hidden></div>
 <div class='pgate' id='switchGate' hidden>
@@ -856,7 +894,7 @@ body.login-locked{overflow:hidden}
 
 <section id='home'>
 <div class='wipnote'>👋 Early prototype. We're testing the look and feel. Training drills and stickers are still being built.</div>
-<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.svg' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><span class='nav-authed'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Players</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-guest'><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#stickers'>Stickers</a><a href='#roster'>Players</a><a href='#progress'>Standings</a></span><span class='nav-guest'><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
+<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.svg' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><span class='nav-authed'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-guest'><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#stickers'>Stickers</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-guest'><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
 <div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>there</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><script>(function(){try{var authed=/(?:^|; )thwapAuth=/.test(document.cookie);var p=localStorage.getItem('bfPlayer');var b=document.getElementById('homePlayer');if(b){if(p&&authed){b.textContent=p.trim().split(/\s+/)[0];}else{b.classList.add('needpick');}}}catch(e){}})();</script><div class='forrow'><span class='forline'>3 things, about 30 min</span><button type='button' class='daytip daytip-chip' id='dayTip' aria-label='Show today’s date'>Today<span class='daydate' id='dayDate'>Sunday, September 13</span></button></div></div>
 <div class='cards'>
 <a class='nav' href='hockey_game_goals.html'><div class='ico'>🎯</div><div><h2>Game Day Goals</h2><p>Pick your 4 goals for today’s game</p></div><div class='chev'>›</div></a>
@@ -889,6 +927,38 @@ function pickPlayer(name,ev,el){
   if(ev){ev.preventDefault();}
   if(el&&!reduce){el.classList.add('tapped');setTimeout(go,160);}else{go();}
 }
+/* Coach view (Step 2): if a coach is signed in (thwapCoach in localStorage),
+   reveal the coach bar on the Team page and fill in this-week participation from
+   /api/coach?action=roster. Sign out clears the coach token. The player-facing
+   view is unchanged when no coach token is present. */
+(function(){
+  var bar=document.getElementById('coachBar'); if(!bar) return;
+  var coach=null;
+  try{ coach=JSON.parse(localStorage.getItem('thwapCoach')||'null'); }catch(e){}
+  if(!coach||!coach.token){ return; }
+  bar.hidden=false;
+  document.body.classList.add('is-coach');
+  var code=(coach.teams&&coach.teams[0])||'RANGERS72';
+  var nameEl=document.getElementById('coachTeamName');
+  var trainedEl=document.getElementById('coachTrained');
+  var totalEl=document.getElementById('coachTotal');
+  var twiceEl=document.getElementById('coachTwice');
+  fetch('/api/coach?action=roster&code='+encodeURIComponent(code)+'&coachToken='+encodeURIComponent(coach.token))
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      if(!j||!j.ok){ return; }
+      if(nameEl&&j.team&&j.team.name){ nameEl.textContent=j.team.name; }
+      if(trainedEl&&j.participation){ trainedEl.textContent=j.participation.trained; }
+      if(totalEl&&j.participation){ totalEl.textContent=j.participation.total; }
+      if(twiceEl&&j.members){
+        var twice=j.members.filter(function(m){ var w=m.week||{}; return ((w.stick||0)+(w.shoot||0)+(w.dryland||0))>=2; }).length;
+        twiceEl.textContent=twice+' trained 2+ times this week';
+      }
+    })
+    .catch(function(){});
+  var out=document.getElementById('coachSignOut');
+  if(out){ out.addEventListener('click',function(){ try{ localStorage.removeItem('thwapCoach'); }catch(e){} location.reload(); }); }
+})();
 /* Change-player roster: show the SAME coded card as the home page for every
    player, and gate a switch behind the parent email + player code (jersey number
    + season year, e.g. 722027) so a kid cannot start logging work as someone else. */
@@ -3183,6 +3253,45 @@ if(eyeEl&&pwEl){
     pwEl.type=showing?'password':'text';
     eyeEl.textContent=showing?'Show':'Hide';
     eyeEl.setAttribute('aria-label',showing?'Show player code':'Hide player code');
+  });
+}
+/* ---- Coach sign in (Step 2): swaps the player form for a coach email+password
+   form, calls /api/coach?action=coach-login, stores the coach token + child id in
+   localStorage, and reloads so the Team page shows the coach view. ---- */
+var coachForm=document.getElementById('coachForm');
+var coachSignInLink=document.getElementById('coachSignInLink');
+var coachBackLink=document.getElementById('coachBackLink');
+var coachEmailEl=document.getElementById('coachEmail');
+var coachPwEl=document.getElementById('coachPw');
+var coachErrEl=document.getElementById('coachErr');
+function showCoachForm(){ if(form)form.hidden=true; var wf=document.getElementById('waitForm'); if(wf)wf.hidden=true; if(coachForm)coachForm.hidden=false; if(coachEmailEl)coachEmailEl.focus(); }
+function showPlayerForm(){ if(coachForm)coachForm.hidden=true; if(form)form.hidden=false; }
+if(coachSignInLink){ coachSignInLink.addEventListener('click',function(e){ e.preventDefault(); showCoachForm(); }); }
+if(coachBackLink){ coachBackLink.addEventListener('click',function(e){ e.preventDefault(); showPlayerForm(); }); }
+if(coachForm){
+  coachForm.addEventListener('submit',function(e){
+    e.preventDefault(); if(coachErrEl)coachErrEl.textContent='';
+    var email=String(coachEmailEl&&coachEmailEl.value||'').trim();
+    var pw=String(coachPwEl&&coachPwEl.value||'');
+    if(!validEmail(email)){ if(coachErrEl)coachErrEl.textContent='Enter your coach email.'; return; }
+    if(coachErrEl)coachErrEl.textContent='Signing in...';
+    fetch('/api/coach?action=coach-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pw})})
+      .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
+      .then(function(res){
+        if(!res.ok||!res.j||!res.j.token){ if(coachErrEl)coachErrEl.textContent='That email or password did not match.'; return; }
+        try{
+          localStorage.setItem('thwapCoach', JSON.stringify({
+            token:res.j.token, email:email,
+            name:(res.j.coach&&res.j.coach.name)||'Coach',
+            teams:(res.j.coach&&res.j.coach.teams)||[],
+            childPlayerId:(res.j.coach&&res.j.coach.childPlayerId)||null
+          }));
+        }catch(e2){}
+        hide();
+        location.hash='#roster';
+        location.reload();
+      })
+      .catch(function(){ if(coachErrEl)coachErrEl.textContent='Could not reach the server. Try again.'; });
   });
 }
 var waitForm=document.getElementById('waitForm');
