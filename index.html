@@ -230,6 +230,8 @@ body.login-locked .topbar{position:relative;z-index:120}
 .cf-photo-btn{position:absolute;top:12px;right:12px;z-index:6;min-height:44px;padding:0 14px;border:0;border-radius:999px;background:rgba(15,23,18,.72);color:#fff;font-family:inherit;font-weight:800;font-size:13px;cursor:pointer;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(6px)}
 .card3d.showing-back .cf-photo-btn{display:none}
 .cf-photo-btn:active{transform:scale(.96)}
+/* Teammate (read-only) card view: hide owner-only controls. */
+body.viewing-teammate .cardctl,body.viewing-teammate .cb-stats-layer,body.viewing-teammate .cf-photo-btn{display:none !important}
 /* holographic sheen driven by --sheen (0..1) */
 .cardface::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.28) 47%,rgba(185,240,107,.22) 52%,rgba(117,184,255,.22) 57%,transparent 72%);transform:translateX(calc((var(--sheen,.5) - .5) * 160%));mix-blend-mode:screen;opacity:.7}
 .cardhint{color:rgba(255,255,255,.72);font-size:13px;font-weight:700;letter-spacing:.02em}
@@ -1112,12 +1114,13 @@ function pickPlayer(name,ev,el){
   document.querySelectorAll('#roster .pcard').forEach(function(cardEl){
     cardEl.addEventListener('click',function(ev){
       ev.preventDefault();
-      /* Coach view: tapping a player opens their stats + IDP to view/edit, with NO
-         switch-player gate (the coach is not becoming that player). Kids/parents
-         still go through the gate so a kid cannot log work as someone else. */
+      /* Coach: tap a player -> their stats + IDP (view/edit). Player/parent: tap a
+         teammate -> open their card and rotate it front/back (read-only). No
+         switch-player gate - accounts handle identity now. */
       var isCoach=false; try{ isCoach=!!JSON.parse(localStorage.getItem('thwapCoach')||'null'); }catch(_){}
-      if(isCoach && window.openPlayerPage){ window.openPlayerPage(cardEl.getAttribute('data-name')); return; }
-      openGate(cardEl.getAttribute('data-name'));
+      var name=cardEl.getAttribute('data-name');
+      if(isCoach && window.openPlayerPage){ window.openPlayerPage(name); return; }
+      if(window.openTeammateCard){ window.openTeammateCard(name); return; }
     });
   });
   var form=document.getElementById('switchGateForm');
@@ -1694,6 +1697,7 @@ function buildBack(p,slug){
 window.buildFront=buildFront; window.buildBack=buildBack; window.thwapCurrentPlayer=currentPlayer;
 function buildFaces(){
   var p=currentPlayer();
+  if(window.thwapViewTarget){ p=window.thwapViewTarget; }
   var posCls=p.pos==='G'?'pos-goalie':p.pos==='D'?'pos-def':'pos-fwd';
   var slug=p.first.toLowerCase().replace(/[^a-z]/g,'');
   front.className='cardface cardfront '+posCls;
@@ -1856,6 +1860,7 @@ function open(){
   /* If no player is chosen yet on this device, send them to pick one first. */
   var picked=''; try{ picked=localStorage.getItem('bfPlayer')||''; }catch(e){}
   if(!picked){ location.hash='#roster'; return; }
+  window.thwapViewTarget=null; document.body.classList.remove('viewing-teammate');
   buildFaces(); buildThemePicker(); rx=0; ry=0; flipped=false; paint();
   overlay.hidden=false;
   requestAnimationFrame(function(){ overlay.classList.add('show'); if(!reduce)card.classList.add('intro'); });
@@ -1864,6 +1869,7 @@ function open(){
 function close(){
   overlay.classList.remove('show');
   document.removeEventListener('keydown', onKey);
+  window.thwapViewTarget=null; document.body.classList.remove('viewing-teammate');
   setTimeout(function(){ overlay.hidden=true; card.classList.remove('intro'); }, 200);
 }
 function onKey(e){ if(e.key==='Escape') close(); }
@@ -1874,6 +1880,24 @@ overlay.addEventListener('click', function(e){ if(e.target===overlay) close(); }
 
 /* open the card already showing the back (used by the stats-page back button) */
 window.openPlayerCardToBack=function(){ open(); ry=180; flipped=true; rx=0; paint(); };
+
+/* ---- Teammate card viewer (read-only): tap any player on the Team page to open
+   their card and rotate it front/back. Shows their photo (parent-consented,
+   team-visible) and public stats. Owner-only controls (theme picker, photo button)
+   are hidden via body.viewing-teammate. No switch-player - accounts handle identity. */
+var ROSTER_VIEW={alder:{num:'71',pos:'F'},brooklyn:{num:'92',pos:'D'},dawson:{num:'19',pos:'D'},dominic:{num:'98',pos:'F'},eugene:{num:'3',pos:'D'},evan:{num:'13',pos:'F'},greyson:{num:'32',pos:'D'},johnny:{num:'1',pos:'G'},joziah:{num:'59',pos:'F'},lewie:{num:'72',pos:'FD'},liam:{num:'29',pos:'D'},maddux:{num:'18',pos:'F'},oliver:{num:'90',pos:'F'},teddy:{num:'11',pos:'F'},william:{num:'16',pos:'F'},issac:{num:'53',pos:'F'}};
+window.openTeammateCard=function(name){
+  var parts=String(name||'').trim().split(/\s+/);
+  var key=(parts[0]||'').toLowerCase().replace(/[^a-z]/g,'');
+  var info=ROSTER_VIEW[key]||{num:'',pos:'F'};
+  var display=parts.length>1?parts[0]+' '+parts[parts.length-1].charAt(0)+'.':parts[0];
+  window.thwapViewTarget={ name:String(name).trim(), display:display, first:(parts[0]||'').toUpperCase(), num:info.num, pos:info.pos, photo:'' };
+  document.body.classList.add('viewing-teammate');
+  buildFaces(); rx=0; ry=0; flipped=false; paint();
+  overlay.hidden=false;
+  requestAnimationFrame(function(){ overlay.classList.add('show'); if(!reduce)card.classList.add('intro'); });
+  document.addEventListener('keydown', onKey);
+};
 
 /* free 3D rotation via pointer drag + momentum (desktop + mobile) */
 var dragging=false, lastX=0, lastY=0, moved=0, lastTap=0;
