@@ -526,6 +526,18 @@ button.row:active{background:var(--soft)}
 .idp-btns{display:flex;gap:8px;margin-top:8px}
 .idp-save{background:var(--lime);color:var(--ink);border-color:transparent}
 .idp-cancel{background:none;color:var(--muted)}
+.idpdev{margin:14px 0;padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--card2)}
+.idpdev-trend{display:flex;align-items:flex-end;gap:10px;height:96px;margin-top:12px}
+.idpdev-week{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+.idpdev-bar{width:100%;max-width:34px;background:var(--lime);border-radius:6px 6px 0 0;min-height:3px}
+.idpdev-bar-n{font-family:'Archivo Black',system-ui,sans-serif;font-size:13px;color:var(--text)}
+.idpdev-bar-l{font-size:10px;text-transform:uppercase;letter-spacing:.02em;color:var(--muted)}
+.idpdev-goals-h{margin-top:16px;font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
+.idpdev-goals{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.idpdev-goal{padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:13px;color:var(--text)}
+.idpdev-goal .g-date{color:var(--muted);font-weight:800;font-size:11px}
+.idpdev-goal .g-note{color:var(--muted);display:block;margin-top:2px}
+.idpdev-empty{font-size:13px;color:var(--muted);font-style:italic;margin-top:8px}
 .pl-tot{background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:12px 4px;text-align:center;cursor:pointer;font-family:inherit;transition:transform .08s ease,border-color .12s ease;-webkit-tap-highlight-color:transparent}
 .pl-tot:active{transform:scale(.95)}
 .pl-tot.on{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink) inset}
@@ -962,6 +974,12 @@ body.login-locked{overflow:hidden}
       <button type='button' class='idp-cancel' id='idpCancel'>Cancel</button>
     </div>
   </div>
+</div>
+<div class='idpdev' id='idpDev' hidden>
+  <div class='idp-head'>📈 Development this month</div>
+  <div class='idpdev-trend' id='idpDevTrend'></div>
+  <div class='idpdev-goals-h'>Game-day focus</div>
+  <div class='idpdev-goals' id='idpDevGoals'></div>
 </div>
 <div id='plDisc'></div>
 <div class='pl-thwap' id='plThwap'>THWAP!</div>
@@ -2419,6 +2437,45 @@ window.thwapStatsRefresh=function(){ if(current && location.hash==='#player') bu
       .then(function(r){ return r.json(); })
       .then(function(j){ if(j&&j.ok&&j.idpGoal&&j.idpGoal.text){ showText(j.idpGoal.text); } })
       .catch(function(){});
+    /* Coach only: development-this-month panel (base-training trend + game-goal
+       timeline), from the player rollup. Players do not see this. */
+    var dev=document.getElementById('idpDev');
+    var isCoach=!!coachToken();
+    if(dev && isCoach){
+      fetch('/api/coach?action=player&playerId='+encodeURIComponent(slug))
+        .then(function(r){ return r.json(); })
+        .then(function(j){
+          if(!j||!j.ok){ return; }
+          dev.hidden=false;
+          var trendEl=document.getElementById('idpDevTrend');
+          var trend=j.monthTrend||[];
+          var max=1; trend.forEach(function(w){ if(w.total>max) max=w.total; });
+          if(trendEl){
+            trendEl.innerHTML=trend.map(function(w,i){
+              var h=Math.round((w.total/max)*100);
+              var lab=(i===trend.length-1)?'This wk':('W'+(i+1));
+              return "<div class='idpdev-week'><div class='idpdev-bar-n'>"+w.total+"</div><div class='idpdev-bar' style='height:"+h+"%'></div><div class='idpdev-bar-l'>"+lab+"</div></div>";
+            }).join('');
+          }
+          var goalsEl=document.getElementById('idpDevGoals');
+          var goals=j.gameGoals||[];
+          if(goalsEl){
+            if(!goals.length){ goalsEl.innerHTML="<div class='idpdev-empty'>No game-day focus logged yet.</div>"; }
+            else {
+              goalsEl.innerHTML='';
+              goals.slice(0,8).forEach(function(g){
+                var el=document.createElement('div'); el.className='idpdev-goal';
+                el.innerHTML="<span class='g-date'></span> <span class='g-title'></span>"+(g.note?"<span class='g-note'></span>":"");
+                el.querySelector('.g-date').textContent=g.date||'';
+                el.querySelector('.g-title').textContent=g.goalTitle||'';
+                if(g.note){ el.querySelector('.g-note').textContent=g.note; }
+                goalsEl.appendChild(el);
+              });
+            }
+          }
+        })
+        .catch(function(){});
+    } else if(dev){ dev.hidden=true; }
   };
   if(editBtn){ editBtn.addEventListener('click',function(){ input.value=(textEl.classList.contains('empty')?'':textEl.textContent); view.hidden=true; editRow.hidden=false; input.focus(); }); }
   if(cancelBtn){ cancelBtn.addEventListener('click',function(){ view.hidden=false; editRow.hidden=true; }); }

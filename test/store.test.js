@@ -29,6 +29,7 @@ const {
   weekBoard,
   listPlayers,
   getPlayer,
+  monthTrend,
 } = await import('../lib/store.js');
 
 // Helper: keys the store uses.
@@ -182,5 +183,29 @@ describe('weekBoard', () => {
     expect(lewie).toEqual({ id: 'lewie', stick: 1, shoot: 1, dryland: 0 });
     const johnny = board.find((p) => p.id === 'johnny');
     expect(johnny).toEqual({ id: 'johnny', stick: 0, shoot: 0, dryland: 0 });
+  });
+});
+
+describe('monthTrend', () => {
+  it('returns 4 weekly buckets oldest-first with this week last', async () => {
+    // 'now' is pinned Wed 2026-01-14 in this suite. This week's Monday is 2026-01-12.
+    // Seed events: 2 this week, and 1 in a prior week (2026-01-07 = last week).
+    fake._seed(eventsKey('alder'), [
+      { date: '2026-01-13', disc: 'stick' },   // this week
+      { date: '2026-01-14', disc: 'shoot' },   // this week
+      { date: '2026-01-07', disc: 'dryland' }, // last week
+    ]);
+    const trend = await monthTrend('alder', 4);
+    expect(trend.length).toBe(4);
+    // oldest-first: index 3 is this week
+    expect(trend[3].total).toBe(2);
+    expect(trend[3].stick).toBe(1);
+    expect(trend[3].shoot).toBe(1);
+    // last week is index 2
+    expect(trend[2].total).toBe(1);
+    expect(trend[2].dryland).toBe(1);
+    // the two oldest weeks are empty
+    expect(trend[0].total).toBe(0);
+    expect(trend[1].total).toBe(0);
   });
 });

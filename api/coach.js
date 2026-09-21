@@ -28,7 +28,7 @@
 import crypto from 'crypto';
 import { parseBody } from '../lib/photo_common.js';
 import { mintSession, verifySession } from '../lib/session_store.js';
-import { ROSTER, weekBoard } from '../lib/store.js';
+import { ROSTER, weekBoard, monthTrend } from '../lib/store.js';
 import {
   getTeam, setTeam, listMembers, addMember, getMember, removeMember,
   getCoach, setCoach, getIdpGoal, setIdpGoal, getGameGoalLog, logGameGoal,
@@ -222,11 +222,13 @@ async function playerRollup(req, res) {
   const wk = board.find((b) => b.id === pid) || { stick: 0, shoot: 0, dryland: 0 };
   const goal = await getIdpGoal(pid);
   const log = await getGameGoalLog(pid);
+  const trend = await monthTrend(pid, 4);
   res.setHeader('Cache-Control', 'no-store');
   return res.status(200).json({
     ok: true, playerId: pid,
     member: m || null,
     baseThisWeek: { stick: wk.stick, shoot: wk.shoot, dryland: wk.dryland },
+    monthTrend: trend,
     idpGoal: goal || null,
     gameGoals: log.slice(-20).reverse(),
   });
