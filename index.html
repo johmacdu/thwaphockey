@@ -544,9 +544,12 @@ body.login-locked{overflow:hidden}
 /* ---- Break the Ice splash animation (Pass 2): Sass welcome -> run -> THWAP! -> modal ---- */
 #loginOverlay.is-playing #loginForm,#loginOverlay.is-playing #waitForm{display:none}
 /* Sass moves across the stage; positions/opacity per data-step drive the beats. */
-.sp-sass{position:absolute;bottom:7%;height:clamp(210px,48vh,420px);width:auto;opacity:0;filter:drop-shadow(0 14px 22px rgba(0,0,0,.32));will-change:transform,opacity;-webkit-user-drag:none;pointer-events:none}
-/* welcome pose (crouched), on the left, shown only at welcome */
-.sp-sass-welcome{left:3vw;transform:translateY(8px) scale(.96);transition:opacity .3s ease,transform .5s ease}
+/* welcome group: Sass + bubble wrapped together and sized by Sass, so the bubble
+   (positioned as a % of this group below) stays glued to Sass and they never drift
+   apart when the window resizes within a breakpoint. */
+.sp-welcome{position:absolute;left:3vw;bottom:7%;width:clamp(210px,48vh,420px);height:clamp(210px,48vh,420px);pointer-events:none}
+.sp-sass{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:bottom center;opacity:0;filter:drop-shadow(0 14px 22px rgba(0,0,0,.32));will-change:transform,opacity;-webkit-user-drag:none}
+.sp-sass-welcome{transform:translateY(8px) scale(.96);transition:opacity .3s ease,transform .5s ease}
 #loginStage[data-step='welcome'] .sp-sass-welcome{opacity:1;transform:translateY(0) scale(1)}
 /* run pose (leaning), skates from the left INTO the right edge, shown from run onward */
 /* skating: a wrapper glides left->right; 3 frames cycle a(spread)->m(feet together)->b(spread) = real leg movement.
@@ -564,14 +567,14 @@ body.login-locked{overflow:hidden}
 @keyframes spFrA{0%,24.9%{opacity:1}25%,100%{opacity:0}}
 @keyframes spFrM{0%,24.9%{opacity:0}25%,49.9%{opacity:1}50%,74.9%{opacity:0}75%,100%{opacity:1}}
 @keyframes spFrB{0%,49.9%{opacity:0}50%,74.9%{opacity:1}75%,100%{opacity:0}}
-/* speech bubble: the exact storyboard oval balloon (generated), top-right, tail down-left toward Sass */
-.sp-bubble-img{position:absolute;right:auto;left:23vw;top:11%;width:min(36vw,380px);height:auto;opacity:0;transform:translateY(-8px) scale(.95);transition:opacity .35s ease,transform .35s ease;z-index:3;-webkit-user-drag:none;filter:drop-shadow(0 10px 22px rgba(0,0,0,.28))}
+/* speech bubble: positioned as a % of the .sp-welcome group so it stays locked to Sass on resize */
+.sp-bubble-img{position:absolute;left:61%;top:-71%;width:96%;height:auto;opacity:0;transform:translateY(-8px) scale(.95);transition:opacity .35s ease,transform .35s ease;z-index:3;-webkit-user-drag:none;filter:drop-shadow(0 10px 22px rgba(0,0,0,.28))}
 #loginStage[data-step='welcome'] .sp-bubble-img{opacity:1;transform:translateY(0) scale(1)}
-/* mobile: Sass sits half off the left edge so the bubble tail meets his mouth */
+/* mobile: Sass sits half off the left edge; bubble re-anchored (still a % of the group) */
 @media (max-width:640px){
-  .sp-sass-welcome{left:-52vw;bottom:3%;height:clamp(300px,60vh,540px)}
+  .sp-welcome{left:-52vw;bottom:3%;width:clamp(300px,60vh,540px);height:clamp(300px,60vh,540px)}
   .sp-skater{height:clamp(300px,60vh,540px);width:clamp(300px,60vh,540px);bottom:3%}
-  .sp-bubble-img{right:auto;left:34vw;top:26%;width:min(58vw,290px)}
+  .sp-bubble-img{left:66%;top:-18%;width:45%}
 }
 /* speed streaks during the run */
 .sp-speed{position:absolute;inset:0;opacity:0;transition:opacity .15s ease}
@@ -632,13 +635,15 @@ body.login-locked{overflow:hidden}
     <div class='sp-ice'></div>
     <div class='sp-crack'></div>
     <div class='sp-speed'><i></i><i></i><i></i><i></i></div>
-    <img class='sp-sass sp-sass-welcome' src='login/sass-welcome.webp' alt=''>
+    <div class='sp-welcome'>
+      <img class='sp-sass sp-sass-welcome' src='login/sass-welcome.webp' alt=''>
+      <img class='sp-bubble-img' src='login/bubble.webp' alt='Hi, I am Sass. Looks like you need to login. Time to THWAP!'>
+    </div>
     <div class='sp-skater'>
       <img class='sp-frame sp-frame-a' src='login/sass-stride-a.webp' alt=''>
       <img class='sp-frame sp-frame-m' src='login/sass-stride-m.webp' alt=''>
       <img class='sp-frame sp-frame-b' src='login/sass-stride-b.webp' alt=''>
     </div>
-    <img class='sp-bubble-img' src='login/bubble.webp' alt='Hi, I am Sass. Looks like you need to login. Time to THWAP!'>
     <img class='sp-shards' src='login/shards.webp' alt=''>
     <img class='sp-burst-img' src='login/thwap-burst.webp' alt='THWAP!'>
   </div>
@@ -2963,12 +2968,12 @@ function startSplash(){
   if(form) form.hidden=true; if(waitForm) waitForm.hidden=true;
   setStep('welcome');
   var b=document.getElementById('splashSignin'); if(b) setTimeout(function(){ b.focus(); },80);
-  splashTimers.push(setTimeout(function(){ setStep('run'); },6600));
+  splashTimers.push(setTimeout(function(){ setStep('run'); },4600));
   splashTimers.push(setTimeout(function(){
     setStep('impact');
     if(stageEl){ stageEl.classList.add('shake'); setTimeout(function(){ stageEl.classList.remove('shake'); },420); }
-  },8100));
-  splashTimers.push(setTimeout(function(){ showSignin(); },8850));
+  },6100));
+  splashTimers.push(setTimeout(function(){ showSignin(); },6850));
 }
 function maybeSplash(){
   if(reduceMotion()){ showSignin(); return; }
