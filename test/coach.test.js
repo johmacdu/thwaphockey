@@ -54,6 +54,14 @@ describe('coach-login + seed', () => {
     expect(res.body.coach.teams).toContain(_seed.SEED_TEAM_CODE);
   });
 
+  it('seeds three demo teams and returns a named teamList', async () => {
+    const res = await loginSeedCoach();
+    expect(res.body.coach.teams.length).toBe(3);
+    expect(res.body.coach.teams).toEqual(expect.arrayContaining(['RANGERS72', 'RANGERS8U', 'RANGERS12U']));
+    const names = (res.body.coach.teamList || []).map((t) => t.name);
+    expect(names).toEqual(expect.arrayContaining(['Jr Rangers 10U', 'Jr Rangers 8U', 'Jr Rangers 12U']));
+  });
+
   it('rejects a wrong password', async () => {
     const res = makeRes();
     await _handlers.coachLogin(post({ email: _seed.SEED_COACH_EMAIL, password: 'wrong' }), res);

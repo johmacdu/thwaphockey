@@ -392,6 +392,8 @@ body.viewing-teammate .cardctl,body.viewing-teammate .cb-stats-layer,body.viewin
 .coachbar-title{font-weight:800;font-size:14px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
 .coachbar-team{display:block;font-family:'Archivo Black',system-ui,sans-serif;font-size:18px;text-transform:none;letter-spacing:0;color:var(--text);margin-top:2px}
 .coachbar-signout{font-family:inherit;font-size:12px;font-weight:800;color:var(--muted);background:none;border:1px solid var(--line);border-radius:10px;padding:6px 10px;cursor:pointer}
+.coachteamsel{margin-top:12px;display:flex;align-items:center;gap:10px}
+.coachteamsel-lab{font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
 .coachpart{margin-top:12px;text-align:center;padding:12px;border-radius:14px;background:var(--card)}
 .coachpart-num{font-family:'Archivo Black',system-ui,sans-serif;font-size:30px;color:var(--text)}
 .coachpart-lab{font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.02em;color:var(--muted);margin-top:2px}
@@ -858,6 +860,13 @@ body.login-locked{overflow:hidden}
     <div class='coachbar-title'>Coach view <span class='coachbar-team' id='coachTeamName'>Jr Rangers 10U</span></div>
     <button type='button' class='coachbar-signout' id='coachSignOut'>Sign out</button>
   </div>
+  <div class='coachteamsel' id='coachTeamSel' hidden>
+    <label class='coachteamsel-lab'>Team</label>
+    <span class='login-selwrap'>
+      <select class='login-in login-select' id='coachTeamPick'></select>
+      <span class='login-selchev' aria-hidden='true'>&#8250;</span>
+    </span>
+  </div>
   <div class='coachpart' id='coachPart'>
     <div class='coachpart-num'><span id='coachTrained'>0</span> of <span id='coachTotal'>0</span></div>
     <div class='coachpart-lab'>players trained this week</div>
@@ -1033,6 +1042,15 @@ function pickPlayer(name,ev,el){
   if(ev){ev.preventDefault();}
   if(el&&!reduce){el.classList.add('tapped');setTimeout(go,160);}else{go();}
 }
+/* Shared: which team the coach is currently viewing. Stored selection, default
+   first team. Used by the coach view + plan editor so the switcher drives both. */
+window.thwapActiveTeam=function(coach){
+  try{ if(!coach) coach=JSON.parse(localStorage.getItem('thwapCoach')||'null'); }catch(e){}
+  var codes=(coach&&coach.teams)||[];
+  var sel=''; try{ sel=localStorage.getItem('thwapCoachTeam')||''; }catch(e){}
+  if(sel && codes.indexOf(sel)>=0) return sel;
+  return codes[0]||'RANGERS72';
+};
 /* Coach view (Step 2): if a coach is signed in (thwapCoach in localStorage),
    reveal the coach bar on the Team page and fill in this-week participation from
    /api/coach?action=roster. Sign out clears the coach token. The player-facing
@@ -1044,7 +1062,17 @@ function pickPlayer(name,ev,el){
   if(!coach||!coach.token){ return; }
   bar.hidden=false;
   document.body.classList.add('is-coach');
-  var code=(coach.teams&&coach.teams[0])||'RANGERS72';
+  var code=window.thwapActiveTeam(coach);
+  /* Team switcher: if the coach has more than one team, show a picker that sets
+     the active team and reloads so every coach surface re-reads it. */
+  var sel=document.getElementById('coachTeamSel'), pick=document.getElementById('coachTeamPick');
+  var list=(coach.teamList&&coach.teamList.length)?coach.teamList:((coach.teams||[]).map(function(c){return {code:c,name:c};}));
+  if(sel && pick && list.length>1){
+    sel.hidden=false;
+    pick.innerHTML=list.map(function(t){ return "<option value='"+t.code+"'"+(t.code===code?' selected':'')+"></option>"; }).join('');
+    Array.prototype.forEach.call(pick.options,function(o,i){ o.textContent=list[i].name||list[i].code; });
+    pick.addEventListener('change',function(){ try{ localStorage.setItem('thwapCoachTeam', pick.value); }catch(e){} location.reload(); });
+  }
   var nameEl=document.getElementById('coachTeamName');
   var trainedEl=document.getElementById('coachTrained');
   var totalEl=document.getElementById('coachTotal');
@@ -1097,7 +1125,7 @@ function pickPlayer(name,ev,el){
   }
   if(seg){ seg.querySelectorAll('.segbtn').forEach(function(b){ b.addEventListener('click',function(){ setSeg(b.getAttribute('data-cseg')); }); }); setSeg('team'); }
   var out=document.getElementById('coachSignOut');
-  if(out){ out.addEventListener('click',function(){ try{ localStorage.removeItem('thwapCoach'); }catch(e){} location.reload(); }); }
+  if(out){ out.addEventListener('click',function(){ try{ localStorage.removeItem('thwapCoach'); localStorage.removeItem('thwapCoachTeam'); }catch(e){} location.reload(); }); }
 })();
 /* ---- Plan editor (coach): a 7-day x 3-category grid. Loads the team plan from
    get-plan, toggles which categories are ON per weekday, saves via set-plan.
@@ -1106,7 +1134,7 @@ function pickPlayer(name,ev,el){
   var grid=document.getElementById('planGrid'); if(!grid) return;
   var coach=null; try{ coach=JSON.parse(localStorage.getItem('thwapCoach')||'null'); }catch(e){}
   if(!coach||!coach.token){ return; }
-  var code=(coach.teams&&coach.teams[0])||'RANGERS72';
+  var code=(window.thwapActiveTeam?window.thwapActiveTeam(coach):((coach.teams&&coach.teams[0])||'RANGERS72'));
   var saveBtn=document.getElementById('planSave'), doneEl=document.getElementById('planDone');
   var DAYS=[['mon','Mon'],['tue','Tue'],['wed','Wed'],['thu','Thu'],['fri','Fri'],['sat','Sat'],['sun','Sun']];
   var CATS=[['stick','Hands'],['shoot','Shoot'],['dryland','Dryland']];
@@ -3588,6 +3616,7 @@ if(coachForm){
             token:res.j.token, email:email,
             name:(res.j.coach&&res.j.coach.name)||'Coach',
             teams:(res.j.coach&&res.j.coach.teams)||[],
+            teamList:(res.j.coach&&res.j.coach.teamList)||[],
             childPlayerId:(res.j.coach&&res.j.coach.childPlayerId)||null
           }));
         }catch(e2){}
