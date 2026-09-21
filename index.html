@@ -480,7 +480,7 @@ button.row:active{background:var(--soft)}
 .pl-thwap.go{animation:plthwap .7s ease}
 @keyframes plthwap{0%{transform:translate(-50%,-50%) rotate(-8deg) scale(0);opacity:0}30%{transform:translate(-50%,-50%) rotate(-8deg) scale(1.2);opacity:1}100%{transform:translate(-50%,-50%) rotate(-8deg) scale(1);opacity:0}}
 @media (prefers-reduced-motion: reduce){.plflame,.pl-radar-poly,.pl-radar-poly.grow,.pl-radar-wrap svg circle,.pl-spoke,.pl-thwap.go,.pl-ringfill{animation:none;transition:none}.pl-spoke{stroke-dashoffset:0}}.row:last-child{border-bottom:0}.row.me{background:rgba(185,240,107,.18);box-shadow:inset 3px 0 0 var(--lime)}.row-you{display:inline-block;margin-left:7px;font-size:11px;font-weight:900;letter-spacing:.05em;color:#0f1712;background:var(--lime);border-radius:999px;padding:2px 7px;vertical-align:middle}.bar{height:6px;background:var(--soft);border-radius:99px;overflow:hidden}.fill{height:100%;background:var(--lime)}.score{font-weight:950;color:var(--green2)}.note{padding:14px 2px 0;margin-top:16px;border-top:1px solid var(--line);color:var(--muted2);font-size:13px;line-height:1.5}.footer{text-align:center;color:var(--chev);font-size:11px;padding:28px 0}
-.footer{display:flex;align-items:center;justify-content:space-between;gap:14px;color:var(--muted);font-size:12px;padding:28px 4px}.footer .slogan{font-weight:800;letter-spacing:.01em}.trademark{text-align:center;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.02em;padding:0 4px 24px}.trademark-mark{height:52px;width:auto;object-fit:contain;display:inline-block;opacity:.75}.themetoggle{display:inline-flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit}.themetoggle:hover{border-color:var(--line2)}.themetoggle .ttico{font-size:14px;line-height:1}
+.footer{display:flex;align-items:center;justify-content:space-between;gap:14px;color:var(--muted);font-size:12px;padding:28px 4px}.footer .slogan{font-weight:800;letter-spacing:.01em}.trademark{text-align:center;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.02em;padding:0 4px 24px}.trademark-mark{height:72px;width:auto;object-fit:contain;display:inline-block;opacity:.9}.themetoggle{display:inline-flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit}.themetoggle:hover{border-color:var(--line2)}.themetoggle .ttico{font-size:14px;line-height:1}
 /* Easter eggs on the drill pages. Long-press the header emoji to fire, then it
    resets. Reduced motion disables both (see the JS guard + the media block). */
 .eggstick,.eggnet{cursor:pointer;-webkit-user-select:none;user-select:none;touch-action:manipulation;position:relative;display:inline-block}
@@ -547,7 +547,7 @@ html[data-theme='dark'] .login-frost{background:linear-gradient(180deg,rgba(16,2
 .login-go:active{transform:scale(.98)}
 .login-err{min-height:18px;margin:10px 0 0;font-size:13px;font-weight:700;color:var(--alert);text-align:center}
 .login-alt{margin:15px 0 0;font-size:14px;color:var(--muted);text-align:center}
-.login-wordmark{height:42px;width:auto;vertical-align:-12px;display:inline-block}
+.login-wordmark{height:56px;width:auto;vertical-align:-16px;display:inline-block}
 .login-alt a{color:var(--green2);font-weight:800;text-decoration:underline;text-underline-offset:3px}
 body.login-locked{overflow:hidden}
 @media (prefers-reduced-motion: reduce){.login-go{transition:none}}
@@ -583,7 +583,7 @@ body.login-locked{overflow:hidden}
     </div>
     <button type='submit' class='login-go'>Sign In &#8594;</button>
     <p class='login-err' id='loginErr' aria-live='polite'></p>
-    <p class='login-alt'>New to <img class='login-wordmark' src='wordmark-light.svg' alt='Thwap Hockey'>? <a href='#' id='loginWaitlist'>Join the waitlist.</a></p>
+    <p class='login-alt'>New to <img class='login-wordmark' id='loginMark' src='wordmark-tm-light.svg' alt='Thwap Hockey'>? <a href='#' id='loginWaitlist'>Join the waitlist.</a></p>
   </form>
   <form class='login-modal' id='waitForm' role='dialog' aria-modal='true' aria-labelledby='waitTitle' hidden novalidate>
     <h2 class='login-h' id='waitTitle'>Join the waitlist</h2>
@@ -1179,7 +1179,7 @@ render();
 fetchBoard();
 window.addEventListener('hashchange',function(){ if(location.hash==='#progress') fetchBoard(); });
 })();</script>
-<script>(function(){var KEY='thwapTheme';function apply(t){var dark=(t==='dark');document.documentElement.setAttribute('data-theme',dark?'dark':'light');var i=document.getElementById('ttico'),l=document.getElementById('ttlabel');if(i)i.textContent=dark?'☀️':'🌙';if(l)l.textContent=dark?'Light':'Dark';var bm=document.getElementById('brandMark');if(bm)bm.setAttribute('src',dark?'wordmark-dark.svg':'wordmark-light.svg');var fm=document.getElementById('footerMark');if(fm)fm.setAttribute('src',dark?'wordmark-tm-dark.svg':'wordmark-tm-light.svg');}var saved='light';try{saved=localStorage.getItem(KEY)||'light';}catch(e){}apply(saved);var b=document.getElementById('themeToggle');if(b)b.addEventListener('click',function(){var cur='light';try{cur=localStorage.getItem(KEY)||'light';}catch(e){}var next=(cur==='dark'?'light':'dark');try{localStorage.setItem(KEY,next);}catch(e){}apply(next);});})();</script>
+<script>(function(){var KEY='thwapTheme';function apply(t){var dark=(t==='dark');document.documentElement.setAttribute('data-theme',dark?'dark':'light');var i=document.getElementById('ttico'),l=document.getElementById('ttlabel');if(i)i.textContent=dark?'☀️':'🌙';if(l)l.textContent=dark?'Light':'Dark';var bm=document.getElementById('brandMark');if(bm)bm.setAttribute('src',dark?'wordmark-dark.svg':'wordmark-light.svg');var fm=document.getElementById('footerMark');if(fm)fm.setAttribute('src',dark?'wordmark-tm-dark.svg':'wordmark-tm-light.svg');var lm=document.getElementById('loginMark');if(lm)lm.setAttribute('src',dark?'wordmark-tm-dark.svg':'wordmark-tm-light.svg');}var saved='light';try{saved=localStorage.getItem(KEY)||'light';}catch(e){}apply(saved);var b=document.getElementById('themeToggle');if(b)b.addEventListener('click',function(){var cur='light';try{cur=localStorage.getItem(KEY)||'light';}catch(e){}var next=(cur==='dark'?'light':'dark');try{localStorage.setItem(KEY,next);}catch(e){}apply(next);});})();</script>
 <div class='cardoverlay' id='cardOverlay' hidden>
   <button type='button' class='cardclose' id='cardClose' aria-label='Close card'>✕</button>
   <div class='cardscene' id='cardScene'>
@@ -1853,12 +1853,38 @@ var CATALOG={
   Shooting:['Wrist Shots','Snap Shots','Backhand','Pick-a-Corner','Quick Release'],
   Dryland:['Skater Jumps','Box Jumps','Wall Sit','Plank','Dead Bugs']
 };
-/* A pictograph per exercise so kids recognize the move at a glance (design aid, not official content). */
-var EXICON={
-  'Side-to-Side':'↔️','Figure-8 Around Cones':'🎿','Toe Drag & Rescue':'🏒','Eyes-Up Glancing':'👀','Cone Weave Course':'🚧',
-  'Wrist Shots':'🎯','Snap Shots':'⚡','Backhand':'🔄','Pick-a-Corner':'🥅','Quick Release':'⏱️',
-  'Skater Jumps':'🦘','Box Jumps':'📦','Wall Sit':'🧱','Plank':'🪵','Dead Bugs':'🐞'
-};
+/* The stats page lists EVERY activity in each category, pulled from the same real
+   drill data the training pages use (not a stub). Deduped by name, order preserved.
+   Built lazily and memoized because SHOOT_DAYS is defined later in the file; build()
+   only runs on demand, well after every array exists. EXICON gets a per-activity
+   emoji from the same source so each row shows its own pictograph. */
+var EXICON={};
+var _catalogCache=null;
+function buildCatalog(){
+  if(_catalogCache) return _catalogCache;
+  function uniq(pairs){
+    var seen={}, out=[];
+    pairs.forEach(function(p){
+      var nm=p[0]; if(!nm||seen[nm]) return; seen[nm]=1; out.push(nm);
+      if(p[1]&&!EXICON[nm]) EXICON[nm]=p[1];
+    });
+    return out;
+  }
+  var stick=[], shoot=[], dry=[];
+  try{ (DRILLS||[]).forEach(function(d){ stick.push([d.name,d.emoji]); }); }catch(e){}
+  try{ (SHOOT_DAYS||[]).forEach(function(day){ (day||[]).forEach(function(s){ shoot.push([s.name,s.emoji]); }); }); }catch(e){}
+  try{
+    /* dryland: unique exercises across every WORKOUTS session (d() carries name+emoji) */
+    (WORKOUTS||[]).forEach(function(w){ (w.drills||[]).forEach(function(ex){ dry.push([ex.name,ex.emoji]); }); });
+  }catch(e){}
+  var uStick=uniq(stick), uShoot=uniq(shoot), uDry=uniq(dry);
+  _catalogCache={
+    Stickhandling: uStick.length?uStick:CATALOG.Stickhandling,
+    Shooting: uShoot.length?uShoot:CATALOG.Shooting,
+    Dryland: uDry.length?uDry:CATALOG.Dryland
+  };
+  return _catalogCache;
+}
 /* Real per-player completion counts, read from the same live board the leaderboard
    uses (window.thwapBoard, populated below). disc is the display name; the board
    keys are stick/shoot/dryland. Everyone reads 0 until the API responds. */
@@ -1943,7 +1969,7 @@ function build(){
   if(tf==='week'){
     /* three chunky rings toward this week's goal */
     visual="<div class='pl-rings'>"+discs.map(function(disc){
-      var done=demoDone(first,disc,'week'), goal=CATALOG[disc].length;
+      var CAT_ALL=buildCatalog(); var done=demoDone(first,disc,'week'), goal=CAT_ALL[disc].length;
       var r=32,circ=2*Math.PI*r,pct=Math.min(1,goal?done/goal:0),off=circ*(1-pct);
       return "<div class='pl-ring' data-full='"+(pct>=1)+"'>"+
         "<svg width='80' height='80' viewBox='0 0 80 80'>"+
@@ -2000,7 +2026,7 @@ function build(){
   var showDiscs=discs;
   var DACC={Stickhandling:'#8fd65e',Shooting:'#75B8FF',Dryland:'#FF9D4D'};
   var list=showDiscs.map(function(disc){
-    var exs=CATALOG[disc]; var done=demoDone(first,disc,tf);
+    var exs=buildCatalog()[disc]; var done=demoDone(first,disc,tf);
     var rows=exs.map(function(name,i){var isDone=i<done;
       return "<div class='pl-ex"+(isDone?' done':'')+"'>"+
         "<span class='pl-exicon'>"+(EXICON[name]||'🏒')+"</span>"+
