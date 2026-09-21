@@ -516,8 +516,10 @@ button.row:active{background:var(--soft)}
    animation, frost texture and THWAP! impact graphic land in a later pass. */
 #loginOverlay{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:24px;padding-top:calc(env(safe-area-inset-top,0px) + 24px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 24px)}
 #loginOverlay[hidden]{display:none}
-.login-frost{position:absolute;inset:0;background:linear-gradient(180deg,rgba(243,247,244,.62),rgba(117,184,255,.30)),radial-gradient(120% 90% at 50% -12%,rgba(255,255,255,.55),transparent 60%);backdrop-filter:blur(14px) saturate(115%);-webkit-backdrop-filter:blur(14px) saturate(115%)}
-html[data-theme='dark'] .login-frost{background:linear-gradient(180deg,rgba(16,26,20,.60),rgba(48,91,67,.34)),radial-gradient(120% 90% at 50% -12%,rgba(117,184,255,.18),transparent 60%)}
+@media (min-width:641px){#loginOverlay{justify-content:flex-end;padding-right:min(9vw,140px)}}
+/* frozen glass: light blur + a cool ice/blue wash so the live homepage shows through */
+.login-frost{position:absolute;inset:0;background:linear-gradient(180deg,rgba(150,195,230,.14),rgba(90,150,205,.20));backdrop-filter:blur(2px) saturate(108%);-webkit-backdrop-filter:blur(2px) saturate(108%)}
+html[data-theme='dark'] .login-frost{background:linear-gradient(180deg,rgba(120,170,215,.16),rgba(70,130,190,.22))}
 .login-frost::after{content:'';position:absolute;inset:0;box-shadow:inset 0 0 120px rgba(255,255,255,.35),inset 0 0 0 1px rgba(255,255,255,.25);pointer-events:none}
 .login-stage{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .login-modal{position:relative;z-index:2;width:100%;max-width:360px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-major);padding:26px 22px 22px;box-shadow:0 24px 70px rgba(9,15,11,.45)}
@@ -552,11 +554,116 @@ html[data-theme='dark'] .login-frost{background:linear-gradient(180deg,rgba(16,2
 body.login-locked{overflow:hidden}
 @media (prefers-reduced-motion: reduce){.login-go{transition:none}}
 @media (max-width:420px){.login-modal{max-width:none}.login-h{font-size:23px}}
+/* ---- Break the Ice splash animation (Pass 2): Sass welcome -> run -> THWAP! -> modal ---- */
+#loginOverlay.is-playing #loginForm,#loginOverlay.is-playing #waitForm{display:none}
+/* Sass moves across the stage; positions/opacity per data-step drive the beats. */
+/* welcome group: Sass + bubble wrapped together and sized by Sass, so the bubble
+   (positioned as a % of this group below) stays glued to Sass and they never drift
+   apart when the window resizes within a breakpoint. */
+.sp-welcome{position:absolute;left:3vw;bottom:7%;width:clamp(210px,46vmin,420px);height:clamp(210px,46vmin,420px);pointer-events:none}
+.sp-sass{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:bottom center;opacity:0;filter:drop-shadow(0 14px 22px rgba(0,0,0,.32));will-change:transform,opacity;-webkit-user-drag:none}
+.sp-sass-welcome{transform:translateY(8px) scale(.96);transition:opacity .3s ease,transform .5s ease}
+#loginStage[data-step='welcome'] .sp-sass-welcome{opacity:1;transform:translateY(0) scale(1)}
+/* run pose (leaning), skates from the left INTO the right edge, shown from run onward */
+/* skating: a wrapper glides left->right; 3 frames cycle a(spread)->m(feet together)->b(spread) = real leg movement.
+   Same size as the welcome pose so Sass does not shrink when the skate starts. */
+.sp-skater{position:absolute;left:0;bottom:6%;height:clamp(210px,46vmin,420px);width:clamp(210px,46vmin,420px);transform-origin:bottom center;opacity:0;transform:translateX(3vw);transition:transform .4s ease,opacity .3s ease;pointer-events:none;filter:drop-shadow(0 14px 22px rgba(0,0,0,.32))}
+.sp-frame{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:bottom center;opacity:0;-webkit-user-drag:none}
+.sp-frame-a{opacity:1}
+#loginStage[data-step='run'] .sp-skater{opacity:1;animation:spGlide 1.5s cubic-bezier(.4,0,.55,1) forwards}
+#loginStage[data-step='run'] .sp-frame-a{animation:spFrA .72s steps(1,end) infinite}
+#loginStage[data-step='run'] .sp-frame-m{animation:spFrM .72s steps(1,end) infinite}
+#loginStage[data-step='run'] .sp-frame-b{animation:spFrB .72s steps(1,end) infinite}
+#loginStage[data-step='impact'] .sp-skater{opacity:1;transform:translateX(70vw) scale(1.05) rotate(-2deg);animation:none;transition-duration:.2s}
+#loginStage[data-step='ready'] .sp-skater{opacity:.97;transform:translateX(54vw);animation:none}
+@keyframes spGlide{0%{transform:translateX(3vw) translateY(0)}15%{transform:translateX(11vw) translateY(6px)}30%{transform:translateX(21vw) translateY(-4px)}45%{transform:translateX(30vw) translateY(6px)}60%{transform:translateX(40vw) translateY(-4px)}75%{transform:translateX(47vw) translateY(6px)}90%{transform:translateX(53vw) translateY(-3px)}100%{transform:translateX(54vw) translateY(0)}}
+@keyframes spFrA{0%,24.9%{opacity:1}25%,100%{opacity:0}}
+@keyframes spFrM{0%,24.9%{opacity:0}25%,49.9%{opacity:1}50%,74.9%{opacity:0}75%,100%{opacity:1}}
+@keyframes spFrB{0%,49.9%{opacity:0}50%,74.9%{opacity:1}75%,100%{opacity:0}}
+/* speech bubble: positioned as a % of the .sp-welcome group so it stays locked to Sass on resize */
+.sp-bubble-img{position:absolute;left:61%;top:-71%;width:96%;height:auto;opacity:0;transform:translateY(-8px) scale(.95);transition:opacity .35s ease,transform .35s ease;z-index:3;-webkit-user-drag:none;filter:drop-shadow(0 10px 22px rgba(0,0,0,.28))}
+#loginStage[data-step='welcome'] .sp-bubble-img{opacity:1;transform:translateY(0) scale(1)}
+/* mobile: Sass sits half off the left edge; bubble re-anchored (still a % of the group) */
+@media (max-width:640px){
+  .sp-welcome{left:-52vw;bottom:3%;width:clamp(300px,58vmin,540px);height:clamp(300px,58vmin,540px)}
+  .sp-skater{height:clamp(300px,58vmin,540px);width:clamp(300px,58vmin,540px);bottom:3%}
+  .sp-bubble-img{left:66%;top:-18%;width:45%}
+}
+/* speed streaks during the run */
+.sp-speed{position:absolute;inset:0;opacity:0;transition:opacity .15s ease}
+.sp-speed i{position:absolute;height:4px;border-radius:2px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.8));opacity:0}
+.sp-speed i:nth-child(1){top:40%;width:120px;left:38%}
+.sp-speed i:nth-child(2){top:52%;width:90px;left:50%}
+.sp-speed i:nth-child(3){top:62%;width:150px;left:42%}
+.sp-speed i:nth-child(4){top:47%;width:70px;left:58%}
+#loginStage[data-step='run'] .sp-speed{opacity:1}
+#loginStage[data-step='run'] .sp-speed i{animation:spWhoosh .5s linear infinite}
+#loginStage[data-step='run'] .sp-speed i:nth-child(2){animation-delay:.08s}
+#loginStage[data-step='run'] .sp-speed i:nth-child(3){animation-delay:.16s}
+#loginStage[data-step='run'] .sp-speed i:nth-child(4){animation-delay:.24s}
+@keyframes spWhoosh{0%{opacity:0;transform:translateX(40px)}25%{opacity:1}100%{opacity:0;transform:translateX(-140px)}}
+/* Frozen-pond ice base (no cracks) at partial opacity so the real site shows through; clears at ready */
+.sp-ice{position:absolute;inset:0;background-image:url('login/pond-landscape.jpg');background-size:cover;background-position:center;background-repeat:no-repeat;opacity:.6;transition:opacity .5s ease}
+@media (max-width:640px){.sp-ice{background-image:url('login/pond-portrait.jpg')}}
+#loginStage[data-step='ready'] .sp-ice{opacity:.24}
+/* Cracks: hidden until Sass hits the edge (impact), then spread; fade as ice clears */
+.sp-crack{position:absolute;inset:0;background-image:url('login/cracks-landscape.webp');background-size:cover;background-position:center;background-repeat:no-repeat;opacity:0;transition:opacity .4s ease}
+@media (max-width:640px){.sp-crack{background-image:url('login/cracks-portrait.webp')}}
+#loginStage[data-step='impact'] .sp-crack{opacity:1;transition:opacity .16s ease}
+#loginStage[data-step='ready'] .sp-crack{opacity:.22;transition:opacity .6s ease}
+/* Generated ice shards, sprayed outward on impact */
+.sp-shards{position:absolute;right:-4vw;top:30%;width:min(72vw,560px);height:auto;transform:translateY(-50%) scale(.4);opacity:0;pointer-events:none;-webkit-user-drag:none}
+#loginStage[data-step='impact'] .sp-shards{animation:spShards .75s ease-out forwards}
+@keyframes spShards{0%{opacity:0;transform:translateY(-50%) scale(.35)}28%{opacity:1}100%{opacity:0;transform:translateY(-50%) scale(1.3)}}
+/* Generated THWAP! burst */
+.sp-burst-img{position:absolute;right:1vw;top:34%;width:min(58vw,380px);height:auto;transform:translateY(-50%) scale(0);opacity:0;filter:drop-shadow(0 10px 24px rgba(0,0,0,.45));-webkit-user-drag:none;z-index:2}
+#loginStage[data-step='impact'] .sp-burst-img{animation:spBurst .55s cubic-bezier(.2,1.3,.4,1) forwards}
+#loginStage[data-step='ready'] .sp-burst-img{opacity:0;transform:translateY(-50%) scale(1);transition:opacity .45s ease}
+@keyframes spBurst{0%{opacity:0;transform:translateY(-50%) scale(0) rotate(-14deg)}55%{opacity:1;transform:translateY(-50%) scale(1.12) rotate(5deg)}100%{opacity:1;transform:translateY(-50%) scale(1) rotate(0)}}
+/* impact shake */
+#loginStage.shake{animation:spShake .4s ease}
+@keyframes spShake{0%,100%{transform:none}20%{transform:translate(-5px,2px)}40%{transform:translate(6px,-2px)}60%{transform:translate(-3px,1px)}80%{transform:translate(2px,-1px)}}
+/* nav controls in the top-right corner (storyboard), visible only while the splash plays */
+.sp-skip{position:absolute;top:max(16px,env(safe-area-inset-top,0px));right:max(18px,env(safe-area-inset-right,0px));display:none;align-items:center;gap:14px;z-index:5}
+#loginOverlay.is-playing .sp-skip{display:flex}
+/* match the thwaphockey.com CTA style: brand green, Archivo Black, rounded 14px */
+/* match the site's CTA (.login-go / .primary): flat brand green, Archivo Black, radius 14px, no shadow */
+.sp-skipbtn{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 20px;border-radius:14px;border:0;background:var(--green);color:var(--onaccent);font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;font-size:15px;cursor:pointer;transition:transform .08s ease,filter .12s ease;-webkit-tap-highlight-color:transparent}
+.sp-skipbtn:hover{filter:brightness(1.04)}
+.sp-skipbtn-alt{background:var(--panel);color:var(--green2);border:1px solid var(--line)}
+.sp-skipbtn:active{transform:scale(.96)}
+@media (max-width:640px){.sp-skip{gap:10px}.sp-skipbtn{padding:0 16px;font-size:14px;min-height:44px}}
+/* modal entrance when it appears */
+.login-modal{animation:spModalIn .3s ease}
+@keyframes spModalIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){
+  .sp-sass,.sp-skater,.sp-frame,.sp-bubble-img,.sp-burst-img,.sp-shards,.sp-speed,.sp-speed i,.sp-ice,.sp-crack{transition:none!important;animation:none!important}
+  #loginStage.shake,.login-modal{animation:none}
+}
 </style><script>try{if(localStorage.getItem('thwapTheme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script></head><body><div class='app'>
 <!-- Break the Ice login splash: a full-screen overlay OVER the real homepage. -->
 <div id='loginOverlay' hidden aria-hidden='true'>
   <div class='login-frost'></div>
-  <div class='login-stage' id='loginStage' aria-hidden='true'></div>
+  <div class='login-stage' id='loginStage' data-step='idle' aria-hidden='true'>
+    <div class='sp-ice'></div>
+    <div class='sp-crack'></div>
+    <div class='sp-speed'><i></i><i></i><i></i><i></i></div>
+    <div class='sp-welcome'>
+      <img class='sp-sass sp-sass-welcome' src='login/sass-welcome.webp' alt=''>
+      <img class='sp-bubble-img' src='login/bubble.webp' alt='Hi, I am Sass. Looks like you need to login. Time to THWAP!'>
+    </div>
+    <div class='sp-skater'>
+      <img class='sp-frame sp-frame-a' src='login/sass-stride-a.webp' alt=''>
+      <img class='sp-frame sp-frame-m' src='login/sass-stride-m.webp' alt=''>
+      <img class='sp-frame sp-frame-b' src='login/sass-stride-b.webp' alt=''>
+    </div>
+    <img class='sp-shards' src='login/shards.webp' alt=''>
+    <img class='sp-burst-img' src='login/thwap-burst.webp' alt='THWAP!'>
+  </div>
+  <div class='sp-skip' id='spSkip'>
+    <button type='button' class='sp-skipbtn' id='splashSignin'>Sign In</button>
+    <button type='button' class='sp-skipbtn sp-skipbtn-alt' id='splashWait'>Join Waitlist</button>
+  </div>
   <form class='login-modal' id='loginForm' role='dialog' aria-modal='true' aria-labelledby='loginTitle' novalidate>
     <h2 class='login-h' id='loginTitle'>Welcome back!</h2>
     <p class='login-sub'>Sign in to your team.</p>
@@ -1847,7 +1954,8 @@ function esc(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp
 /* position + card slug for the header */
 var INFO={Alder:{num:'71',pos:'F'},Brooklyn:{num:'92',pos:'D'},Dawson:{num:'19',pos:'D'},Dominic:{num:'98',pos:'F'},Eugene:{num:'3',pos:'D'},Evan:{num:'13',pos:'F'},Greyson:{num:'32',pos:'D'},Johnny:{num:'1',pos:'G'},Joziah:{num:'59',pos:'F'},Lewie:{num:'72',pos:'FD'},Liam:{num:'29',pos:'D'},Maddux:{num:'18',pos:'F'},Oliver:{num:'90',pos:'F'},Teddy:{num:'11',pos:'F'},William:{num:'16',pos:'F'},Issac:{num:'53',pos:'F'}};
 var POSNAME={F:'Forward',D:'Defense',G:'Goalie',FD:'Forward/Defense'};
-/* Exercise catalogs per discipline (short lists for the completion view) */
+/* Exercise catalogs per discipline. The stub below is a FALLBACK only; the stats
+   page uses buildCatalog() to show EVERY real activity per category. */
 var CATALOG={
   Stickhandling:['Side-to-Side','Figure-8 Around Cones','Toe Drag & Rescue','Eyes-Up Glancing','Cone Weave Course'],
   Shooting:['Wrist Shots','Snap Shots','Backhand','Pick-a-Corner','Quick Release'],
@@ -1873,10 +1981,7 @@ function buildCatalog(){
   var stick=[], shoot=[], dry=[];
   try{ (DRILLS||[]).forEach(function(d){ stick.push([d.name,d.emoji]); }); }catch(e){}
   try{ (SHOOT_DAYS||[]).forEach(function(day){ (day||[]).forEach(function(s){ shoot.push([s.name,s.emoji]); }); }); }catch(e){}
-  try{
-    /* dryland: unique exercises across every WORKOUTS session (d() carries name+emoji) */
-    (WORKOUTS||[]).forEach(function(w){ (w.drills||[]).forEach(function(ex){ dry.push([ex.name,ex.emoji]); }); });
-  }catch(e){}
+  try{ (WORKOUTS||[]).forEach(function(w){ (w.drills||[]).forEach(function(ex){ dry.push([ex.name,ex.emoji]); }); }); }catch(e){}
   var uStick=uniq(stick), uShoot=uniq(shoot), uDry=uniq(dry);
   _catalogCache={
     Stickhandling: uStick.length?uStick:CATALOG.Stickhandling,
@@ -2020,9 +2125,7 @@ function build(){
     visual="<div class='pl-panel'><div class='pl-panel-h'>The bigger your triangle, the more you have trained!</div>"+radar+totals+"</div>";
   }
 
-  /* exercise detail, shown directly. All disciplines' activities always show on
-     both week and all-time; the all-time discipline filter only emphasizes the
-     triangle, it does not hide any activity list. */
+  /* exercise detail, shown directly. When a discipline filter is active (all-time), show only that one. */
   var showDiscs=discs;
   var DACC={Stickhandling:'#8fd65e',Shooting:'#75B8FF',Dryland:'#FF9D4D'};
   var list=showDiscs.map(function(disc){
@@ -2881,12 +2984,49 @@ function validEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v||'').t
 function show(){
   overlay.hidden=false; overlay.setAttribute('aria-hidden','false');
   document.body.classList.add('login-locked');
-  setTimeout(function(){ if(emailEl) emailEl.focus(); },60);
 }
 function hide(){
   overlay.hidden=true; overlay.setAttribute('aria-hidden','true');
   document.body.classList.remove('login-locked');
 }
+
+/* ---- Break the Ice splash timeline: Sass welcome -> run -> THWAP! -> modal.
+   Plays every visit for signed-out visitors; the on-screen Sign In / Join the
+   waitlist buttons (and Escape) skip straight to the modal. Reduced motion goes
+   straight to the modal. showSignin()/showWait() below stop the splash first. ---- */
+var stageEl=document.getElementById('loginStage');
+var splashTimers=[];
+function clearSplash(){ splashTimers.forEach(function(t){ clearTimeout(t); }); splashTimers=[]; }
+function setStep(s){ if(stageEl) stageEl.setAttribute('data-step',s); }
+function reduceMotion(){ return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+function stopSplash(settled){
+  clearSplash();
+  overlay.classList.remove('is-playing');
+  setStep(settled?'ready':'idle');
+}
+function startSplash(){
+  if(!stageEl){ showSignin(); return; }
+  clearSplash();
+  overlay.classList.add('is-playing');
+  if(form) form.hidden=true; if(waitForm) waitForm.hidden=true;
+  setStep('welcome');
+  var b=document.getElementById('splashSignin'); if(b) setTimeout(function(){ b.focus(); },80);
+  splashTimers.push(setTimeout(function(){ setStep('run'); },4600));
+  splashTimers.push(setTimeout(function(){
+    setStep('impact');
+    if(stageEl){ stageEl.classList.add('shake'); setTimeout(function(){ stageEl.classList.remove('shake'); },420); }
+  },6100));
+  splashTimers.push(setTimeout(function(){ showSignin(); },6850));
+}
+function maybeSplash(){
+  if(reduceMotion()){ showSignin(); return; }
+  startSplash();
+}
+(function(){
+  var s=document.getElementById('splashSignin'); if(s) s.addEventListener('click',function(){ showSignin(); });
+  var w=document.getElementById('splashWait'); if(w) w.addEventListener('click',function(){ showWait(); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape' && overlay.classList.contains('is-playing')) showSignin(); });
+})();
 function signIn(player,email,keep){
   var rec={pid:player.pid,name:player.name,email:String(email||'').trim(),year:SEASON_YEAR,ts:Date.now()};
   try{
@@ -2945,12 +3085,14 @@ function checkedAges(){
   return out;
 }
 function showWait(){
+  stopSplash(true);
   if(form) form.hidden=true;
   if(waitForm) waitForm.hidden=false;
   loadGeo();
   setTimeout(function(){ if(waitAssoc) waitAssoc.focus(); },60);
 }
 function showSignin(){
+  stopSplash(true);
   if(waitForm) waitForm.hidden=true;
   if(form){ form.hidden=false; setTimeout(function(){ if(emailEl) emailEl.focus(); },60); }
 }
@@ -2988,20 +3130,20 @@ if(waitForm){
 }
 function gate(){
   document.body.classList.toggle('is-authed', isAuthed());
-  if(location.hash==='#login'){ show(); return; }
-  if(isAuthed()){ hide(); } else { show(); }
+  if(location.hash==='#login'){ show(); maybeSplash(); return; }
+  if(isAuthed()){ hide(); } else { show(); maybeSplash(); }
 }
 /* Header guest nav (shown when logged out): Sign In opens the sign-in form,
    Join Waitlist opens the waitlist form. Both make sure the splash is up. */
 function wireHeaderNav(id, fn){
   var el=document.getElementById(id);
-  if(el){ el.addEventListener('click',function(e){ e.preventDefault(); show(); fn(); }); }
+  if(el){ el.addEventListener('click',function(e){ e.preventDefault(); show(); if(typeof fn==='function') fn(); }); }
 }
-wireHeaderNav('navSignIn', showSignin);
-wireHeaderNav('navSignInK', showSignin);
-wireHeaderNav('navWaitlist', showWait);
-wireHeaderNav('navWaitlistK', showWait);
-window.addEventListener('hashchange',function(){ if(location.hash==='#login') show(); });
+wireHeaderNav('navSignIn', typeof showSignin==='function'?showSignin:null);
+wireHeaderNav('navSignInK', typeof showSignin==='function'?showSignin:null);
+wireHeaderNav('navWaitlist', typeof showWait==='function'?showWait:null);
+wireHeaderNav('navWaitlistK', typeof showWait==='function'?showWait:null);
+window.addEventListener('hashchange',function(){ if(location.hash==='#login'){ show(); maybeSplash(); } });
 gate();
 })();</script>
 </body></html>
