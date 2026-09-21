@@ -60,31 +60,55 @@ function safeEqual(a, b) {
 }
 
 async function ensureSeed() {
+  // Demo teams so the pilot coach (Jason) can exercise the multi-team switcher.
+  // Small rosters; the 10U team keeps the full ROSTER.
+  const DEMO_TEAMS = [
+    { code: SEED_TEAM_CODE, name: 'Jr Rangers 10U', ageGroup: '10U', members: ROSTER.map((p) => ({ playerId: p.id, firstName: p.name, number: p.number })) },
+    { code: 'RANGERS8U', name: 'Jr Rangers 8U', ageGroup: '8U', members: [
+      { playerId: 'mikey', firstName: 'Mikey', number: 8 },
+      { playerId: 'sawyer', firstName: 'Sawyer', number: 14 },
+      { playerId: 'nora', firstName: 'Nora', number: 22 },
+      { playerId: 'beau', firstName: 'Beau', number: 5 },
+    ] },
+    { code: 'RANGERS12U', name: 'Jr Rangers 12U', ageGroup: '12U', members: [
+      { playerId: 'carter', firstName: 'Carter', number: 44 },
+      { playerId: 'declan', firstName: 'Declan', number: 17 },
+      { playerId: 'ruby', firstName: 'Ruby', number: 9 },
+      { playerId: 'jonah', firstName: 'Jonah', number: 61 },
+      { playerId: 'silas', firstName: 'Silas', number: 33 },
+    ] },
+  ];
+  // Create any team that does not exist yet, with its members (idempotent).
+  for (const t of DEMO_TEAMS) {
+    if (!(await getTeam(t.code))) {
+      await setTeam(t.code, { name: t.name, association: 'Vancouver Jr. Rangers', ageGroup: t.ageGroup, coachEmail: SEED_COACH_EMAIL, createdAt: new Date().toISOString() });
+      for (const m of t.members) {
+        await addMember(t.code, {
+          playerId: m.playerId, firstName: m.firstName,
+          lastName: (t.code === SEED_TEAM_CODE && m.playerId === SEED_CHILD_PLAYER_ID) ? 'Reese' : '',
+          number: m.number, position: '',
+          parentEmail: (t.code === SEED_TEAM_CODE && m.playerId === SEED_CHILD_PLAYER_ID) ? SEED_COACH_EMAIL : '',
+          status: 'active',
+        });
+      }
+    }
+  }
+  const allCodes = DEMO_TEAMS.map((t) => t.code);
   const existing = await getCoach(SEED_COACH_EMAIL);
-  if (existing) return existing;
-  // Create the team with the whole current ROSTER as active members.
-  await setTeam(SEED_TEAM_CODE, {
-    name: 'Jr Rangers 10U',
-    association: 'Vancouver Jr. Rangers',
-    ageGroup: '10U',
-    coachEmail: SEED_COACH_EMAIL,
-    createdAt: new Date().toISOString(),
-  });
-  for (const p of ROSTER) {
-    await addMember(SEED_TEAM_CODE, {
-      playerId: p.id,
-      firstName: p.name,
-      lastName: p.id === SEED_CHILD_PLAYER_ID ? 'Reese' : '',
-      number: p.number,
-      position: '',
-      parentEmail: p.id === SEED_CHILD_PLAYER_ID ? SEED_COACH_EMAIL : '',
-      status: 'active',
-    });
+  if (existing) {
+    // Backfill any demo teams the coach is missing (so an already-seeded coach
+    // gains the new teams without a reset).
+    const have = existing.teams || [];
+    const merged = Array.from(new Set([...have, ...allCodes]));
+    if (merged.length !== have.length) {
+      return setCoach(SEED_COACH_EMAIL, { ...existing, teams: merged });
+    }
+    return existing;
   }
   return setCoach(SEED_COACH_EMAIL, {
     name: 'Jason',
     passHash: passHash(SEED_COACH_PASSWORD),
-    teams: [SEED_TEAM_CODE],
+    teams: allCodes,
     childPlayerId: SEED_CHILD_PLAYER_ID,
     createdAt: new Date().toISOString(),
   });
@@ -135,9 +159,15 @@ async function coachLogin(req, res) {
     return res.status(401).json({ error: 'bad credentials' });
   }
   const token = mintCoachToken(cleanEmail);
+  const codes = coach.teams || [];
+  const teamList = [];
+  for (const c of codes) {
+    const t = await getTeam(c);
+    teamList.push({ code: c, name: (t && t.name) || c, ageGroup: (t && t.ageGroup) || '' });
+  }
   return res.status(200).json({
     ok: true, token,
-    coach: { email: cleanEmail, name: coach.name, teams: coach.teams || [], childPlayerId: coach.childPlayerId || null },
+    coach: { email: cleanEmail, name: coach.name, teams: codes, teamList, childPlayerId: coach.childPlayerId || null },
   });
 }
 
