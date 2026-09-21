@@ -395,6 +395,18 @@ body.login-locked .topbar{position:relative;z-index:120}
 .coachpart-lab{font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.02em;color:var(--muted);margin-top:2px}
 .coachpart-sub{font-size:13px;color:var(--muted);margin-top:6px}
 .coachbar-hint{font-size:13px;color:var(--muted);margin:10px 2px 0}
+.coachseg{margin-top:12px}
+.coachroll{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+.crow{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--card);cursor:pointer;text-align:left;font-family:inherit;width:100%}
+.crow:active{transform:scale(.99)}
+.crow-rank{font-family:'Archivo Black',system-ui,sans-serif;font-size:16px;color:var(--muted)}
+.crow-name{font-weight:800;font-size:15px;color:var(--text)}
+.crow-goal{font-size:12px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:44vw}
+.crow-goal.none{font-style:italic;opacity:.7}
+.crow-wk{text-align:right}
+.crow-wk-n{font-family:'Archivo Black',system-ui,sans-serif;font-size:18px;color:var(--text)}
+.crow-wk-l{font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
+.crow.trained .crow-wk-n{color:var(--green)}
 .plan-soon{margin-top:24px;padding:28px 20px;border:1px solid var(--line);border-radius:18px;background:var(--card2);text-align:center}
 .plan-soon-emoji{font-size:40px}
 .plan-soon-title{font-family:'Archivo Black',system-ui,sans-serif;font-size:22px;color:var(--text);margin-top:6px}
@@ -826,7 +838,12 @@ body.login-locked{overflow:hidden}
     <div class='coachpart-sub' id='coachTwice'></div>
   </div>
   <p class='coachbar-hint'>Tap a player below to see their month goal and game-day focus.</p>
+  <div class='seg coachseg' id='coachSeg' role='tablist' aria-label='Coach view'>
+    <button type='button' class='segbtn on' data-cseg='team' role='tab' aria-selected='true'>Entire Team</button>
+    <button type='button' class='segbtn' data-cseg='players' role='tab' aria-selected='false'>Players</button>
+  </div>
 </div>
+<div class='coachroll' id='coachRoll' hidden></div>
 <div class='roster' id='roster-grid'><a href='#home' class='pcard' data-name='Alder Reese'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>71</span><span class='pcard-bnname'>Alder</span></div></a><a href='#home' class='pcard' data-name='Brooklyn Coughlan'><div class='pcard-bignum pos-def'><span class='pcard-bn'>92</span><span class='pcard-bnname'>Brooklyn</span></div></a><a href='#home' class='pcard' data-name='Dawson Huffman'><div class='pcard-bignum pos-def'><span class='pcard-bn'>19</span><span class='pcard-bnname'>Dawson</span></div></a><a href='#home' class='pcard' data-name='Dominic Cinque'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>98</span><span class='pcard-bnname'>Dominic</span></div></a><a href='#home' class='pcard' data-name='Eugene Kuhn'><div class='pcard-bignum pos-def'><span class='pcard-bn'>3</span><span class='pcard-bnname'>Eugene</span></div></a><a href='#home' class='pcard' data-name='Evan Ewing'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>13</span><span class='pcard-bnname'>Evan</span></div></a><a href='#home' class='pcard' data-name='Greyson Wertz'><div class='pcard-bignum pos-def'><span class='pcard-bn'>32</span><span class='pcard-bnname'>Greyson</span></div></a><a href='#home' class='pcard' data-name='Issac Moyer'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>53</span><span class='pcard-bnname'>Issac</span></div></a><a href='#home' class='pcard' data-name='Johnny Eraman'><div class='pcard-bignum pos-goalie'><span class='pcard-bn'>1</span><span class='pcard-bnname'>Johnny</span></div></a><a href='#home' class='pcard' data-name='Joziah Soto'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>59</span><span class='pcard-bnname'>Joziah</span></div></a><a href='#home' class='pcard pcard-you-card' data-name='Lewie'><img class='pcard-cardart' src='cards/lewie_photo.png' alt='Lewie'></a><a href='#home' class='pcard' data-name='Liam Delatorre'><div class='pcard-bignum pos-def'><span class='pcard-bn'>29</span><span class='pcard-bnname'>Liam</span></div></a><a href='#home' class='pcard' data-name='Maddux Jones'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>18</span><span class='pcard-bnname'>Maddux</span></div></a><a href='#home' class='pcard' data-name='Oliver Moyer'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>90</span><span class='pcard-bnname'>Oliver</span></div></a><a href='#home' class='pcard' data-name='Teddy Diss'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>11</span><span class='pcard-bnname'>Teddy</span></div></a><a href='#home' class='pcard' data-name='William Schnell'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>16</span><span class='pcard-bnname'>William</span></div></a></div>
 <div class='rsearch-empty' id='rsearchEmpty' hidden></div>
 <div class='pgate' id='switchGate' hidden>
@@ -998,8 +1015,42 @@ function pickPlayer(name,ev,el){
         var twice=j.members.filter(function(m){ var w=m.week||{}; return ((w.stick||0)+(w.shoot||0)+(w.dryland||0))>=2; }).length;
         twiceEl.textContent=twice+' trained 2+ times this week';
       }
+      /* Entire Team roll-up: every player ranked by this-week training total, with
+         their IDP goal. Tapping a row opens that player's stat/IDP page. This is
+         the coach's standings view (folds in what Standings shows the kid). */
+      var roll=document.getElementById('coachRoll');
+      if(roll && j.members){
+        var rows=j.members.map(function(m){
+          var w=m.week||{}; var tot=(w.stick||0)+(w.shoot||0)+(w.dryland||0);
+          var nm=(m.firstName||m.playerId||'')+(m.lastName?(' '+m.lastName.charAt(0)+'.'):'');
+          return { name:nm.trim(), playerId:m.playerId, tot:tot, goal:m.idpGoal||'' };
+        }).sort(function(a,b){ return b.tot-a.tot; });
+        roll.innerHTML='';
+        rows.forEach(function(r,i){
+          var el=document.createElement('button');
+          el.type='button'; el.className='crow'+(r.tot>0?' trained':'');
+          var goalHtml=r.goal?('<div class="crow-goal"></div>'):('<div class="crow-goal none">No goal set</div>');
+          el.innerHTML='<div class="crow-rank">'+(i+1)+'</div>'+
+            '<div><div class="crow-name"></div>'+goalHtml+'</div>'+
+            '<div class="crow-wk"><div class="crow-wk-n">'+r.tot+'</div><div class="crow-wk-l">this wk</div></div>';
+          el.querySelector('.crow-name').textContent=r.name;
+          if(r.goal){ el.querySelector('.crow-goal').textContent=r.goal; }
+          el.addEventListener('click',function(){ if(window.openPlayerPage) window.openPlayerPage(r.name); });
+          roll.appendChild(el);
+        });
+      }
     })
     .catch(function(){});
+  /* Segment: Entire Team (roll-up list) vs Players (the card roster grid). */
+  var seg=document.getElementById('coachSeg');
+  var roll2=document.getElementById('coachRoll');
+  var grid=document.getElementById('roster-grid');
+  function setSeg(which){
+    if(seg) seg.querySelectorAll('.segbtn').forEach(function(b){ var on=b.getAttribute('data-cseg')===which; b.classList.toggle('on',on); b.setAttribute('aria-selected',on?'true':'false'); });
+    if(roll2) roll2.hidden=(which!=='team');
+    if(grid) grid.style.display=(which==='players')?'':'none';
+  }
+  if(seg){ seg.querySelectorAll('.segbtn').forEach(function(b){ b.addEventListener('click',function(){ setSeg(b.getAttribute('data-cseg')); }); }); setSeg('team'); }
   var out=document.getElementById('coachSignOut');
   if(out){ out.addEventListener('click',function(){ try{ localStorage.removeItem('thwapCoach'); }catch(e){} location.reload(); }); }
 })();
