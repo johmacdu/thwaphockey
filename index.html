@@ -399,6 +399,16 @@ body.viewing-teammate .cardctl,body.viewing-teammate .cb-stats-layer,body.viewin
 .coachpart-lab{font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.02em;color:var(--muted);margin-top:2px}
 .coachpart-sub{font-size:13px;color:var(--muted);margin-top:6px}
 .coachbar-hint{font-size:13px;color:var(--muted);margin:10px 2px 0}
+.coachcoaches{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.coachcoaches-h{font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
+.coachcoaches-list{margin-top:8px;display:flex;flex-direction:column;gap:6px}
+.coachrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:13px}
+.coachrow .c-email{color:var(--text);font-weight:700}
+.coachrow .c-role{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;color:var(--muted)}
+.coachrow .c-remove{font-family:inherit;font-size:12px;font-weight:800;color:var(--alert);background:none;border:1px solid var(--line);border-radius:10px;padding:4px 8px;cursor:pointer}
+.coachcoaches-invite{margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.coachcoaches-add{font-family:inherit;font-size:13px;font-weight:800;background:var(--lime);color:var(--ink);border:1px solid transparent;border-radius:10px;padding:9px 14px;cursor:pointer}
+.coachcoaches-err{width:100%;margin:2px 0 0;font-size:12px;color:var(--alert)}
 .coachseg{margin-top:12px}
 .coachroll{margin-top:14px;display:flex;flex-direction:column;gap:8px}
 .crow{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--card);cursor:pointer;text-align:left;font-family:inherit;width:100%}
@@ -873,6 +883,15 @@ body.login-locked{overflow:hidden}
     <div class='coachpart-sub' id='coachTwice'></div>
   </div>
   <p class='coachbar-hint'>Tap a player below to see their month goal and game-day focus.</p>
+  <div class='coachcoaches' id='coachCoaches' hidden>
+    <div class='coachcoaches-h'>Coaches</div>
+    <div class='coachcoaches-list' id='coachCoachesList'></div>
+    <div class='coachcoaches-invite' id='coachInvite' hidden>
+      <input class='login-in' id='coachInviteEmail' type='email' inputmode='email' placeholder='assistant@email.com'>
+      <button type='button' class='coachcoaches-add' id='coachInviteBtn'>Invite assistant</button>
+      <p class='coachcoaches-err' id='coachInviteErr' aria-live='polite'></p>
+    </div>
+  </div>
   <div class='seg coachseg' id='coachSeg' role='tablist' aria-label='Coach view'>
     <button type='button' class='segbtn on' data-cseg='team' role='tab' aria-selected='true'>Entire Team</button>
     <button type='button' class='segbtn' data-cseg='players' role='tab' aria-selected='false'>Players</button>
@@ -1126,6 +1145,47 @@ window.thwapActiveTeam=function(coach){
   if(seg){ seg.querySelectorAll('.segbtn').forEach(function(b){ b.addEventListener('click',function(){ setSeg(b.getAttribute('data-cseg')); }); }); setSeg('team'); }
   var out=document.getElementById('coachSignOut');
   if(out){ out.addEventListener('click',function(){ try{ localStorage.removeItem('thwapCoach'); localStorage.removeItem('thwapCoachTeam'); }catch(e){} location.reload(); }); }
+  /* Coaches section: head + up to 3 assistants. Head sees the invite/remove
+     controls; assistants see the list read-only. */
+  (function(){
+    var box=document.getElementById('coachCoaches'); if(!box) return;
+    var listEl=document.getElementById('coachCoachesList');
+    var invite=document.getElementById('coachInvite');
+    var emailEl=document.getElementById('coachInviteEmail');
+    var btn=document.getElementById('coachInviteBtn');
+    var errEl=document.getElementById('coachInviteErr');
+    var myEmail=(coach.email||'').toLowerCase();
+    function render(coaches){
+      box.hidden=false;
+      var amHead=coaches.some(function(c){ return c.role==='head' && c.email===myEmail; });
+      listEl.innerHTML='';
+      coaches.forEach(function(c){
+        var row=document.createElement('div'); row.className='coachrow';
+        var canRemove=amHead && c.role==='assistant';
+        row.innerHTML="<span class='c-email'></span><span style='display:flex;align-items:center;gap:8px'><span class='c-role'>"+(c.role==='head'?'Head':'Assistant')+"</span>"+(canRemove?"<button type='button' class='c-remove'>Remove</button>":"")+"</span>";
+        row.querySelector('.c-email').textContent=c.email;
+        if(canRemove){ row.querySelector('.c-remove').addEventListener('click',function(){
+          fetch('/api/coach?action=remove-coach',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code,coachToken:coach.token,email:c.email})})
+            .then(function(r){ return r.json(); }).then(function(j){ if(j&&j.ok) render(j.coaches); }).catch(function(){});
+        }); }
+        listEl.appendChild(row);
+      });
+      var assistants=coaches.filter(function(c){ return c.role==='assistant'; }).length;
+      if(invite){ invite.hidden=!(amHead && assistants<3); }
+    }
+    fetch('/api/coach?action=team-coaches&code='+encodeURIComponent(code))
+      .then(function(r){ return r.json(); }).then(function(j){ if(j&&j.ok) render(j.coaches||[]); }).catch(function(){});
+    if(btn){ btn.addEventListener('click',function(){
+      if(errEl) errEl.textContent='';
+      var em=String(emailEl&&emailEl.value||'').trim();
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){ if(errEl) errEl.textContent='Enter an email.'; return; }
+      btn.textContent='Inviting...';
+      fetch('/api/coach?action=invite-coach',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code,coachToken:coach.token,email:em})})
+        .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
+        .then(function(res){ btn.textContent='Invite assistant'; if(res.ok&&res.j.ok){ if(emailEl) emailEl.value=''; render(res.j.coaches); } else if(errEl){ errEl.textContent=(res.j&&res.j.error)||'Could not invite.'; } })
+        .catch(function(){ btn.textContent='Invite assistant'; if(errEl) errEl.textContent='Could not reach the server.'; });
+    }); }
+  })();
 })();
 /* ---- Plan editor (coach): a 7-day x 3-category grid. Loads the team plan from
    get-plan, toggles which categories are ON per weekday, saves via set-plan.

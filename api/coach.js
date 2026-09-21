@@ -33,6 +33,7 @@ import {
   getTeam, setTeam, listMembers, addMember, getMember, removeMember,
   getCoach, setCoach, getIdpGoal, setIdpGoal, getGameGoalLog, logGameGoal,
   getTeamPlan, setTeamPlan,
+  listTeamCoaches, ensureHeadCoach, addAssistantCoach, removeAssistantCoach, MAX_ASSISTANTS,
 } from '../lib/teams_store.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -305,6 +306,58 @@ async function setPlan(req, res) {
   return res.status(200).json({ ok: true, plan: saved });
 }
 
+// GET the team's coach roster (head + assistants). Seeds the head from the team's
+// coachEmail on first read. Public read (coaches list is not sensitive).
+async function teamCoaches(req, res) {
+  if (!methodGuard(req, res, 'GET')) return;
+  const code = (req.query && req.query.code) || SEED_TEAM_CODE;
+  const team = await getTeam(code);
+  if (!team) return res.status(404).json({ error: 'unknown team' });
+  if (team.coachEmail) await ensureHeadCoach(code, team.coachEmail);
+  res.setHeader('Cache-Control', 'no-store');
+  return res.status(200).json({ ok: true, coaches: await listTeamCoaches(code), maxAssistants: MAX_ASSISTANTS });
+}
+
+// POST invite an assistant coach (head only, capped at MAX_ASSISTANTS). Adds them
+// to the team's coach roster and, if that email already has a coach record, grants
+// them the team so they see it on sign-in.
+async function inviteCoach(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  const coach = await requireCoach(req, res); if (!coach) return;
+  const { code, email } = parseBody(req);
+  const team = await getTeam(code);
+  if (!team) return res.status(404).json({ error: 'unknown team' });
+  if (team.coachEmail) await ensureHeadCoach(code, team.coachEmail);
+  const list = await listTeamCoaches(code);
+  const isHead = list.some((c) => c.role === 'head' && c.email === coach.email);
+  if (!isHead) return res.status(403).json({ error: 'only the head coach can invite' });
+  const inviteEmail = String(email || '').trim().toLowerCase();
+  if (!EMAIL_RE.test(inviteEmail)) return res.status(400).json({ error: 'bad email' });
+  const result = await addAssistantCoach(code, inviteEmail);
+  if (!result.ok) return res.status(409).json({ error: result.reason, coaches: result.coaches });
+  const existing = await getCoach(inviteEmail);
+  if (existing) {
+    const teams = Array.from(new Set([...(existing.teams || []), String(code).toUpperCase()]));
+    if (teams.length !== (existing.teams || []).length) await setCoach(inviteEmail, { ...existing, teams });
+  }
+  return res.status(200).json({ ok: true, coaches: result.coaches });
+}
+
+// POST remove an assistant coach (head only).
+async function removeCoach(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  const coach = await requireCoach(req, res); if (!coach) return;
+  const { code, email } = parseBody(req);
+  const team = await getTeam(code);
+  if (!team) return res.status(404).json({ error: 'unknown team' });
+  if (team.coachEmail) await ensureHeadCoach(code, team.coachEmail);
+  const list = await listTeamCoaches(code);
+  const isHead = list.some((c) => c.role === 'head' && c.email === coach.email);
+  if (!isHead) return res.status(403).json({ error: 'only the head coach can remove' });
+  const next = await removeAssistantCoach(code, String(email || '').trim().toLowerCase());
+  return res.status(200).json({ ok: true, coaches: next });
+}
+
 async function setIdp(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
   const { playerId, text, setBy } = parseBody(req);
@@ -352,6 +405,9 @@ export default async function handler(req, res) {
     case 'schedule': return schedule(req, res);
     case 'get-plan': return getPlan(req, res);
     case 'set-plan': return setPlan(req, res);
+    case 'team-coaches': return teamCoaches(req, res);
+    case 'invite-coach': return inviteCoach(req, res);
+    case 'remove-coach': return removeCoach(req, res);
     case 'set-idp-goal': return setIdp(req, res);
     case 'idp-goal': return idpGoal(req, res);
     case 'log-game-goal': return logGoal(req, res);
@@ -365,5 +421,6 @@ export const _handlers = {
   coachLogin, createTeam, addPlayer, removePlayer, roster, playerRollup,
   join, schedule, setIdp, idpGoal, logGoal, gameGoalLogRead,
   getPlan, setPlan,
+  teamCoaches, inviteCoach, removeCoach,
 };
 export const _seed = { SEED_TEAM_CODE, SEED_COACH_EMAIL, SEED_COACH_PASSWORD, SEED_CHILD_PLAYER_ID, ensureSeed, mintCoachToken };

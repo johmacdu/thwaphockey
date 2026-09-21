@@ -207,3 +207,49 @@ describe('team weekly plan', () => {
     expect(res.statusCode).toBe(401);
   });
 });
+
+describe('coach roster: head + assistants', () => {
+  it('seeds the head from the team coachEmail on first read', async () => {
+    await loginSeedCoach();
+    const res = makeRes();
+    await _handlers.teamCoaches(get({ code: _seed.SEED_TEAM_CODE }), res);
+    expect(res.statusCode).toBe(200);
+    const head = res.body.coaches.find((c) => c.role === 'head');
+    expect(head.email).toBe(_seed.SEED_COACH_EMAIL);
+    expect(res.body.maxAssistants).toBe(3);
+  });
+
+  it('head invites assistants up to the cap of 3, then refuses', async () => {
+    const login = await loginSeedCoach();
+    const token = login.body.token;
+    // seed head first
+    await _handlers.teamCoaches(get({ code: _seed.SEED_TEAM_CODE }), makeRes());
+    for (const em of ['a1@x.com', 'a2@x.com', 'a3@x.com']) {
+      const r = makeRes();
+      await _handlers.inviteCoach(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, email: em }), r);
+      expect(r.statusCode).toBe(200);
+    }
+    const over = makeRes();
+    await _handlers.inviteCoach(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, email: 'a4@x.com' }), over);
+    expect(over.statusCode).toBe(409);
+    expect(over.body.error).toMatch(/limit/);
+  });
+
+  it('removes an assistant', async () => {
+    const login = await loginSeedCoach();
+    const token = login.body.token;
+    await _handlers.teamCoaches(get({ code: _seed.SEED_TEAM_CODE }), makeRes());
+    await _handlers.inviteCoach(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, email: 'asst@x.com' }), makeRes());
+    const rm = makeRes();
+    await _handlers.removeCoach(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, email: 'asst@x.com' }), rm);
+    expect(rm.statusCode).toBe(200);
+    expect(rm.body.coaches.some((c) => c.email === 'asst@x.com')).toBe(false);
+  });
+
+  it('blocks invite without a coach token', async () => {
+    await loginSeedCoach();
+    const res = makeRes();
+    await _handlers.inviteCoach(post({ code: _seed.SEED_TEAM_CODE, email: 'x@x.com' }), res);
+    expect(res.statusCode).toBe(401);
+  });
+});
