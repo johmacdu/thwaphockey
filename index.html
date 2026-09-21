@@ -516,15 +516,24 @@ button.row:active{background:var(--soft)}
    A full-screen frosted layer that sits OVER the real homepage. #home renders
    underneath untouched; the empty #loginStage is the mount point where the Sass
    animation, frost texture and THWAP! impact graphic land in a later pass. */
-#loginOverlay{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:24px;padding-top:calc(env(safe-area-inset-top,0px) + 24px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 24px)}
+/* Backdrop layer: frost + the Sass/THWAP stage. Sits BELOW the site header
+   (z-index 120) so the header's Sign In / Join Waitlist links stay visible and
+   tappable through the frost. */
+#loginBackdrop{position:fixed;inset:0;z-index:90;overflow:hidden}
+#loginBackdrop[hidden]{display:none}
+/* Sheet layer: the sign-in / waitlist cards. Sits ABOVE the header (z-index 130)
+   so a card renders over it, fixing the header-covers-sheet bug. pointer-events
+   are off so clicks in the empty margins fall through to the header/backdrop; the
+   cards below re-enable them. */
+#loginOverlay{position:fixed;inset:0;z-index:130;pointer-events:none;display:flex;align-items:center;justify-content:center;padding:24px;padding-top:calc(env(safe-area-inset-top,0px) + 24px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 24px)}
 #loginOverlay[hidden]{display:none}
 @media (min-width:641px){#loginOverlay{justify-content:flex-end;padding-right:min(9vw,140px)}}
 /* frozen glass: light blur + a cool ice/blue wash so the live homepage shows through */
-.login-frost{position:absolute;inset:0;background:linear-gradient(180deg,rgba(150,195,230,.14),rgba(90,150,205,.20));backdrop-filter:blur(2px) saturate(108%);-webkit-backdrop-filter:blur(2px) saturate(108%)}
+.login-frost{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(150,195,230,.14),rgba(90,150,205,.20));backdrop-filter:blur(2px) saturate(108%);-webkit-backdrop-filter:blur(2px) saturate(108%)}
 html[data-theme='dark'] .login-frost{background:linear-gradient(180deg,rgba(120,170,215,.16),rgba(70,130,190,.22))}
 .login-frost::after{content:'';position:absolute;inset:0;box-shadow:inset 0 0 120px rgba(255,255,255,.35),inset 0 0 0 1px rgba(255,255,255,.25);pointer-events:none}
-.login-stage{position:absolute;inset:0;pointer-events:none;overflow:hidden}
-.login-modal{position:relative;z-index:2;width:100%;max-width:360px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-major);padding:26px 22px 22px;box-shadow:0 24px 70px rgba(9,15,11,.45)}
+.login-stage{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.login-modal{position:relative;z-index:2;pointer-events:auto;width:100%;max-width:360px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-major);padding:26px 22px 22px;box-shadow:0 24px 70px rgba(9,15,11,.45)}
 .login-h{font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;font-size:26px;line-height:1.05;margin:0;color:var(--text)}
 .login-sub{margin:6px 0 18px;font-size:14px;color:var(--muted)}
 .login-field{display:block;margin-bottom:12px}
@@ -652,8 +661,11 @@ body.login-locked{overflow:hidden}
   #loginStage.shake,.login-modal{animation:none}
 }
 </style><script>try{if(localStorage.getItem('thwapTheme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script></head><body><div class='app'>
-<!-- Break the Ice login splash: a full-screen overlay OVER the real homepage. -->
-<div id='loginOverlay' hidden aria-hidden='true'>
+<!-- Break the Ice login splash: two fixed layers over the real homepage.
+     #loginBackdrop (frost + Sass/THWAP stage) sits BELOW the site header so its
+     Sign In / Join Waitlist links stay visible and tappable; #loginOverlay (the
+     sheets) sits ABOVE the header so the cards render over it. -->
+<div id='loginBackdrop' hidden aria-hidden='true'>
   <div class='login-frost'></div>
   <div class='login-stage' id='loginStage' data-step='idle' aria-hidden='true'>
     <div class='sp-ice'></div>
@@ -671,6 +683,8 @@ body.login-locked{overflow:hidden}
     <img class='sp-shards' src='login/shards.webp' alt=''>
     <img class='sp-burst-img' src='login/thwap-burst.webp' alt='THWAP!'>
   </div>
+</div>
+<div id='loginOverlay' hidden aria-hidden='true'>
   <form class='login-modal' id='loginForm' role='dialog' aria-modal='true' aria-labelledby='loginTitle' novalidate>
     <h2 class='login-h' id='loginTitle'>Welcome back!</h2>
     <p class='login-sub'>Sign in to your team.</p>
@@ -2967,6 +2981,7 @@ var NUMS={alder:'71',brooklyn:'92',dawson:'19',dominic:'98',eugene:'3',evan:'13'
 var AUTH_KEY='thwapAuth';
 var overlay=document.getElementById('loginOverlay');
 if(!overlay)return;
+var backdrop=document.getElementById('loginBackdrop');
 var form=document.getElementById('loginForm');
 var emailEl=document.getElementById('loginEmail');
 var codeEl=document.getElementById('loginCode');
@@ -3015,10 +3030,12 @@ function playerForPassword(pw){
 }
 function validEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v||'').trim()); }
 function show(){
+  if(backdrop) backdrop.hidden=false;
   overlay.hidden=false; overlay.setAttribute('aria-hidden','false');
   document.body.classList.add('login-locked');
 }
 function hide(){
+  if(backdrop) backdrop.hidden=true;
   overlay.hidden=true; overlay.setAttribute('aria-hidden','true');
   document.body.classList.remove('login-locked');
 }
@@ -3037,17 +3054,35 @@ function stopSplash(settled){
   overlay.classList.remove('is-playing');
   setStep(settled?'ready':'idle');
 }
-/* run -> impact -> modal. Fired automatically after the welcome delay, or early
-   when the player taps Sass (which bypasses the remaining delay). */
-function playRun(){
-  if(!stageEl || stageEl.getAttribute('data-step')!=='welcome') return;
+/* Shared skate -> THWAP! -> reveal sequence. Sets 'run', then 'impact' with the
+   shake, then calls endFn (the sheet to open). Used by the auto splash and by the
+   header Sign In / Join Waitlist links. */
+function runToEnd(endFn){
+  var end=(typeof endFn==='function')?endFn:showSignin;
   clearSplash();
   setStep('run');
   splashTimers.push(setTimeout(function(){
     setStep('impact');
     if(stageEl){ stageEl.classList.add('shake'); setTimeout(function(){ stageEl.classList.remove('shake'); },420); }
   },1500));
-  splashTimers.push(setTimeout(function(){ showSignin(); },2250));
+  splashTimers.push(setTimeout(function(){ end(); },2250));
+}
+/* run -> impact -> sign-in. Fired automatically after the welcome delay, or early
+   when the player taps Sass (which bypasses the remaining delay). */
+function playRun(){
+  if(!stageEl || stageEl.getAttribute('data-step')!=='welcome') return;
+  runToEnd(showSignin);
+}
+/* Header Sign In / Join Waitlist: play the skate -> THWAP! first, then reveal the
+   requested sheet. Reduced motion (or no stage) opens the sheet immediately. */
+function playToSheet(endFn){
+  var end=(typeof endFn==='function')?endFn:showSignin;
+  show();
+  if(!stageEl || reduceMotion()){ end(); return; }
+  clearSplash();
+  overlay.classList.add('is-playing');
+  if(form) form.hidden=true; if(waitForm) waitForm.hidden=true;
+  runToEnd(end);
 }
 function startSplash(){
   if(!stageEl){ showSignin(); return; }
@@ -3226,16 +3261,16 @@ function gate(){
   if(location.hash==='#login'){ show(); maybeSplash(); return; }
   if(isAuthed()){ hide(); } else { show(); maybeSplash(); }
 }
-/* Header guest nav (shown when logged out): Sign In opens the sign-in form,
-   Join Waitlist opens the waitlist form. Both make sure the splash is up. */
+/* Header guest nav (shown when logged out): Sign In and Join Waitlist both play
+   the THWAP! animation first, then open the requested sheet. */
 function wireHeaderNav(id, fn){
   var el=document.getElementById(id);
-  if(el){ el.addEventListener('click',function(e){ e.preventDefault(); show(); if(typeof fn==='function') fn(); }); }
+  if(el){ el.addEventListener('click',function(e){ e.preventDefault(); if(typeof fn==='function') fn(); }); }
 }
-wireHeaderNav('navSignIn', typeof showSignin==='function'?showSignin:null);
-wireHeaderNav('navSignInK', typeof showSignin==='function'?showSignin:null);
-wireHeaderNav('navWaitlist', typeof showWait==='function'?showWait:null);
-wireHeaderNav('navWaitlistK', typeof showWait==='function'?showWait:null);
+wireHeaderNav('navSignIn', function(){ playToSheet(showSignin); });
+wireHeaderNav('navSignInK', function(){ playToSheet(showSignin); });
+wireHeaderNav('navWaitlist', function(){ playToSheet(showWait); });
+wireHeaderNav('navWaitlistK', function(){ playToSheet(showWait); });
 window.addEventListener('hashchange',function(){ if(location.hash==='#login'){ show(); maybeSplash(); } });
 gate();
 })();</script>
