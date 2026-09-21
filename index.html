@@ -388,6 +388,8 @@ body.login-locked .topbar{position:relative;z-index:120}
 .coachpart-lab{font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.02em;color:var(--muted);margin-top:2px}
 .coachpart-sub{font-size:13px;color:var(--muted);margin-top:6px}
 .coachbar-hint{font-size:13px;color:var(--muted);margin:10px 2px 0}
+.coachbar-viewas{margin-top:12px;width:100%;font-family:inherit;font-size:14px;font-weight:850;background:var(--lime);color:var(--ink);border:1px solid transparent;border-radius:12px;padding:10px 14px;cursor:pointer}
+.coachreturn{display:block;margin:12px 0 0;padding:10px 14px;border-radius:12px;background:var(--soft);border:1px solid var(--line);color:var(--text);font-weight:800;font-size:14px;text-align:center}
 .roster{display:grid;gap:12px;margin-top:15px;grid-template-columns:repeat(2,minmax(0,1fr))}
 @media(min-width:560px){.roster{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(min-width:900px){.roster{grid-template-columns:repeat(4,minmax(0,1fr))}}.avatar{width:54px;height:54px;border-radius:50%;object-fit:cover;background:var(--soft)}
@@ -815,6 +817,7 @@ body.login-locked{overflow:hidden}
     <div class='coachpart-sub' id='coachTwice'></div>
   </div>
   <p class='coachbar-hint'>Tap a player below to see their month goal and game-day focus.</p>
+  <button type='button' class='coachbar-viewas' id='coachViewAs' hidden>View as <span id='coachChildName'>my player</span> &#8594;</button>
 </div>
 <div class='roster' id='roster-grid'><a href='#home' class='pcard' data-name='Alder Reese'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>71</span><span class='pcard-bnname'>Alder</span></div></a><a href='#home' class='pcard' data-name='Brooklyn Coughlan'><div class='pcard-bignum pos-def'><span class='pcard-bn'>92</span><span class='pcard-bnname'>Brooklyn</span></div></a><a href='#home' class='pcard' data-name='Dawson Huffman'><div class='pcard-bignum pos-def'><span class='pcard-bn'>19</span><span class='pcard-bnname'>Dawson</span></div></a><a href='#home' class='pcard' data-name='Dominic Cinque'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>98</span><span class='pcard-bnname'>Dominic</span></div></a><a href='#home' class='pcard' data-name='Eugene Kuhn'><div class='pcard-bignum pos-def'><span class='pcard-bn'>3</span><span class='pcard-bnname'>Eugene</span></div></a><a href='#home' class='pcard' data-name='Evan Ewing'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>13</span><span class='pcard-bnname'>Evan</span></div></a><a href='#home' class='pcard' data-name='Greyson Wertz'><div class='pcard-bignum pos-def'><span class='pcard-bn'>32</span><span class='pcard-bnname'>Greyson</span></div></a><a href='#home' class='pcard' data-name='Issac Moyer'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>53</span><span class='pcard-bnname'>Issac</span></div></a><a href='#home' class='pcard' data-name='Johnny Eraman'><div class='pcard-bignum pos-goalie'><span class='pcard-bn'>1</span><span class='pcard-bnname'>Johnny</span></div></a><a href='#home' class='pcard' data-name='Joziah Soto'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>59</span><span class='pcard-bnname'>Joziah</span></div></a><a href='#home' class='pcard pcard-you-card' data-name='Lewie'><img class='pcard-cardart' src='cards/lewie_photo.png' alt='Lewie'></a><a href='#home' class='pcard' data-name='Liam Delatorre'><div class='pcard-bignum pos-def'><span class='pcard-bn'>29</span><span class='pcard-bnname'>Liam</span></div></a><a href='#home' class='pcard' data-name='Maddux Jones'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>18</span><span class='pcard-bnname'>Maddux</span></div></a><a href='#home' class='pcard' data-name='Oliver Moyer'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>90</span><span class='pcard-bnname'>Oliver</span></div></a><a href='#home' class='pcard' data-name='Teddy Diss'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>11</span><span class='pcard-bnname'>Teddy</span></div></a><a href='#home' class='pcard' data-name='William Schnell'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>16</span><span class='pcard-bnname'>William</span></div></a></div>
 <div class='rsearch-empty' id='rsearchEmpty' hidden></div>
@@ -920,6 +923,7 @@ body.login-locked{overflow:hidden}
 <div class='wipnote'>👋 Early prototype. We're testing the look and feel. Training drills and stickers are still being built.</div>
 <div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.svg' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><span class='nav-authed'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-guest'><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#stickers'>Stickers</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-guest'><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
 <div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>there</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><script>(function(){try{var authed=/(?:^|; )thwapAuth=/.test(document.cookie);var p=localStorage.getItem('bfPlayer');var b=document.getElementById('homePlayer');if(b){if(p&&authed){b.textContent=p.trim().split(/\s+/)[0];}else{b.classList.add('needpick');}}}catch(e){}})();</script><div class='forrow'><span class='forline'>3 things, about 30 min</span><button type='button' class='daytip daytip-chip' id='dayTip' aria-label='Show today’s date'>Today<span class='daydate' id='dayDate'>Sunday, September 13</span></button></div></div>
+<a href='#roster' class='coachreturn' id='coachReturn' hidden>&#8592; Back to Coach view</a>
 <div class='cards'>
 <a class='nav' href='hockey_game_goals.html'><div class='ico'>🎯</div><div><h2>Game Day Goals</h2><p>Pick your 4 goals for today’s game</p></div><div class='chev'>›</div></a>
 <a class='nav nav-stick' href='#stick'><div class='ico'>🏒</div><div><h2>Stickhandling</h2><p>Hands + puck control, about 10-15 min</p></div><div class='chev'>›</div></a>
@@ -978,10 +982,36 @@ function pickPlayer(name,ev,el){
         var twice=j.members.filter(function(m){ var w=m.week||{}; return ((w.stick||0)+(w.shoot||0)+(w.dryland||0))>=2; }).length;
         twiceEl.textContent=twice+' trained 2+ times this week';
       }
+      /* Coach<->kid toggle: if the coach has a linked child, offer "View as <child>"
+         which drops into that kid's normal player experience by setting bfPlayer. */
+      var viewAs=document.getElementById('coachViewAs');
+      if(viewAs && coach.childPlayerId && j.members){
+        var child=j.members.filter(function(m){ return m.playerId===coach.childPlayerId; })[0];
+        if(child){
+          var full=(child.firstName||'')+(child.lastName?(' '+child.lastName):'');
+          full=full.trim()||child.playerId;
+          var cn=document.getElementById('coachChildName'); if(cn) cn.textContent=child.firstName||full;
+          viewAs.hidden=false;
+          viewAs.addEventListener('click',function(){
+            try{ localStorage.setItem('bfPlayer', full); localStorage.setItem('thwapCoachViewAs','1'); }catch(e){}
+            location.hash='#home'; location.reload();
+          });
+        }
+      }
     })
     .catch(function(){});
   var out=document.getElementById('coachSignOut');
-  if(out){ out.addEventListener('click',function(){ try{ localStorage.removeItem('thwapCoach'); }catch(e){} location.reload(); }); }
+  if(out){ out.addEventListener('click',function(){ try{ localStorage.removeItem('thwapCoach'); localStorage.removeItem('thwapCoachViewAs'); }catch(e){} location.reload(); }); }
+})();
+/* Home 'Back to Coach view' chip: shown only when a coach is signed in AND has
+   toggled into their kid's view (thwapCoachViewAs). Tapping returns to the Team
+   page (coach view) and clears the view-as flag. */
+(function(){
+  var chip=document.getElementById('coachReturn'); if(!chip) return;
+  var isCoach=false, viewingAs=false;
+  try{ isCoach=!!JSON.parse(localStorage.getItem('thwapCoach')||'null'); viewingAs=localStorage.getItem('thwapCoachViewAs')==='1'; }catch(e){}
+  if(isCoach && viewingAs){ chip.hidden=false; }
+  chip.addEventListener('click',function(){ try{ localStorage.removeItem('thwapCoachViewAs'); }catch(e){} });
 })();
 /* Change-player roster: show the SAME coded card as the home page for every
    player, and gate a switch behind the parent email + player code (jersey number
