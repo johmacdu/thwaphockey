@@ -2,7 +2,7 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/:date(\\d{7,8})", "destination": "/index.html" }
+    { "source": "^/(\\d{7,8})$", "destination": "/index.html" }
   ],
   "headers": [
     {
