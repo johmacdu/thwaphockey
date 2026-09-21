@@ -1,4 +1,4 @@
-// api/session_store.js
+// api/_session_store.js
 //
 // Parent sign-in sessions for Thwap Hockey.
 //
@@ -21,7 +21,7 @@
 // No credential files are read here. Secrets come only from process.env.
 
 import crypto from 'crypto';
-import { sha256, safeEqualHex } from './photo_store.js';
+import { sha256, safeEqualHex } from './_photo_store.js';
 
 // A signed session lives 30 days when "keep me signed in" is chosen, else it is
 // a short browser session. The token always carries its own expiry; the cookie's

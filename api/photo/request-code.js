@@ -5,8 +5,8 @@
 // account model here; any parent email can request a code for a roster player).
 
 import { getKv, parseBody, isRosterPlayer, emailConfigured, sendCodeEmail } from '../_photo_common.js';
-import { checkAndBumpRate, putOtp, randomCode } from '../photo_store.js';
-import { ROSTER } from '../store.js';
+import { checkAndBumpRate, putOtp, randomCode } from '../_photo_store.js';
+import { ROSTER } from '../_store.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

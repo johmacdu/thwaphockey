@@ -4,7 +4,7 @@
 // On success records the consent and mints a 30-day player-scoped upload token.
 
 import { getKv, parseBody, isRosterPlayer, emailConfigured } from '../_photo_common.js';
-import { checkOtp, recordConsent, mintToken } from '../photo_store.js';
+import { checkOtp, recordConsent, mintToken } from '../_photo_store.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {

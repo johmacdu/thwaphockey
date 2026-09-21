@@ -1,4 +1,4 @@
-// api/store.js
+// api/_store.js
 //
 // Data-store abstraction for Thwap Hockey.
 //

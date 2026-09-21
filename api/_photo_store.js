@@ -1,4 +1,4 @@
-// api/photo_store.js
+// api/_photo_store.js
 //
 // Helpers for the parent-gated player photo feature. Kept separate from store.js
 // so the photo logic is testable with a fake client and easy to reason about.

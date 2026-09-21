@@ -4,7 +4,7 @@
 // membership, and the "is the service configured" gate. Endpoints stay thin.
 
 import { Redis } from '@upstash/redis';
-import { ROSTER } from './store.js';
+import { ROSTER } from './_store.js';
 
 // Build the Upstash client from whichever env the integration injected.
 export function getKv() {

@@ -16,12 +16,12 @@
 // PHOTO_TOKEN_SECRET).
 
 import { getKv, parseBody, isRosterPlayer, emailConfigured, sendCodeEmail } from './_photo_common.js';
-import { checkAndBumpRate, putOtp, randomCode, checkOtp, recordConsent } from './photo_store.js';
+import { checkAndBumpRate, putOtp, randomCode, checkOtp, recordConsent } from './_photo_store.js';
 import {
   mintSession, verifySession, sessionCookie, clearSessionCookie,
   readSessionCookie, sessionConfigured,
-} from './session_store.js';
-import { ROSTER } from './store.js';
+} from './_session_store.js';
+import { ROSTER } from './_store.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
