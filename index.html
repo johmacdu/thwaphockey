@@ -1092,6 +1092,13 @@ window.thwapDateOverride=window.thwapDateOverride||function(){
     return Math.floor(Date.UTC(yr,mo-1,da)/86400000);
   }catch(e){ return null; }
 };
+/* The effective "today" as a Date, honoring the date override so all "Today"
+   labels match the drills being shown. Built at UTC noon so UTC-based formatting
+   lands on the intended calendar day regardless of timezone. */
+window.thwapToday=window.thwapToday||function(){
+  try{ var ov=window.thwapDateOverride(); if(ov!==null&&ov!==undefined) return new Date(ov*86400000+43200000); }catch(e){}
+  return new Date();
+};
 function dayIndex(){var ov=window.thwapDateOverride&&window.thwapDateOverride();if(ov!==null&&ov!==undefined)return ov;var d=new Date();var base=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000);try{var m=location.search.match(/[?&]day=([^&]*)/);if(m){var raw=decodeURIComponent(m[1]).trim();if(/^[+-]/.test(m[1])||/^[+-]/.test(raw)){var o=parseInt(m[1].replace(/^ /,'+'),10);if(isNaN(o))o=parseInt(raw,10);if(!isNaN(o))return base+o;}var n=parseInt(raw,10);if(!isNaN(n))return n;}}catch(e){}return base;}
 function todayKey(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
 /* Fixed weekly training plan (Option A): Monday-Friday are slots 0-4, the SAME plan
@@ -1153,7 +1160,7 @@ function render(){
   var w=todaysWorkout(), prog=loadProg(w.id);
   var drills=trimDrills(w.drills);
   var dateEl=document.getElementById('drylandDate');
-  if(dateEl){var d=new Date();dateEl.textContent=d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});}
+  if(dateEl){var ov=(window.thwapDateOverride&&window.thwapDateOverride());var d=(window.thwapToday?window.thwapToday():new Date());var o={weekday:'long',month:'long',day:'numeric'};if(ov!==null&&ov!==undefined)o.timeZone='UTC';dateEl.textContent=d.toLocaleDateString(undefined,o);}
   var t=document.getElementById('drylandTime'); if(t)t.textContent='15 min';
 
   var list=document.getElementById('drylandList'); if(!list)return;
@@ -2248,9 +2255,13 @@ if(tfEl){
 <script>(function(){
 /* ---- Real today's date into every Today tooltip (was hardcoded) ---- */
 function fill(){
-  var d=new Date();
-  var full=d.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});
-  var wd=d.toLocaleDateString(undefined,{weekday:'long'});
+  var ov=(window.thwapDateOverride&&window.thwapDateOverride());
+  var d=(window.thwapToday?window.thwapToday():new Date());
+  var opt={weekday:'long',month:'long',day:'numeric'};
+  if(ov!==null&&ov!==undefined){ opt.timeZone='UTC'; }
+  var full=d.toLocaleDateString(undefined,opt);
+  var wdOpt=(ov!==null&&ov!==undefined)?{weekday:'long',timeZone:'UTC'}:{weekday:'long'};
+  var wd=d.toLocaleDateString(undefined,wdOpt);
   document.querySelectorAll('.titletip-date').forEach(function(el){ el.textContent=full; });
   var dd=document.getElementById('dayDate'); if(dd)dd.textContent=full;
   var fl=document.querySelector('.forline');
