@@ -702,10 +702,10 @@ body.login-locked{overflow:hidden}
       <input class='login-in' id='loginEmail' type='email' inputmode='email' autocomplete='email' placeholder='parent@email.com' required>
     </label>
     <label class='login-field'>
-      <span class='login-lab'>Password</span>
+      <span class='login-lab'>Player code</span>
       <span class='login-pwwrap'>
         <input class='login-in' id='loginPw' type='password' autocomplete='current-password' placeholder='&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;' required>
-        <button type='button' class='login-eye' id='loginEye' aria-label='Show password'>Show</button>
+        <button type='button' class='login-eye' id='loginEye' aria-label='Show player code'>Show</button>
       </span>
     </label>
     <div class='login-row'>
@@ -770,7 +770,7 @@ body.login-locked{overflow:hidden}
   <form class='pgate-box' id='switchGateForm' novalidate>
     <button type='button' class='pgate-x' id='switchGateX' aria-label='Close'>&#215;</button>
     <h2 class='pgate-h' id='switchGateTitle'>Switch player</h2>
-    <p class='pgate-p'>Ask a parent. Enter their email and the player code (jersey number + season year, like 722027) to log work as this player.</p>
+    <p class='pgate-p'>Ask a parent. Enter their email and the player code.</p>
     <input class='pgate-in' id='switchEmail' type='email' inputmode='email' autocomplete='email' placeholder='parent@email.com' required>
     <input class='pgate-in' id='switchCode' type='text' inputmode='numeric' autocomplete='off' placeholder='Player code' required>
     <button type='submit' class='pgate-go'>Switch player</button>
@@ -3130,7 +3130,7 @@ if(form){
     e.preventDefault(); errEl.textContent='';
     if(!validEmail(emailEl.value)){ errEl.textContent='Enter a parent email.'; emailEl.focus(); return; }
     var player=playerForPassword(pwEl.value);
-    if(!player){ errEl.textContent='That password did not match. It is the player number plus the season year.'; pwEl.focus(); pwEl.select(); return; }
+    if(!player){ errEl.textContent='That player code did not match. It is the player number plus the season year.'; pwEl.focus(); pwEl.select(); return; }
     signIn(player,emailEl.value,keepEl.checked);
   });
 }
@@ -3139,7 +3139,7 @@ if(eyeEl&&pwEl){
     var showing=pwEl.type==='text';
     pwEl.type=showing?'password':'text';
     eyeEl.textContent=showing?'Show':'Hide';
-    eyeEl.setAttribute('aria-label',showing?'Show password':'Hide password');
+    eyeEl.setAttribute('aria-label',showing?'Show player code':'Hide player code');
   });
 }
 var waitForm=document.getElementById('waitForm');
