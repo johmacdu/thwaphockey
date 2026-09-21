@@ -7,7 +7,7 @@
 
 import { put } from '@vercel/blob';
 import { getKv, parseBody, isRosterPlayer, uploadConfigured } from '../_photo_common.js';
-import { verifyToken, putPhoto, randomKey } from '../photo_store.js';
+import { verifyToken, putPhoto, randomKey } from '../_photo_store.js';
 
 const MAX_BYTES = 400 * 1024; // ~400KB cap on the already-downscaled image
 const DATA_URL_RE = /^data:image\/(png|jpeg|jpg|webp);base64,([a-zA-Z0-9+/]+=*)$/;

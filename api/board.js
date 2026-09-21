@@ -8,7 +8,7 @@
 // The default (no query) returns cumulative all-time counts exactly as before;
 // tf=week returns per-player current-week discipline counts (Monday-based week).
 
-import { listPlayers, weekBoard } from './store.js';
+import { listPlayers, weekBoard } from './_store.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {

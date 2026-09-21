@@ -4,7 +4,7 @@
 
 import { del } from '@vercel/blob';
 import { getKv, parseBody, isRosterPlayer, uploadConfigured } from '../_photo_common.js';
-import { verifyToken, getPhoto, removePhoto } from '../photo_store.js';
+import { verifyToken, getPhoto, removePhoto } from '../_photo_store.js';
 
 function bearer(req) {
   const h = req.headers && (req.headers.authorization || req.headers.Authorization);

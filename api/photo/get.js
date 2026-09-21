@@ -5,7 +5,7 @@
 // key is unguessable, and it is only ever shown on that player's own card.
 
 import { getKv, isRosterPlayer } from '../_photo_common.js';
-import { getPhoto } from '../photo_store.js';
+import { getPhoto } from '../_photo_store.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
