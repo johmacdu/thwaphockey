@@ -803,7 +803,7 @@ body.login-locked{overflow:hidden}
 
 <section id='roster' class='page'>
 <a class='glassclose' href='.' aria-label='Close'>✕</a>
-<div class='hero'><div class='kicker'>Jr Rangers 10U, 16 Rangers</div><h1>Who’s hitting the ice?</h1><p>Tap your card so your work counts.</p></div>
+<div class='hero'><div class='kicker'>Jr Rangers 10U, 16 Rangers</div><h1>Who’s putting in the work?</h1><p>Tap your card so your training counts.</p></div>
 <div class='coachbar' id='coachBar' hidden>
   <div class='coachbar-top'>
     <div class='coachbar-title'>Coach view <span class='coachbar-team' id='coachTeamName'>Jr Rangers 10U</span></div>
@@ -1039,7 +1039,15 @@ function pickPlayer(name,ev,el){
   function closeGate(){ if(gate) gate.hidden=true; pending=null; }
   function validEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v||'').trim()); }
   document.querySelectorAll('#roster .pcard').forEach(function(cardEl){
-    cardEl.addEventListener('click',function(ev){ ev.preventDefault(); openGate(cardEl.getAttribute('data-name')); });
+    cardEl.addEventListener('click',function(ev){
+      ev.preventDefault();
+      /* Coach view: tapping a player opens their stats + IDP to view/edit, with NO
+         switch-player gate (the coach is not becoming that player). Kids/parents
+         still go through the gate so a kid cannot log work as someone else. */
+      var isCoach=false; try{ isCoach=!!JSON.parse(localStorage.getItem('thwapCoach')||'null'); }catch(_){}
+      if(isCoach && window.openPlayerPage){ window.openPlayerPage(cardEl.getAttribute('data-name')); return; }
+      openGate(cardEl.getAttribute('data-name'));
+    });
   });
   var form=document.getElementById('switchGateForm');
   if(form){
