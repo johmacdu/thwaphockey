@@ -142,6 +142,18 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 .glassback{display:none;position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:max(16px, calc(50vw - 534px));z-index:50;grid-auto-flow:column;gap:2px;place-items:center;height:44px;padding:0 16px;border-radius:999px;font-size:16px;line-height:1;font-weight:800;color:var(--text);cursor:pointer;text-decoration:none;background:var(--panel);border:1px solid var(--line);box-shadow:0 6px 20px var(--shadow)}
 .glassback:hover{background:var(--soft)}
 #finalMode:checked ~ .glassback{display:inline-grid}
+.pglog{margin-top:28px;padding-top:22px;border-top:1px solid var(--line)}
+.pglog-h{font-family:'Archivo Black',system-ui,sans-serif;font-size:20px;margin:0}
+.pglog-sub{margin:6px 0 14px;color:var(--muted);font-size:14px;line-height:1.4}
+.pglog-rows{display:flex;flex-direction:column;gap:10px}
+.pglog-row{padding:12px;border:1px solid var(--line);border-radius:16px;background:var(--card)}
+.pglog-check{display:flex;align-items:center;gap:10px;cursor:pointer}
+.pglog-check input{width:20px;height:20px;accent-color:var(--lime);flex:none}
+.pglog-check .t{font-weight:800;font-size:15px;color:var(--text)}
+.pglog-note{width:100%;margin-top:8px;font-family:inherit;font-size:14px;padding:8px 10px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--text);box-sizing:border-box;display:none}
+.pglog-row.on .pglog-note{display:block}
+.pglog-save{margin-top:14px;font-family:inherit;font-size:15px;font-weight:850;background:var(--lime);color:var(--ink);border:1px solid transparent;border-radius:12px;padding:10px 18px;cursor:pointer}
+.pglog-done{margin-top:12px;color:var(--green);font-weight:800;font-size:14px}
 .fv-foot{margin-top:30px;padding-top:20px;border-top:1px solid var(--line);display:flex;justify-content:flex-start}
 .fv-reset{background:none;border:0;padding:6px 0;font-family:inherit;font-size:15px;font-weight:850;color:var(--green2);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .fv-reset:hover{color:var(--text)}
@@ -1619,6 +1631,13 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
       <p>Notice something from the ice that Dad probably couldn’t see from the stands. After the game, explain what you saw, why it mattered, and how it changed what you did.</p>
     </section>
 
+    <div class="pglog" id="pgLog">
+      <h2 class="pglog-h">How'd the game go?</h2>
+      <p class="pglog-sub">Check the goals you focused on. Add a note if you want. Your coach sees this.</p>
+      <div class="pglog-rows" id="pgLogRows"></div>
+      <button type="button" class="pglog-save" id="pgLogSave">Log my game</button>
+      <p class="pglog-done" id="pgLogDone" hidden>Logged! Nice work out there.</p>
+    </div>
     <div class="fv-foot"><button type="button" id="resetForNext" class="fv-reset">Reset goals for next game</button></div>
   </div></div>
 <script>
@@ -1686,6 +1705,56 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 
   setName();
   restore();
+
+  /* ---- Post-game reflection log (Step 4): after the game, for each of the 4
+     chosen goals show a check + optional note, and log the checked ones to
+     /api/coach?action=log-game-goal with the player's id (bfPlayer first name). ---- */
+  function playerId(){ try{ return (localStorage.getItem('bfPlayer')||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,''); }catch(e){ return ''; } }
+  function chosenGoals(){
+    var out=[];
+    for(var i=0;i<boxes.length;i++){
+      if(!boxes[i].checked) continue;
+      var n=boxes[i].id.replace('g','');
+      var card=document.querySelector('.final-'+n+' h2');
+      out.push({ goalId:boxes[i].id, title:card?card.textContent.trim():boxes[i].id });
+    }
+    return out.slice(0,LIMIT);
+  }
+  function buildPgLog(){
+    var rows=document.getElementById('pgLogRows'); if(!rows) return;
+    var goals=chosenGoals();
+    rows.innerHTML=goals.map(function(g){
+      return "<div class='pglog-row' data-goal='"+g.goalId+"'>"+
+        "<label class='pglog-check'><input type='checkbox' class='pglog-cb'><span class='t'></span></label>"+
+        "<input type='text' class='pglog-note' maxlength='140' placeholder='What did you do? (optional)'>"+
+        "</div>";
+    }).join('');
+    /* set titles safely (avoid injecting goal text as HTML) */
+    var rowEls=rows.querySelectorAll('.pglog-row');
+    for(var i=0;i<rowEls.length;i++){ rowEls[i].querySelector('.t').textContent=goals[i].title; }
+    rows.querySelectorAll('.pglog-cb').forEach(function(cb){
+      cb.addEventListener('change',function(){ cb.closest('.pglog-row').classList.toggle('on',cb.checked); });
+    });
+    var done=document.getElementById('pgLogDone'); if(done) done.hidden=true;
+  }
+  var pgSave=document.getElementById('pgLogSave');
+  if(pgSave){
+    pgSave.addEventListener('click',function(){
+      var pid=playerId(); if(!pid){ return; }
+      var rowEls=document.querySelectorAll('#pgLogRows .pglog-row');
+      var posts=[];
+      rowEls.forEach(function(row){
+        var cb=row.querySelector('.pglog-cb'); if(!cb||!cb.checked) return;
+        var note=row.querySelector('.pglog-note');
+        var title=row.querySelector('.t').textContent;
+        posts.push(fetch('/api/coach?action=log-game-goal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({playerId:pid,goalId:row.getAttribute('data-goal'),goalTitle:title,done:true,note:note?note.value:''})}));
+      });
+      pgSave.textContent='Logging...';
+      Promise.all(posts).then(function(){ pgSave.textContent='Log my game'; var d=document.getElementById('pgLogDone'); if(d) d.hidden=false; }).catch(function(){ pgSave.textContent='Log my game'; });
+    });
+  }
+  /* Rebuild the log rows whenever the Game Plan view is shown. */
+  if(finalMode){ finalMode.addEventListener('change',function(){ if(finalMode.checked) buildPgLog(); }); if(finalMode.checked) buildPgLog(); }
 })();
 </script>
 <script>(function(){
