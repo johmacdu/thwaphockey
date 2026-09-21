@@ -668,10 +668,6 @@ body.login-locked{overflow:hidden}
     <img class='sp-shards' src='login/shards.webp' alt=''>
     <img class='sp-burst-img' src='login/thwap-burst.webp' alt='THWAP!'>
   </div>
-  <div class='sp-skip' id='spSkip'>
-    <button type='button' class='sp-skipbtn' id='splashSignin'>Sign In</button>
-    <button type='button' class='sp-skipbtn sp-skipbtn-alt' id='splashWait'>Join Waitlist</button>
-  </div>
   <form class='login-modal' id='loginForm' role='dialog' aria-modal='true' aria-labelledby='loginTitle' novalidate>
     <h2 class='login-h' id='loginTitle'>Welcome back!</h2>
     <p class='login-sub'>Sign in to your team.</p>
@@ -840,7 +836,7 @@ body.login-locked{overflow:hidden}
 <section id='home'>
 <div class='wipnote'>👋 Early prototype. We're testing the look and feel. Training drills and stickers are still being built.</div>
 <div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.svg' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><span class='nav-authed'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Players</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-guest'><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#stickers'>Stickers</a><a href='#roster'>Players</a><a href='#progress'>Standings</a></span><span class='nav-guest'><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
-<div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>there</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><script>(function(){try{var p=localStorage.getItem('bfPlayer');var b=document.getElementById('homePlayer');if(b){if(p){b.textContent=p.trim().split(/\s+/)[0];}else{b.classList.add('needpick');}}}catch(e){}})();</script><div class='forrow'><span class='forline'>3 things, about 30 min</span><button type='button' class='daytip daytip-chip' id='dayTip' aria-label='Show today’s date'>Today<span class='daydate' id='dayDate'>Sunday, September 13</span></button></div></div>
+<div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>there</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><script>(function(){try{var authed=/(?:^|; )thwapAuth=/.test(document.cookie);var p=localStorage.getItem('bfPlayer');var b=document.getElementById('homePlayer');if(b){if(p&&authed){b.textContent=p.trim().split(/\s+/)[0];}else{b.classList.add('needpick');}}}catch(e){}})();</script><div class='forrow'><span class='forline'>3 things, about 30 min</span><button type='button' class='daytip daytip-chip' id='dayTip' aria-label='Show today’s date'>Today<span class='daydate' id='dayDate'>Sunday, September 13</span></button></div></div>
 <div class='cards'>
 <a class='nav' href='hockey_game_goals.html'><div class='ico'>🎯</div><div><h2>Game Day Goals</h2><p>Pick your 4 goals for today’s game</p></div><div class='chev'>›</div></a>
 <a class='nav nav-stick' href='#stick'><div class='ico'>🏒</div><div><h2>Stickhandling</h2><p>Hands + puck control, about 10-15 min</p></div><div class='chev'>›</div></a>
@@ -858,8 +854,12 @@ function firstNameOf(n){ return String(n||'').trim().split(/\s+/)[0]||''; }
 function showHomePlayer(){
   var el=document.getElementById('homePlayer'); if(!el)return;
   var saved=savedPlayer();
-  if(saved){ el.textContent=firstNameOf(saved); el.classList.remove('needpick'); }
-  else { el.textContent='there'; el.classList.add('needpick'); }  /* "Hey there" until they pick */
+  /* Only greet by name once the parent is SIGNED IN (thwapAuth cookie present).
+     On the splash / logged out it is always "Hey there", even if a player was
+     picked before on this device. */
+  var authed=/(?:^|; )thwapAuth=/.test(document.cookie);
+  if(saved && authed){ el.textContent=firstNameOf(saved); el.classList.remove('needpick'); }
+  else { el.textContent='there'; el.classList.add('needpick'); }  /* "Hey there" until signed in */
 }
 function pickPlayer(name,ev,el){
   try{localStorage.setItem(PLAYER,name);}catch(e){}
@@ -3021,7 +3021,6 @@ function startSplash(){
   overlay.classList.add('is-playing');
   if(form) form.hidden=true; if(waitForm) waitForm.hidden=true;
   setStep('welcome');
-  var b=document.getElementById('splashSignin'); if(b) setTimeout(function(){ b.focus(); },80);
   splashTimers.push(setTimeout(function(){ setStep('run'); },4600));
   splashTimers.push(setTimeout(function(){
     setStep('impact');
@@ -3034,8 +3033,6 @@ function maybeSplash(){
   startSplash();
 }
 (function(){
-  var s=document.getElementById('splashSignin'); if(s) s.addEventListener('click',function(){ showSignin(); });
-  var w=document.getElementById('splashWait'); if(w) w.addEventListener('click',function(){ showWait(); });
   document.addEventListener('keydown',function(e){ if(e.key==='Escape' && overlay.classList.contains('is-playing')) showSignin(); });
 })();
 function signIn(player,email,keep){
