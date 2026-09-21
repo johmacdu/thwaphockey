@@ -413,6 +413,18 @@ body.viewing-teammate .cardctl,body.viewing-teammate .cb-stats-layer,body.viewin
 .plan-soon-emoji{font-size:40px}
 .plan-soon-title{font-family:'Archivo Black',system-ui,sans-serif;font-size:22px;color:var(--text);margin-top:6px}
 .plan-soon-body{margin:10px auto 0;max-width:420px;color:var(--muted);font-size:15px;line-height:1.5}
+.planwrap{margin-top:18px}
+.plangrid{display:flex;flex-direction:column;gap:8px}
+.planrow{display:grid;grid-template-columns:64px 1fr;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+.planrow.today{border-color:var(--lime);box-shadow:0 0 0 1px var(--lime) inset}
+.planrow-day{font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
+.planrow-day .todaytag{display:block;font-size:10px;color:var(--green)}
+.plancats{display:flex;gap:8px;flex-wrap:wrap}
+.plancat{font-family:inherit;font-size:13px;font-weight:800;padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:var(--soft);color:var(--muted);cursor:pointer}
+.plancat.on{background:var(--lime);color:var(--ink);border-color:transparent}
+.plansave{margin-top:16px;font-family:inherit;font-size:15px;font-weight:850;background:var(--lime);color:var(--ink);border:1px solid transparent;border-radius:12px;padding:10px 20px;cursor:pointer}
+.plansave:disabled{opacity:.5;cursor:default}
+.plan-done{margin-top:12px;color:var(--green);font-weight:800;font-size:14px}
 .roster{display:grid;gap:12px;margin-top:15px;grid-template-columns:repeat(2,minmax(0,1fr))}
 @media(min-width:560px){.roster{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(min-width:900px){.roster{grid-template-columns:repeat(4,minmax(0,1fr))}}.avatar{width:54px;height:54px;border-radius:50%;object-fit:cover;background:var(--soft)}
@@ -863,11 +875,11 @@ body.login-locked{overflow:hidden}
 
 <section id='plan' class='page'>
 <a class='glassclose' href='.' aria-label='Close'>✕</a>
-<div class='hero'><div class='kicker'>Coach</div><h1>Weekly Plan</h1><p>Set what your team trains each day.</p></div>
-<div class='plan-soon'>
-  <div class='plan-soon-emoji'>🗓️</div>
-  <div class='plan-soon-title'>Coming soon</div>
-  <p class='plan-soon-body'>Soon you'll pick which Thwap activities your team focuses on each day. For now, the team follows the built-in weekly rotation of stickhandling, shooting, and dryland.</p>
+<div class='hero'><div class='kicker'>Coach</div><h1>Weekly Plan</h1><p>Pick what your team trains each day.</p></div>
+<div class='planwrap' id='planWrap'>
+  <div class='plangrid' id='planGrid'></div>
+  <button type='button' class='plansave' id='planSave' disabled>Save plan</button>
+  <p class='plan-done' id='planDone' hidden>Saved! Your team sees this plan.</p>
 </div>
 </section>
 <section id='progress' class='page'>
@@ -958,7 +970,20 @@ body.login-locked{overflow:hidden}
 <section id='home'>
 <div class='wipnote'>👋 Early prototype. We're testing the look and feel. Training drills and stickers are still being built.</div>
 <div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.svg' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><span class='nav-authed'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a></span><span class='nav-guest'><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#stickers'>Stickers</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a></span><span class='nav-guest'><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
-<div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>there</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><script>(function(){try{var authed=/(?:^|; )thwapAuth=/.test(document.cookie);var p=localStorage.getItem('bfPlayer');var b=document.getElementById('homePlayer');if(b){if(p&&authed){b.textContent=p.trim().split(/\s+/)[0];}else{b.classList.add('needpick');}}}catch(e){}})();</script><div class='forrow'><span class='forline'>3 things, about 30 min</span><button type='button' class='daytip daytip-chip' id='dayTip' aria-label='Show today’s date'>Today<span class='daydate' id='dayDate'>Sunday, September 13</span></button></div></div>
+<div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>there</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><script>(function(){try{var authed=/(?:^|; )thwapAuth=/.test(document.cookie);var p=localStorage.getItem('bfPlayer');var b=document.getElementById('homePlayer');if(b){if(p&&authed){b.textContent=p.trim().split(/\s+/)[0];}else{b.classList.add('needpick');}}}catch(e){}
+/* Team plan: hide the category rows the coach turned OFF for today. On any failure
+   or unset plan, all three stay shown (the built-in rotation), so home is never empty. */
+(function(){
+  var rows={ stick:document.querySelector('.nav-stick'), shoot:document.querySelector('.nav-shoot'), dryland:document.querySelector('.nav-dryland') };
+  if(!rows.stick&&!rows.shoot&&!rows.dryland) return;
+  var wd=0; try{ wd=window.thwapWeekday?window.thwapWeekday():0; }catch(e){}
+  var dayKey=['sun','mon','tue','wed','thu','fri','sat'][wd]||'mon';
+  fetch('/api/coach?action=get-plan').then(function(r){ return r.json(); }).then(function(j){
+    if(!j||!j.ok||!j.plan||!j.plan[dayKey]) return;
+    var onCats=j.plan[dayKey];
+    Object.keys(rows).forEach(function(cat){ if(rows[cat] && onCats.indexOf(cat)<0){ rows[cat].style.display='none'; } });
+  }).catch(function(){});
+})();})();</script><div class='forrow'><span class='forline'>3 things, about 30 min</span><button type='button' class='daytip daytip-chip' id='dayTip' aria-label='Show today’s date'>Today<span class='daydate' id='dayDate'>Sunday, September 13</span></button></div></div>
 <div class='cards'>
 <a class='nav' href='hockey_game_goals.html'><div class='ico'>🎯</div><div><h2>Game Day Goals</h2><p>Pick your 4 goals for today’s game</p></div><div class='chev'>›</div></a>
 <a class='nav nav-stick' href='#stick'><div class='ico'>🏒</div><div><h2>Stickhandling</h2><p>Hands + puck control, about 10-15 min</p></div><div class='chev'>›</div></a>
@@ -1055,6 +1080,56 @@ function pickPlayer(name,ev,el){
   if(seg){ seg.querySelectorAll('.segbtn').forEach(function(b){ b.addEventListener('click',function(){ setSeg(b.getAttribute('data-cseg')); }); }); setSeg('team'); }
   var out=document.getElementById('coachSignOut');
   if(out){ out.addEventListener('click',function(){ try{ localStorage.removeItem('thwapCoach'); }catch(e){} location.reload(); }); }
+})();
+/* ---- Plan editor (coach): a 7-day x 3-category grid. Loads the team plan from
+   get-plan, toggles which categories are ON per weekday, saves via set-plan.
+   Coach-only (bails without a coach token / grid). ---- */
+(function(){
+  var grid=document.getElementById('planGrid'); if(!grid) return;
+  var coach=null; try{ coach=JSON.parse(localStorage.getItem('thwapCoach')||'null'); }catch(e){}
+  if(!coach||!coach.token){ return; }
+  var code=(coach.teams&&coach.teams[0])||'RANGERS72';
+  var saveBtn=document.getElementById('planSave'), doneEl=document.getElementById('planDone');
+  var DAYS=[['mon','Mon'],['tue','Tue'],['wed','Wed'],['thu','Thu'],['fri','Fri'],['sat','Sat'],['sun','Sun']];
+  var CATS=[['stick','Hands'],['shoot','Shoot'],['dryland','Dryland']];
+  var todayKey=(function(){ try{ var w=window.thwapWeekday&&window.thwapWeekday(); var map=['sun','mon','tue','wed','thu','fri','sat']; return map[w]||''; }catch(e){ return ''; } })();
+  var plan={}, dirty=false;
+  function setDirty(d){ dirty=d; if(saveBtn){ saveBtn.disabled=!d; } if(d&&doneEl) doneEl.hidden=true; }
+  function render(){
+    grid.innerHTML='';
+    DAYS.forEach(function(d){
+      var on=plan[d[0]]||[];
+      var row=document.createElement('div');
+      row.className='planrow'+(d[0]===todayKey?' today':'');
+      var day='<div class="planrow-day">'+d[1]+(d[0]===todayKey?'<span class="todaytag">Today</span>':'')+'</div>';
+      var cats='<div class="plancats">'+CATS.map(function(c){
+        return '<button type="button" class="plancat'+(on.indexOf(c[0])>=0?' on':'')+'" data-day="'+d[0]+'" data-cat="'+c[0]+'">'+c[1]+'</button>';
+      }).join('')+'</div>';
+      row.innerHTML=day+cats;
+      grid.appendChild(row);
+    });
+    grid.querySelectorAll('.plancat').forEach(function(b){
+      b.addEventListener('click',function(){
+        var day=b.getAttribute('data-day'), cat=b.getAttribute('data-cat');
+        var arr=plan[day]||(plan[day]=[]);
+        var i=arr.indexOf(cat);
+        if(i>=0) arr.splice(i,1); else arr.push(cat);
+        b.classList.toggle('on', arr.indexOf(cat)>=0);
+        setDirty(true);
+      });
+    });
+  }
+  fetch('/api/coach?action=get-plan&code='+encodeURIComponent(code))
+    .then(function(r){ return r.json(); })
+    .then(function(j){ plan=(j&&j.ok&&j.plan)?j.plan:{}; render(); })
+    .catch(function(){ render(); });
+  if(saveBtn){ saveBtn.addEventListener('click',function(){
+    saveBtn.textContent='Saving...';
+    fetch('/api/coach?action=set-plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code,coachToken:coach.token,plan:plan})})
+      .then(function(r){ return r.json(); })
+      .then(function(j){ saveBtn.textContent='Save plan'; if(j&&j.ok){ setDirty(false); if(doneEl) doneEl.hidden=false; } })
+      .catch(function(){ saveBtn.textContent='Save plan'; });
+  }); }
 })();
 /* Change-player roster: show the SAME coded card as the home page for every
    player, and gate a switch behind the parent email + player code (jersey number
