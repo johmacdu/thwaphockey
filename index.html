@@ -171,6 +171,19 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .kebabmenu a:last-child{border-bottom:0}
 .kebabmenu a:hover{background:var(--soft)}
 @media (max-width:640px){.toplinks{display:none}.kebab{display:inline-flex;align-items:center;justify-content:center}}
+/* Auth-state header nav: guest sees Sign In / Join Waitlist; a signed-in
+   parent sees the app links. Toggled by body.is-authed (set on load). */
+.nav-guest{display:none;align-items:center;gap:10px}
+.nav-authed{display:inline-flex;align-items:center;gap:10px}
+body:not(.is-authed) .nav-authed{display:none}
+body:not(.is-authed) .nav-guest{display:inline-flex}
+.kebabmenu .nav-authed,.kebabmenu .nav-guest{flex-direction:column}
+.kebabmenu .nav-guest{display:none}
+body:not(.is-authed) .kebabmenu .nav-authed{display:none}
+body:not(.is-authed) .kebabmenu .nav-guest{display:flex}
+/* The header sits ABOVE the login splash frost so the logo, wordmark and the
+   Sign In / Join Waitlist links are always visible over the ice. */
+body.login-locked .topbar{position:relative;z-index:120}
 .forrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px}
 .forline{font-size:15px;color:var(--muted);font-weight:600}
 .playername{font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;letter-spacing:.01em;font-size:34px;line-height:1.1;color:var(--ink);margin:2px 0 8px;display:block;background:none;border:0;padding:0;text-align:left;cursor:pointer;text-decoration:none;-webkit-tap-highlight-color:transparent}
@@ -534,7 +547,7 @@ html[data-theme='dark'] .login-frost{background:linear-gradient(180deg,rgba(16,2
 .login-go:active{transform:scale(.98)}
 .login-err{min-height:18px;margin:10px 0 0;font-size:13px;font-weight:700;color:var(--alert);text-align:center}
 .login-alt{margin:15px 0 0;font-size:14px;color:var(--muted);text-align:center}
-.login-wordmark{height:14px;width:auto;vertical-align:-1px;display:inline-block}
+.login-wordmark{height:42px;width:auto;vertical-align:-12px;display:inline-block}
 .login-alt a{color:var(--green2);font-weight:800;text-decoration:underline;text-underline-offset:3px}
 body.login-locked{overflow:hidden}
 @media (prefers-reduced-motion: reduce){.login-go{transition:none}}
@@ -708,7 +721,7 @@ body.login-locked{overflow:hidden}
 
 <section id='home'>
 <div class='wipnote'>👋 Early prototype. We're testing the look and feel. Training drills and stickers are still being built.</div>
-<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.svg' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Players</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><a href='#stickers'>Stickers</a><a href='#roster'>Players</a><a href='#progress'>Standings</a></div></div>
+<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.svg' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><span class='nav-authed'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Players</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-guest'><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#stickers'>Stickers</a><a href='#roster'>Players</a><a href='#progress'>Standings</a></span><span class='nav-guest'><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
 <div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>there</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><script>(function(){try{var p=localStorage.getItem('bfPlayer');var b=document.getElementById('homePlayer');if(b){if(p){b.textContent=p.trim().split(/\s+/)[0];}else{b.classList.add('needpick');}}}catch(e){}})();</script><div class='forrow'><span class='forline'>3 things, about 30 min</span><button type='button' class='daytip daytip-chip' id='dayTip' aria-label='Show today’s date'>Today<span class='daydate' id='dayDate'>Sunday, September 13</span></button></div></div>
 <div class='cards'>
 <a class='nav' href='hockey_game_goals.html'><div class='ico'>🎯</div><div><h2>Game Day Goals</h2><p>Pick your 4 goals for today’s game</p></div><div class='chev'>›</div></a>
@@ -2948,9 +2961,20 @@ if(waitForm){
   });
 }
 function gate(){
+  document.body.classList.toggle('is-authed', isAuthed());
   if(location.hash==='#login'){ show(); return; }
   if(isAuthed()){ hide(); } else { show(); }
 }
+/* Header guest nav (shown when logged out): Sign In opens the sign-in form,
+   Join Waitlist opens the waitlist form. Both make sure the splash is up. */
+function wireHeaderNav(id, fn){
+  var el=document.getElementById(id);
+  if(el){ el.addEventListener('click',function(e){ e.preventDefault(); show(); fn(); }); }
+}
+wireHeaderNav('navSignIn', showSignin);
+wireHeaderNav('navSignInK', showSignin);
+wireHeaderNav('navWaitlist', showWait);
+wireHeaderNav('navWaitlistK', showWait);
 window.addEventListener('hashchange',function(){ if(location.hash==='#login') show(); });
 gate();
 })();</script>
