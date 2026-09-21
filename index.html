@@ -528,6 +528,14 @@ html[data-theme='dark'] .login-frost{background:linear-gradient(180deg,rgba(120,
 .login-field{display:block;margin-bottom:12px}
 .login-lab{display:block;font-size:12px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
 .login-in{width:100%;box-sizing:border-box;padding:13px 14px;border-radius:12px;border:1px solid var(--line2);background:var(--card);color:var(--text);font-family:inherit;font-size:16px}
+/* Team dropdown matches the text inputs: same height/padding/border, native
+   arrow removed, a rotating chevron overlaid instead. */
+.login-selwrap{position:relative;display:block}
+.login-select{appearance:none;-webkit-appearance:none;-moz-appearance:none;padding-right:42px;cursor:pointer;background-image:none}
+.login-select::-ms-expand{display:none}
+.login-selchev{position:absolute;top:50%;right:16px;transform:translateY(-50%) rotate(0deg);transform-origin:center;font-size:20px;font-weight:700;line-height:1;color:var(--muted);pointer-events:none;transition:transform .18s ease}
+/* open state: the select is focused while its list is open -> chevron points down */
+.login-select:focus + .login-selchev{transform:translateY(-50%) rotate(90deg)}
 .age-chips{display:flex;flex-wrap:wrap;gap:8px}
 .age-chip{position:relative;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .age-chip input{position:absolute;opacity:0;width:0;height:0}
@@ -669,9 +677,12 @@ body.login-locked{overflow:hidden}
     <p class='login-sub'>Sign in to your team.</p>
     <label class='login-field'>
       <span class='login-lab'>Team</span>
-      <select class='login-in' id='loginTeam'>
-        <option value='vancouver-jr-rangers-10u' selected>Vancouver Jr. Rangers 10U</option>
-      </select>
+      <span class='login-selwrap'>
+        <select class='login-in login-select' id='loginTeam'>
+          <option value='vancouver-jr-rangers-10u' selected>Vancouver Jr. Rangers 10U</option>
+        </select>
+        <span class='login-selchev' aria-hidden='true'>&#8250;</span>
+      </span>
     </label>
     <label class='login-field'>
       <span class='login-lab'>Parent email</span>
