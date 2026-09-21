@@ -565,13 +565,13 @@ body.login-locked{overflow:hidden}
 @keyframes spFrM{0%,24.9%{opacity:0}25%,49.9%{opacity:1}50%,74.9%{opacity:0}75%,100%{opacity:1}}
 @keyframes spFrB{0%,49.9%{opacity:0}50%,74.9%{opacity:1}75%,100%{opacity:0}}
 /* speech bubble: the exact storyboard oval balloon (generated), top-right, tail down-left toward Sass */
-.sp-bubble-img{position:absolute;right:auto;left:14vw;top:15%;width:min(38vw,400px);height:auto;opacity:0;transform:translateY(-8px) scale(.95);transition:opacity .35s ease,transform .35s ease;z-index:3;-webkit-user-drag:none;filter:drop-shadow(0 10px 22px rgba(0,0,0,.28))}
+.sp-bubble-img{position:absolute;right:auto;left:23vw;top:11%;width:min(36vw,380px);height:auto;opacity:0;transform:translateY(-8px) scale(.95);transition:opacity .35s ease,transform .35s ease;z-index:3;-webkit-user-drag:none;filter:drop-shadow(0 10px 22px rgba(0,0,0,.28))}
 #loginStage[data-step='welcome'] .sp-bubble-img{opacity:1;transform:translateY(0) scale(1)}
 /* mobile: Sass sits half off the left edge so the bubble tail meets his mouth */
 @media (max-width:640px){
-  .sp-sass-welcome{left:-18vw;bottom:3%;height:clamp(300px,60vh,540px)}
+  .sp-sass-welcome{left:-52vw;bottom:3%;height:clamp(300px,60vh,540px)}
   .sp-skater{height:clamp(300px,60vh,540px);width:clamp(300px,60vh,540px);bottom:3%}
-  .sp-bubble-img{right:auto;left:45vw;top:29%;width:min(58vw,290px)}
+  .sp-bubble-img{right:auto;left:34vw;top:26%;width:min(58vw,290px)}
 }
 /* speed streaks during the run */
 .sp-speed{position:absolute;inset:0;opacity:0;transition:opacity .15s ease}
@@ -611,10 +611,12 @@ body.login-locked{overflow:hidden}
 .sp-skip{position:absolute;top:max(16px,env(safe-area-inset-top,0px));right:max(18px,env(safe-area-inset-right,0px));display:none;align-items:center;gap:14px;z-index:5}
 #loginOverlay.is-playing .sp-skip{display:flex}
 /* match the thwaphockey.com CTA style: brand green, Archivo Black, rounded 14px */
-.sp-skipbtn{min-height:46px;padding:0 22px;border-radius:14px;border:0;background:var(--green);color:var(--onaccent);font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;font-size:15px;letter-spacing:.005em;cursor:pointer;box-shadow:0 6px 18px var(--shadow);-webkit-tap-highlight-color:transparent}
-.sp-skipbtn-alt{background:var(--panel);color:var(--green2);border:2px solid var(--green)}
+/* match the site's CTA (.login-go / .primary): flat brand green, Archivo Black, radius 14px, no shadow */
+.sp-skipbtn{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 20px;border-radius:14px;border:0;background:var(--green);color:var(--onaccent);font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;font-size:15px;cursor:pointer;transition:transform .08s ease,filter .12s ease;-webkit-tap-highlight-color:transparent}
+.sp-skipbtn:hover{filter:brightness(1.04)}
+.sp-skipbtn-alt{background:var(--panel);color:var(--green2);border:1px solid var(--line)}
 .sp-skipbtn:active{transform:scale(.96)}
-@media (max-width:640px){.sp-skip{gap:10px}.sp-skipbtn{padding:0 16px;font-size:13.5px;min-height:44px}}
+@media (max-width:640px){.sp-skip{gap:10px}.sp-skipbtn{padding:0 16px;font-size:14px;min-height:44px}}
 /* modal entrance when it appears */
 .login-modal{animation:spModalIn .3s ease}
 @keyframes spModalIn{from{opacity:0;transform:translateY(10px) scale(.98)}to{opacity:1;transform:none}}
@@ -642,7 +644,7 @@ body.login-locked{overflow:hidden}
   </div>
   <div class='sp-skip' id='spSkip'>
     <button type='button' class='sp-skipbtn' id='splashSignin'>Sign In</button>
-    <button type='button' class='sp-skipbtn sp-skipbtn-alt' id='splashWait'>Join the waitlist</button>
+    <button type='button' class='sp-skipbtn sp-skipbtn-alt' id='splashWait'>Join Waitlist</button>
   </div>
   <form class='login-modal' id='loginForm' role='dialog' aria-modal='true' aria-labelledby='loginTitle' novalidate>
     <h2 class='login-h' id='loginTitle'>Welcome back!</h2>
@@ -2961,12 +2963,12 @@ function startSplash(){
   if(form) form.hidden=true; if(waitForm) waitForm.hidden=true;
   setStep('welcome');
   var b=document.getElementById('splashSignin'); if(b) setTimeout(function(){ b.focus(); },80);
-  splashTimers.push(setTimeout(function(){ setStep('run'); },1600));
+  splashTimers.push(setTimeout(function(){ setStep('run'); },6600));
   splashTimers.push(setTimeout(function(){
     setStep('impact');
     if(stageEl){ stageEl.classList.add('shake'); setTimeout(function(){ stageEl.classList.remove('shake'); },420); }
-  },3100));
-  splashTimers.push(setTimeout(function(){ showSignin(); },3850));
+  },8100));
+  splashTimers.push(setTimeout(function(){ showSignin(); },8850));
 }
 function maybeSplash(){
   if(reduceMotion()){ showSignin(); return; }
