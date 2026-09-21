@@ -12,7 +12,7 @@
 // Bad input-> 400 { error: ... }
 // Non-POST -> 405
 
-import { ROSTER, DISCIPLINES, bumpPlayer } from './_store.js';
+import { ROSTER, DISCIPLINES, bumpPlayer } from '../lib/store.js';
 
 // Season year drives the PIN suffix; overridable via env, defaults to 2027.
 const SEASON_YEAR = process.env.SEASON_YEAR || '2027';

@@ -27,7 +27,7 @@ const requestCode = _handlers.requestCode;
 const verify = _handlers.verify;
 const session = _handlers.session;
 const logout = _handlers.logout;
-const { mintSession, verifySession, SESSION_COOKIE, SESSION_TTL_MS } = await import('../api/_session_store.js');
+const { mintSession, verifySession, SESSION_COOKIE, SESSION_TTL_MS } = await import('../lib/session_store.js');
 
 function makeRes() {
   return {

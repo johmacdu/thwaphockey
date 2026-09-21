@@ -4,9 +4,9 @@
 // Rate-limited per email. Never leaks whether an email is "known" (there is no
 // account model here; any parent email can request a code for a roster player).
 
-import { getKv, parseBody, isRosterPlayer, emailConfigured, sendCodeEmail } from '../_photo_common.js';
-import { checkAndBumpRate, putOtp, randomCode } from '../_photo_store.js';
-import { ROSTER } from '../_store.js';
+import { getKv, parseBody, isRosterPlayer, emailConfigured, sendCodeEmail } from '../../lib/photo_common.js';
+import { checkAndBumpRate, putOtp, randomCode } from '../../lib/photo_store.js';
+import { ROSTER } from '../../lib/store.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

@@ -13,7 +13,7 @@
 //   WAITLIST_NOTIFY_EMAIL                 where new-signup emails go (optional)
 //   RESEND_API_KEY, PHOTO_FROM_EMAIL      reused from the photo flow to send mail
 
-import { getKv, parseBody } from './_photo_common.js';
+import { getKv, parseBody } from '../lib/photo_common.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
