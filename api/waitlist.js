@@ -42,8 +42,9 @@ export default async function handler(req, res) {
 async function handlePost(req, res) {
   if (!kvConfigured()) return res.status(503).json({ error: 'waitlist not configured' });
 
-  const { association, ageLevels, region, email } = parseBody(req);
+  const { name, association, ageLevels, region, email } = parseBody(req);
   const cleanEmail = String(email || '').trim().toLowerCase();
+  const cleanName = String(name || '').trim().slice(0, 120);
   const cleanAssoc = String(association || '').trim().slice(0, 120);
   // Canonical age codes (6U/8U/10U/12U), region-independent, deduped.
   const ages = Array.isArray(ageLevels)
@@ -60,7 +61,7 @@ async function handlePost(req, res) {
   // Idempotent: sadd returns the count of NEW members (0 if the email is already
   // present), so a repeat submit succeeds without writing a duplicate row.
   const isNew = await kv.sadd(EMAILS_KEY, cleanEmail);
-  const entry = { email: cleanEmail, association: cleanAssoc, ageLevels: ages, region: cleanRegion, ts: Date.now() };
+  const entry = { name: cleanName, email: cleanEmail, association: cleanAssoc, ageLevels: ages, region: cleanRegion, ts: Date.now() };
   if (isNew) {
     await kv.lpush(LIST_KEY, JSON.stringify(entry));
     // Fire the notification but never fail the signup if mail hiccups.
@@ -127,6 +128,7 @@ async function notifySignup(entry) {
     subject: `New THWAP waitlist signup: ${entry.association} (${ages})`,
     text:
       `A new parent joined the THWAP waitlist.\n\n` +
+      `Name:        ${entry.name || 'unknown'}\n` +
       `Association: ${entry.association}\n` +
       `Age levels:  ${ages}\n` +
       `Region:      ${entry.region || 'unknown'}\n` +
