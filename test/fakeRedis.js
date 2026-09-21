@@ -27,6 +27,13 @@ export class FakeRedis {
     return keys.map((k) => (this.map.has(k) ? this.map.get(k) : null));
   }
 
+  // eslint-disable-next-line require-await
+  async del(...keys) {
+    let n = 0;
+    for (const k of keys) { if (this.map.delete(k)) n += 1; }
+    return n;
+  }
+
   // Test helper: seed a key directly.
   _seed(key, value) {
     this.map.set(key, value);
