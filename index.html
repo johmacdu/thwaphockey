@@ -2856,14 +2856,21 @@ if(wave){
   var NEAR=120; /* px */
   var hasHover=window.matchMedia&&window.matchMedia('(hover: hover)').matches;
 
+  /* The greeting lives behind the login splash; while that overlay is up
+     (body.login-locked) the hand must stay inert, even though a global mousemove
+     would otherwise reach it through the frost. */
+  function loginUp(){ return document.body.classList.contains('login-locked'); }
+
   /* Tap (works everywhere, the whole point on touch): one wave burst. */
   wave.addEventListener('click',function(){
+    if(loginUp()) return;
     wave.classList.remove('wave-once'); void wave.offsetWidth; wave.classList.add('wave-once');
   });
 
   /* Desktop proximity: wave while the cursor is near, and lean toward it. */
   if(hasHover && !reduce){
     var onMove=function(e){
+      if(loginUp()){ wave.classList.remove('waving'); return; }
       var r=wave.getBoundingClientRect();
       var cx=r.left+r.width/2, cy=r.top+r.height/2;
       var dx=e.clientX-cx, dy=e.clientY-cy;
@@ -3074,11 +3081,13 @@ function playRun(){
   runToEnd(showSignin);
 }
 /* Header Sign In / Join Waitlist: play the skate -> THWAP! first, then reveal the
-   requested sheet. Reduced motion (or no stage) opens the sheet immediately. */
+   requested sheet. But once a sheet is already showing (data-step 'ready', i.e. the
+   animation already ran this session), just switch sheets without replaying. Reduced
+   motion (or no stage) also opens the sheet immediately. */
 function playToSheet(endFn){
   var end=(typeof endFn==='function')?endFn:showSignin;
   show();
-  if(!stageEl || reduceMotion()){ end(); return; }
+  if(!stageEl || reduceMotion() || stageEl.getAttribute('data-step')==='ready'){ end(); return; }
   clearSplash();
   overlay.classList.add('is-playing');
   if(form) form.hidden=true; if(waitForm) waitForm.hidden=true;
