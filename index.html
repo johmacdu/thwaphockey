@@ -387,30 +387,51 @@ body.viewing-teammate .cardctl,body.viewing-teammate .cb-stats-layer,body.viewin
 .pcard-you{display:inline-block;margin-left:6px;font-size:11px;font-weight:900;color:var(--ink);background:var(--lime);border-radius:999px;padding:2px 8px;vertical-align:middle}
 .pcard-streak{font-size:12px;font-weight:800;color:var(--green2)}
 
-.coachbar{margin-top:16px;padding:16px;border:1px solid var(--line);border-radius:18px;background:var(--card2)}
-.coachbar-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+/* Coach primary tabs (Home, Team, Plan) are their home, not drill-in pages: no close X. */
+body.is-coach #coachhome>.glassclose,body.is-coach #roster>.glassclose,body.is-coach #plan>.glassclose{display:none}
+/* A coach never sees the player home. */
+body.is-coach #home{display:none!important}
+/* Coach Home (Option C): stat tiles + full-width next-game tile + to-do list + links. */
+.chtiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.chtile{padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--card);text-align:left}
+.chtile-tap{font-family:inherit;cursor:pointer;position:relative}
+.chtile-full{grid-column:1/3}
+.chtile-n{font-family:'Archivo Black',system-ui,sans-serif;font-size:30px;line-height:1;color:var(--text)}
+.chtile-of{font-size:16px;color:var(--muted)}
+.chtile-l{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;color:var(--muted);margin-top:6px;display:flex;align-items:center;gap:4px}
+.chtile-chev{margin-left:auto;font-weight:900;color:var(--muted)}
+.chtile.alert .chtile-n{color:var(--alert)}
+.chgame{background:var(--lime);border-color:transparent;cursor:pointer}
+.chgame-when{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--ink);opacity:.75}
+.chgame-vs{font-family:'Archivo Black',system-ui,sans-serif;font-size:18px;color:var(--ink);margin-top:3px}
+.chgame-meta{font-size:12.5px;color:var(--ink);opacity:.8;margin-top:3px}
+.ch-lab{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin:20px 0 8px}
+.chlist{display:flex;flex-direction:column}
+.chli{display:flex;align-items:center;gap:10px;padding:13px 2px;border-bottom:1px solid var(--line);font-size:14px;font-weight:700;color:var(--text);cursor:pointer;font-family:inherit;text-align:left;background:none;border-left:0;border-right:0;border-top:0;width:100%}
+.chli:last-child{border-bottom:0}
+.chli .chdot{width:8px;height:8px;border-radius:50%;background:var(--alert);flex:none}
+.chli .chdot.ok{background:var(--green)}
+.chli .chcnt{margin-left:auto;font-family:'Archivo Black',system-ui,sans-serif;font-size:15px;color:var(--alert)}
+.chli .chchev{color:var(--muted);font-weight:900}
+.chli.done{cursor:default}
+.chlinks{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.chlink{display:block;padding:16px 14px;border:1px solid var(--line);border-radius:16px;background:var(--card)}
+.chlink-ic{font-size:20px}
+.chlink-t{display:block;font-family:'Archivo Black',system-ui,sans-serif;font-size:14px;color:var(--text);margin-top:6px}
+.chlink-d{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
+/* Coach view. Coach bar is just a heading (not interactive -> not a card). */
+.coachbar{margin-top:16px}
 .coachbar-title{font-weight:800;font-size:14px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
 .coachbar-team{display:block;font-family:'Archivo Black',system-ui,sans-serif;font-size:18px;text-transform:none;letter-spacing:0;color:var(--text);margin-top:2px}
-.coachbar-signout{font-family:inherit;font-size:12px;font-weight:800;color:var(--muted);background:none;border:1px solid var(--line);border-radius:10px;padding:6px 10px;cursor:pointer}
-.coachteamsel{margin-top:12px;display:flex;align-items:center;gap:10px}
-.coachteamsel-lab{font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
-.coachpart{margin-top:12px;text-align:center;padding:12px;border-radius:14px;background:var(--card)}
-.coachpart-num{font-family:'Archivo Black',system-ui,sans-serif;font-size:30px;color:var(--text)}
-.coachpart-lab{font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.02em;color:var(--muted);margin-top:2px}
+.coachseg{margin-top:14px}
+.coachteam{margin-top:16px}
+/* Participation: a static readout, so plain page content, not a card. */
+.coachpart{text-align:center}
+.coachpart-num{font-family:'Archivo Black',system-ui,sans-serif;font-size:34px;color:var(--text);line-height:1}
+.coachpart-lab{font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.02em;color:var(--muted);margin-top:4px}
 .coachpart-sub{font-size:13px;color:var(--muted);margin-top:6px}
-.coachbar-hint{font-size:13px;color:var(--muted);margin:10px 2px 0}
-.coachcoaches{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
-.coachcoaches-h{font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
-.coachcoaches-list{margin-top:8px;display:flex;flex-direction:column;gap:6px}
-.coachrow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:13px}
-.coachrow .c-email{color:var(--text);font-weight:700}
-.coachrow .c-role{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;color:var(--muted)}
-.coachrow .c-remove{font-family:inherit;font-size:12px;font-weight:800;color:var(--alert);background:none;border:1px solid var(--line);border-radius:10px;padding:4px 8px;cursor:pointer}
-.coachcoaches-invite{margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.coachcoaches-add{font-family:inherit;font-size:13px;font-weight:800;background:var(--lime);color:var(--ink);border:1px solid transparent;border-radius:10px;padding:9px 14px;cursor:pointer}
-.coachcoaches-err{width:100%;margin:2px 0 0;font-size:12px;color:var(--alert)}
-.coachseg{margin-top:12px}
-.coachroll{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+/* Ranked roll-up: each row IS tappable (opens the player), so each row is a card. */
+.coachroll{margin-top:18px;display:flex;flex-direction:column;gap:8px}
 .crow{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--card);cursor:pointer;text-align:left;font-family:inherit;width:100%}
 .crow:active{transform:scale(.99)}
 .crow-rank{font-family:'Archivo Black',system-ui,sans-serif;font-size:16px;color:var(--muted)}
@@ -421,6 +442,26 @@ body.viewing-teammate .cardctl,body.viewing-teammate .cb-stats-layer,body.viewin
 .crow-wk-n{font-family:'Archivo Black',system-ui,sans-serif;font-size:18px;color:var(--text)}
 .crow-wk-l{font-size:10px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
 .crow.trained .crow-wk-n{color:var(--green)}
+/* Coaches: heading + a team-visible strip of coach chips + head-only invite. */
+.coachcoaches{margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}
+.coachcoaches-h{font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
+.coachstrip{margin-top:10px;display:flex;flex-wrap:wrap;gap:10px}
+.cchip{display:flex;align-items:center;gap:10px;padding:8px 12px 8px 8px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+.cchip-av{width:36px;height:36px;border-radius:50%;object-fit:cover;display:inline-grid;place-items:center;background:var(--card2);color:var(--muted);font-weight:800;font-size:13px;overflow:hidden}
+.cchip-av img{width:100%;height:100%;object-fit:cover}
+.cchip-nm{font-weight:800;font-size:13px;color:var(--text);line-height:1.1}
+.cchip-role{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;color:var(--muted)}
+.cchip-remove{margin-left:2px;font-family:inherit;font-size:11px;font-weight:800;color:var(--alert);background:none;border:none;cursor:pointer}
+.coachcoaches-edit{margin-top:12px;font-family:inherit;font-size:13px;font-weight:800;color:var(--ink);background:var(--lime);border:1px solid transparent;border-radius:10px;padding:9px 14px;cursor:pointer}
+.coachcoaches-invite{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.coachcoaches-add{font-family:inherit;font-size:13px;font-weight:800;background:var(--card2);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:9px 14px;cursor:pointer}
+.coachcoaches-err{width:100%;margin:2px 0 0;font-size:12px;color:var(--alert)}
+/* Coach profile editor (name + photo). */
+.cprof-photo{margin:4px auto 12px;display:grid;place-items:center;gap:6px;width:96px;height:96px;border-radius:50%;border:1px dashed var(--line);background:var(--card);cursor:pointer;position:relative;overflow:hidden;font-family:inherit}
+.cprof-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.cprof-initials{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;color:var(--muted)}
+.cprof-photo-lab{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;color:var(--muted)}
+/* Coach primary tabs (Team, Plan) are their home, not drill-in pages: no close X. */
 .plan-soon{margin-top:24px;padding:28px 20px;border:1px solid var(--line);border-radius:18px;background:var(--card2);text-align:center}
 .plan-soon-emoji{font-size:40px}
 .plan-soon-title{font-family:'Archivo Black',system-ui,sans-serif;font-size:22px;color:var(--text);margin-top:6px}
@@ -846,42 +887,53 @@ body.login-locked{overflow:hidden}
 <div id='shootList'></div>
 </section>
 
+<section id='coachhome' class='page'>
+<a class='glassclose' href='.' aria-label='Close'>✕</a>
+<div class='hero'><div class='kicker' id='chKicker'>Jr Rangers 10U</div><h1 id='chHi'>Hey Coach</h1><p>Here is where your team is at this week.</p></div>
+<div class='chtiles'>
+  <div class='chtile'><div class='chtile-n'><span id='chTrained'>0</span><span class='chtile-of'>/<span id='chTotal'>0</span></span></div><div class='chtile-l'>trained this week</div></div>
+  <button type='button' class='chtile chtile-tap alert' id='chBehind'><div class='chtile-n' id='chBehindN'>0</div><div class='chtile-l'>behind<span class='chtile-chev'>&rsaquo;</span></div></button>
+  <button type='button' class='chtile chtile-full chgame' id='chGame'>
+    <div class='chgame-when' id='chGameWhen'>Next game</div>
+    <div class='chgame-vs' id='chGameVs'>Loading schedule...</div>
+    <div class='chgame-meta' id='chGameMeta'></div>
+  </button>
+</div>
+<div class='ch-lab'>To do</div>
+<div class='chlist' id='chTodo'></div>
+<div class='chlinks'>
+  <a class='chlink' href='#roster'><span class='chlink-ic'>&#128101;</span><span class='chlink-t'>Team</span><span class='chlink-d'>Roster &amp; progress</span></a>
+  <a class='chlink' href='#plan'><span class='chlink-ic'>&#128197;</span><span class='chlink-t'>Plan</span><span class='chlink-d'>This week&rsquo;s training</span></a>
+</div>
+</section>
 <section id='roster' class='page'>
 <a class='glassclose' href='.' aria-label='Close'>✕</a>
 <div class='hero'><div class='kicker'>Jr Rangers 10U, 16 Rangers</div><h1>Who’s putting in the work?</h1><p>Tap your card so your training counts.</p></div>
 <div class='coachbar' id='coachBar' hidden>
-  <div class='coachbar-top'>
-    <div class='coachbar-title'>Coach view <span class='coachbar-team' id='coachTeamName'>Jr Rangers 10U</span></div>
-    <button type='button' class='coachbar-signout' id='coachSignOut'>Sign out</button>
-  </div>
-  <div class='coachteamsel' id='coachTeamSel' hidden>
-    <label class='coachteamsel-lab'>Team</label>
-    <span class='login-selwrap'>
-      <select class='login-in login-select' id='coachTeamPick'></select>
-      <span class='login-selchev' aria-hidden='true'>&#8250;</span>
-    </span>
-  </div>
+  <div class='coachbar-title'>Coach view <span class='coachbar-team' id='coachTeamName'>Jr Rangers 10U</span></div>
+</div>
+<div class='seg coachseg' id='coachSeg' role='tablist' aria-label='Coach view' hidden>
+  <button type='button' class='segbtn on' data-cseg='team' role='tab' aria-selected='true'>Entire Team</button>
+  <button type='button' class='segbtn' data-cseg='players' role='tab' aria-selected='false'>Players</button>
+</div>
+<div class='coachteam' id='coachTeamPane' hidden>
   <div class='coachpart' id='coachPart'>
     <div class='coachpart-num'><span id='coachTrained'>0</span> of <span id='coachTotal'>0</span></div>
     <div class='coachpart-lab'>players trained this week</div>
     <div class='coachpart-sub' id='coachTwice'></div>
   </div>
-  <p class='coachbar-hint'>Tap a player below to see their month goal and game-day focus.</p>
+  <div class='coachroll' id='coachRoll'></div>
   <div class='coachcoaches' id='coachCoaches' hidden>
     <div class='coachcoaches-h'>Coaches</div>
-    <div class='coachcoaches-list' id='coachCoachesList'></div>
+    <div class='coachstrip' id='coachStrip'></div>
+    <button type='button' class='coachcoaches-edit' id='coachProfileBtn'>Edit my coach profile</button>
     <div class='coachcoaches-invite' id='coachInvite' hidden>
       <input class='login-in' id='coachInviteEmail' type='email' inputmode='email' placeholder='assistant@email.com'>
       <button type='button' class='coachcoaches-add' id='coachInviteBtn'>Invite assistant</button>
       <p class='coachcoaches-err' id='coachInviteErr' aria-live='polite'></p>
     </div>
   </div>
-  <div class='seg coachseg' id='coachSeg' role='tablist' aria-label='Coach view'>
-    <button type='button' class='segbtn on' data-cseg='team' role='tab' aria-selected='true'>Entire Team</button>
-    <button type='button' class='segbtn' data-cseg='players' role='tab' aria-selected='false'>Players</button>
-  </div>
 </div>
-<div class='coachroll' id='coachRoll' hidden></div>
 <div class='roster' id='roster-grid'><a href='#home' class='pcard' data-name='Alder Reese'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>71</span><span class='pcard-bnname'>Alder</span></div></a><a href='#home' class='pcard' data-name='Brooklyn Coughlan'><div class='pcard-bignum pos-def'><span class='pcard-bn'>92</span><span class='pcard-bnname'>Brooklyn</span></div></a><a href='#home' class='pcard' data-name='Dawson Huffman'><div class='pcard-bignum pos-def'><span class='pcard-bn'>19</span><span class='pcard-bnname'>Dawson</span></div></a><a href='#home' class='pcard' data-name='Dominic Cinque'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>98</span><span class='pcard-bnname'>Dominic</span></div></a><a href='#home' class='pcard' data-name='Eugene Kuhn'><div class='pcard-bignum pos-def'><span class='pcard-bn'>3</span><span class='pcard-bnname'>Eugene</span></div></a><a href='#home' class='pcard' data-name='Evan Ewing'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>13</span><span class='pcard-bnname'>Evan</span></div></a><a href='#home' class='pcard' data-name='Greyson Wertz'><div class='pcard-bignum pos-def'><span class='pcard-bn'>32</span><span class='pcard-bnname'>Greyson</span></div></a><a href='#home' class='pcard' data-name='Issac Moyer'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>53</span><span class='pcard-bnname'>Issac</span></div></a><a href='#home' class='pcard' data-name='Johnny Eraman'><div class='pcard-bignum pos-goalie'><span class='pcard-bn'>1</span><span class='pcard-bnname'>Johnny</span></div></a><a href='#home' class='pcard' data-name='Joziah Soto'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>59</span><span class='pcard-bnname'>Joziah</span></div></a><a href='#home' class='pcard pcard-you-card' data-name='Lewie'><img class='pcard-cardart' src='cards/lewie_photo.png' alt='Lewie'></a><a href='#home' class='pcard' data-name='Liam Delatorre'><div class='pcard-bignum pos-def'><span class='pcard-bn'>29</span><span class='pcard-bnname'>Liam</span></div></a><a href='#home' class='pcard' data-name='Maddux Jones'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>18</span><span class='pcard-bnname'>Maddux</span></div></a><a href='#home' class='pcard' data-name='Oliver Moyer'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>90</span><span class='pcard-bnname'>Oliver</span></div></a><a href='#home' class='pcard' data-name='Teddy Diss'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>11</span><span class='pcard-bnname'>Teddy</span></div></a><a href='#home' class='pcard' data-name='William Schnell'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>16</span><span class='pcard-bnname'>William</span></div></a></div>
 <div class='rsearch-empty' id='rsearchEmpty' hidden></div>
 <div class='pgate' id='switchGate' hidden>
@@ -893,6 +945,22 @@ body.login-locked{overflow:hidden}
     <input class='pgate-in' id='switchCode' type='text' inputmode='numeric' autocomplete='off' placeholder='Player code' required>
     <button type='submit' class='pgate-go'>Switch player</button>
     <p class='pgate-msg' id='switchErr' aria-live='polite'></p>
+  </form>
+</div>
+<div class='pgate' id='coachProfileGate' hidden>
+  <form class='pgate-box' id='coachProfileForm' novalidate>
+    <button type='button' class='pgate-x' id='coachProfileX' aria-label='Close'>&#215;</button>
+    <h2 class='pgate-h'>Your coach profile</h2>
+    <p class='pgate-p'>Your name and photo help the team know who is coaching.</p>
+    <button type='button' class='cprof-photo' id='coachProfilePhoto'>
+      <img id='coachProfileImg' alt='' hidden>
+      <span id='coachProfileInitials' class='cprof-initials'>+</span>
+      <span class='cprof-photo-lab'>Add photo</span>
+    </button>
+    <input type='file' id='coachProfileFile' accept='image/*' hidden>
+    <input class='pgate-in' id='coachProfileName' type='text' autocomplete='name' placeholder='Coach name' required>
+    <button type='submit' class='pgate-go'>Save profile</button>
+    <p class='pgate-msg' id='coachProfileMsg' aria-live='polite'></p>
   </form>
 </div>
 </section>
@@ -999,7 +1067,7 @@ body.login-locked{overflow:hidden}
 
 <section id='home'>
 <div class='wipnote'>👋 Early prototype. We're testing the look and feel. Training drills and stickers are still being built.</div>
-<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.svg' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><span class='nav-authed'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a></span><span class='nav-guest'><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#stickers'>Stickers</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a></span><span class='nav-guest'><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
+<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.svg' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><span class='nav-authed'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-coach'><a class='link' href='#coachhome'>Home</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a></span><span class='nav-guest'><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#stickers'>Stickers</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-coach'><a href='#coachhome'>Home</a><a href='#roster'>Team</a><a href='#plan'>Plan</a></span><span class='nav-guest'><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
 <div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>there</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><script>(function(){try{var authed=/(?:^|; )thwapAuth=/.test(document.cookie);var p=localStorage.getItem('bfPlayer');var b=document.getElementById('homePlayer');if(b){if(p&&authed){b.textContent=p.trim().split(/\s+/)[0];}else{b.classList.add('needpick');}}}catch(e){}
 /* Team plan: hide the category rows the coach turned OFF for today. On any failure
    or unset plan, all three stay shown (the built-in rotation), so home is never empty. */
@@ -1045,19 +1113,16 @@ function pickPlayer(name,ev,el){
   if(ev){ev.preventDefault();}
   if(el&&!reduce){el.classList.add('tapped');setTimeout(go,160);}else{go();}
 }
-/* Shared: which team the coach is currently viewing. Stored selection, default
-   first team. Used by the coach view + plan editor so the switcher drives both. */
+/* Coach view: if a coach is signed in (thwapCoach in localStorage), reveal the
+   coach panes on the Team page. Jason is the 10U coach (one team, no switcher).
+   Entire Team = participation readout + ranked roll-up + coaches strip.
+   Players = the card roster grid. The player-facing view is unchanged for a
+   guest/player (no coach token). */
 window.thwapActiveTeam=function(coach){
   try{ if(!coach) coach=JSON.parse(localStorage.getItem('thwapCoach')||'null'); }catch(e){}
   var codes=(coach&&coach.teams)||[];
-  var sel=''; try{ sel=localStorage.getItem('thwapCoachTeam')||''; }catch(e){}
-  if(sel && codes.indexOf(sel)>=0) return sel;
   return codes[0]||'RANGERS72';
 };
-/* Coach view (Step 2): if a coach is signed in (thwapCoach in localStorage),
-   reveal the coach bar on the Team page and fill in this-week participation from
-   /api/coach?action=roster. Sign out clears the coach token. The player-facing
-   view is unchanged when no coach token is present. */
 (function(){
   var bar=document.getElementById('coachBar'); if(!bar) return;
   var coach=null;
@@ -1066,16 +1131,7 @@ window.thwapActiveTeam=function(coach){
   bar.hidden=false;
   document.body.classList.add('is-coach');
   var code=window.thwapActiveTeam(coach);
-  /* Team switcher: if the coach has more than one team, show a picker that sets
-     the active team and reloads so every coach surface re-reads it. */
-  var sel=document.getElementById('coachTeamSel'), pick=document.getElementById('coachTeamPick');
-  var list=(coach.teamList&&coach.teamList.length)?coach.teamList:((coach.teams||[]).map(function(c){return {code:c,name:c};}));
-  if(sel && pick && list.length>1){
-    sel.hidden=false;
-    pick.innerHTML=list.map(function(t){ return "<option value='"+t.code+"'"+(t.code===code?' selected':'')+"></option>"; }).join('');
-    Array.prototype.forEach.call(pick.options,function(o,i){ o.textContent=list[i].name||list[i].code; });
-    pick.addEventListener('change',function(){ try{ localStorage.setItem('thwapCoachTeam', pick.value); }catch(e){} location.reload(); });
-  }
+  var myEmail=(coach.email||'').toLowerCase();
   var nameEl=document.getElementById('coachTeamName');
   var trainedEl=document.getElementById('coachTrained');
   var totalEl=document.getElementById('coachTotal');
@@ -1091,9 +1147,8 @@ window.thwapActiveTeam=function(coach){
         var twice=j.members.filter(function(m){ var w=m.week||{}; return ((w.stick||0)+(w.shoot||0)+(w.dryland||0))>=2; }).length;
         twiceEl.textContent=twice+' trained 2+ times this week';
       }
-      /* Entire Team roll-up: every player ranked by this-week training total, with
-         their IDP goal. Tapping a row opens that player's stat/IDP page. This is
-         the coach's standings view (folds in what Standings shows the kid). */
+      /* Ranked roll-up: every player by this-week training total, with their IDP
+         goal. Each row is tappable -> that player's stat/IDP page. */
       var roll=document.getElementById('coachRoll');
       if(roll && j.members){
         var rows=j.members.map(function(m){
@@ -1117,48 +1172,109 @@ window.thwapActiveTeam=function(coach){
       }
     })
     .catch(function(){});
-  /* Segment: Entire Team (roll-up list) vs Players (the card roster grid). */
+  /* Segment: Entire Team pane vs Players (the card roster grid). */
   var seg=document.getElementById('coachSeg');
-  var roll2=document.getElementById('coachRoll');
+  var teamPane=document.getElementById('coachTeamPane');
   var grid=document.getElementById('roster-grid');
   function setSeg(which){
     if(seg) seg.querySelectorAll('.segbtn').forEach(function(b){ var on=b.getAttribute('data-cseg')===which; b.classList.toggle('on',on); b.setAttribute('aria-selected',on?'true':'false'); });
-    if(roll2) roll2.hidden=(which!=='team');
+    if(teamPane) teamPane.hidden=(which!=='team');
     if(grid) grid.style.display=(which==='players')?'':'none';
   }
-  if(seg){ seg.querySelectorAll('.segbtn').forEach(function(b){ b.addEventListener('click',function(){ setSeg(b.getAttribute('data-cseg')); }); }); setSeg('team'); }
-  var out=document.getElementById('coachSignOut');
-  if(out){ out.addEventListener('click',function(){ try{ localStorage.removeItem('thwapCoach'); localStorage.removeItem('thwapCoachTeam'); }catch(e){} location.reload(); }); }
-  /* Coaches section: head + up to 3 assistants. Head sees the invite/remove
-     controls; assistants see the list read-only. */
+  if(seg){ seg.hidden=false; seg.querySelectorAll('.segbtn').forEach(function(b){ b.addEventListener('click',function(){ setSeg(b.getAttribute('data-cseg')); }); }); setSeg('team'); }
+  /* Coach Home (Option C): stat tiles + next-game tile + tappable to-do list.
+     Behind = players with 0 training this week. Goals-to-set = members with no
+     IDP goal. Tapping jumps to the relevant player (first match) or the roster. */
+  (function(){
+    var hi=document.getElementById('chHi'), kick=document.getElementById('chKicker');
+    if(coach.name&&coach.name!=='Coach'&&hi) hi.textContent='Hey '+coach.name;
+    var behindEls=[]; // filled after roster
+    fetch('/api/coach?action=roster&code='+encodeURIComponent(code)+'&coachToken='+encodeURIComponent(coach.token))
+      .then(function(r){ return r.json(); })
+      .then(function(j){
+        if(!j||!j.ok||!j.members) return;
+        if(kick&&j.team&&j.team.name) kick.textContent=j.team.name;
+        var t=document.getElementById('chTrained'), tot=document.getElementById('chTotal');
+        if(t&&j.participation) t.textContent=j.participation.trained;
+        if(tot&&j.participation) tot.textContent=j.participation.total;
+        var behind=j.members.filter(function(m){ var w=m.week||{}; return ((w.stick||0)+(w.shoot||0)+(w.dryland||0))===0; });
+        var noGoal=j.members.filter(function(m){ return !m.idpGoal; });
+        var bn=document.getElementById('chBehindN'); if(bn) bn.textContent=behind.length;
+        var bb=document.getElementById('chBehind');
+        function nameOf(m){ return (m.firstName||m.playerId||'')+(m.lastName?(' '+m.lastName.charAt(0)+'.'):''); }
+        if(bb) bb.addEventListener('click',function(){ if(behind[0]&&window.openPlayerPage) window.openPlayerPage(nameOf(behind[0]).trim()); else location.hash='#roster'; });
+        var todo=document.getElementById('chTodo');
+        if(todo){
+          todo.innerHTML='';
+          function row(cls,label,count,onTap){
+            var el=document.createElement('button'); el.type='button'; el.className='chli'+(count===0?' done':'');
+            el.innerHTML='<span class="chdot'+(count===0?' ok':'')+'"></span><span class="lbl"></span>'+(count>0?'<span class="chcnt">'+count+'</span>':'<span class="chcnt" style="color:var(--green)">&#10003;</span>')+'<span class="chchev">&rsaquo;</span>';
+            el.querySelector('.lbl').textContent=label;
+            if(onTap) el.addEventListener('click',onTap);
+            todo.appendChild(el);
+          }
+          row('goals','Set player goals',noGoal.length,function(){ if(noGoal[0]&&window.openPlayerPage) window.openPlayerPage(nameOf(noGoal[0]).trim()); else location.hash='#roster'; });
+          row('behind','Nudge players behind',behind.length,function(){ if(behind[0]&&window.openPlayerPage) window.openPlayerPage(nameOf(behind[0]).trim()); else location.hash='#roster'; });
+        }
+      })
+      .catch(function(){});
+    /* Next game / practice tile. */
+    fetch('/api/coach?action=schedule&code='+encodeURIComponent(code))
+      .then(function(r){ return r.json(); })
+      .then(function(j){
+        if(!j||!j.ok||!j.next) return;
+        var g=j.next.nextGame, p=j.next.nextPractice;
+        var whenEl=document.getElementById('chGameWhen'), vsEl=document.getElementById('chGameVs'), metaEl=document.getElementById('chGameMeta');
+        function fmtDate(d){ try{ var dt=new Date(d+'T12:00:00'); return dt.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'}); }catch(e){ return d; } }
+        function fmtTime(t){ if(!t) return ''; var pr=t.split(':'),h=+pr[0],m=pr[1]; var ap=h>=12?'pm':'am'; h=h%12||12; return h+':'+m+ap; }
+        if(g&&vsEl){
+          whenEl.textContent=(g.kind==='tournament'?'Tournament':'Next game')+' \u00b7 '+fmtDate(g.date)+(g.time?(' \u00b7 '+fmtTime(g.time)):'');
+          vsEl.textContent=(g.kind==='tournament'?g.opponent:('vs '+g.opponent));
+          metaEl.textContent=(g.home?'Home':'Away')+(g.place?(' \u00b7 '+g.place):'');
+        } else if(p&&vsEl){
+          whenEl.textContent='Next up \u00b7 Practice';
+          vsEl.textContent='Wed '+fmtTime(p.start)+'\u2013'+fmtTime(p.end);
+          metaEl.textContent=p.place||'';
+        }
+        var gt=document.getElementById('chGame');
+        if(gt) gt.addEventListener('click',function(){ location.href='hockey_game_goals.html'; });
+      })
+      .catch(function(){});
+  })();
+  /* Coaches strip: team-visible chips (photo + name + role); head-only invite +
+     remove + "edit my coach profile". */
   (function(){
     var box=document.getElementById('coachCoaches'); if(!box) return;
-    var listEl=document.getElementById('coachCoachesList');
+    var strip=document.getElementById('coachStrip');
     var invite=document.getElementById('coachInvite');
     var emailEl=document.getElementById('coachInviteEmail');
     var btn=document.getElementById('coachInviteBtn');
     var errEl=document.getElementById('coachInviteErr');
-    var myEmail=(coach.email||'').toLowerCase();
+    var editBtn=document.getElementById('coachProfileBtn');
+    function initials(nm,em){ var s=(nm||em||'').trim(); if(!s) return '?'; var p=s.split(/\s+/); return (p[0].charAt(0)+(p[1]?p[1].charAt(0):'')).toUpperCase(); }
     function render(coaches){
       box.hidden=false;
       var amHead=coaches.some(function(c){ return c.role==='head' && c.email===myEmail; });
-      listEl.innerHTML='';
+      strip.innerHTML='';
       coaches.forEach(function(c){
-        var row=document.createElement('div'); row.className='coachrow';
+        var chip=document.createElement('div'); chip.className='cchip';
         var canRemove=amHead && c.role==='assistant';
-        row.innerHTML="<span class='c-email'></span><span style='display:flex;align-items:center;gap:8px'><span class='c-role'>"+(c.role==='head'?'Head':'Assistant')+"</span>"+(canRemove?"<button type='button' class='c-remove'>Remove</button>":"")+"</span>";
-        row.querySelector('.c-email').textContent=c.email;
-        if(canRemove){ row.querySelector('.c-remove').addEventListener('click',function(){
+        var nm=c.name||c.email;
+        chip.innerHTML='<span class="cchip-av"></span><span><span class="cchip-nm"></span><br><span class="cchip-role">'+(c.role==='head'?'Head coach':'Assistant')+'</span></span>'+(canRemove?'<button type="button" class="cchip-remove">Remove</button>':'');
+        var av=chip.querySelector('.cchip-av');
+        if(c.photo){ var im=document.createElement('img'); im.src=c.photo; im.alt=nm; av.appendChild(im); } else { av.textContent=initials(c.name,c.email); }
+        chip.querySelector('.cchip-nm').textContent=nm;
+        if(canRemove){ chip.querySelector('.cchip-remove').addEventListener('click',function(){
           fetch('/api/coach?action=remove-coach',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code,coachToken:coach.token,email:c.email})})
             .then(function(r){ return r.json(); }).then(function(j){ if(j&&j.ok) render(j.coaches); }).catch(function(){});
         }); }
-        listEl.appendChild(row);
+        strip.appendChild(chip);
       });
       var assistants=coaches.filter(function(c){ return c.role==='assistant'; }).length;
       if(invite){ invite.hidden=!(amHead && assistants<3); }
     }
-    fetch('/api/coach?action=team-coaches&code='+encodeURIComponent(code))
-      .then(function(r){ return r.json(); }).then(function(j){ if(j&&j.ok) render(j.coaches||[]); }).catch(function(){});
+    function load(){ fetch('/api/coach?action=team-coaches&code='+encodeURIComponent(code)).then(function(r){ return r.json(); }).then(function(j){ if(j&&j.ok) render(j.coaches||[]); }).catch(function(){}); }
+    load();
     if(btn){ btn.addEventListener('click',function(){
       if(errEl) errEl.textContent='';
       var em=String(emailEl&&emailEl.value||'').trim();
@@ -1169,6 +1285,64 @@ window.thwapActiveTeam=function(coach){
         .then(function(res){ btn.textContent='Invite assistant'; if(res.ok&&res.j.ok){ if(emailEl) emailEl.value=''; render(res.j.coaches); } else if(errEl){ errEl.textContent=(res.j&&res.j.error)||'Could not invite.'; } })
         .catch(function(){ btn.textContent='Invite assistant'; if(errEl) errEl.textContent='Could not reach the server.'; });
     }); }
+    /* Coach profile editor: name + photo, saved to this coach's record. */
+    (function(){
+      var gate=document.getElementById('coachProfileGate');
+      var formEl=document.getElementById('coachProfileForm');
+      var xBtn=document.getElementById('coachProfileX');
+      var photoBtn=document.getElementById('coachProfilePhoto');
+      var fileEl=document.getElementById('coachProfileFile');
+      var imgEl=document.getElementById('coachProfileImg');
+      var initEl=document.getElementById('coachProfileInitials');
+      var nameIn=document.getElementById('coachProfileName');
+      var msgEl=document.getElementById('coachProfileMsg');
+      var dataUrl='';
+      function open(){
+        if(nameIn) nameIn.value=coach.name&&coach.name!=='Coach'?coach.name:'';
+        dataUrl=coach.photo||'';
+        if(dataUrl){ imgEl.src=dataUrl; imgEl.hidden=false; initEl.hidden=true; } else { imgEl.hidden=true; initEl.hidden=false; initEl.textContent='+'; }
+        if(msgEl) msgEl.textContent='';
+        if(gate) gate.hidden=false;
+      }
+      function close(){ if(gate) gate.hidden=true; }
+      if(editBtn) editBtn.addEventListener('click',open);
+      if(xBtn) xBtn.addEventListener('click',close);
+      if(photoBtn&&fileEl) photoBtn.addEventListener('click',function(){ fileEl.click(); });
+      if(fileEl) fileEl.addEventListener('change',function(){
+        var f=fileEl.files&&fileEl.files[0]; if(!f) return;
+        var rd=new FileReader();
+        rd.onload=function(){
+          /* Downscale to a small square so the stored data URL stays light. */
+          var img=new Image();
+          img.onload=function(){
+            var S=256, cv=document.createElement('canvas'); cv.width=S; cv.height=S;
+            var ctx=cv.getContext('2d'); var m=Math.min(img.width,img.height);
+            ctx.drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,S,S);
+            dataUrl=cv.toDataURL('image/jpeg',0.82);
+            imgEl.src=dataUrl; imgEl.hidden=false; initEl.hidden=true;
+          };
+          img.src=rd.result;
+        };
+        rd.readAsDataURL(f);
+      });
+      if(formEl) formEl.addEventListener('submit',function(e){
+        e.preventDefault();
+        var nm=String(nameIn&&nameIn.value||'').trim();
+        if(!nm){ if(msgEl) msgEl.textContent='Add your name.'; return; }
+        if(msgEl) msgEl.textContent='Saving...';
+        fetch('/api/coach?action=set-coach-profile',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code,coachToken:coach.token,name:nm,photo:dataUrl})})
+          .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
+          .then(function(res){
+            if(res.ok&&res.j&&res.j.ok){
+              coach.name=nm; coach.photo=dataUrl;
+              try{ localStorage.setItem('thwapCoach', JSON.stringify(coach)); }catch(e2){}
+              if(res.j.coaches) render(res.j.coaches); else load();
+              close();
+            } else if(msgEl){ msgEl.textContent=(res.j&&res.j.error)||'Could not save.'; }
+          })
+          .catch(function(){ if(msgEl) msgEl.textContent='Could not reach the server.'; });
+      });
+    })();
   })();
 })();
 /* ---- Plan editor (coach): a 7-day x 3-category grid. Loads the team plan from
@@ -3742,7 +3916,7 @@ function gate(){
   document.body.classList.toggle('is-authed', isAuthed() || hasCoach);
   document.body.classList.toggle('is-coach', hasCoach);
   /* A coach has no kid home (today's plan). Land them on Team instead. */
-  if(hasCoach && (location.hash===''||location.hash==='#home')){ location.hash='#roster'; return; }
+  if(hasCoach && (location.hash===''||location.hash==='#home')){ location.hash='#coachhome'; return; }
   if(location.hash==='#login'){ show(); maybeSplash(); return; }
   if(isAuthed() || hasCoach){ hide(); } else { show(); maybeSplash(); }
 }

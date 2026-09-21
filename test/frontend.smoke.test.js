@@ -29,11 +29,11 @@ describe('index.html structure', () => {
     expect(doc.querySelector('title')?.textContent).toContain('Thwap Hockey');
   });
 
-  it('has balanced <section> tags (open === close === 9)', () => {
+  it('has balanced <section> tags (open === close === 10)', () => {
     const open = (html.match(/<section id=/g) || []).length;
     const close = (html.match(/<\/section>/g) || []).length;
     expect(open).toBe(close);
-    expect(open).toBe(9);
+    expect(open).toBe(10);
   });
 
   it('#home is the last section (required for :target hash nav)', () => {

@@ -253,3 +253,53 @@ describe('coach roster: head + assistants', () => {
     expect(res.statusCode).toBe(401);
   });
 });
+
+describe('team schedule', () => {
+  it('seeds the 2026-27 games and computes the next game', async () => {
+    await loginSeedCoach();
+    const res = makeRes();
+    await _handlers.schedule(get({ code: _seed.SEED_TEAM_CODE }), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.schedule.events.length).toBeGreaterThan(5);
+    expect(res.body.schedule.practices[0].dow).toBe(3); // Wednesday
+    expect(res.body.next).toBeTruthy();
+  });
+
+  it('lets a coach add an event', async () => {
+    const login = await loginSeedCoach();
+    const token = login.body.token;
+    await _handlers.schedule(get({ code: _seed.SEED_TEAM_CODE }), makeRes()); // seed
+    const res = makeRes();
+    await _handlers.addEvent(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, event: { kind: 'game', date: '2027-01-10', time: '10:00', home: true, opponent: 'Test FC' } }), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.schedule.events.some((e) => e.opponent === 'Test FC')).toBe(true);
+  });
+
+  it('rejects add-event without a coach token', async () => {
+    await loginSeedCoach();
+    const res = makeRes();
+    await _handlers.addEvent(post({ code: _seed.SEED_TEAM_CODE, event: { date: '2027-01-10' } }), res);
+    expect(res.statusCode).toBe(401);
+  });
+});
+
+describe('coach profile', () => {
+  it('saves the coach name + photo and shows it in the team coaches strip', async () => {
+    const login = await loginSeedCoach();
+    const token = login.body.token;
+    await _handlers.teamCoaches(get({ code: _seed.SEED_TEAM_CODE }), makeRes()); // seed head
+    const res = makeRes();
+    await _handlers.setCoachProfile(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, name: 'Coach Jason', photo: 'data:image/jpeg;base64,abc' }), res);
+    expect(res.statusCode).toBe(200);
+    const head = res.body.coaches.find((c) => c.role === 'head');
+    expect(head.name).toBe('Coach Jason');
+    expect(head.photo).toContain('data:image/jpeg');
+  });
+
+  it('rejects a profile with no name', async () => {
+    const login = await loginSeedCoach();
+    const res = makeRes();
+    await _handlers.setCoachProfile(post({ code: _seed.SEED_TEAM_CODE, coachToken: login.body.token, name: '' }), res);
+    expect(res.statusCode).toBe(400);
+  });
+});
