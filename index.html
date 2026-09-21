@@ -165,7 +165,7 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .topbar{position:relative}
 .kebab{display:none;width:44px;height:44px;border:0;background:none;color:var(--text);font-size:26px;line-height:1;cursor:pointer;border-radius:12px;-webkit-tap-highlight-color:transparent}
 .kebab:hover{background:var(--soft)}
-.kebabmenu{position:absolute;top:60px;right:0;z-index:40;display:flex;flex-direction:column;min-width:180px;background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:0 12px 30px var(--shadow);overflow:hidden}
+.kebabmenu{position:absolute;top:60px;right:0;z-index:40;display:flex;flex-direction:column;min-width:max-content;background:var(--panel);border:1px solid var(--line);border-radius:16px;box-shadow:0 12px 30px var(--shadow);overflow:hidden}
 .kebabmenu[hidden]{display:none}
 .kebabmenu a{padding:14px 18px;font-weight:800;font-size:15px;color:var(--text);border-bottom:1px solid var(--line)}
 .kebabmenu a:last-child{border-bottom:0}
@@ -1042,7 +1042,7 @@ var CAT={will:'Agility', skater:'Power',broad:'Power',box:'Power', stairs:'Speed
 /* d(key, dose) builds a drill from the shared MOVE library plus this workout's reps. */
 function d(k,dose,nameOverride){var m=MOVE[k];return {key:k, cat:CAT[k]||'', emoji:m.emoji, name:nameOverride||({will:"Will's Squares (4-sq Drill)",skater:'Skater Jumps',broad:'Broad Jumps',box:'Box Jumps',lunge:'Reverse Lunges',rdl:'Single-Leg RDL',wallsit:'Wall Sit',situps:'Sit-ups',plank:'Plank with Shoulder Taps',stairs:'Stair Sprints',sprint:'Sprint Starts',reaction:'Reaction Start',splitsquat:'Split Squat Hold',calf:'Calf Raises',deadbug:'Dead Bugs',mcdavid:"McDavid's"}[k]), dose:dose, cue:m.cue, video:m.video||'', steps:m.steps};}
 
-var WORKOUTS=[
+var WORKOUTS=window.WORKOUTS=[
   /* Week 1 */
   {id:'w1wed', name:'Power: Base & Technique', emoji:'💥', time:'25-30 min', blurb:'Week 1. Wednesday. Learn the movements, clean landings, confidence.',
    drills:[d('will','20 seconds / sequence'),d('skater','8× (2 reps)'),d('broad','8× (2 reps)'),d('box','5× (2 reps)'),d('lunge','8× (2 reps)'),d('rdl','5× (2 reps) each side'),d('wallsit','45 seconds'),d('situps','30 (2 reps)'),d('plank','30 seconds (2 reps)')]},
@@ -1908,7 +1908,7 @@ function loadProg(){try{return JSON.parse(localStorage.getItem(progKey())||'{}')
 function saveProg(p){try{localStorage.setItem(progKey(),JSON.stringify(p));}catch(e){}}
 
 /* Real content (Woody-provided). cat groups; steps are short bold-label cues. */
-var DRILLS=[
+var DRILLS=window.DRILLS=[
   {cat:'Fundamental Rhythm', emoji:'↔️', name:'Stationary Side-to-Side', cue:'Move the puck side to side across your body. Quick and smooth.',
    steps:['Stance: Ready position, knees bent, hands out front.','Move it: Slide the puck side to side across your body.','Stay quick: Small, fast touches. Head up.']},
   {cat:'Fundamental Rhythm', emoji:'🔁', name:'Front-to-Back', cue:'Push the puck out in front, then pull it back to your toes.',
@@ -2028,9 +2028,12 @@ function buildCatalog(){
     return out;
   }
   var stick=[], shoot=[], dry=[];
-  try{ (DRILLS||[]).forEach(function(d){ stick.push([d.name,d.emoji]); }); }catch(e){}
-  try{ (SHOOT_DAYS||[]).forEach(function(day){ (day||[]).forEach(function(s){ shoot.push([s.name,s.emoji]); }); }); }catch(e){}
-  try{ (WORKOUTS||[]).forEach(function(w){ (w.drills||[]).forEach(function(ex){ dry.push([ex.name,ex.emoji]); }); }); }catch(e){}
+  /* These arrays live in OTHER script-tag IIFEs, so they are only reachable via
+     window (a bare reference would ReferenceError and fall back to the stub). */
+  var DR=window.DRILLS||[], SD=window.SHOOT_DAYS||[], WK=window.WORKOUTS||[];
+  try{ DR.forEach(function(d){ stick.push([d.name,d.emoji]); }); }catch(e){}
+  try{ SD.forEach(function(day){ (day||[]).forEach(function(s){ shoot.push([s.name,s.emoji]); }); }); }catch(e){}
+  try{ WK.forEach(function(w){ (w.drills||[]).forEach(function(ex){ dry.push([ex.name,ex.emoji]); }); }); }catch(e){}
   var uStick=uniq(stick), uShoot=uniq(shoot), uDry=uniq(dry);
   _catalogCache={
     Stickhandling: uStick.length?uStick:CATALOG.Stickhandling,
@@ -2304,7 +2307,7 @@ function dayIndex(){var d=new Date();var base=Math.floor(Date.UTC(d.getFullYear(
 /* Shooting: 4 rotating days, 5 drills each, for 10U-12U. Real coaching content
    supplied by the coach (verbatim). The four days are four problems to solve:
    shoot while moving, use the backhand, finish in tight, handle game-like pucks. */
-var SHOOT_DAYS=[
+var SHOOT_DAYS=window.SHOOT_DAYS=[
   /* Day 1: Shooting While Moving */
   [ {emoji:'🏃', name:'Moving Warm-Up', theme:'Feet moving', cue:'Get comfortable shooting without stopping your feet.',
      steps:['Start: 15-20 feet from the net with a puck.','Move: Stickhandle toward the net. Keep your feet moving the whole time.','Pick a corner: Don\'t stop. Shoot with your feet still going.','Reset: Grab another puck and go again from a different angle.']},
