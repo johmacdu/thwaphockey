@@ -687,13 +687,6 @@ body.login-locked{overflow:hidden}
       <span class='login-lab'>Parent email</span>
       <input class='login-in' id='loginEmail' type='email' inputmode='email' autocomplete='email' placeholder='parent@email.com' required>
     </label>
-    <label class='login-field'>
-      <span class='login-lab'>Player</span>
-      <span class='login-selwrap'>
-        <select class='login-in login-select' id='loginPlayer'></select>
-        <span class='login-selchev' aria-hidden='true'>&#8250;</span>
-      </span>
-    </label>
     <label class='login-field' id='loginCodeField' hidden>
       <span class='login-lab'>Your 6-digit code</span>
       <input class='login-in' id='loginCode' type='text' inputmode='numeric' autocomplete='one-time-code' maxlength='6' placeholder='123456'>
@@ -2976,7 +2969,6 @@ var overlay=document.getElementById('loginOverlay');
 if(!overlay)return;
 var form=document.getElementById('loginForm');
 var emailEl=document.getElementById('loginEmail');
-var playerEl=document.getElementById('loginPlayer');
 var codeEl=document.getElementById('loginCode');
 var codeField=document.getElementById('loginCodeField');
 var goBtn=document.getElementById('loginGo');
@@ -3094,27 +3086,20 @@ function signIn(player,email,keep){
    marker (the gate + greeting read it) and reloads.
    If the API is not available (local file/http.server, or a network error), fall
    back to signing in directly with the selected player so dev still works. */
-if(form && playerEl){
-  /* fill the player dropdown from the roster (same source as the old jersey check) */
-  (function(){
-    var creds=credentials(); /* { num: {pid,name} } */
-    var seen={};
-    Object.keys(creds).forEach(function(num){
-      var c=creds[num]; if(seen[c.pid]) return; seen[c.pid]=1;
-      var o=document.createElement('option');
-      o.value=c.pid; o.textContent=c.name; playerEl.appendChild(o);
-    });
-    if(!playerEl.options.length){ /* roster not in DOM yet: hard fallback to Lewie */
-      var o=document.createElement('option'); o.value='lewie'; o.textContent='Lewie'; playerEl.appendChild(o);
-    }
-  })();
+if(form){
   var codeSent=false;
+  /* No player dropdown in the sign-in sheet: the parent proves the account with
+     email + code, and the ACTIVE player is the device's chosen one (bfPlayer,
+     set on the Players screen; defaults to Lewie). The backend still needs a
+     playerId, so we send the current player. */
   function selectedPlayer(){
-    var pid=playerEl.value;
+    var pid=cb2Slug(); /* current player slug from bfPlayer, or 'guest' */
     var creds=credentials();
     var match=null;
     Object.keys(creds).forEach(function(num){ if(creds[num].pid===pid) match=creds[num]; });
-    return match || { pid:pid, name:(playerEl.options[playerEl.selectedIndex]||{}).text || pid };
+    if(match) return match;
+    var name=''; try{ name=(localStorage.getItem('bfPlayer')||'').trim(); }catch(_){}
+    return { pid:(pid&&pid!=='guest')?pid:'lewie', name:name||'Lewie' };
   }
   function toCodeStep(){
     codeSent=true;
@@ -3128,7 +3113,6 @@ if(form && playerEl){
     var email=String(emailEl.value||'').trim();
     if(!validEmail(email)){ errEl.textContent='Enter a parent email.'; emailEl.focus(); return; }
     var player=selectedPlayer();
-    if(!player || !player.pid){ errEl.textContent='Pick your player.'; playerEl.focus(); return; }
 
     if(!codeSent){
       /* Step 1: request a code */
