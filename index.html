@@ -796,22 +796,6 @@ body.login-locked{overflow:hidden}
     <button type='submit' class='login-go' id='loginGo'>Sign In &#8594;</button>
     <p class='login-err' id='loginErr' aria-live='polite'></p>
     <p class='login-alt'>New to <img class='login-wordmark' id='loginMark' src='wordmark-tm-light.svg' alt='Thwap Hockey'>? <a href='#' id='loginWaitlist'>Join the waitlist.</a></p>
-    <p class='login-alt'><a href='#' id='coachSignInLink'>Coach sign in</a></p>
-  </form>
-  <form class='login-modal' id='coachForm' role='dialog' aria-modal='true' aria-labelledby='coachTitle' hidden novalidate>
-    <h2 class='login-h' id='coachTitle'>Coach sign in</h2>
-    <p class='login-sub'>Sign in to manage your team.</p>
-    <label class='login-field'>
-      <span class='login-lab'>Coach email</span>
-      <input class='login-in' id='coachEmail' type='email' inputmode='email' autocomplete='email' placeholder='coach@email.com' required>
-    </label>
-    <label class='login-field'>
-      <span class='login-lab'>Password</span>
-      <input class='login-in' id='coachPw' type='password' autocomplete='current-password' placeholder='&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;' required>
-    </label>
-    <button type='submit' class='login-go' id='coachGo'>Sign In &#8594;</button>
-    <p class='login-err' id='coachErr' aria-live='polite'></p>
-    <p class='login-alt'><a href='#' id='coachBackLink'>Back to player sign in.</a></p>
   </form>
   <form class='login-modal' id='waitForm' role='dialog' aria-modal='true' aria-labelledby='waitTitle' hidden novalidate>
     <h2 class='login-h' id='waitTitle'>Join the waitlist</h2>
@@ -3625,18 +3609,50 @@ function signIn(player,email,keep){
   if(location.hash==='#login'){ location.hash='#home'; }
   location.reload();
 }
-/* ---- Player-code sign in (client-side, temporary) --------------------------
-   The parent enters their email + the team password (player jersey number
-   followed by the season year, e.g. #72 in 2026-27 -> 722027). Checked in the
-   browser and written to the thwapAuth cookie. The email-code server flow
-   (/api/login) stays in the repo, unused, until it is re-enabled. */
+/* ---- Unified sign in --------------------------------------------------------
+   ONE form, two kinds of user. On submit we try coach-login first (email +
+   password); if that returns a token the user is a coach. If it does not match,
+   we fall back to the player-code check (email + jersey number + season year).
+   Same two fields for both, so there is no separate coach form or link. */
+function completeCoachLogin(email,coach,token){
+  try{
+    localStorage.setItem('thwapCoach', JSON.stringify({
+      token:token, email:email,
+      name:(coach&&coach.name)||'Coach',
+      teams:(coach&&coach.teams)||[],
+      teamList:(coach&&coach.teamList)||[],
+      childPlayerId:(coach&&coach.childPlayerId)||null
+    }));
+  }catch(e2){}
+  hide();
+  location.hash='#roster';
+  location.reload();
+}
 if(form){
   form.addEventListener('submit',function(e){
     e.preventDefault(); errEl.textContent='';
-    if(!validEmail(emailEl.value)){ errEl.textContent='Enter a parent email.'; emailEl.focus(); return; }
-    var player=playerForPassword(pwEl.value);
-    if(!player){ errEl.textContent='That code did not match. It is the player number plus the season year.'; pwEl.focus(); pwEl.select(); return; }
-    signIn(player,emailEl.value,keepEl.checked);
+    var email=String(emailEl.value||'').trim();
+    var code=String(pwEl.value||'');
+    if(!validEmail(email)){ errEl.textContent='Enter your email.'; emailEl.focus(); return; }
+    errEl.textContent='Signing in...';
+    /* 1) Try coach first. A 200 with a token = coach. */
+    fetch('/api/coach?action=coach-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:code})})
+      .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
+      .then(function(res){
+        if(res.ok&&res.j&&res.j.token){ completeCoachLogin(email,res.j.coach,res.j.token); return; }
+        /* 2) Not a coach: fall back to the player-code check. */
+        errEl.textContent='';
+        var player=playerForPassword(code);
+        if(!player){ errEl.textContent='That code did not match. It is the player number plus the season year.'; pwEl.focus(); pwEl.select(); return; }
+        signIn(player,email,keepEl.checked);
+      })
+      .catch(function(){
+        /* Network/API down: still allow player sign in (client-side check). */
+        errEl.textContent='';
+        var player=playerForPassword(code);
+        if(!player){ errEl.textContent='That code did not match. It is the player number plus the season year.'; pwEl.focus(); pwEl.select(); return; }
+        signIn(player,email,keepEl.checked);
+      });
   });
 }
 if(eyeEl&&pwEl){
@@ -3644,47 +3660,7 @@ if(eyeEl&&pwEl){
     var showing=pwEl.type==='text';
     pwEl.type=showing?'password':'text';
     eyeEl.textContent=showing?'Show':'Hide';
-    eyeEl.setAttribute('aria-label',showing?'Show player code':'Hide player code');
-  });
-}
-/* ---- Coach sign in (Step 2): swaps the player form for a coach email+password
-   form, calls /api/coach?action=coach-login, stores the coach token + child id in
-   localStorage, and reloads so the Team page shows the coach view. ---- */
-var coachForm=document.getElementById('coachForm');
-var coachSignInLink=document.getElementById('coachSignInLink');
-var coachBackLink=document.getElementById('coachBackLink');
-var coachEmailEl=document.getElementById('coachEmail');
-var coachPwEl=document.getElementById('coachPw');
-var coachErrEl=document.getElementById('coachErr');
-function showCoachForm(){ if(form)form.hidden=true; var wf=document.getElementById('waitForm'); if(wf)wf.hidden=true; if(coachForm)coachForm.hidden=false; if(coachEmailEl)coachEmailEl.focus(); }
-function showPlayerForm(){ if(coachForm)coachForm.hidden=true; if(form)form.hidden=false; }
-if(coachSignInLink){ coachSignInLink.addEventListener('click',function(e){ e.preventDefault(); showCoachForm(); }); }
-if(coachBackLink){ coachBackLink.addEventListener('click',function(e){ e.preventDefault(); showPlayerForm(); }); }
-if(coachForm){
-  coachForm.addEventListener('submit',function(e){
-    e.preventDefault(); if(coachErrEl)coachErrEl.textContent='';
-    var email=String(coachEmailEl&&coachEmailEl.value||'').trim();
-    var pw=String(coachPwEl&&coachPwEl.value||'');
-    if(!validEmail(email)){ if(coachErrEl)coachErrEl.textContent='Enter your coach email.'; return; }
-    if(coachErrEl)coachErrEl.textContent='Signing in...';
-    fetch('/api/coach?action=coach-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pw})})
-      .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
-      .then(function(res){
-        if(!res.ok||!res.j||!res.j.token){ if(coachErrEl)coachErrEl.textContent='That email or password did not match.'; return; }
-        try{
-          localStorage.setItem('thwapCoach', JSON.stringify({
-            token:res.j.token, email:email,
-            name:(res.j.coach&&res.j.coach.name)||'Coach',
-            teams:(res.j.coach&&res.j.coach.teams)||[],
-            teamList:(res.j.coach&&res.j.coach.teamList)||[],
-            childPlayerId:(res.j.coach&&res.j.coach.childPlayerId)||null
-          }));
-        }catch(e2){}
-        hide();
-        location.hash='#roster';
-        location.reload();
-      })
-      .catch(function(){ if(coachErrEl)coachErrEl.textContent='Could not reach the server. Try again.'; });
+    eyeEl.setAttribute('aria-label',showing?'Show code':'Hide code');
   });
 }
 var waitForm=document.getElementById('waitForm');
