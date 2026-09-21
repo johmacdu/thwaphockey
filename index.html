@@ -569,6 +569,7 @@ body.login-locked{overflow:hidden}
    (positioned as a % of this group below) stays glued to Sass and they never drift
    apart when the window resizes within a breakpoint. */
 .sp-welcome{position:absolute;left:3vw;bottom:7%;width:clamp(210px,46vmin,420px);height:clamp(210px,46vmin,420px);pointer-events:none}
+#loginStage[data-step='welcome'] .sp-welcome{pointer-events:auto;cursor:pointer}
 .sp-sass{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:bottom center;opacity:0;filter:drop-shadow(0 14px 22px rgba(0,0,0,.32));will-change:transform,opacity;-webkit-user-drag:none}
 .sp-sass-welcome{transform:translateY(8px) scale(.96);transition:opacity .3s ease,transform .5s ease}
 #loginStage[data-step='welcome'] .sp-sass-welcome{opacity:1;transform:translateY(0) scale(1)}
@@ -658,7 +659,7 @@ body.login-locked{overflow:hidden}
     <div class='sp-speed'><i></i><i></i><i></i><i></i></div>
     <div class='sp-welcome'>
       <img class='sp-sass sp-sass-welcome' src='login/sass-welcome.webp' alt=''>
-      <img class='sp-bubble-img' src='login/bubble.webp' alt='Hi, I am Sass. Looks like you need to login. Time to THWAP!'>
+      <img class='sp-bubble-img' src='login/bubble.webp' alt='Hi, I am Sass and welcome to Thwap Hockey. Let us go!'>
     </div>
     <div class='sp-skater'>
       <img class='sp-frame sp-frame-a' src='login/sass-stride-a.webp' alt=''>
@@ -3021,18 +3022,25 @@ function stopSplash(settled){
   overlay.classList.remove('is-playing');
   setStep(settled?'ready':'idle');
 }
+/* run -> impact -> modal. Fired automatically after the welcome delay, or early
+   when the player taps Sass (which bypasses the remaining delay). */
+function playRun(){
+  if(!stageEl || stageEl.getAttribute('data-step')!=='welcome') return;
+  clearSplash();
+  setStep('run');
+  splashTimers.push(setTimeout(function(){
+    setStep('impact');
+    if(stageEl){ stageEl.classList.add('shake'); setTimeout(function(){ stageEl.classList.remove('shake'); },420); }
+  },1500));
+  splashTimers.push(setTimeout(function(){ showSignin(); },2250));
+}
 function startSplash(){
   if(!stageEl){ showSignin(); return; }
   clearSplash();
   overlay.classList.add('is-playing');
   if(form) form.hidden=true; if(waitForm) waitForm.hidden=true;
   setStep('welcome');
-  splashTimers.push(setTimeout(function(){ setStep('run'); },4600));
-  splashTimers.push(setTimeout(function(){
-    setStep('impact');
-    if(stageEl){ stageEl.classList.add('shake'); setTimeout(function(){ stageEl.classList.remove('shake'); },420); }
-  },6100));
-  splashTimers.push(setTimeout(function(){ showSignin(); },6850));
+  splashTimers.push(setTimeout(playRun,4600));
 }
 function maybeSplash(){
   if(reduceMotion()){ showSignin(); return; }
@@ -3040,6 +3048,8 @@ function maybeSplash(){
 }
 (function(){
   document.addEventListener('keydown',function(e){ if(e.key==='Escape' && overlay.classList.contains('is-playing')) showSignin(); });
+  /* tap Sass during the welcome pause to start the skate right away */
+  var welcomeGroup=document.querySelector('.sp-welcome'); if(welcomeGroup) welcomeGroup.addEventListener('click',function(){ if(overlay.classList.contains('is-playing')) playRun(); });
 })();
 function signIn(player,email,keep){
   var rec={pid:player.pid,name:player.name,email:String(email||'').trim(),year:SEASON_YEAR,ts:Date.now()};
