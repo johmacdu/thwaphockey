@@ -15,13 +15,13 @@
 // KV_REST_API_* / UPSTASH_REDIS_REST_*, and SESSION_TOKEN_SECRET (falls back to
 // PHOTO_TOKEN_SECRET).
 
-import { getKv, parseBody, isRosterPlayer, emailConfigured, sendCodeEmail } from './_photo_common.js';
-import { checkAndBumpRate, putOtp, randomCode, checkOtp, recordConsent } from './_photo_store.js';
+import { getKv, parseBody, isRosterPlayer, emailConfigured, sendCodeEmail } from '../lib/photo_common.js';
+import { checkAndBumpRate, putOtp, randomCode, checkOtp, recordConsent } from '../lib/photo_store.js';
 import {
   mintSession, verifySession, sessionCookie, clearSessionCookie,
   readSessionCookie, sessionConfigured,
-} from './_session_store.js';
-import { ROSTER } from './_store.js';
+} from '../lib/session_store.js';
+import { ROSTER } from '../lib/store.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

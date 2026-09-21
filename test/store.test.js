@@ -1,6 +1,6 @@
 // test/store.test.js
 //
-// Unit tests for api/_store.js: honest streak logic, Monday-based weekly split,
+// Unit tests for lib/store.js: honest streak logic, Monday-based weekly split,
 // idempotent day recording, dated events, and the board-shaping functions.
 //
 // The @upstash/redis client is replaced with an in-memory FakeRedis so these are
@@ -29,7 +29,7 @@ const {
   weekBoard,
   listPlayers,
   getPlayer,
-} = await import('../api/_store.js');
+} = await import('../lib/store.js');
 
 // Helper: keys the store uses.
 const daysKey = (id) => `days:${id}`;

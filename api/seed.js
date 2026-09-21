@@ -10,7 +10,7 @@
 // process.env.SEED_KEY. If SEED_KEY is not set, the endpoint refuses outright
 // (fail closed) so it can never run seeded-open in an unconfigured deploy.
 
-import { ROSTER, getPlayer, setPlayer, listPlayers } from './_store.js';
+import { ROSTER, getPlayer, setPlayer, listPlayers } from '../lib/store.js';
 
 function zeroCounts() {
   return { stick: 0, shoot: 0, dryland: 0, streak: 0, stickers: 0, updatedAt: null };

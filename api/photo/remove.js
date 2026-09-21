@@ -3,8 +3,8 @@
 // POST (Authorization: Bearer <uploadToken>) { playerId } -> deletes the photo.
 
 import { del } from '@vercel/blob';
-import { getKv, parseBody, isRosterPlayer, uploadConfigured } from '../_photo_common.js';
-import { verifyToken, getPhoto, removePhoto } from '../_photo_store.js';
+import { getKv, parseBody, isRosterPlayer, uploadConfigured } from '../../lib/photo_common.js';
+import { verifyToken, getPhoto, removePhoto } from '../../lib/photo_store.js';
 
 function bearer(req) {
   const h = req.headers && (req.headers.authorization || req.headers.Authorization);
