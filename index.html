@@ -721,6 +721,10 @@ body.login-locked{overflow:hidden}
     <p class='login-sub' id='waitSub'>Tell us where you play. We will reach out when THWAP opens for your team.</p>
     <div id='waitFields'>
       <label class='login-field'>
+        <span class='login-lab'>Your name</span>
+        <input class='login-in' id='waitName' type='text' autocomplete='name' placeholder='First and last name' required>
+      </label>
+      <label class='login-field'>
         <span class='login-lab'>Association</span>
         <input class='login-in' id='waitAssoc' type='text' autocomplete='organization' placeholder='e.g. Vancouver Jr. Rangers' required>
       </label>
@@ -3193,7 +3197,9 @@ if(waitBack){ waitBack.addEventListener('click',function(e){ e.preventDefault();
 if(waitForm){
   waitForm.addEventListener('submit',function(e){
     e.preventDefault(); waitErr.textContent='';
+    var name=(document.getElementById('waitName').value||'').trim();
     var assoc=(waitAssoc.value||'').trim(), ages=checkedAges(), email=(waitEmail.value||'').trim();
+    if(!name){ waitErr.textContent='Enter your name.'; document.getElementById('waitName').focus(); return; }
     if(!assoc){ waitErr.textContent='Enter your association.'; waitAssoc.focus(); return; }
     if(!ages.length){ waitErr.textContent='Pick at least one age level.'; return; }
     if(!validEmail(email)){ waitErr.textContent='Enter a valid email.'; waitEmail.focus(); return; }
@@ -3201,7 +3207,7 @@ if(waitForm){
     if(btn){ btn.disabled=true; btn.textContent='Joining...'; }
     function reset(){ if(btn){ btn.disabled=false; btn.textContent='Join the waitlist'; } }
     fetch('/api/waitlist',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({association:assoc,ageLevels:ages,region:waitRegion,email:email})})
+      body:JSON.stringify({name:name,association:assoc,ageLevels:ages,region:waitRegion,email:email})})
       .then(function(r){
         if(r.ok){ waitSuccess(email); return; }
         if(r.status===503){ waitErr.textContent='The waitlist is not open yet. Please try again soon.'; }
