@@ -22,10 +22,11 @@ function setEnv() {
 }
 setEnv();
 
-const { default: requestCode } = await import('../api/login/request-code.js');
-const { default: verify } = await import('../api/login/verify.js');
-const { default: session } = await import('../api/login/session.js');
-const { default: logout } = await import('../api/login/logout.js');
+const { _handlers } = await import('../api/login.js');
+const requestCode = _handlers.requestCode;
+const verify = _handlers.verify;
+const session = _handlers.session;
+const logout = _handlers.logout;
 const { mintSession, verifySession, SESSION_COOKIE, SESSION_TTL_MS } = await import('../api/session_store.js');
 
 function makeRes() {

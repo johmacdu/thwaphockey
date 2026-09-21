@@ -3055,8 +3055,8 @@ function signIn(player,email,keep){
   location.reload();
 }
 /* ---- Email-code sign in (Phase 1 server sessions) --------------------------
-   Step 1: parent picks their player + enters email -> POST /api/login/request-code.
-   Step 2: parent enters the 6-digit code -> POST /api/login/verify, which sets an
+   Step 1: parent picks their player + enters email -> POST /api/login?action=request-code.
+   Step 2: parent enters the 6-digit code -> POST /api/login?action=verify, which sets an
    HTTP-only session cookie server-side. The client then writes its own thwapAuth
    marker (the gate + greeting read it) and reloads.
    If the API is not available (local file/http.server, or a network error), fall
@@ -3100,7 +3100,7 @@ if(form && playerEl){
     if(!codeSent){
       /* Step 1: request a code */
       setBusy(true,'Sending...');
-      fetch('/api/login/request-code',{method:'POST',headers:{'Content-Type':'application/json'},
+      fetch('/api/login?action=request-code',{method:'POST',headers:{'Content-Type':'application/json'},
         body:JSON.stringify({email:email, playerId:player.pid})})
         .then(function(r){
           if(r.ok){ setBusy(false,'Verify & sign in \u2192'); toCodeStep(); return; }
@@ -3116,7 +3116,7 @@ if(form && playerEl){
     var code=String(codeEl.value||'').trim();
     if(!/^\d{6}$/.test(code)){ errEl.textContent='Enter the 6-digit code from your email.'; codeEl.focus(); return; }
     setBusy(true,'Checking...');
-    fetch('/api/login/verify',{method:'POST',headers:{'Content-Type':'application/json'},
+    fetch('/api/login?action=verify',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({email:email, playerId:player.pid, code:code, keep:keepEl.checked})})
       .then(function(r){ return r.json().then(function(j){ return {ok:r.ok, body:j}; }); })
       .then(function(res){
