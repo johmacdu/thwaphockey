@@ -2182,7 +2182,9 @@ function build(){
   }
 
   /* exercise detail, shown directly. When a discipline filter is active (all-time), show only that one. */
-  var showDiscs=discs;
+  /* Tapping a totals tile filters the list to that one category; All shows every
+     category. (plFilter is 'all' | 'Stickhandling' | 'Shooting' | 'Dryland'.) */
+  var showDiscs=(plFilter!=='all' && discs.indexOf(plFilter)>=0)?[plFilter]:discs;
   var DACC={Stickhandling:'#8fd65e',Shooting:'#75B8FF',Dryland:'#FF9D4D'};
   var list=showDiscs.map(function(disc){
     var exs=buildCatalog()[disc]; var done=demoDone(first,disc,tf);
