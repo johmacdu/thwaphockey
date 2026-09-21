@@ -242,6 +242,8 @@ body.login-locked .topbar{position:relative;z-index:120}
 .cardsw.sel{border-color:#fff;box-shadow:0 0 0 3px var(--lime),0 2px 6px rgba(0,0,0,.4)}
 .cardsw.locked{cursor:default;opacity:.5}
 .cardsw.locked::after{content:'🔒';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;filter:grayscale(1)}
+.cardsw-need{position:absolute;left:50%;top:calc(100% + 2px);transform:translateX(-50%);font-size:9px;font-weight:900;line-height:1;color:var(--muted);white-space:nowrap;letter-spacing:.02em}
+.cardsw.locked{margin-bottom:12px}
 /* faces are dark/immersive per spec */
 .cardfront{color:#fff;background:#0f1712}.cardback{color:#fff;background:linear-gradient(160deg,#1d2a21,#0f1712)}/* position accent themes on the front */.cardfront.pos-fwd,.cardback.pos-fwd{--acc:#F0B429;--acc2:#B98216}.cardfront.pos-def,.cardback.pos-def{--acc:#75B8FF;--acc2:#3E7DC4}.cardfront.pos-goalie,.cardback.pos-goalie{--acc:#F0645A;--acc2:#B23F38}/* mountain/gradient backdrop (Big Number cards + behind photos) */.cf-bg{position:absolute;inset:0;background:linear-gradient(165deg,var(--acc2,#334) 0%,#0f1712 62%)}.cf-bg::after{content:'';position:absolute;left:0;right:0;bottom:0;height:52%;background:linear-gradient(160deg,transparent,rgba(0,0,0,.35)),conic-gradient(from 210deg at 30% 100%, rgba(255,255,255,.08), transparent 40%);clip-path:polygon(0 100%,18% 46%,32% 70%,52% 28%,70% 62%,86% 40%,100% 66%,100% 100%);opacity:.5}
 .cf-num{font-family:'Archivo Black',system-ui,sans-serif;font-size:64px;line-height:.82;color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.25)}
@@ -684,13 +686,6 @@ body.login-locked{overflow:hidden}
     <label class='login-field'>
       <span class='login-lab'>Parent email</span>
       <input class='login-in' id='loginEmail' type='email' inputmode='email' autocomplete='email' placeholder='parent@email.com' required>
-    </label>
-    <label class='login-field'>
-      <span class='login-lab'>Player</span>
-      <span class='login-selwrap'>
-        <select class='login-in login-select' id='loginPlayer'></select>
-        <span class='login-selchev' aria-hidden='true'>&#8250;</span>
-      </span>
     </label>
     <label class='login-field' id='loginCodeField' hidden>
       <span class='login-lab'>Your 6-digit code</span>
@@ -1384,6 +1379,21 @@ var CB2_META={
   grunge:{sw:'#8A8F94'}, amber:{sw:'#E8A317'}, fire:{sw:'#E24A26'}
 };
 var CB2_START_UNLOCKED=['red','blue'];
+/* Themes beyond red+blue unlock by total stickers EARNED (the same thwapEarned:<slug>
+   counter the Sticker Book reads). red+blue are free; the rest cross a milestone. */
+var CB2_UNLOCK_AT={ gold:10, rainbow:20, grunge:35, amber:55, fire:80 };
+function cb2Earned(slug){
+  slug=slug||cb2Slug();
+  try{ return parseInt(localStorage.getItem('thwapEarned:'+slug)||'0',10)||0; }catch(e){ return 0; }
+}
+/* The earned/sticker system's answer to "which themes has this player unlocked?".
+   cb2Unlocked() below merges this into the start set. Returns the theme keys whose
+   milestone the player has reached. */
+window.thwapThemeUnlocked=function(){
+  var n=cb2Earned(), out=[];
+  Object.keys(CB2_UNLOCK_AT).forEach(function(t){ if(n>=CB2_UNLOCK_AT[t]) out.push(t); });
+  return out;
+};
 var CB2_HAVE={ front:{red:1,blue:1,gold:1,rainbow:1,grunge:1,amber:1,fire:1}, back:{red:1,blue:1,gold:1,rainbow:1,grunge:1,amber:1,fire:1} };
 function cb2Slug(){ try{ return (localStorage.getItem('bfPlayer')||'guest').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,'')||'guest'; }catch(e){ return 'guest'; } }
 function cb2Unlocked(){ /* returns the set of unlocked theme keys for this player */
@@ -1525,17 +1535,23 @@ function buildThemePicker(){
   function showMain(){ main.hidden=false; themeRow.hidden=true; }
   function showThemes(){ main.hidden=true; themeRow.hidden=false; dirty=false; setSave(); renderSwatches(); }
   function renderSwatches(){
-    var cur=cb2Theme(slug), unlocked=cb2Unlocked();
+    var cur=cb2Theme(slug), unlocked=cb2Unlocked(), earned=cb2Earned(slug);
     row.innerHTML='';
     CB2_THEMES.forEach(function(t){
       var b=document.createElement('button'); b.type='button';
       b.className='cardsw'+(t===cur?' sel':'')+(unlocked[t]?'':' locked');
       b.style.setProperty('--sw', CB2_META[t]?CB2_META[t].sw:'#333');
-      b.setAttribute('aria-label', t+(unlocked[t]?(t===cur?', selected':''):', locked'));
+      var need=CB2_UNLOCK_AT[t];
       if(unlocked[t]){
+        b.setAttribute('aria-label', t+(t===cur?', selected':''));
         b.addEventListener('pointerdown',function(e){ e.stopPropagation(); });
         b.addEventListener('click',function(e){ e.stopPropagation(); if(t===cb2Theme(slug)) return; cb2SetTheme(slug,t); dirty=true; setSave(); buildFaces(); renderSwatches(); });
-      } else { b.addEventListener('click',function(e){ e.stopPropagation(); }); }
+      } else {
+        /* locked: show the milestone so a kid knows how to earn it */
+        b.setAttribute('aria-label', t+', locked. Earn '+(need||'?')+' stickers to unlock');
+        if(need){ var lab=document.createElement('span'); lab.className='cardsw-need'; lab.textContent=need+'\u2B50'; b.appendChild(lab); }
+        b.addEventListener('click',function(e){ e.stopPropagation(); });
+      }
       row.appendChild(b);
     });
   }
@@ -2953,7 +2969,6 @@ var overlay=document.getElementById('loginOverlay');
 if(!overlay)return;
 var form=document.getElementById('loginForm');
 var emailEl=document.getElementById('loginEmail');
-var playerEl=document.getElementById('loginPlayer');
 var codeEl=document.getElementById('loginCode');
 var codeField=document.getElementById('loginCodeField');
 var goBtn=document.getElementById('loginGo');
@@ -3071,27 +3086,20 @@ function signIn(player,email,keep){
    marker (the gate + greeting read it) and reloads.
    If the API is not available (local file/http.server, or a network error), fall
    back to signing in directly with the selected player so dev still works. */
-if(form && playerEl){
-  /* fill the player dropdown from the roster (same source as the old jersey check) */
-  (function(){
-    var creds=credentials(); /* { num: {pid,name} } */
-    var seen={};
-    Object.keys(creds).forEach(function(num){
-      var c=creds[num]; if(seen[c.pid]) return; seen[c.pid]=1;
-      var o=document.createElement('option');
-      o.value=c.pid; o.textContent=c.name; playerEl.appendChild(o);
-    });
-    if(!playerEl.options.length){ /* roster not in DOM yet: hard fallback to Lewie */
-      var o=document.createElement('option'); o.value='lewie'; o.textContent='Lewie'; playerEl.appendChild(o);
-    }
-  })();
+if(form){
   var codeSent=false;
+  /* No player dropdown in the sign-in sheet: the parent proves the account with
+     email + code, and the ACTIVE player is the device's chosen one (bfPlayer,
+     set on the Players screen; defaults to Lewie). The backend still needs a
+     playerId, so we send the current player. */
   function selectedPlayer(){
-    var pid=playerEl.value;
+    var pid=cb2Slug(); /* current player slug from bfPlayer, or 'guest' */
     var creds=credentials();
     var match=null;
     Object.keys(creds).forEach(function(num){ if(creds[num].pid===pid) match=creds[num]; });
-    return match || { pid:pid, name:(playerEl.options[playerEl.selectedIndex]||{}).text || pid };
+    if(match) return match;
+    var name=''; try{ name=(localStorage.getItem('bfPlayer')||'').trim(); }catch(_){}
+    return { pid:(pid&&pid!=='guest')?pid:'lewie', name:name||'Lewie' };
   }
   function toCodeStep(){
     codeSent=true;
@@ -3105,7 +3113,6 @@ if(form && playerEl){
     var email=String(emailEl.value||'').trim();
     if(!validEmail(email)){ errEl.textContent='Enter a parent email.'; emailEl.focus(); return; }
     var player=selectedPlayer();
-    if(!player || !player.pid){ errEl.textContent='Pick your player.'; playerEl.focus(); return; }
 
     if(!codeSent){
       /* Step 1: request a code */
