@@ -152,6 +152,38 @@ describe('Bug 5 (fallback): roster cards target the player page', () => {
   });
 });
 
+describe('Coach homepage: tapping the coach name opens the profile editor', () => {
+  // Isolate the coach profile editor IIFE (the block that wires #chProfileName).
+  function profileIife() {
+    const start = html.indexOf('Coach profile editor: name + photo');
+    expect(start, 'coach profile editor block present').toBeGreaterThan(-1);
+    // Take a generous window from the marker; enough to cover the IIFE body.
+    return html.slice(start, start + 3400);
+  }
+
+  it('the coach hero name (#chProfileName) is a tappable button that opens the editor', () => {
+    const name = doc.getElementById('chProfileName');
+    expect(name).toBeTruthy();
+    expect(name.tagName).toBe('BUTTON');
+    // The editor gate it opens must exist.
+    expect(doc.getElementById('coachProfileGate')).toBeTruthy();
+    // The IIFE wires a click on the hero name.
+    expect(profileIife()).toMatch(/getElementById\('chProfileName'\);\s*if\(heroName\)\s*heroName\.addEventListener\('click',open\)/);
+  });
+
+  it('the profile IIFE has no out-of-scope refs that throw before wiring the tap', () => {
+    // These names live in the SEPARATE coaches-strip IIFE. Referencing them here
+    // threw a ReferenceError at runtime, aborting the IIFE before the hero-name
+    // listener was attached - which is exactly why the tap did nothing. Parsing
+    // does not catch it (the throw is at execution), so assert on the source.
+    const iife = profileIife();
+    expect(iife.includes('if(editBtn) editBtn.addEventListener'), 'stray editBtn ref').toBe(false);
+    // The submit handler must refresh via the window hook, not a bare render/load.
+    expect(iife).toMatch(/window\.thwapReloadCoaches/);
+    expect(iife.includes('if(res.j.coaches) render(res.j.coaches); else load();'), 'bare render/load call').toBe(false);
+  });
+});
+
 describe('Mobile splash: Sass is half on-screen at the left edge', () => {
   it('the mobile .sp-welcome offset is a partial negative (half on), not fully off', () => {
     // Grab the .sp-welcome rule inside the max-width:640px block.
