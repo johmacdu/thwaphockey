@@ -1572,6 +1572,7 @@ window.thwapActiveTeam=function(coach){
       if(addAsstBtn) addAsstBtn.hidden=!(amHead && assistants<3);
     }
     function load(){ fetch('/api/coach?action=team-coaches&code='+encodeURIComponent(code)).then(function(r){ return r.json(); }).then(function(j){ if(j&&j.ok) render(j.coaches||[]); }).catch(function(){}); }
+    window.thwapReloadCoaches=function(coaches){ if(coaches){ render(coaches); } else { load(); } };
     load();
     /* Add assistant: opens a sheet (image, first, last, email, password). */
     (function(){
@@ -1637,7 +1638,6 @@ window.thwapActiveTeam=function(coach){
         if(gate) gate.hidden=false;
       }
       function close(){ if(gate) gate.hidden=true; }
-      if(editBtn) editBtn.addEventListener('click',open);
       var heroName=document.getElementById('chProfileName'); if(heroName) heroName.addEventListener('click',open);
       window.thwapOpenCoachProfile=open;
       if(xBtn) xBtn.addEventListener('click',close);
@@ -1670,7 +1670,7 @@ window.thwapActiveTeam=function(coach){
             if(res.ok&&res.j&&res.j.ok){
               coach.name=nm; coach.photo=dataUrl;
               try{ localStorage.setItem('thwapCoach', JSON.stringify(coach)); }catch(e2){}
-              if(res.j.coaches) render(res.j.coaches); else load();
+              if(window.thwapReloadCoaches) window.thwapReloadCoaches(res.j.coaches);
               close();
             } else if(msgEl){ msgEl.textContent=(res.j&&res.j.error)||'Could not save.'; }
           })
