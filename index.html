@@ -2148,7 +2148,7 @@ window.thwapActiveTeam=function(coach){
       if(!validEmail(em.value)){ er.textContent='Enter a parent email.'; em.focus(); return; }
       var num=String(pending.info.num);
       var entered=String(cd.value||'').trim();
-      if(entered!==num+'2027' && entered!==num+'2026'){ er.textContent='That code did not match. It is the player number plus the season year.'; cd.focus(); cd.select(); return; }
+      if(entered!==num+'2027' && entered!==num+'2026'){ er.textContent='That code did not match.'; cd.focus(); cd.select(); return; }
       try{ localStorage.setItem(PLAYER, pending.info.name); }catch(_){}
       /* also log this player in via the auth cookie so the gate stays in sync */
       try{
