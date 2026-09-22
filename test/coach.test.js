@@ -473,3 +473,18 @@ describe('assistant coach with login credentials', () => {
     expect(tryLogin.statusCode).toBe(401);
   });
 });
+
+describe('seeded coach password', () => {
+  it('the seeded coach logs in with the current default password', async () => {
+    const res = makeRes();
+    await _handlers.coachLogin(post({ email: _seed.SEED_COACH_EMAIL, password: 'rangers2026' }), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.token).toBeTruthy();
+  });
+
+  it('the prior default password no longer works', async () => {
+    const res = makeRes();
+    await _handlers.coachLogin(post({ email: _seed.SEED_COACH_EMAIL, password: 'ranger10u' }), res);
+    expect(res.statusCode).toBe(401);
+  });
+});

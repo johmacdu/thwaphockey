@@ -47,7 +47,8 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // no manual DB step is needed; safe to call repeatedly.
 const SEED_TEAM_CODE = 'RANGERS72';
 const SEED_COACH_EMAIL = 'jason@riversidepayments.com';
-const SEED_COACH_PASSWORD = 'ranger10u';
+const SEED_COACH_PASSWORD = 'rangers2026';
+const SEED_COACH_PASSWORD_PRIOR = 'ranger10u'; // superseded default; migrate an untouched coach off it
 const SEED_CHILD_PLAYER_ID = 'alder';
 
 function passHash(password) {
@@ -104,8 +105,14 @@ async function ensureSeed() {
     // gains the new teams without a reset).
     const have = existing.teams || [];
     const merged = Array.from(new Set([...have, ...allCodes]));
-    if (merged.length !== have.length) {
-      return setCoach(SEED_COACH_EMAIL, { ...existing, teams: merged });
+    // Migrate the password to the new default ONLY if it is unset or still the
+    // prior default; never clobber a password the coach set themselves.
+    const untouched = !existing.passHash || safeEqual(existing.passHash, passHash(SEED_COACH_PASSWORD_PRIOR));
+    const nextPass = untouched ? passHash(SEED_COACH_PASSWORD) : existing.passHash;
+    const teamsChanged = merged.length !== have.length;
+    const passChanged = nextPass !== existing.passHash;
+    if (teamsChanged || passChanged) {
+      return setCoach(SEED_COACH_EMAIL, { ...existing, teams: merged, passHash: nextPass });
     }
     return existing;
   }
