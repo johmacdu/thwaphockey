@@ -220,6 +220,11 @@ describe('Menus start closed: [hidden] overrides display', () => {
   it('.kebabmenu has an explicit [hidden]{display:none} rule', () => {
     expect(html).toMatch(/\.kebabmenu\[hidden\]\{display:none\}/);
   });
+  it('the footer menu items are left-aligned', () => {
+    const m = html.match(/\.footmenu-item\{([^}]*)\}/);
+    expect(m).not.toBeNull();
+    expect(m[1]).toMatch(/text-align:left/);
+  });
   it('.pgate has an explicit [hidden]{display:none} rule (full-screen overlay tap-blocker)', () => {
     // .pgate is position:fixed;inset:0;z-index:80. Without this, a hidden switch/
     // profile gate sat invisibly over the whole Team page and swallowed every tap
