@@ -730,6 +730,12 @@ button.row:active{background:var(--soft)}
 .idp-preset.on{background:var(--lime);color:var(--ink);border-color:transparent}
 .idp-cancel{background:none;color:var(--muted)}
 .idpdev{margin:14px 0;padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--card2)}
+.idpdev-vol{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.idpdev-vol-cell{padding:10px 8px;border:1px solid var(--line);border-radius:12px;background:var(--card);text-align:center}
+.idpdev-vol-lab{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;color:var(--muted)}
+.idpdev-vol-n{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;color:var(--text);line-height:1.1;margin-top:2px}
+.idpdev-vol-sub{font-size:11px;font-weight:700;color:var(--muted);margin-top:2px}
+.idpdev-trend-h{margin-top:16px;font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
 .idpdev-trend{display:flex;align-items:flex-end;gap:10px;height:96px;margin-top:12px}
 .idpdev-week{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
 .idpdev-bar{width:100%;max-width:34px;background:var(--lime);border-radius:6px 6px 0 0;min-height:3px}
@@ -1313,6 +1319,8 @@ body.login-locked{overflow:hidden}
 </div>
 <div class='idpdev' id='idpDev' hidden>
   <div class='idp-head'>📈 Development this month</div>
+  <div class='idpdev-vol' id='idpDevVol'></div>
+  <div class='idpdev-trend-h'>Weekly activity</div>
   <div class='idpdev-trend' id='idpDevTrend'></div>
   <div class='idpdev-goals-h'>Game-day focus</div>
   <div class='idpdev-goals' id='idpDevGoals'></div>
@@ -3342,6 +3350,19 @@ window.thwapStatsRefresh=function(){ if(current && location.hash==='#player') bu
         .then(function(j){
           if(!j||!j.ok){ return; }
           dev.hidden=false;
+          /* Per-discipline volume: this week (baseThisWeek) + this month (summed trend). */
+          var volEl=document.getElementById('idpDevVol');
+          var wkv=j.baseThisWeek||{stick:0,shoot:0,dryland:0};
+          var mo={stick:0,shoot:0,dryland:0};
+          (j.monthTrend||[]).forEach(function(w){ mo.stick+=w.stick||0; mo.shoot+=w.shoot||0; mo.dryland+=w.dryland||0; });
+          if(volEl){
+            var CATS=[['stick','🏒 Hands'],['shoot','🥅 Shoot'],['dryland','⚡ Dryland']];
+            volEl.innerHTML=CATS.map(function(c){
+              return "<div class='idpdev-vol-cell'><div class='idpdev-vol-lab'>"+c[1]+"</div>"+
+                "<div class='idpdev-vol-n'>"+(wkv[c[0]]||0)+"</div>"+
+                "<div class='idpdev-vol-sub'>"+mo[c[0]]+" this month</div></div>";
+            }).join('');
+          }
           var trendEl=document.getElementById('idpDevTrend');
           var trend=j.monthTrend||[];
           var max=1; trend.forEach(function(w){ if(w.total>max) max=w.total; });
