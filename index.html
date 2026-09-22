@@ -527,7 +527,8 @@ body.coach-locked .coachlock-entry{display:inline-flex;align-items:center}
 .roster-coachonly{display:none}
 body.is-coach .roster-coachonly{display:block}
 .roster-playershead{display:flex;align-items:center;justify-content:space-between;margin:22px 0 4px;padding-top:16px;border-top:1px solid var(--line)}
-.roster-edit{font-family:inherit;font-size:13px;font-weight:800;background:transparent;color:var(--text);border:1px solid var(--line2);border-radius:10px;padding:8px 16px;cursor:pointer}
+.roster-edit{flex:none;display:inline-grid;place-items:center;width:40px;height:40px;border-radius:50%;font-family:inherit;font-size:16px;color:var(--text);cursor:pointer;background:color-mix(in srgb,var(--panel) 62%,transparent);border:1px solid color-mix(in srgb,var(--text) 12%,transparent);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);box-shadow:0 4px 14px var(--shadow)}
+.roster-edit:hover{background:color-mix(in srgb,var(--panel) 80%,transparent)}
 .roster-edit.on{background:var(--lime);color:var(--ink);border-color:transparent}
 /* Edit mode: cards show a subtle editable affordance. */
 body.roster-editing #roster-grid .pcard:not(.pcard-add){box-shadow:0 0 0 2px var(--lime) inset;position:relative}
@@ -852,6 +853,16 @@ html[data-theme='dark'] .login-frost{background:linear-gradient(180deg,rgba(120,
 .login-row{display:flex;align-items:center;gap:9px;margin:6px 0 16px}
 .login-row input{width:18px;height:18px;accent-color:var(--green)}
 .login-row label{font-size:14px;color:var(--text2);font-weight:600}
+.login-consent{margin-top:-8px;align-items:flex-start}
+.login-consent input{margin-top:2px;flex:none}
+.login-consent a{color:var(--green);font-weight:800;text-decoration:underline;text-underline-offset:2px}
+.policy-sheet{position:fixed;inset:0;z-index:120;background:rgba(20,34,25,.5);display:none;align-items:center;justify-content:center;padding:20px}
+.policy-sheet.show{display:flex}
+.policy-box{max-width:480px;width:100%;max-height:80vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px}
+.policy-box h2{font-family:'Archivo Black',system-ui,sans-serif;font-size:20px;margin:0 0 4px}
+.policy-box .policy-ph{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--warn-text);margin:0 0 10px}
+.policy-box p{font-size:14px;color:var(--muted);line-height:1.55;margin:0 0 10px}
+.policy-close{margin-top:8px;font-family:inherit;font-size:14px;font-weight:850;background:var(--lime);color:var(--ink);border:0;border-radius:12px;padding:10px 18px;cursor:pointer}
 .login-go{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;background:var(--green);color:var(--onaccent);font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;font-size:16px;border:0;border-radius:14px;cursor:pointer;transition:transform .08s ease,filter .12s ease}
 .login-go:hover{filter:brightness(1.04)}
 .login-go:active{transform:scale(.98)}
@@ -1001,10 +1012,22 @@ body.login-locked{overflow:hidden}
       <input type='checkbox' id='loginKeep' checked>
       <label for='loginKeep'>Keep me signed in</label>
     </div>
-    <button type='submit' class='login-go' id='loginGo'>Sign In &#8594;</button>
+    <div class='login-row login-consent'>
+      <input type='checkbox' id='loginConsent'>
+      <label for='loginConsent'>I agree to the <a href='#terms' id='loginTerms'>Terms</a> and <a href='#privacy' id='loginPrivacy'>Privacy Policy</a></label>
+    </div>
+    <button type='submit' class='login-go' id='loginGo' disabled>Sign In &#8594;</button>
     <p class='login-err' id='loginErr' aria-live='polite'></p>
     <p class='login-alt'>New to <img class='login-wordmark' id='loginMark' src='wordmark-tm-light.svg' alt='Thwap Hockey'>? <a href='#' id='loginWaitlist'>Join the waitlist.</a></p>
   </form>
+  <div class='policy-sheet' id='policySheet'>
+    <div class='policy-box'>
+      <h2 id='policyTitle'>Policy</h2>
+      <p class='policy-ph'>Placeholder &mdash; final text coming soon</p>
+      <p id='policyBody'></p>
+      <button type='button' class='policy-close' id='policyClose'>Close</button>
+    </div>
+  </div>
   <form class='login-modal' id='waitForm' role='dialog' aria-modal='true' aria-labelledby='waitTitle' hidden novalidate>
     <h2 class='login-h' id='waitTitle'>Join the waitlist</h2>
     <p class='login-sub' id='waitSub'>Tell us where you play. We will reach out when THWAP opens for your team.</p>
@@ -1727,7 +1750,7 @@ window.thwapActiveTeam=function(coach){
     function setEditing(on){
       editing=on;
       document.body.classList.toggle('roster-editing', on);
-      if(editBtn){ editBtn.classList.toggle('on', on); editBtn.textContent=on?'Done':'Edit'; }
+      if(editBtn){ editBtn.classList.toggle('on', on); editBtn.setAttribute('aria-label', on?'Done editing players':'Edit players'); }
     }
     if(editBtn) editBtn.addEventListener('click',function(){ setEditing(!editing); });
     (function(){
@@ -4402,7 +4425,28 @@ var pwEl=document.getElementById('loginPw');
 var eyeEl=document.getElementById('loginEye');
 var goBtn=document.getElementById('loginGo');
 var keepEl=document.getElementById('loginKeep');
+var consentEl=document.getElementById('loginConsent');
 var errEl=document.getElementById('loginErr');
+/* Consent gates the Sign In button: no check, no sign in. */
+var POLICY_VERSION='2026-09';
+function syncConsent(){ if(goBtn) goBtn.disabled=!(consentEl&&consentEl.checked); }
+if(consentEl) consentEl.addEventListener('change',syncConsent);
+syncConsent();
+/* Terms / Privacy links open a placeholder policy sheet (real text later). */
+(function(){
+  var sheet=document.getElementById('policySheet'), title=document.getElementById('policyTitle'),
+      pbody=document.getElementById('policyBody'), pclose=document.getElementById('policyClose'),
+      tLink=document.getElementById('loginTerms'), pLink=document.getElementById('loginPrivacy');
+  var TXT={
+    terms:['Terms of Use','By using Thwap Hockey you agree to use it for youth hockey home training. This is placeholder text; the final Terms of Use will be published here before any team beyond the pilot is onboarded.'],
+    privacy:['Privacy Policy','Thwap Hockey collects a player first name, jersey number, position and training activity to show progress to the player and their coach. A parent email is collected to obtain parental consent. This is placeholder text; the final Privacy Policy will be published here before any team beyond the pilot is onboarded.']
+  };
+  function open(which){ var t=TXT[which]; if(!t||!sheet) return; if(title) title.textContent=t[0]; if(pbody) pbody.textContent=t[1]; sheet.classList.add('show'); }
+  if(tLink) tLink.addEventListener('click',function(e){ e.preventDefault(); open('terms'); });
+  if(pLink) pLink.addEventListener('click',function(e){ e.preventDefault(); open('privacy'); });
+  if(pclose) pclose.addEventListener('click',function(){ sheet.classList.remove('show'); });
+  if(sheet) sheet.addEventListener('click',function(e){ if(e.target===sheet) sheet.classList.remove('show'); });
+})();
 function cookieGet(name){
   var m=document.cookie.match(new RegExp('(?:^|; )'+name.replace(/([.$?*|{}()\[\]\\\/\+^])/g,'\\$1')+'=([^;]*)'));
   return m?decodeURIComponent(m[1]):null;
@@ -4564,6 +4608,8 @@ function completeCoachLogin(email,coach,token){
 if(form){
   form.addEventListener('submit',function(e){
     e.preventDefault(); errEl.textContent='';
+    if(consentEl&&!consentEl.checked){ errEl.textContent='Please agree to the Terms and Privacy Policy.'; return; }
+    try{ localStorage.setItem('thwapTerms', JSON.stringify({at:new Date().toISOString(), version:POLICY_VERSION})); }catch(_){}
     var email=String(emailEl.value||'').trim();
     var code=String(pwEl.value||'');
     if(!validEmail(email)){ errEl.textContent='Enter your email.'; emailEl.focus(); return; }
