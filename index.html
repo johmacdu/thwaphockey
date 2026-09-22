@@ -536,7 +536,7 @@ body.is-coach .roster .pcard-remove{display:grid;place-items:center}
    same buildCatalog() the players use; tap a row to include it in the plan, tap the
    How-to to open the same video + steps panel players see. */
 .dpk-sub{margin:-4px 0 14px;color:var(--muted);font-size:14px}
-.dpk-list{display:flex;flex-direction:column;gap:10px}
+.dpk-list{display:flex;flex-direction:column;gap:10px;padding-bottom:88px}
 .dpk-row{border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden}
 .dpk-row.picked{border-color:var(--lime);box-shadow:0 0 0 1px var(--lime) inset}
 .dpk-main{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;background:none;border:0;font-family:inherit;text-align:left;color:inherit;cursor:pointer}
@@ -552,8 +552,19 @@ body.is-coach .roster .pcard-remove{display:grid;place-items:center}
 .dpk-body p{margin:0 0 12px;font-size:14px;color:var(--muted);line-height:1.5}
 .dpk-body ol{margin:0;padding-left:22px;color:var(--text);font-size:14px;font-weight:600;line-height:1.6}
 .dpk-body ol li{margin-bottom:8px}
-/* Suggest a drill (coach): a small backlog form Thwap reviews. */
-.sugg{margin-top:26px;padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--card2)}
+/* Sticky picker footer: count + time estimate + reset/save, mirrors the game-day
+   goals footer. Over the 15-min cap it turns alert and Save is blocked. */
+.dpk-bar{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:var(--card);border-top:1px solid var(--line);box-shadow:0 -6px 18px rgba(0,0,0,.12)}
+.dpk-bar-info{display:flex;flex-direction:column;gap:2px;min-width:0}
+.dpk-bar-n{font-family:'Archivo Black',system-ui,sans-serif;font-size:16px;color:var(--text)}
+.dpk-bar-t{font-size:13px;font-weight:800;color:var(--muted)}
+.dpk-bar.over .dpk-bar-t{color:var(--alert-text)}
+.dpk-bar-btns{display:flex;gap:8px;flex:none}
+.dpk-reset{font-family:inherit;font-size:14px;font-weight:800;background:var(--soft);color:var(--muted);border:1px solid var(--line);border-radius:12px;padding:10px 16px;cursor:pointer}
+.dpk-save{font-family:inherit;font-size:14px;font-weight:850;background:var(--lime);color:var(--ink);border:1px solid transparent;border-radius:12px;padding:10px 18px;cursor:pointer}
+.dpk-save:disabled{opacity:.5;cursor:default}
+/* Recommend a drill: plain page content, NOT a card (nothing here is tappable-as-a-whole). */
+.sugg-wrap{margin-top:26px;padding-top:20px;border-top:1px solid var(--line)}
 .sugg-h{font-family:'Archivo Black',system-ui,sans-serif;font-size:16px;color:var(--text)}
 .sugg-p{margin:6px 0 12px;font-size:13px;color:var(--muted);line-height:1.5}
 .sugg-seg{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
@@ -1078,7 +1089,7 @@ body.login-locked{overflow:hidden}
   <div class='plangrid' id='planGrid'></div>
   <button type='button' class='plansave' id='planSave' disabled>Save plan</button>
   <p class='plan-done' id='planDone' hidden>Saved! Your team sees this plan.</p>
-  <div class='sugg' id='suggBox'>
+  <div class='sugg-wrap' id='suggBox'>
     <div class='sugg-h'>Recommend a drill</div>
     <p class='sugg-p'>Know a drill the team should train? Send it to Thwap. We review every suggestion and add the good ones to the library.</p>
     <div class='sugg-seg' id='suggSeg' role='group' aria-label='Category'>
@@ -1095,8 +1106,14 @@ body.login-locked{overflow:hidden}
 <section id='drillpick' class='page'>
 <a class='glassclose' href='#plan' aria-label='Close'>✕</a>
 <div class='hero'><div class='kicker' id='dpkKicker'>Coach</div><h1 id='dpkTitle'>Pick drills</h1></div>
-<p class='dpk-sub' id='dpkSub'>Tap a drill to add it. Tap How-to to see the video and steps.</p>
 <div class='dpk-list' id='dpkList'></div>
+<div class='dpk-bar' id='dpkBar' hidden>
+  <div class='dpk-bar-info'><span class='dpk-bar-n' id='dpkBarN'>0 drills</span><span class='dpk-bar-t' id='dpkBarT'></span></div>
+  <div class='dpk-bar-btns'>
+    <button type='button' class='dpk-reset' id='dpkReset'>Reset</button>
+    <button type='button' class='dpk-save' id='dpkSave'>Save</button>
+  </div>
+</div>
 </section>
 <section id='progress' class='page'>
 <a class='glassclose' href='.' aria-label='Close'>✕</a>
@@ -1544,7 +1561,7 @@ window.thwapActiveTeam=function(coach){
       row.className='planrow'+(d[0]===todayKey?' today':'');
       var day='<div class="planrow-day">'+d[1]+(d[0]===todayKey?'<span class="todaytag">Today</span>':'')+'</div>';
       var cats='<div class="plancats">'+CATS.map(function(c){
-        var n=drillsFor(d[0],c[0]).length;
+        var n=drillsFor(d[0],c[0]).filter(function(x){return x!=='__all__';}).length;
         return '<button type="button" class="plancat'+(n>0?' on':'')+'" data-day="'+d[0]+'" data-cat="'+c[0]+'">'+c[1]+
           '<span class="plancat-n">'+n+'</span></button>';
       }).join('')+'</div>';
@@ -1569,11 +1586,15 @@ window.thwapActiveTeam=function(coach){
   }
   /* --- Drill picker page (#drillpick) --- */
   var pickList=document.getElementById('dpkList'), pkTitle=document.getElementById('dpkTitle'), pkKicker=document.getElementById('dpkKicker');
+  var barEl=document.getElementById('dpkBar'), barN=document.getElementById('dpkBarN'), barT=document.getElementById('dpkBarT'),
+      resetBtn=document.getElementById('dpkReset'), pkSaveBtn=document.getElementById('dpkSave');
   var pkDay='', pkCat='';
   var CATLABEL={stick:'Hands',shoot:'Shoot',dryland:'Dryland'};
   var DAYLABEL={mon:'Monday',tue:'Tuesday',wed:'Wednesday',thu:'Thursday',fri:'Friday',sat:'Saturday',sun:'Sunday'};
   function openPicker(day,cat){
     pkDay=day; pkCat=cat;
+    /* Stage a copy of the current real drill names (drop the legacy __all__ marker). */
+    pkStaged=drillsFor(day,cat).filter(function(x){return x!=='__all__';}).slice();
     if(pkKicker) pkKicker.textContent=DAYLABEL[day]||'Coach';
     if(pkTitle) pkTitle.textContent=(CATLABEL[cat]||cat)+' drills';
     renderPicker();
@@ -1586,15 +1607,21 @@ window.thwapActiveTeam=function(coach){
     return "<div class='exvideo placeholder'><span>&#9654;</span><small>Video coming soon</small></div>";
   }
   function esc(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  /* Per-day minutes budget and how many drills a player actually does per day in
+     each category, so per-drill time = DAY_MIN / DAY_COUNT[cat] (the player's day
+     set is ~DAY_MIN total). Coach stays under DAY_MIN for the day/category. */
+  var DAY_MIN=15;
+  var DAY_COUNT={stick:2, shoot:5, dryland:6};
+  function perDrillMin(cat){ var n=DAY_COUNT[cat]||6; return DAY_MIN/n; }
+  function estMin(cat,count){ return Math.round(count*perDrillMin(cat)); }
+  var pkStaged=[]; /* staged drill names for the open day/category (committed on Save) */
   function renderPicker(){
     if(!pickList) return;
     var lib=(window.thwapDrillCatalog&&window.thwapDrillCatalog(pkCat))||[];
-    var picked=drillsFor(pkDay,pkCat);
-    var all=picked.indexOf('__all__')>=0;
     pickList.innerHTML='';
-    if(!lib.length){ pickList.innerHTML='<p class="dpk-sub">No drills in this category yet.</p>'; return; }
+    if(!lib.length){ pickList.innerHTML='<p class="dpk-sub">No drills in this category yet.</p>'; updateBar(); return; }
     lib.forEach(function(dr){
-      var on=all||picked.indexOf(dr.name)>=0;
+      var on=pkStaged.indexOf(dr.name)>=0;
       var row=document.createElement('div');
       row.className='dpk-row'+(on?' picked':'');
       var steps=(dr.steps&&dr.steps.length)?('<ol>'+dr.steps.map(function(s){return '<li>'+esc(s)+'</li>';}).join('')+'</ol>'):'';
@@ -1604,18 +1631,38 @@ window.thwapActiveTeam=function(coach){
         '<button type="button" class="dpk-how"><span class="dpk-how-chev">&rsaquo;</span> How-to</button>'+
         '<div class="dpk-body">'+ytEmbed(dr.video,dr.name)+(dr.cue?'<p>'+esc(dr.cue)+'</p>':'')+steps+'</div>';
       row.querySelector('.dpk-main').addEventListener('click',function(){
-        var cur=drillsFor(pkDay,pkCat).filter(function(x){return x!=='__all__';});
-        var i=cur.indexOf(dr.name);
-        if(i>=0) cur.splice(i,1); else cur.push(dr.name);
-        setDrills(pkDay,pkCat,cur);
-        row.classList.toggle('picked', cur.indexOf(dr.name)>=0);
+        var i=pkStaged.indexOf(dr.name);
+        if(i>=0){ pkStaged.splice(i,1); row.classList.remove('picked'); }
+        else {
+          /* Block adding past the 15-min day budget. */
+          if(estMin(pkCat, pkStaged.length+1) > DAY_MIN){ flashOver(); return; }
+          pkStaged.push(dr.name); row.classList.add('picked');
+        }
+        updateBar();
       });
       row.querySelector('.dpk-how').addEventListener('click',function(){ row.classList.toggle('how-open'); });
       pickList.appendChild(row);
     });
+    updateBar();
   }
   /* Re-render the grid counts when returning from the picker. */
   window.addEventListener('hashchange',function(){ if(location.hash==='#plan') render(); });
+  /* Footer: live count + time estimate; Reset clears staged; Save commits to the plan. */
+  function updateBar(){
+    if(!barEl) return;
+    barEl.hidden=false;
+    var n=pkStaged.length, mins=estMin(pkCat,n);
+    if(barN) barN.textContent=n+(n===1?' drill':' drills');
+    if(barT) barT.textContent=n?('~'+mins+' min'+(mins>=DAY_MIN?' (full)':'')):'nothing picked yet';
+    barEl.classList.toggle('over', mins>DAY_MIN);
+  }
+  function flashOver(){ if(barT){ barT.textContent='~'+DAY_MIN+' min is a full day for one category'; } if(barEl) barEl.classList.add('over'); }
+  if(resetBtn) resetBtn.addEventListener('click',function(){ pkStaged=[]; renderPicker(); });
+  if(pkSaveBtn) pkSaveBtn.addEventListener('click',function(){
+    setDrills(pkDay,pkCat,pkStaged.slice()); /* commit to plan (marks dirty for Save plan) */
+    render();
+    location.hash='#plan';
+  });
   fetch('/api/coach?action=get-plan&code='+encodeURIComponent(code))
     .then(function(r){ return r.json(); })
     .then(function(j){ var p=(j&&j.ok&&j.plan)?j.plan:null; if(p&&Object.keys(p).length){ plan=p; } else { seedDefaults(); setDirty(true); } render(); })
