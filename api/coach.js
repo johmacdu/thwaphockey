@@ -33,7 +33,7 @@ import {
   getTeam, setTeam, listMembers, addMember, getMember, removeMember,
   getCoach, setCoach, getIdpGoal, setIdpGoal, getGameGoalLog, logGameGoal,
   getTeamPlan, setTeamPlan,
-  addDrillSuggestion, listDrillSuggestions,
+  addDrillSuggestion, listDrillSuggestions, setSuggestionStatus, listAllTeamCodes,
   updateMember, createResetToken, consumeResetToken,
   listTeamCoaches, ensureHeadCoach, addAssistantCoach, removeAssistantCoach, MAX_ASSISTANTS,
 } from '../lib/teams_store.js';
@@ -473,6 +473,44 @@ async function drillSuggestions(req, res) {
   return res.status(200).json({ ok: true, suggestions: await listDrillSuggestions(code) });
 }
 
+// Thwap-admin auth: a bearer or ?key= secret, matching the waitlist admin pattern.
+// Disabled (all calls 401) when the env secret is unset, so it is never open by default.
+function adminOk(req) {
+  const secret = process.env.THWAP_ADMIN_TOKEN || process.env.WAITLIST_ADMIN_TOKEN || '';
+  if (!secret) return false;
+  const auth = (req.headers && req.headers.authorization) ? String(req.headers.authorization) : '';
+  const bearer = auth.indexOf('Bearer ') === 0 ? auth.slice(7) : '';
+  const q = (req.query && (req.query.key || req.query.token)) || '';
+  return bearer === secret || String(q) === secret;
+}
+
+// GET all coach drill suggestions across every team (Thwap review backlog). Admin-only.
+async function reviewSuggestions(req, res) {
+  if (!methodGuard(req, res, 'GET')) return;
+  if (!adminOk(req)) return res.status(401).json({ error: 'unauthorized' });
+  await ensureSeed();
+  const codes = await listAllTeamCodes();
+  const out = [];
+  for (const code of codes) {
+    const team = await getTeam(code);
+    const list = await listDrillSuggestions(code);
+    for (const s of list) out.push({ ...s, teamCode: code, teamName: (team && team.name) || code });
+  }
+  out.sort((a, b) => String(b.at || '').localeCompare(String(a.at || '')));
+  res.setHeader('Cache-Control', 'no-store');
+  return res.status(200).json({ ok: true, suggestions: out });
+}
+
+// POST accept/dismiss a suggestion (flip its status). Admin-only.
+async function resolveSuggestion(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  if (!adminOk(req)) return res.status(401).json({ error: 'unauthorized' });
+  const { code, id, status } = parseBody(req);
+  const rec = await setSuggestionStatus(code, id, status);
+  if (!rec) return res.status(404).json({ error: 'unknown suggestion or bad status' });
+  return res.status(200).json({ ok: true, suggestion: rec });
+}
+
 // GET the team's coach roster (head + assistants). Seeds the head from the team's
 // coachEmail on first read. Public read (coaches list is not sensitive).
 // Enrich a team's coach roster with each coach's name + photo (from coach:<email>).
@@ -596,6 +634,8 @@ export default async function handler(req, res) {
     case 'set-plan': return setPlan(req, res);
     case 'suggest-drill': return suggestDrill(req, res);
     case 'drill-suggestions': return drillSuggestions(req, res);
+    case 'review-suggestions': return reviewSuggestions(req, res);
+    case 'resolve-suggestion': return resolveSuggestion(req, res);
     case 'team-coaches': return teamCoaches(req, res);
     case 'invite-coach': return inviteCoach(req, res);
     case 'remove-coach': return removeCoach(req, res);
@@ -614,6 +654,7 @@ export const _handlers = {
   join, schedule, setIdp, idpGoal, logGoal, gameGoalLogRead,
   getPlan, setPlan,
   suggestDrill, drillSuggestions,
+  reviewSuggestions, resolveSuggestion,
   teamCoaches, inviteCoach, removeCoach,
   addEvent, setCoachProfile,
 };
