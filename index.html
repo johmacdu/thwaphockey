@@ -1409,6 +1409,12 @@ function pickPlayer(name,ev,el){
 window.thwapActiveTeam=function(coach){
   try{ if(!coach) coach=JSON.parse(localStorage.getItem('thwapCoach')||'null'); }catch(e){}
   var codes=(coach&&coach.teams)||[];
+  /* Deterministic landing team: always prefer the real 10U team (RANGERS72) when
+     the coach is on it, so every login lands on the SAME experience regardless of
+     the stored team order (teams[0] varied between seeded accounts, which made
+     Jason land on a different team - and a different roster/standings - depending
+     on how his account happened to be seeded). Falls back to the first team. */
+  if(codes.indexOf('RANGERS72')!==-1) return 'RANGERS72';
   return codes[0]||'RANGERS72';
 };
 (function(){

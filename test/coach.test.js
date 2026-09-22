@@ -59,6 +59,9 @@ describe('coach-login + seed', () => {
     const res = await loginSeedCoach();
     expect(res.body.coach.teams.length).toBe(3);
     expect(res.body.coach.teams).toEqual(expect.arrayContaining(['RANGERS72', 'RANGERS8U', 'RANGERS12U']));
+    // The 10U team is first so teams[0] (the landing team) is deterministic:
+    // every login lands on the same coach experience regardless of seed order.
+    expect(res.body.coach.teams[0]).toBe(_seed.SEED_TEAM_CODE);
     const names = (res.body.coach.teamList || []).map((t) => t.name);
     expect(names).toEqual(expect.arrayContaining(['Jr Rangers 10U', 'Jr Rangers 8U', 'Jr Rangers 12U']));
   });

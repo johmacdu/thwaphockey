@@ -104,12 +104,15 @@ async function ensureSeed() {
     // Backfill any demo teams the coach is missing (so an already-seeded coach
     // gains the new teams without a reset).
     const have = existing.teams || [];
-    const merged = Array.from(new Set([...have, ...allCodes]));
+    // Canonical order first (RANGERS72 = the 10U team) so teams[0] is deterministic
+    // for any reader; then any extra teams the coach already had. Dedup preserves
+    // first occurrence, so allCodes leads.
+    const merged = Array.from(new Set([...allCodes, ...have]));
     // Migrate the password to the new default ONLY if it is unset or still the
     // prior default; never clobber a password the coach set themselves.
     const untouched = !existing.passHash || safeEqual(existing.passHash, passHash(SEED_COACH_PASSWORD_PRIOR));
     const nextPass = untouched ? passHash(SEED_COACH_PASSWORD) : existing.passHash;
-    const teamsChanged = merged.length !== have.length;
+    const teamsChanged = merged.length !== have.length || merged.some((c, i) => c !== have[i]);
     const passChanged = nextPass !== existing.passHash;
     if (teamsChanged || passChanged) {
       return setCoach(SEED_COACH_EMAIL, { ...existing, teams: merged, passHash: nextPass });

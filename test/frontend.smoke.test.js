@@ -118,6 +118,12 @@ describe('coach view navigation', () => {
     expect((edit.textContent || '').trim()).not.toBe('Edit');
   });
 
+  it('the active coach team is deterministic (prefers the 10U team)', () => {
+    // Guards the "different coaching experiences" bug: teams[0] varied between
+    // seeded accounts, so the landing team must prefer RANGERS72 explicitly.
+    expect(html).toMatch(/indexOf\('RANGERS72'\)!==-1\)\s*return\s*'RANGERS72'/);
+  });
+
   it('the +Player card has a solid (white) background, not the dark card front', () => {
     const m = html.match(/\.pcard-add\{([^}]*)\}/);
     expect(m).not.toBeNull();
