@@ -194,12 +194,13 @@ async function createTeam(req, res) {
 async function addPlayer(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
   const coach = await requireCoach(req, res); if (!coach) return;
-  const { code, firstName, lastName, number, position, parentEmail } = parseBody(req);
+  const { code, firstName, lastName, number, position, parentEmail, photo } = parseBody(req);
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
   if (!String(firstName || '').trim()) return res.status(400).json({ error: 'first name required' });
+  if (!EMAIL_RE.test(String(parentEmail || '').trim().toLowerCase())) return res.status(400).json({ error: 'a parent email is required' });
   // id = lowercase first name (same id space as player:<id>).
   const playerId = String(firstName).trim().toLowerCase();
-  const rec = await addMember(code, { playerId, firstName, lastName, number, position, parentEmail, status: 'active' });
+  const rec = await addMember(code, { playerId, firstName, lastName, number, position, parentEmail, photo, status: 'active' });
   return res.status(200).json({ ok: true, member: rec });
 }
 
