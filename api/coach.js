@@ -495,7 +495,7 @@ async function teamCoaches(req, res) {
 async function inviteCoach(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
   const coach = await requireCoach(req, res); if (!coach) return;
-  const { code, email } = parseBody(req);
+  const { code, email, name, photo, password } = parseBody(req);
   const team = await getTeam(code);
   if (!team) return res.status(404).json({ error: 'unknown team' });
   if (team.coachEmail) await ensureHeadCoach(code, team.coachEmail);
@@ -504,14 +504,18 @@ async function inviteCoach(req, res) {
   if (!isHead) return res.status(403).json({ error: 'only the head coach can invite' });
   const inviteEmail = String(email || '').trim().toLowerCase();
   if (!EMAIL_RE.test(inviteEmail)) return res.status(400).json({ error: 'bad email' });
-  const result = await addAssistantCoach(code, inviteEmail);
+  const result = await addAssistantCoach(code, inviteEmail, { name, photo });
   if (!result.ok) return res.status(409).json({ error: result.reason, coaches: result.coaches });
+  // Create or update the assistant's login record so they can actually sign in.
   const existing = await getCoach(inviteEmail);
-  if (existing) {
-    const teams = Array.from(new Set([...(existing.teams || []), String(code).toUpperCase()]));
-    if (teams.length !== (existing.teams || []).length) await setCoach(inviteEmail, { ...existing, teams });
-  }
-  return res.status(200).json({ ok: true, coaches: result.coaches });
+  const teams = Array.from(new Set([...((existing && existing.teams) || []), String(code).toUpperCase()]));
+  const rec = { ...(existing || {}), email: inviteEmail, teams };
+  if (typeof name === 'string' && name.trim()) rec.name = name.trim();
+  if (typeof photo === 'string' && photo.startsWith('data:image/')) rec.photo = photo.slice(0, 400000);
+  // A password sets their login credential; without one they cannot sign in yet.
+  if (password != null && String(password).length >= 4) rec.passHash = passHash(String(password));
+  await setCoach(inviteEmail, rec);
+  return res.status(200).json({ ok: true, coaches: await enrichCoaches(code) });
 }
 
 // POST remove an assistant coach (head only).

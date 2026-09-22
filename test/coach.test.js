@@ -448,3 +448,28 @@ describe('edit player, coach password, and email requests', () => {
     expect(res.body.ok).toBe(true);
   });
 });
+
+describe('assistant coach with login credentials', () => {
+  it('head adds an assistant with a name + password, and the assistant can log in', async () => {
+    const login = await loginSeedCoach();
+    const token = login.body.token;
+    const add = makeRes();
+    await _handlers.inviteCoach(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, email: 'asst@example.com', name: 'Sam Assistant', password: 'asst1234' }), add);
+    expect(add.statusCode).toBe(200);
+    expect(add.body.coaches.some((c) => c.email === 'asst@example.com' && c.role === 'assistant')).toBe(true);
+    const asstLogin = makeRes();
+    await _handlers.coachLogin(post({ email: 'asst@example.com', password: 'asst1234' }), asstLogin);
+    expect(asstLogin.statusCode).toBe(200);
+    expect(asstLogin.body.token).toBeTruthy();
+  });
+
+  it('an assistant added without a password cannot log in', async () => {
+    const login = await loginSeedCoach();
+    const add = makeRes();
+    await _handlers.inviteCoach(post({ code: _seed.SEED_TEAM_CODE, coachToken: login.body.token, email: 'nopass@example.com', name: 'No Pass' }), add);
+    expect(add.statusCode).toBe(200);
+    const tryLogin = makeRes();
+    await _handlers.coachLogin(post({ email: 'nopass@example.com', password: 'anything' }), tryLogin);
+    expect(tryLogin.statusCode).toBe(401);
+  });
+});

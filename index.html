@@ -504,6 +504,15 @@ body.is-coach .roster .pcard-remove{display:grid;place-items:center}
 body.coach-locked .coachlock-entry{display:inline-flex;align-items:center}
 .coachlock-forgot{margin-top:4px;font-family:inherit;font-size:13px;font-weight:800;background:none;border:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .cchip-strip{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+/* Head coach: a plain row (avatar + name + pencil), not a card. */
+.staff-row{display:flex;align-items:center;gap:12px;padding:8px 2px}
+.staff-av{width:40px;height:40px;border-radius:50%;object-fit:cover;display:inline-grid;place-items:center;background:var(--card2);color:var(--muted);font-weight:800;font-size:14px;overflow:hidden;flex:none}
+.staff-av img{width:100%;height:100%;object-fit:cover}
+.staff-nm{font-weight:800;font-size:15px;color:var(--text)}
+.staff-role{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;color:var(--muted)}
+.staff-pencil{margin-left:auto;font-family:inherit;font-size:16px;background:none;border:0;color:var(--muted);cursor:pointer;padding:6px}
+.staff-remove{margin-left:auto;font-family:inherit;font-size:12px;font-weight:800;color:var(--alert-text);background:none;border:0;cursor:pointer}
+.coachcoaches-add{margin-top:10px;font-family:inherit;font-size:13px;font-weight:800;background:transparent;color:var(--text);border:1px solid var(--line2);border-radius:10px;padding:9px 14px;cursor:pointer}
 .roster-coachonly{display:none}
 body.is-coach .roster-coachonly{display:block}
 .roster-playershead{display:flex;align-items:center;justify-content:space-between;margin:22px 0 4px;padding-top:16px;border-top:1px solid var(--line)}
@@ -1064,11 +1073,7 @@ body.login-locked{overflow:hidden}
 <div class='coachcoaches roster-coachonly' id='coachCoaches' hidden>
   <div class='coachcoaches-h'>Staff</div>
   <div class='cchip-strip' id='coachStrip'></div>
-  <div class='coachcoaches-invite' id='coachInvite' hidden>
-    <input class='pgate-in coachcoaches-in' id='coachInviteEmail' type='email' inputmode='email' autocomplete='email' placeholder='assistant@email.com'>
-    <button type='button' class='coachcoaches-add' id='coachInviteBtn'>Invite assistant</button>
-    <p class='coachcoaches-err' id='coachInviteErr' aria-live='polite'></p>
-  </div>
+  <button type='button' class='coachcoaches-add' id='coachAddAsst' hidden>+ Add assistant</button>
 </div>
 <div class='roster-playershead roster-coachonly'><div class='coachcoaches-h'>Players</div><button type='button' class='roster-edit' id='rosterEdit'>Edit</button></div>
 <div class='roster' id='roster-grid'><a href='#home' class='pcard' data-name='Alder Reese'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>71</span><span class='pcard-bnname'>Alder</span></div></a><a href='#home' class='pcard' data-name='Brooklyn Coughlan'><div class='pcard-bignum pos-def'><span class='pcard-bn'>92</span><span class='pcard-bnname'>Brooklyn</span></div></a><a href='#home' class='pcard' data-name='Dawson Huffman'><div class='pcard-bignum pos-def'><span class='pcard-bn'>19</span><span class='pcard-bnname'>Dawson</span></div></a><a href='#home' class='pcard' data-name='Dominic Cinque'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>98</span><span class='pcard-bnname'>Dominic</span></div></a><a href='#home' class='pcard' data-name='Eugene Kuhn'><div class='pcard-bignum pos-def'><span class='pcard-bn'>3</span><span class='pcard-bnname'>Eugene</span></div></a><a href='#home' class='pcard' data-name='Evan Ewing'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>13</span><span class='pcard-bnname'>Evan</span></div></a><a href='#home' class='pcard' data-name='Greyson Wertz'><div class='pcard-bignum pos-def'><span class='pcard-bn'>32</span><span class='pcard-bnname'>Greyson</span></div></a><a href='#home' class='pcard' data-name='Issac Moyer'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>53</span><span class='pcard-bnname'>Issac</span></div></a><a href='#home' class='pcard' data-name='Johnny Eraman'><div class='pcard-bignum pos-goalie'><span class='pcard-bn'>1</span><span class='pcard-bnname'>Johnny</span></div></a><a href='#home' class='pcard' data-name='Joziah Soto'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>59</span><span class='pcard-bnname'>Joziah</span></div></a><a href='#home' class='pcard pcard-you-card' data-name='Lewie'><img class='pcard-cardart' src='cards/lewie_photo.png' alt='Lewie'></a><a href='#home' class='pcard' data-name='Liam Delatorre'><div class='pcard-bignum pos-def'><span class='pcard-bn'>29</span><span class='pcard-bnname'>Liam</span></div></a><a href='#home' class='pcard' data-name='Maddux Jones'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>18</span><span class='pcard-bnname'>Maddux</span></div></a><a href='#home' class='pcard' data-name='Oliver Moyer'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>90</span><span class='pcard-bnname'>Oliver</span></div></a><a href='#home' class='pcard' data-name='Teddy Diss'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>11</span><span class='pcard-bnname'>Teddy</span></div></a><a href='#home' class='pcard' data-name='William Schnell'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>16</span><span class='pcard-bnname'>William</span></div></a></div>
@@ -1107,6 +1112,26 @@ body.login-locked{overflow:hidden}
     <button type='submit' class='pgate-go' id='peSave'>Save</button>
     <button type='button' class='pe-remove' id='peRemove'>Remove from roster</button>
     <p class='pgate-msg' id='peMsg' aria-live='polite'></p>
+  </form>
+</div>
+<div class='sheet' id='asstSheet' hidden>
+  <div class='sheet-scrim' id='asScrim'></div>
+  <form class='sheet-panel' id='asstForm' novalidate>
+    <button type='button' class='pgate-x' id='asX' aria-label='Close'>&#215;</button>
+    <h2 class='pgate-h'>Add assistant coach</h2>
+    <p class='pgate-p'>They sign in with their email and this password.</p>
+    <button type='button' class='cprof-photo' id='asPhoto'>
+      <img id='asImg' alt='' hidden>
+      <span id='asInitials' class='cprof-initials'>+</span>
+      <span class='cprof-photo-lab'>Photo</span>
+    </button>
+    <input type='file' id='asFile' accept='image/*' hidden>
+    <input class='pgate-in' id='asFirst' type='text' autocomplete='off' placeholder='First name' required>
+    <input class='pgate-in' id='asLast' type='text' autocomplete='off' placeholder='Last name'>
+    <input class='pgate-in' id='asEmail' type='email' inputmode='email' autocomplete='off' placeholder='assistant@email.com' required>
+    <input class='pgate-in' id='asPw' type='text' autocomplete='off' placeholder='Password (they use to log in)' required>
+    <button type='submit' class='pgate-go' id='asSave'>Add assistant</button>
+    <p class='pgate-msg' id='asMsg' aria-live='polite'></p>
   </form>
 </div>
 <div class='pgate' id='coachLock' hidden>
@@ -1298,7 +1323,7 @@ body.login-locked{overflow:hidden}
 
 <section id='home'>
 <div class='wipnote'>👋 Early prototype. We're testing the look and feel. Training drills and stickers are still being built.</div>
-<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.svg' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><span class='nav-authed'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a></span><span class='nav-guest'><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='coachlock-entry' id='coachLockEntry'>Coach</button><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#stickers'>Stickers</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a></span><span class='nav-guest'><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
+<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.svg' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><span class='nav-authed'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a></span><span class='nav-guest'><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#stickers'>Stickers</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a></span><span class='nav-guest'><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
 <div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>there</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><script>(function(){try{var authed=/(?:^|; )thwapAuth=/.test(document.cookie);var p=localStorage.getItem('bfPlayer');var b=document.getElementById('homePlayer');if(b){if(p&&authed){b.textContent=p.trim().split(/\s+/)[0];}else{b.classList.add('needpick');}}}catch(e){}
 /* Team plan: hide the category rows the coach turned OFF for today. On any failure
    or unset plan, all three stay shown (the built-in rotation), so home is never empty. */
@@ -1365,12 +1390,17 @@ window.thwapActiveTeam=function(coach){
   var unlocked=false;
   function reveal(){
     if(unlocked) return; unlocked=true;
+    try{ sessionStorage.setItem('thwapCoachUnlocked','1'); }catch(_){}
     document.body.classList.remove('coach-locked');
     document.body.classList.add('is-coach');
     bootCoach();
     if(location.hash===''||location.hash==='#home'||location.hash==='#login') location.hash='#coachhome';
   }
   window.thwapCoachUnlocked=function(){ return unlocked; };
+  /* A fresh coach login this session set this flag, so reveal without a second
+     password prompt. A returning visit (no flag) stays locked. */
+  var freshLogin=false; try{ freshLogin=sessionStorage.getItem('thwapCoachUnlocked')==='1'; }catch(_){}
+  if(freshLogin){ reveal(); return; }
   /* Wire the lock sheet + the "Coach" entry, then wait. */
   document.body.classList.add('coach-locked');
   (function(){
@@ -1459,10 +1489,7 @@ window.thwapActiveTeam=function(coach){
   (function(){
     var box=document.getElementById('coachCoaches'); if(!box) return;
     var strip=document.getElementById('coachStrip');
-    var invite=document.getElementById('coachInvite');
-    var emailEl=document.getElementById('coachInviteEmail');
-    var btn=document.getElementById('coachInviteBtn');
-    var errEl=document.getElementById('coachInviteErr');
+    var addAsstBtn=document.getElementById('coachAddAsst');
     var editBtn=document.getElementById('coachProfileBtn');
     function initials(nm,em){ var s=(nm||em||'').trim(); if(!s) return '?'; var p=s.split(/\s+/); return (p[0].charAt(0)+(p[1]?p[1].charAt(0):'')).toUpperCase(); }
     function render(coaches){
@@ -1470,34 +1497,75 @@ window.thwapActiveTeam=function(coach){
       var amHead=coaches.some(function(c){ return c.role==='head' && c.email===myEmail; });
       strip.innerHTML='';
       coaches.forEach(function(c){
-        var chip=document.createElement('div'); chip.className='cchip';
-        var canRemove=amHead && c.role==='assistant';
         var nm=c.name||c.email;
-        chip.innerHTML='<span class="cchip-av"></span><span><span class="cchip-nm"></span><br><span class="cchip-role">'+(c.role==='head'?'Head coach':'Assistant')+'</span></span>'+(canRemove?'<button type="button" class="cchip-remove">Remove</button>':'');
-        var av=chip.querySelector('.cchip-av');
+        var row=document.createElement('div'); row.className='staff-row';
+        var isHead=c.role==='head';
+        var canRemove=amHead && c.role==='assistant';
+        var isMe=c.email===myEmail;
+        row.innerHTML='<span class="staff-av"></span>'+
+          '<span><span class="staff-nm"></span><br><span class="staff-role">'+(isHead?'Head coach':'Assistant')+'</span></span>'+
+          (isMe?'<button type="button" class="staff-pencil" aria-label="Edit your profile">\u270E</button>':(canRemove?'<button type="button" class="staff-remove">Remove</button>':''));
+        var av=row.querySelector('.staff-av');
         if(c.photo){ var im=document.createElement('img'); im.src=c.photo; im.alt=nm; av.appendChild(im); } else { av.textContent=initials(c.name,c.email); }
-        chip.querySelector('.cchip-nm').textContent=nm;
-        if(canRemove){ chip.querySelector('.cchip-remove').addEventListener('click',function(){
+        row.querySelector('.staff-nm').textContent=nm;
+        var pencil=row.querySelector('.staff-pencil');
+        if(pencil) pencil.addEventListener('click',function(){ var hn=document.getElementById('coachProfileBtn'); if(window.thwapOpenCoachProfile) window.thwapOpenCoachProfile(); });
+        var rm=row.querySelector('.staff-remove');
+        if(rm) rm.addEventListener('click',function(){
           fetch('/api/coach?action=remove-coach',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code,coachToken:coach.token,email:c.email})})
             .then(function(r){ return r.json(); }).then(function(j){ if(j&&j.ok) render(j.coaches); }).catch(function(){});
-        }); }
-        strip.appendChild(chip);
+        });
+        strip.appendChild(row);
       });
       var assistants=coaches.filter(function(c){ return c.role==='assistant'; }).length;
-      if(invite){ invite.hidden=!(amHead && assistants<3); }
+      if(addAsstBtn) addAsstBtn.hidden=!(amHead && assistants<3);
     }
     function load(){ fetch('/api/coach?action=team-coaches&code='+encodeURIComponent(code)).then(function(r){ return r.json(); }).then(function(j){ if(j&&j.ok) render(j.coaches||[]); }).catch(function(){}); }
     load();
-    if(btn){ btn.addEventListener('click',function(){
-      if(errEl) errEl.textContent='';
-      var em=String(emailEl&&emailEl.value||'').trim();
-      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)){ if(errEl) errEl.textContent='Enter an email.'; return; }
-      btn.textContent='Inviting...';
-      fetch('/api/coach?action=invite-coach',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code,coachToken:coach.token,email:em})})
-        .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
-        .then(function(res){ btn.textContent='Invite assistant'; if(res.ok&&res.j.ok){ if(emailEl) emailEl.value=''; render(res.j.coaches); } else if(errEl){ errEl.textContent=(res.j&&res.j.error)||'Could not invite.'; } })
-        .catch(function(){ btn.textContent='Invite assistant'; if(errEl) errEl.textContent='Could not reach the server.'; });
-    }); }
+    /* Add assistant: opens a sheet (image, first, last, email, password). */
+    (function(){
+      var sheet=document.getElementById('asstSheet'), form=document.getElementById('asstForm'),
+          first=document.getElementById('asFirst'), last=document.getElementById('asLast'),
+          em=document.getElementById('asEmail'), pw=document.getElementById('asPw'),
+          msg=document.getElementById('asMsg'), img=document.getElementById('asImg'),
+          init=document.getElementById('asInitials'), file=document.getElementById('asFile'),
+          photoBtn=document.getElementById('asPhoto'), x=document.getElementById('asX'),
+          scrim=document.getElementById('asScrim');
+      var photoData='';
+      function show(on){ if(sheet) sheet.hidden=!on; }
+      if(addAsstBtn) addAsstBtn.addEventListener('click',function(){
+        photoData=''; if(msg) msg.textContent='';
+        [first,last,em,pw].forEach(function(el){ if(el) el.value=''; });
+        if(img){ img.hidden=true; } if(init){ init.hidden=false; init.textContent='+'; }
+        show(true);
+      });
+      if(x) x.addEventListener('click',function(){ show(false); });
+      if(scrim) scrim.addEventListener('click',function(){ show(false); });
+      if(photoBtn) photoBtn.addEventListener('click',function(){ if(file) file.click(); });
+      if(file) file.addEventListener('change',function(){
+        var f=file.files&&file.files[0]; if(!f) return;
+        var rd=new FileReader(); rd.onload=function(){ var im=new Image(); im.onload=function(){
+          var s=256,cv=document.createElement('canvas'); cv.width=s; cv.height=s;
+          var mn=Math.min(im.width,im.height); cv.getContext('2d').drawImage(im,(im.width-mn)/2,(im.height-mn)/2,mn,mn,0,0,s,s);
+          photoData=cv.toDataURL('image/jpeg',0.82); if(img){ img.src=photoData; img.hidden=false; } if(init) init.hidden=true;
+        }; im.src=rd.result; }; rd.readAsDataURL(f);
+      });
+      if(form) form.addEventListener('submit',function(e){
+        e.preventDefault();
+        var e_=String(em&&em.value||'').trim(), p=String(pw&&pw.value||''), fn=String(first&&first.value||'').trim();
+        if(!fn){ if(msg) msg.textContent='Enter a first name.'; return; }
+        if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e_)){ if(msg) msg.textContent='Enter a valid email.'; return; }
+        if(p.length<4){ if(msg) msg.textContent='Password must be at least 4 characters.'; return; }
+        if(msg) msg.textContent='Adding...';
+        var nm=fn+(last&&last.value.trim()?(' '+last.value.trim()):'');
+        var body={code:code,coachToken:coach.token,email:e_,name:nm,password:p};
+        if(photoData) body.photo=photoData;
+        fetch('/api/coach?action=invite-coach',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+          .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
+          .then(function(res){ if(res.ok&&res.j.ok){ show(false); render(res.j.coaches); } else if(msg){ msg.textContent=(res.j&&res.j.error)||'Could not add.'; } })
+          .catch(function(){ if(msg) msg.textContent='Could not reach the server.'; });
+      });
+    })();
     /* Coach profile editor: name + photo, saved to this coach's record. */
     (function(){
       var gate=document.getElementById('coachProfileGate');
@@ -1520,6 +1588,7 @@ window.thwapActiveTeam=function(coach){
       function close(){ if(gate) gate.hidden=true; }
       if(editBtn) editBtn.addEventListener('click',open);
       var heroName=document.getElementById('chProfileName'); if(heroName) heroName.addEventListener('click',open);
+      window.thwapOpenCoachProfile=open;
       if(xBtn) xBtn.addEventListener('click',close);
       if(photoBtn&&fileEl) photoBtn.addEventListener('click',function(){ fileEl.click(); });
       if(fileEl) fileEl.addEventListener('change',function(){
@@ -1584,7 +1653,7 @@ window.thwapActiveTeam=function(coach){
     if(addBtn) addBtn.addEventListener('click',function(){ location.hash='#addplayer'; });
     /* Coach Team X returns to Coach Home (href='.' cleared the hash and stranded the coach). */
     var rClose=document.getElementById('rosterClose');
-    if(rClose) rClose.setAttribute('href','#coachhome');
+    if(rClose){ rClose.setAttribute('href','#coachhome'); rClose.addEventListener('click',function(ev){ ev.preventDefault(); location.hash='#coachhome'; }); }
     /* Empty-state "+ Player" card at the end of the roster grid (coach only). */
     (function(){
       var grid=document.getElementById('roster-grid'); if(!grid) return;
@@ -1814,13 +1883,21 @@ window.thwapActiveTeam=function(coach){
   }
   /* Seed sensible defaults for a brand-new plan: Wed practice = a couple of each,
      other weekdays a light single focus, game/weekend left to the coach. */
-  function seedDefaults(cat){
-    var lib=(window.thwapDrillCatalog&&window.thwapDrillCatalog(cat))||[];
-    function first(n){ return lib.slice(0,n).map(function(x){return x.name;}); }
+  function seedDefaults(){
+    function first(cat,n){ var lib=(window.thwapDrillCatalog&&window.thwapDrillCatalog(cat))||[]; return lib.slice(0,n).map(function(x){return x.name;}); }
     plan={
-      mon:{stick:first(1)}, tue:{dryland:first(2)}, wed:{stick:first(2),shoot:first(2),dryland:first(2)},
-      thu:{shoot:first(1)}, fri:{stick:first(1)}, sat:{}, sun:{}
+      mon:{stick:first('stick',1)}, tue:{dryland:first('dryland',2)},
+      wed:{stick:first('stick',2),shoot:first('shoot',2),dryland:first('dryland',2)},
+      thu:{shoot:first('shoot',1)}, fri:{stick:first('stick',1)}, sat:{}, sun:{}
     };
+  }
+  /* True if any day/category in the plan holds at least one real drill name. */
+  function planHasDrills(p){
+    if(!p||typeof p!=='object') return false;
+    return Object.keys(p).some(function(d){
+      var day=p[d]; if(!day||typeof day!=='object') return false;
+      return Object.keys(day).some(function(c){ return Array.isArray(day[c]) && day[c].filter(function(x){return x!=='__all__';}).length>0; });
+    });
   }
   /* --- Drill picker page (#drillpick) --- */
   var pickList=document.getElementById('dpkList'), pkTitle=document.getElementById('dpkTitle'), pkKicker=document.getElementById('dpkKicker');
@@ -1903,7 +1980,7 @@ window.thwapActiveTeam=function(coach){
   });
   fetch('/api/coach?action=get-plan&code='+encodeURIComponent(code))
     .then(function(r){ return r.json(); })
-    .then(function(j){ var p=(j&&j.ok&&j.plan)?j.plan:null; if(p&&Object.keys(p).length){ plan=p; } else { seedDefaults(); setDirty(true); } render(); })
+    .then(function(j){ var p=(j&&j.ok&&j.plan)?j.plan:null; if(p&&planHasDrills(p)){ plan=p; } else { seedDefaults(); setDirty(true); } render(); })
     .catch(function(){ seedDefaults(); render(); });
   if(saveBtn){ saveBtn.addEventListener('click',function(){
     saveBtn.textContent='Saving...';
@@ -4393,9 +4470,13 @@ function completeCoachLogin(email,coach,token){
       teamList:(coach&&coach.teamList)||[],
       childPlayerId:(coach&&coach.childPlayerId)||null
     }));
+    /* A fresh coach login IS the unlock for this session. sessionStorage survives
+       the reload below but not a real app re-open, so a shared device still
+       re-locks on next launch. */
+    sessionStorage.setItem('thwapCoachUnlocked','1');
   }catch(e2){}
   hide();
-  location.hash='#roster';
+  location.hash='#coachhome';
   location.reload();
 }
 if(form){
