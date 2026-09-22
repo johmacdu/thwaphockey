@@ -47,7 +47,7 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 .cardthumb-scale{position:absolute;top:0;left:0;width:104px;height:146px}
 .cardthumb-scale .cf2{border-radius:12px}
 .cardthumb-lbl{font-weight:900;font-size:15px;color:var(--text)}
-.cardaway{margin:0 auto 12px;min-height:44px;padding:0 20px;border:1px solid var(--line2);border-radius:999px;background:var(--soft);color:var(--text);font-family:inherit;font-weight:900;font-size:15px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.cardaway{position:relative;z-index:20;margin:0 auto 12px;min-height:44px;padding:0 20px;border:1px solid var(--line2);border-radius:999px;background:var(--soft);color:var(--text);font-family:inherit;font-weight:900;font-size:15px;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .cardaway:active{transform:scale(.97)}
 .deck-tip{color:var(--muted);font-size:13px;font-weight:700;line-height:1.4;max-width:300px;margin:24px auto 36px}
 @keyframes cardPop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
@@ -212,7 +212,7 @@ body.login-locked .topbar{position:relative;z-index:120}
 .pgate-link{display:block;width:100%;margin-top:10px;background:none;border:0;color:var(--green2);font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;text-align:center}
 .pgate-msg{margin-top:10px;font-size:13px;color:var(--muted);min-height:18px;text-align:center}
 @media (prefers-reduced-motion: reduce){.pgate{transition:none}}
-.cardclose{position:absolute;top:16px;right:16px;width:44px;height:44px;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.cardclose{position:absolute;top:16px;right:16px;z-index:20;width:44px;height:44px;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .cardscene{perspective:1400px;width:min(380px,94vw);display:flex;flex-direction:column;align-items:center;gap:16px;position:relative}
 .card3d{position:relative;width:100%;aspect-ratio:5/7;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.7,.2,1);will-change:transform;touch-action:none;cursor:grab}
 .card3d.dragging{transition:none;cursor:grabbing}
