@@ -33,6 +33,7 @@ import {
   getTeam, setTeam, listMembers, addMember, getMember, removeMember,
   getCoach, setCoach, getIdpGoal, setIdpGoal, getGameGoalLog, logGameGoal,
   getTeamPlan, setTeamPlan,
+  addDrillSuggestion, listDrillSuggestions,
   listTeamCoaches, ensureHeadCoach, addAssistantCoach, removeAssistantCoach, MAX_ASSISTANTS,
 } from '../lib/teams_store.js';
 import { ensureSchedule, getSchedule, addEvent as addScheduleEvent, nextEvent } from '../lib/schedule_store.js';
@@ -342,6 +343,27 @@ async function setPlan(req, res) {
   return res.status(200).json({ ok: true, plan: saved });
 }
 
+// POST a coach's drill recommendation to the Thwap backlog. Coach-only.
+async function suggestDrill(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  const coach = await requireCoach(req, res); if (!coach) return;
+  const { code, category, text } = parseBody(req);
+  if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  const rec = await addDrillSuggestion(code, { category, text, byCoach: coach.email });
+  if (!rec) return res.status(400).json({ error: 'a drill description is required' });
+  return res.status(200).json({ ok: true, suggestion: rec });
+}
+
+// GET the team's drill suggestions (Thwap review backlog). Coach-only.
+async function drillSuggestions(req, res) {
+  if (!methodGuard(req, res, 'GET')) return;
+  const coach = await requireCoach(req, res); if (!coach) return;
+  const code = (req.query && req.query.code) || SEED_TEAM_CODE;
+  if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  res.setHeader('Cache-Control', 'no-store');
+  return res.status(200).json({ ok: true, suggestions: await listDrillSuggestions(code) });
+}
+
 // GET the team's coach roster (head + assistants). Seeds the head from the team's
 // coachEmail on first read. Public read (coaches list is not sensitive).
 // Enrich a team's coach roster with each coach's name + photo (from coach:<email>).
@@ -454,6 +476,8 @@ export default async function handler(req, res) {
     case 'set-coach-profile': return setCoachProfile(req, res);
     case 'get-plan': return getPlan(req, res);
     case 'set-plan': return setPlan(req, res);
+    case 'suggest-drill': return suggestDrill(req, res);
+    case 'drill-suggestions': return drillSuggestions(req, res);
     case 'team-coaches': return teamCoaches(req, res);
     case 'invite-coach': return inviteCoach(req, res);
     case 'remove-coach': return removeCoach(req, res);
@@ -470,6 +494,7 @@ export const _handlers = {
   coachLogin, createTeam, addPlayer, removePlayer, roster, playerRollup,
   join, schedule, setIdp, idpGoal, logGoal, gameGoalLogRead,
   getPlan, setPlan,
+  suggestDrill, drillSuggestions,
   teamCoaches, inviteCoach, removeCoach,
   addEvent, setCoachProfile,
 };

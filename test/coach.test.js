@@ -176,34 +176,83 @@ describe('join by team code', () => {
 });
 
 describe('team weekly plan', () => {
-  it('defaults to all three categories every day when unset', async () => {
+  it('defaults to empty categories every day when unset', async () => {
     await loginSeedCoach();
     const res = makeRes();
     await _handlers.getPlan(get({ code: _seed.SEED_TEAM_CODE }), res);
     expect(res.statusCode).toBe(200);
-    expect(res.body.plan.mon).toEqual(['stick', 'shoot', 'dryland']);
-    expect(res.body.plan.sun).toEqual(['stick', 'shoot', 'dryland']);
+    expect(res.body.plan.mon).toEqual({});
+    expect(res.body.plan.sun).toEqual({});
   });
 
-  it('coach sets a plan and it reads back, ignoring unknown cats', async () => {
+  it('coach sets a legacy on/off plan and it migrates to the drill-list shape', async () => {
     const login = await loginSeedCoach();
     const token = login.body.token;
     const setRes = makeRes();
     await _handlers.setPlan(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, plan: { mon: ['stick', 'bogus'], tue: [], wed: ['shoot', 'dryland'] } }), setRes);
     expect(setRes.statusCode).toBe(200);
-    expect(setRes.body.plan.mon).toEqual(['stick']);   // bogus dropped
-    expect(setRes.body.plan.tue).toEqual([]);            // an off day
+    expect(setRes.body.plan.mon).toEqual({ stick: [] });   // bogus dropped, category on
+    expect(setRes.body.plan.tue).toEqual({});               // an off day
 
     const getRes = makeRes();
     await _handlers.getPlan(get({ code: _seed.SEED_TEAM_CODE }), getRes);
-    expect(getRes.body.plan.mon).toEqual(['stick']);
-    expect(getRes.body.plan.wed).toEqual(['shoot', 'dryland']);
+    expect(getRes.body.plan.mon).toEqual({ stick: [] });
+    expect(getRes.body.plan.wed).toEqual({ shoot: [], dryland: [] });
+  });
+
+  it('coach sets per-category drill lists and they read back, unknown cats dropped', async () => {
+    const login = await loginSeedCoach();
+    const token = login.body.token;
+    const setRes = makeRes();
+    await _handlers.setPlan(post({
+      code: _seed.SEED_TEAM_CODE, coachToken: token,
+      plan: { wed: { shoot: ['Wrist Shots', 'Snap Shots'], stick: ['Toe Drag & Rescue'], bogus: ['x'] }, mon: {} },
+    }), setRes);
+    expect(setRes.statusCode).toBe(200);
+    expect(setRes.body.plan.wed.shoot).toEqual(['Wrist Shots', 'Snap Shots']);
+    expect(setRes.body.plan.wed.stick).toEqual(['Toe Drag & Rescue']);
+    expect(setRes.body.plan.wed.bogus).toBeUndefined();
+
+    const getRes = makeRes();
+    await _handlers.getPlan(get({ code: _seed.SEED_TEAM_CODE }), getRes);
+    expect(getRes.body.plan.wed.shoot).toEqual(['Wrist Shots', 'Snap Shots']);
   });
 
   it('blocks set-plan without a coach token', async () => {
     await loginSeedCoach();
     const res = makeRes();
     await _handlers.setPlan(post({ code: _seed.SEED_TEAM_CODE, plan: { mon: [] } }), res);
+    expect(res.statusCode).toBe(401);
+  });
+});
+
+describe('drill suggestions (coach -> Thwap backlog)', () => {
+  it('coach suggests a drill and it reads back, newest first', async () => {
+    const login = await loginSeedCoach();
+    const token = login.body.token;
+    const s1 = makeRes();
+    await _handlers.suggestDrill(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, category: 'shoot', text: 'One-timer off a pass' }), s1);
+    expect(s1.statusCode).toBe(200);
+    expect(s1.body.suggestion.category).toBe('shoot');
+    expect(s1.body.suggestion.status).toBe('new');
+
+    const listRes = makeRes();
+    await _handlers.drillSuggestions(get({ code: _seed.SEED_TEAM_CODE, coachToken: token }), listRes);
+    expect(listRes.statusCode).toBe(200);
+    expect(listRes.body.suggestions[0].text).toBe('One-timer off a pass');
+  });
+
+  it('rejects an empty suggestion', async () => {
+    const login = await loginSeedCoach();
+    const res = makeRes();
+    await _handlers.suggestDrill(post({ code: _seed.SEED_TEAM_CODE, coachToken: login.body.token, category: 'stick', text: '  ' }), res);
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('blocks suggest-drill without a coach token', async () => {
+    await loginSeedCoach();
+    const res = makeRes();
+    await _handlers.suggestDrill(post({ code: _seed.SEED_TEAM_CODE, category: 'stick', text: 'x' }), res);
     expect(res.statusCode).toBe(401);
   });
 });
