@@ -102,7 +102,7 @@ describe('roster + participation + kid-owned identity', () => {
     const login = await loginSeedCoach();
     const token = login.body.token;
     const add = makeRes();
-    await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, firstName: 'Testkid', number: 44 }), add);
+    await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, firstName: 'Testkid', number: 44, parentEmail: 'parent@example.com' }), add);
     expect(add.statusCode).toBe(200);
     expect(add.body.member.status).toBe('active');
 
@@ -301,5 +301,22 @@ describe('coach profile', () => {
     const res = makeRes();
     await _handlers.setCoachProfile(post({ code: _seed.SEED_TEAM_CODE, coachToken: login.body.token, name: '' }), res);
     expect(res.statusCode).toBe(400);
+  });
+});
+
+describe('add-player: parent email + photo', () => {
+  it('rejects add-player without a parent email', async () => {
+    const login = await loginSeedCoach();
+    const res = makeRes();
+    await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: login.body.token, firstName: 'Noemail' }), res);
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('stores an optional player photo on add', async () => {
+    const login = await loginSeedCoach();
+    const res = makeRes();
+    await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: login.body.token, firstName: 'Photokid', parentEmail: 'p@x.com', photo: 'data:image/jpeg;base64,abc' }), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.member.photo).toContain('data:image/jpeg');
   });
 });

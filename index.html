@@ -9,12 +9,36 @@ a:focus-visible,button:focus-visible,[tabindex]:focus-visible,.row:focus-visible
 /* Foundation = Ice light: dark Ink text on Ice bg, Lime reserved for go/active */
 --bg:#F3F7F4;--bg2:#E9EFEA;--panel:#FFFFFF;--panel2:#FBFDFB;--line:#DCE5DE;--text:#15221B;--muted:#5F6F64;--green:#2F6B41;--green2:#2F6B41;--soft:#E7EEE8;--card:#FFFFFF;--card2:#F7FAF7;--cardgrad1:#FFFFFF;--cardgrad2:#F2F6F3;--line2:#C9D5CC;--line3:#DCE5DE;--linesel:#8FD65E;--text2:#2C3A31;--muted2:#5F6F64;--chev:#6E7B73;--onaccent:#FFFFFF;--shadow:rgba(20,40,25,.10);
 /* radii */
---r-card:16px;--r-major:22px;--r-player:26px;--r-pill:999px}
+--r-card:16px;--r-major:22px;--r-player:26px;--r-pill:999px;
+/* === Design system (code contract; see thwap-docs/design-system.md) ===
+   Type scale (vw-fluid so mobile reads big, Apple-HIG legible). */
+--fs-hero:clamp(34px,9vw,54px);
+--fs-title:clamp(30px,7.5vw,44px);
+--fs-player:clamp(26px,7vw,40px);
+--fs-section:clamp(20px,5vw,26px);
+--fs-cardtitle:clamp(17px,4.4vw,20px);
+--fs-button:16px;
+--fs-body:clamp(15px,4vw,17px);
+--fs-support:14px;
+--fs-meta:12px;
+--fs-eyebrow:11px;
+--fs-giant:clamp(48px,18vw,96px);
+/* Spacing scale (8px base) */
+--sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-6:24px;--sp-8:32px;--sp-10:40px;--sp-12:48px;
+/* Breathing room between major sections + card padding */
+--gap-section:32px;--gap-block:20px;--pad-card:16px;--pad-card-lg:22px;
+/* Emoji / icon sizing (spec section 5) */
+--ic-nav:24px;--ic-card:30px;--ic-feature:44px;--ic-empty:80px;
+/* Min interactive target */
+--tap:44px;
+/* Accessible status text colors (WCAG AA >=4.5:1 on --bg ice). Brand --orange/--alert
+   fail as text; these darker variants pass for big count numbers. */
+--warn-text:#B45309;--alert-text:#C0362C}
 html[data-theme='dark']{
 /* Thwap dark theme: Ink-based surfaces, Ice text, accents kept vivid */
---bg:#101A14;--bg2:#0B130E;--panel:#182420;--panel2:#141E19;--line:#2A3831;--text:#F3F7F4;--muted:#9DACA2;--green:#B9F06B;--green2:#CDEFA0;--soft:#1F2C24;--card:#182420;--card2:#1E2B24;--cardgrad1:#20302A;--cardgrad2:#131C16;--line2:#3A4A40;--line3:#2A3831;--linesel:#B9F06B;--text2:#D3DDD6;--muted2:#9DACA2;--chev:#7C8C82;--onaccent:#15221B;--shadow:rgba(0,0,0,.35)}
-*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2));color:var(--text);font-family:'Nunito Sans',system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
-h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weight:600}a{color:inherit;text-decoration:none}.app{max-width:1100px;margin:auto;min-height:100vh;padding:0 16px 44px}
+--bg:#101A14;--bg2:#0B130E;--panel:#182420;--panel2:#141E19;--line:#2A3831;--text:#F3F7F4;--muted:#9DACA2;--green:#B9F06B;--green2:#CDEFA0;--soft:#1F2C24;--card:#182420;--card2:#1E2B24;--cardgrad1:#20302A;--cardgrad2:#131C16;--line2:#3A4A40;--line3:#2A3831;--linesel:#B9F06B;--text2:#D3DDD6;--muted2:#9DACA2;--chev:#7C8C82;--onaccent:#15221B;--shadow:rgba(0,0,0,.35);--warn-text:#FFB870;--alert-text:#FF8A80}
+*{box-sizing:border-box}html{background:var(--bg);-webkit-text-size-adjust:100%;text-size-adjust:100%}body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2));color:var(--text);font-family:'Nunito Sans',system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;min-height:100dvh;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weight:600}a{color:inherit;text-decoration:none}.app{max-width:1100px;margin:auto;min-height:100vh;min-height:100dvh;padding:0 16px 44px}
 .wipnote{margin:14px 0 0;padding:10px 14px;border-radius:12px;background:var(--soft);border:1px solid var(--line);color:var(--muted);font-size:13px;font-weight:600;line-height:1.4}
 /* Sticker Book */
 .stickcount{margin:6px 0 16px;font-size:13px;font-weight:800;color:var(--muted);letter-spacing:.02em}
@@ -47,7 +71,7 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 .cardthumb-scale{position:absolute;top:0;left:0;width:104px;height:146px}
 .cardthumb-scale .cf2{border-radius:12px}
 .cardthumb-lbl{font-weight:900;font-size:15px;color:var(--text)}
-.cardaway{position:relative;z-index:20;margin:0 auto 12px;min-height:44px;padding:0 20px;border:1px solid var(--line2);border-radius:999px;background:var(--soft);color:var(--text);font-family:inherit;font-weight:900;font-size:15px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.cardaway{margin:0 auto 12px;min-height:44px;padding:0 20px;border:1px solid var(--line2);border-radius:999px;background:var(--soft);color:var(--text);font-family:inherit;font-weight:900;font-size:15px;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .cardaway:active{transform:scale(.97)}
 .deck-tip{color:var(--muted);font-size:13px;font-weight:700;line-height:1.4;max-width:300px;margin:24px auto 36px}
 @keyframes cardPop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
@@ -212,7 +236,7 @@ body.login-locked .topbar{position:relative;z-index:120}
 .pgate-link{display:block;width:100%;margin-top:10px;background:none;border:0;color:var(--green2);font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;text-align:center}
 .pgate-msg{margin-top:10px;font-size:13px;color:var(--muted);min-height:18px;text-align:center}
 @media (prefers-reduced-motion: reduce){.pgate{transition:none}}
-.cardclose{position:absolute;top:16px;right:16px;z-index:20;width:44px;height:44px;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.cardclose{position:absolute;top:16px;right:16px;width:44px;height:44px;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .cardscene{perspective:1400px;width:min(380px,94vw);display:flex;flex-direction:column;align-items:center;gap:16px;position:relative}
 .card3d{position:relative;width:100%;aspect-ratio:5/7;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.7,.2,1);will-change:transform;touch-action:none;cursor:grab}
 .card3d.dragging{transition:none;cursor:grabbing}
@@ -388,38 +412,68 @@ body.viewing-teammate .cardctl,body.viewing-teammate .cb-stats-layer,body.viewin
 .pcard-streak{font-size:12px;font-weight:800;color:var(--green2)}
 
 /* Coach primary tabs (Home, Team, Plan) are their home, not drill-in pages: no close X. */
-body.is-coach #coachhome>.glassclose,body.is-coach #roster>.glassclose,body.is-coach #plan>.glassclose{display:none}
+body.is-coach #coachhome>.glassclose{display:none}
 /* A coach never sees the player home. */
 body.is-coach #home{display:none!important}
-/* Coach Home (Option C): stat tiles + full-width next-game tile + to-do list + links. */
-.chtiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
-.chtile{padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--card);text-align:left}
-.chtile-tap{font-family:inherit;cursor:pointer;position:relative}
-.chtile-full{grid-column:1/3}
-.chtile-n{font-family:'Archivo Black',system-ui,sans-serif;font-size:30px;line-height:1;color:var(--text)}
-.chtile-of{font-size:16px;color:var(--muted)}
-.chtile-l{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;color:var(--muted);margin-top:6px;display:flex;align-items:center;gap:4px}
-.chtile-chev{margin-left:auto;font-weight:900;color:var(--muted)}
-.chtile.alert .chtile-n{color:var(--alert)}
-.chgame{background:var(--lime);border-color:transparent;cursor:pointer}
-.chgame-when{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--ink);opacity:.75}
-.chgame-vs{font-family:'Archivo Black',system-ui,sans-serif;font-size:18px;color:var(--ink);margin-top:3px}
-.chgame-meta{font-size:12.5px;color:var(--ink);opacity:.8;margin-top:3px}
-.ch-lab{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin:20px 0 8px}
-.chlist{display:flex;flex-direction:column}
-.chli{display:flex;align-items:center;gap:10px;padding:13px 2px;border-bottom:1px solid var(--line);font-size:14px;font-weight:700;color:var(--text);cursor:pointer;font-family:inherit;text-align:left;background:none;border-left:0;border-right:0;border-top:0;width:100%}
-.chli:last-child{border-bottom:0}
-.chli .chdot{width:8px;height:8px;border-radius:50%;background:var(--alert);flex:none}
-.chli .chdot.ok{background:var(--green)}
-.chli .chcnt{margin-left:auto;font-family:'Archivo Black',system-ui,sans-serif;font-size:15px;color:var(--alert)}
-.chli .chchev{color:var(--muted);font-weight:900}
-.chli.done{cursor:default}
-.chlinks{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
-.chlink{display:block;padding:16px 14px;border:1px solid var(--line);border-radius:16px;background:var(--card)}
-.chlink-ic{font-size:20px}
-.chlink-t{display:block;font-family:'Archivo Black',system-ui,sans-serif;font-size:14px;color:var(--text);margin-top:6px}
-.chlink-d{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
-/* Coach view. Coach bar is just a heading (not interactive -> not a card). */
+/* #coachhome carries its own topbar (like #home), so drop the .page top offset. */
+#coachhome.page:target{padding-top:0}
+/* Coach Home reuses player components (.hero, .lb-goal, .seg, .metrics, .board/.row).
+   Only additions: a per-row reason line under the name, and a low-adherence flag. */
+.row .row-why{display:block;font-size:var(--fs-support);font-weight:700;color:var(--muted);margin-top:var(--sp-1)}
+.row .row-why.warn{color:var(--alert)}
+.ch-grp{font-size:var(--fs-support);font-weight:900;color:var(--text);margin:var(--gap-block) 0 var(--sp-1);letter-spacing:.02em}
+.ch-blocksub{font-size:var(--fs-support);color:var(--muted);margin:var(--sp-1) 0 var(--sp-3)}
+/* Block head: big color-coded count + label/subhead. Count is a status signal:
+   amber = goals to set, red = not trained, green when zero (handled). */
+.ch-blocks{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)}
+.ch-block{display:flex;flex-direction:column;align-items:flex-start;gap:var(--sp-1);padding:var(--sp-4);border:1px solid var(--line);border-radius:var(--r-card);background:var(--card);text-decoration:none;color:var(--text);min-height:var(--tap)}
+.ch-block .lb-scope{margin:0;font-size:var(--fs-cardtitle)}
+.ch-block .ch-blocksub{margin:0}
+.ch-block-txt{min-width:0}
+.ch-count{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(40px,13vw,56px);line-height:.9;text-align:left}
+.ch-count-goal{color:var(--warn-text)}
+.ch-count-attn{color:var(--alert-text)}
+.ch-count.done{color:var(--green)}
+.ch-topfive-lab{margin-top:var(--gap-block)!important}
+.ch-topfive{margin-top:var(--sp-2)}
+/* Coach-home action rows: bigger + tactile. */
+#coachhome .board .row{padding:var(--sp-4) var(--sp-3);gap:12px}
+#coachhome .board .row .row-nm{font-size:var(--fs-body);font-weight:800}
+#coachhome .board .row .row-why{font-size:var(--fs-support)}
+#coachhome .lb-scope{font-size:var(--fs-section);font-weight:900;color:var(--text);margin:0 0 var(--sp-1)}
+#coachhome .lb-divider{margin:var(--gap-section) 0}
+#coachhome .board{margin-bottom:var(--sp-2)}
+/* Non-interactive team-focus tiles (readouts, not buttons -> no tap affordance). */
+.ch-showall{margin:var(--sp-3) 0 0;font-family:inherit;font-size:var(--fs-support);font-weight:800;color:var(--green2);background:none;border:0;cursor:pointer;padding:var(--sp-2) 0;min-height:var(--tap)}
+/* Coach Home breathing room: section rhythm + larger lb-scope labels + emoji. */
+#coachhome .lb-teamzone{margin-top:var(--gap-section);margin-bottom:var(--gap-section)}
+#coachhome .lb-divider{margin:var(--gap-section) 0}
+#coachhome .lb-scope{font-size:var(--fs-section);font-weight:900;color:var(--text);margin:0 0 var(--sp-4)}
+#coachhome .lb-goal-lab{font-size:var(--fs-support)}
+#coachhome .lb-goal-big{font-size:var(--fs-giant)}
+#coachhome .hero{padding:var(--sp-6) 0 var(--sp-4)}
+/* Coach roster: add-player entry + inline add form (no modal). */
+.rosterh-coach,.rosterp-coach{display:none}
+body.is-coach .rosterh-player,body.is-coach .rosterp-player{display:none}
+body.is-coach .rosterh-coach,body.is-coach .rosterp-coach{display:block}
+.rfilter{display:none;align-items:center;gap:10px;margin:0 0 var(--sp-4);font-weight:800;font-size:var(--fs-support);color:var(--muted)}
+body.is-coach .rfilter[data-on]{display:flex}
+.rfilter-clear{font-family:inherit;font-size:var(--fs-meta);font-weight:800;color:var(--green2);background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:5px 10px;cursor:pointer}
+.pcard.filtered-out{display:none}
+/* Empty-state add-player card in the roster grid. */
+.pcard-add{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:2px dashed var(--line);background:var(--card2);color:var(--muted);cursor:pointer;font-family:inherit}
+.pcard-add .plus{font-family:'Archivo Black',system-ui,sans-serif;font-size:34px;line-height:1}
+.pcard-add .lab{font-size:var(--fs-support);font-weight:800}
+.addform{max-width:460px;margin:var(--sp-4) auto 0;display:flex;flex-direction:column;gap:var(--sp-4)}
+.addfield{display:flex;flex-direction:column;gap:var(--sp-1)}
+.addfield-lab{font-size:var(--fs-support);font-weight:800;color:var(--muted)}
+.addphoto{margin:0 auto var(--sp-2);display:grid;place-items:center;gap:var(--sp-1);width:110px;height:110px;border-radius:50%;border:1px dashed var(--line);background:var(--card);cursor:pointer;position:relative;overflow:hidden;font-family:inherit}
+.addphoto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.addphoto-plus{font-family:'Archivo Black',system-ui,sans-serif;font-size:30px;color:var(--muted)}
+.addphoto-lab{font-size:var(--fs-meta);font-weight:800;text-transform:uppercase;letter-spacing:.02em;color:var(--muted)}
+/* Per-player remove control on the coach roster. */
+.pcard-remove{position:absolute;top:6px;right:6px;z-index:3;width:26px;height:26px;border-radius:50%;border:0;background:var(--alert-text);color:#fff;font-weight:900;font-size:15px;line-height:1;cursor:pointer;display:none}
+body.is-coach .roster .pcard-remove{display:grid;place-items:center}
 .coachbar{margin-top:16px}
 .coachbar-title{font-weight:800;font-size:14px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
 .coachbar-team{display:block;font-family:'Archivo Black',system-ui,sans-serif;font-size:18px;text-transform:none;letter-spacing:0;color:var(--text);margin-top:2px}
@@ -499,7 +553,7 @@ body.is-coach #home{display:none!important}
 .metric-num{font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;font-size:26px;color:var(--text);line-height:1}
 .metric.on .metric-num{color:var(--text)}
 /* Leaderboard team view */
-.lb-teamzone{margin-top:24px;margin-bottom:32px}
+.lb-teamzone{margin-top:12px;margin-bottom:32px}
 .lb-streak{font-family:'Archivo Black',system-ui,sans-serif;font-size:18px;color:var(--text);margin:0 0 16px}
 .lb-goal-lab{display:inline-flex;align-items:center;gap:8px;font-weight:800;color:var(--muted);font-size:15px;text-transform:uppercase;letter-spacing:.03em}
 .lb-info{position:relative;display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--soft);color:var(--green2);font-size:13px;font-weight:900;border:0;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent}
@@ -578,6 +632,11 @@ button.row:active{background:var(--soft)}
 .idp-in{width:100%;font-family:inherit;font-size:15px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--text);box-sizing:border-box}
 .idp-btns{display:flex;gap:8px;margin-top:8px}
 .idp-save{background:var(--lime);color:var(--ink);border-color:transparent}
+.idp-presets-lab{margin:var(--sp-3) 0 var(--sp-2);font-size:var(--fs-meta);font-weight:900;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
+.idp-presets{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-2)}
+.idp-preset{font-family:inherit;font-size:var(--fs-support);font-weight:700;text-align:left;color:var(--text);background:var(--card2);border:1px solid var(--line);border-radius:var(--r-card);padding:var(--sp-3);cursor:pointer;line-height:1.25;min-height:var(--tap)}
+.idp-preset:active{transform:scale(.98)}
+.idp-preset.on{background:var(--lime);color:var(--ink);border-color:transparent}
 .idp-cancel{background:none;color:var(--muted)}
 .idpdev{margin:14px 0;padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--card2)}
 .idpdev-trend{display:flex;align-items:flex-end;gap:10px;height:96px;margin-top:12px}
@@ -888,52 +947,38 @@ body.login-locked{overflow:hidden}
 </section>
 
 <section id='coachhome' class='page'>
-<a class='glassclose' href='.' aria-label='Close'>✕</a>
-<div class='hero'><div class='kicker' id='chKicker'>Jr Rangers 10U</div><h1 id='chHi'>Hey Coach</h1><p>Here is where your team is at this week.</p></div>
-<div class='chtiles'>
-  <div class='chtile'><div class='chtile-n'><span id='chTrained'>0</span><span class='chtile-of'>/<span id='chTotal'>0</span></span></div><div class='chtile-l'>trained this week</div></div>
-  <button type='button' class='chtile chtile-tap alert' id='chBehind'><div class='chtile-n' id='chBehindN'>0</div><div class='chtile-l'>behind<span class='chtile-chev'>&rsaquo;</span></div></button>
-  <button type='button' class='chtile chtile-full chgame' id='chGame'>
-    <div class='chgame-when' id='chGameWhen'>Next game</div>
-    <div class='chgame-vs' id='chGameVs'>Loading schedule...</div>
-    <div class='chgame-meta' id='chGameMeta'></div>
-  </button>
+<div class='topbar'><div class='brand'><img class='brandlogo' src='sass-logo.svg' alt='Thwap Hockey' width='80' height='68'><img class='brandmark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span></nav><button type='button' class='kebab' id='kebabC' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenuC' hidden><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a><a href='#progress'>Standings</a></span></div></div>
+<div class='hero'><div class='kicker' id='chKicker'>Jr Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='chProfileName' aria-label='Edit your coach profile'>Coach</button> <span class='hero-wave' role='img' aria-label='Waving hand'>👋</span></h1><p>Here is where your team is at.</p></div>
+
+<div class='lb-teamzone'>
+<div class='lb-goal'>
+<div class='lb-goal-lab'>Trained this week</div>
+<div class='lb-goal-big'><span id='chTrained'>0</span><small> of <span id='chTotal'>0</span> players</small></div>
+<div class='lb-goal-row'>
+<div class='lb-track'><div class='lb-trackfill' id='chTrackFill'></div></div>
 </div>
-<div class='ch-lab'>To do</div>
-<div class='chlist' id='chTodo'></div>
-<div class='chlinks'>
-  <a class='chlink' href='#roster'><span class='chlink-ic'>&#128101;</span><span class='chlink-t'>Team</span><span class='chlink-d'>Roster &amp; progress</span></a>
-  <a class='chlink' href='#plan'><span class='chlink-ic'>&#128197;</span><span class='chlink-t'>Plan</span><span class='chlink-d'>This week&rsquo;s training</span></a>
+</div>
+<p class='lb-scope ch-topfive-lab' id='chTopLab' hidden>Top this week</p>
+<div class='board ch-topfive' id='chTop'></div>
+</div>
+
+<div class='lb-divider'></div>
+
+<div class='ch-blocks'>
+<a class='ch-block' id='chDevBlock' href='#roster' data-filter='nogoal'>
+  <div class='ch-count ch-count-goal'><span id='chDevN'>0</span></div>
+  <div class='ch-block-txt'><p class='lb-scope' id='chDevLab'>Player goals</p><p class='ch-blocksub' id='chDevSub'>Need a goal</p></div>
+</a>
+<a class='ch-block' id='chAttnBlock' href='#roster' data-filter='untrained'>
+  <div class='ch-count ch-count-attn'><span id='chAttnN'>0</span></div>
+  <div class='ch-block-txt'><p class='lb-scope' id='chAttnLab'>Not training yet</p><p class='ch-blocksub' id='chAttnSub'>Haven&rsquo;t trained</p></div>
+</a>
 </div>
 </section>
 <section id='roster' class='page'>
 <a class='glassclose' href='.' aria-label='Close'>✕</a>
-<div class='hero'><div class='kicker'>Jr Rangers 10U, 16 Rangers</div><h1>Who’s putting in the work?</h1><p>Tap your card so your training counts.</p></div>
-<div class='coachbar' id='coachBar' hidden>
-  <div class='coachbar-title'>Coach view <span class='coachbar-team' id='coachTeamName'>Jr Rangers 10U</span></div>
-</div>
-<div class='seg coachseg' id='coachSeg' role='tablist' aria-label='Coach view' hidden>
-  <button type='button' class='segbtn on' data-cseg='team' role='tab' aria-selected='true'>Entire Team</button>
-  <button type='button' class='segbtn' data-cseg='players' role='tab' aria-selected='false'>Players</button>
-</div>
-<div class='coachteam' id='coachTeamPane' hidden>
-  <div class='coachpart' id='coachPart'>
-    <div class='coachpart-num'><span id='coachTrained'>0</span> of <span id='coachTotal'>0</span></div>
-    <div class='coachpart-lab'>players trained this week</div>
-    <div class='coachpart-sub' id='coachTwice'></div>
-  </div>
-  <div class='coachroll' id='coachRoll'></div>
-  <div class='coachcoaches' id='coachCoaches' hidden>
-    <div class='coachcoaches-h'>Coaches</div>
-    <div class='coachstrip' id='coachStrip'></div>
-    <button type='button' class='coachcoaches-edit' id='coachProfileBtn'>Edit my coach profile</button>
-    <div class='coachcoaches-invite' id='coachInvite' hidden>
-      <input class='login-in' id='coachInviteEmail' type='email' inputmode='email' placeholder='assistant@email.com'>
-      <button type='button' class='coachcoaches-add' id='coachInviteBtn'>Invite assistant</button>
-      <p class='coachcoaches-err' id='coachInviteErr' aria-live='polite'></p>
-    </div>
-  </div>
-</div>
+<div class='hero'><div class='kicker'>Jr Rangers 10U, 16 Rangers</div><h1 class='rosterh-player'>Who’s putting in the work?</h1><h1 class='rosterh-coach'>Your roster</h1><p class='rosterp-player'>Tap your card so your training counts.</p><p class='rosterp-coach'>Tap a player to see how they’re doing. Add or remove players below.</p></div>
+<div class='rfilter' id='rFilter' hidden><span id='rFilterLab'></span> <button type='button' class='rfilter-clear' id='rFilterClear'>Clear</button></div>
 <div class='roster' id='roster-grid'><a href='#home' class='pcard' data-name='Alder Reese'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>71</span><span class='pcard-bnname'>Alder</span></div></a><a href='#home' class='pcard' data-name='Brooklyn Coughlan'><div class='pcard-bignum pos-def'><span class='pcard-bn'>92</span><span class='pcard-bnname'>Brooklyn</span></div></a><a href='#home' class='pcard' data-name='Dawson Huffman'><div class='pcard-bignum pos-def'><span class='pcard-bn'>19</span><span class='pcard-bnname'>Dawson</span></div></a><a href='#home' class='pcard' data-name='Dominic Cinque'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>98</span><span class='pcard-bnname'>Dominic</span></div></a><a href='#home' class='pcard' data-name='Eugene Kuhn'><div class='pcard-bignum pos-def'><span class='pcard-bn'>3</span><span class='pcard-bnname'>Eugene</span></div></a><a href='#home' class='pcard' data-name='Evan Ewing'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>13</span><span class='pcard-bnname'>Evan</span></div></a><a href='#home' class='pcard' data-name='Greyson Wertz'><div class='pcard-bignum pos-def'><span class='pcard-bn'>32</span><span class='pcard-bnname'>Greyson</span></div></a><a href='#home' class='pcard' data-name='Issac Moyer'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>53</span><span class='pcard-bnname'>Issac</span></div></a><a href='#home' class='pcard' data-name='Johnny Eraman'><div class='pcard-bignum pos-goalie'><span class='pcard-bn'>1</span><span class='pcard-bnname'>Johnny</span></div></a><a href='#home' class='pcard' data-name='Joziah Soto'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>59</span><span class='pcard-bnname'>Joziah</span></div></a><a href='#home' class='pcard pcard-you-card' data-name='Lewie'><img class='pcard-cardart' src='cards/lewie_photo.png' alt='Lewie'></a><a href='#home' class='pcard' data-name='Liam Delatorre'><div class='pcard-bignum pos-def'><span class='pcard-bn'>29</span><span class='pcard-bnname'>Liam</span></div></a><a href='#home' class='pcard' data-name='Maddux Jones'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>18</span><span class='pcard-bnname'>Maddux</span></div></a><a href='#home' class='pcard' data-name='Oliver Moyer'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>90</span><span class='pcard-bnname'>Oliver</span></div></a><a href='#home' class='pcard' data-name='Teddy Diss'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>11</span><span class='pcard-bnname'>Teddy</span></div></a><a href='#home' class='pcard' data-name='William Schnell'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>16</span><span class='pcard-bnname'>William</span></div></a></div>
 <div class='rsearch-empty' id='rsearchEmpty' hidden></div>
 <div class='pgate' id='switchGate' hidden>
@@ -963,6 +1008,28 @@ body.login-locked{overflow:hidden}
     <p class='pgate-msg' id='coachProfileMsg' aria-live='polite'></p>
   </form>
 </div>
+</section>
+
+<section id='addplayer' class='page'>
+<a class='glassclose' href='#roster' aria-label='Close'>✕</a>
+<div class='hero'><div class='kicker'>Jr Rangers 10U</div><h1>Add a player</h1><p>They will show up on your roster.</p></div>
+<form class='addform' id='addPlayerForm' novalidate>
+  <button type='button' class='addphoto' id='addPhotoBtn'>
+    <img id='addPhotoImg' alt='' hidden>
+    <span id='addPhotoPlus' class='addphoto-plus'>+</span>
+    <span class='addphoto-lab'>Add photo (optional)</span>
+  </button>
+  <input type='file' id='addPhotoFile' accept='image/*' hidden>
+  <label class='addfield'><span class='addfield-lab'>First name</span><input class='login-in' id='apFirst' type='text' autocomplete='off' required></label>
+  <label class='addfield'><span class='addfield-lab'>Last name</span><input class='login-in' id='apLast' type='text' autocomplete='off'></label>
+  <label class='addfield'><span class='addfield-lab'>Position</span>
+    <span class='login-selwrap'><select class='login-in login-select' id='apPos'><option value='forward'>Forward</option><option value='defense'>Defense</option><option value='goalie'>Goalie</option></select><span class='login-selchev' aria-hidden='true'>&#8250;</span></span>
+  </label>
+  <label class='addfield'><span class='addfield-lab'>Jersey number</span><input class='login-in' id='apNum' type='number' inputmode='numeric' min='0' max='99'></label>
+  <label class='addfield'><span class='addfield-lab'>Parent email</span><input class='login-in' id='apEmail' type='email' inputmode='email' placeholder='name@email.com' required></label>
+  <button type='submit' class='pgate-go' id='apSave'>Add player</button>
+  <p class='login-err' id='apErr' aria-live='polite'></p>
+</form>
 </section>
 
 <section id='plan' class='page'>
@@ -1049,6 +1116,8 @@ body.login-locked{overflow:hidden}
   </div>
   <div class='idp-edit-row' id='idpEditRow' hidden>
     <input class='idp-in' id='idpInput' type='text' maxlength='120' placeholder='e.g. Work on backward skating'>
+    <div class='idp-presets-lab'>Coach skill presets (10U) &middot; tap to use</div>
+    <div class='idp-presets' id='idpPresets'></div>
     <div class='idp-btns'>
       <button type='button' class='idp-save' id='idpSave'>Save</button>
       <button type='button' class='idp-cancel' id='idpCancel'>Cancel</button>
@@ -1067,7 +1136,7 @@ body.login-locked{overflow:hidden}
 
 <section id='home'>
 <div class='wipnote'>👋 Early prototype. We're testing the look and feel. Training drills and stickers are still being built.</div>
-<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.svg' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><span class='nav-authed'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-coach'><a class='link' href='#coachhome'>Home</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a></span><span class='nav-guest'><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#stickers'>Stickers</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-coach'><a href='#coachhome'>Home</a><a href='#roster'>Team</a><a href='#plan'>Plan</a></span><span class='nav-guest'><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
+<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.svg' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><span class='nav-authed'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a></span><span class='nav-guest'><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#stickers'>Stickers</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a></span><span class='nav-guest'><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
 <div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>there</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><script>(function(){try{var authed=/(?:^|; )thwapAuth=/.test(document.cookie);var p=localStorage.getItem('bfPlayer');var b=document.getElementById('homePlayer');if(b){if(p&&authed){b.textContent=p.trim().split(/\s+/)[0];}else{b.classList.add('needpick');}}}catch(e){}
 /* Team plan: hide the category rows the coach turned OFF for today. On any failure
    or unset plan, all three stay shown (the built-in rotation), so home is never empty. */
@@ -1124,120 +1193,51 @@ window.thwapActiveTeam=function(coach){
   return codes[0]||'RANGERS72';
 };
 (function(){
-  var bar=document.getElementById('coachBar'); if(!bar) return;
   var coach=null;
   try{ coach=JSON.parse(localStorage.getItem('thwapCoach')||'null'); }catch(e){}
   if(!coach||!coach.token){ return; }
-  bar.hidden=false;
   document.body.classList.add('is-coach');
   var code=window.thwapActiveTeam(coach);
   var myEmail=(coach.email||'').toLowerCase();
-  var nameEl=document.getElementById('coachTeamName');
-  var trainedEl=document.getElementById('coachTrained');
-  var totalEl=document.getElementById('coachTotal');
-  var twiceEl=document.getElementById('coachTwice');
-  fetch('/api/coach?action=roster&code='+encodeURIComponent(code)+'&coachToken='+encodeURIComponent(coach.token))
-    .then(function(r){ return r.json(); })
-    .then(function(j){
-      if(!j||!j.ok){ return; }
-      if(nameEl&&j.team&&j.team.name){ nameEl.textContent=j.team.name; }
-      if(trainedEl&&j.participation){ trainedEl.textContent=j.participation.trained; }
-      if(totalEl&&j.participation){ totalEl.textContent=j.participation.total; }
-      if(twiceEl&&j.members){
-        var twice=j.members.filter(function(m){ var w=m.week||{}; return ((w.stick||0)+(w.shoot||0)+(w.dryland||0))>=2; }).length;
-        twiceEl.textContent=twice+' trained 2+ times this week';
-      }
-      /* Ranked roll-up: every player by this-week training total, with their IDP
-         goal. Each row is tappable -> that player's stat/IDP page. */
-      var roll=document.getElementById('coachRoll');
-      if(roll && j.members){
-        var rows=j.members.map(function(m){
-          var w=m.week||{}; var tot=(w.stick||0)+(w.shoot||0)+(w.dryland||0);
-          var nm=(m.firstName||m.playerId||'')+(m.lastName?(' '+m.lastName.charAt(0)+'.'):'');
-          return { name:nm.trim(), playerId:m.playerId, tot:tot, goal:m.idpGoal||'' };
-        }).sort(function(a,b){ return b.tot-a.tot; });
-        roll.innerHTML='';
-        rows.forEach(function(r,i){
-          var el=document.createElement('button');
-          el.type='button'; el.className='crow'+(r.tot>0?' trained':'');
-          var goalHtml=r.goal?('<div class="crow-goal"></div>'):('<div class="crow-goal none">No goal set</div>');
-          el.innerHTML='<div class="crow-rank">'+(i+1)+'</div>'+
-            '<div><div class="crow-name"></div>'+goalHtml+'</div>'+
-            '<div class="crow-wk"><div class="crow-wk-n">'+r.tot+'</div><div class="crow-wk-l">this wk</div></div>';
-          el.querySelector('.crow-name').textContent=r.name;
-          if(r.goal){ el.querySelector('.crow-goal').textContent=r.goal; }
-          el.addEventListener('click',function(){ if(window.openPlayerPage) window.openPlayerPage(r.name); });
-          roll.appendChild(el);
-        });
-      }
-    })
-    .catch(function(){});
-  /* Segment: Entire Team pane vs Players (the card roster grid). */
-  var seg=document.getElementById('coachSeg');
-  var teamPane=document.getElementById('coachTeamPane');
-  var grid=document.getElementById('roster-grid');
-  function setSeg(which){
-    if(seg) seg.querySelectorAll('.segbtn').forEach(function(b){ var on=b.getAttribute('data-cseg')===which; b.classList.toggle('on',on); b.setAttribute('aria-selected',on?'true':'false'); });
-    if(teamPane) teamPane.hidden=(which!=='team');
-    if(grid) grid.style.display=(which==='players')?'':'none';
-  }
-  if(seg){ seg.hidden=false; seg.querySelectorAll('.segbtn').forEach(function(b){ b.addEventListener('click',function(){ setSeg(b.getAttribute('data-cseg')); }); }); setSeg('team'); }
-  /* Coach Home (Option C): stat tiles + next-game tile + tappable to-do list.
-     Behind = players with 0 training this week. Goals-to-set = members with no
-     IDP goal. Tapping jumps to the relevant player (first match) or the roster. */
+  /* Coach Home (JTBD): participation pulse + two tappable count blocks
+     (Player goals, Not training yet) that link to the filtered Team page. */
   (function(){
-    var hi=document.getElementById('chHi'), kick=document.getElementById('chKicker');
-    if(coach.name&&coach.name!=='Coach'&&hi) hi.textContent='Hey '+coach.name;
-    var behindEls=[]; // filled after roster
+    var nameBtn=document.getElementById('chProfileName'), kick=document.getElementById('chKicker');
+    if(nameBtn&&coach.name&&coach.name!=='Coach') nameBtn.textContent=coach.name;
     fetch('/api/coach?action=roster&code='+encodeURIComponent(code)+'&coachToken='+encodeURIComponent(coach.token))
       .then(function(r){ return r.json(); })
       .then(function(j){
         if(!j||!j.ok||!j.members) return;
         if(kick&&j.team&&j.team.name) kick.textContent=j.team.name;
-        var t=document.getElementById('chTrained'), tot=document.getElementById('chTotal');
-        if(t&&j.participation) t.textContent=j.participation.trained;
-        if(tot&&j.participation) tot.textContent=j.participation.total;
-        var behind=j.members.filter(function(m){ var w=m.week||{}; return ((w.stick||0)+(w.shoot||0)+(w.dryland||0))===0; });
-        var noGoal=j.members.filter(function(m){ return !m.idpGoal; });
-        var bn=document.getElementById('chBehindN'); if(bn) bn.textContent=behind.length;
-        var bb=document.getElementById('chBehind');
-        function nameOf(m){ return (m.firstName||m.playerId||'')+(m.lastName?(' '+m.lastName.charAt(0)+'.'):''); }
-        if(bb) bb.addEventListener('click',function(){ if(behind[0]&&window.openPlayerPage) window.openPlayerPage(nameOf(behind[0]).trim()); else location.hash='#roster'; });
-        var todo=document.getElementById('chTodo');
-        if(todo){
-          todo.innerHTML='';
-          function row(cls,label,count,onTap){
-            var el=document.createElement('button'); el.type='button'; el.className='chli'+(count===0?' done':'');
-            el.innerHTML='<span class="chdot'+(count===0?' ok':'')+'"></span><span class="lbl"></span>'+(count>0?'<span class="chcnt">'+count+'</span>':'<span class="chcnt" style="color:var(--green)">&#10003;</span>')+'<span class="chchev">&rsaquo;</span>';
-            el.querySelector('.lbl').textContent=label;
-            if(onTap) el.addEventListener('click',onTap);
-            todo.appendChild(el);
-          }
-          row('goals','Set player goals',noGoal.length,function(){ if(noGoal[0]&&window.openPlayerPage) window.openPlayerPage(nameOf(noGoal[0]).trim()); else location.hash='#roster'; });
-          row('behind','Nudge players behind',behind.length,function(){ if(behind[0]&&window.openPlayerPage) window.openPlayerPage(nameOf(behind[0]).trim()); else location.hash='#roster'; });
+        var trained=j.participation?j.participation.trained:0, tot=j.participation?j.participation.total:j.members.length;
+        var t=document.getElementById('chTrained'), tt=document.getElementById('chTotal'), fill=document.getElementById('chTrackFill');
+        if(t) t.textContent=trained; if(tt) tt.textContent=tot;
+        if(fill) fill.style.width=(tot?Math.round(100*trained/tot):0)+'%';
+        var noGoal=j.members.filter(function(m){ return !m.idpGoal; }).length;
+        var dn=document.getElementById('chDevN');
+        if(dn){ dn.textContent=noGoal; dn.closest('.ch-count').classList.toggle('done', noGoal===0); }
+        var slipping=j.members.filter(function(m){ var w=m.week||{}; return ((w.stick||0)+(w.shoot||0)+(w.dryland||0))===0; }).length;
+        var an=document.getElementById('chAttnN');
+        if(an){ an.textContent=slipping; an.closest('.ch-count').classList.toggle('done', slipping===0); }
+        /* Top this week: players ranked by this-week training total (celebratory).
+           Reuses the Standings .row; top 3 get a medal. Only shown if anyone trained. */
+        var ranked=j.members.map(function(m){
+          var w=m.week||{}; return { m:m, tot:(w.stick||0)+(w.shoot||0)+(w.dryland||0) };
+        }).filter(function(x){ return x.tot>0; }).sort(function(a,b){ return b.tot-a.tot; }).slice(0,5);
+        var top=document.getElementById('chTop'), topLab=document.getElementById('chTopLab');
+        if(top && ranked.length){
+          if(topLab) topLab.hidden=false;
+          var medals=['\uD83E\uDD47','\uD83E\uDD48','\uD83E\uDD49'];
+          top.innerHTML='';
+          ranked.forEach(function(x,i){
+            function nameOf(m){ return ((m.firstName||m.playerId||'')+(m.lastName?(' '+m.lastName.charAt(0)+'.'):'')).trim(); }
+            var el=document.createElement('button'); el.type='button'; el.className='row';
+            el.innerHTML='<span>'+(i<3?medals[i]:(i+1))+'</span><strong></strong><div class="bar"><div class="fill" style="width:'+Math.round(100*x.tot/(ranked[0].tot||1))+'%"></div></div><span class="score">'+x.tot+'</span>';
+            el.querySelector('strong').textContent=nameOf(x.m);
+            el.addEventListener('click',(function(nm){ return function(){ if(window.openPlayerPage) window.openPlayerPage(nm,'coachhome'); }; })(nameOf(x.m)));
+            top.appendChild(el);
+          });
         }
-      })
-      .catch(function(){});
-    /* Next game / practice tile. */
-    fetch('/api/coach?action=schedule&code='+encodeURIComponent(code))
-      .then(function(r){ return r.json(); })
-      .then(function(j){
-        if(!j||!j.ok||!j.next) return;
-        var g=j.next.nextGame, p=j.next.nextPractice;
-        var whenEl=document.getElementById('chGameWhen'), vsEl=document.getElementById('chGameVs'), metaEl=document.getElementById('chGameMeta');
-        function fmtDate(d){ try{ var dt=new Date(d+'T12:00:00'); return dt.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'}); }catch(e){ return d; } }
-        function fmtTime(t){ if(!t) return ''; var pr=t.split(':'),h=+pr[0],m=pr[1]; var ap=h>=12?'pm':'am'; h=h%12||12; return h+':'+m+ap; }
-        if(g&&vsEl){
-          whenEl.textContent=(g.kind==='tournament'?'Tournament':'Next game')+' \u00b7 '+fmtDate(g.date)+(g.time?(' \u00b7 '+fmtTime(g.time)):'');
-          vsEl.textContent=(g.kind==='tournament'?g.opponent:('vs '+g.opponent));
-          metaEl.textContent=(g.home?'Home':'Away')+(g.place?(' \u00b7 '+g.place):'');
-        } else if(p&&vsEl){
-          whenEl.textContent='Next up \u00b7 Practice';
-          vsEl.textContent='Wed '+fmtTime(p.start)+'\u2013'+fmtTime(p.end);
-          metaEl.textContent=p.place||'';
-        }
-        var gt=document.getElementById('chGame');
-        if(gt) gt.addEventListener('click',function(){ location.href='hockey_game_goals.html'; });
       })
       .catch(function(){});
   })();
@@ -1306,6 +1306,7 @@ window.thwapActiveTeam=function(coach){
       }
       function close(){ if(gate) gate.hidden=true; }
       if(editBtn) editBtn.addEventListener('click',open);
+      var heroName=document.getElementById('chProfileName'); if(heroName) heroName.addEventListener('click',open);
       if(xBtn) xBtn.addEventListener('click',close);
       if(photoBtn&&fileEl) photoBtn.addEventListener('click',function(){ fileEl.click(); });
       if(fileEl) fileEl.addEventListener('change',function(){
@@ -1343,6 +1344,107 @@ window.thwapActiveTeam=function(coach){
           .catch(function(){ if(msgEl) msgEl.textContent='Could not reach the server.'; });
       });
     })();
+  })();
+  /* Team page (coach): reveal Add player, wire the inline add form, add remove
+     buttons to roster cards. No modals. */
+  (function(){
+    var roster=document.getElementById('coachRoster'); if(roster) roster.hidden=false;
+    var addBtn=document.getElementById('coachAddBtn');
+    if(addBtn) addBtn.addEventListener('click',function(){ location.hash='#addplayer'; });
+    /* Empty-state "+ Player" card at the end of the roster grid (coach only). */
+    (function(){
+      var grid=document.getElementById('roster-grid'); if(!grid) return;
+      var add=document.createElement('a'); add.href='#addplayer'; add.className='pcard pcard-add';
+      add.innerHTML='<span class="plus">+</span><span class="lab">Player</span>';
+      grid.appendChild(add);
+    })();
+    /* Home count blocks -> Team filtered to those players. Stores the filter,
+       navigates to #roster, and the Team filter applies it on show. */
+    ['chDevBlock','chAttnBlock'].forEach(function(id){
+      var b=document.getElementById(id); if(!b) return;
+      b.addEventListener('click',function(){ try{ localStorage.setItem('thwapRosterFilter', b.getAttribute('data-filter')||''); }catch(e){} });
+    });
+    /* Team filter: dim non-matching cards + a "showing X" banner with Clear. */
+    function applyFilter(){
+      var f=''; try{ f=localStorage.getItem('thwapRosterFilter')||''; }catch(e){}
+      var grid=document.getElementById('roster-grid'), bar=document.getElementById('rFilter'), lab=document.getElementById('rFilterLab');
+      if(!grid||!bar) return;
+      var cards=grid.querySelectorAll('.pcard[data-name]');
+      if(!f){ bar.removeAttribute('data-on'); cards.forEach(function(c){ c.classList.remove('filtered-out'); }); return; }
+      // Filter needs per-player data; fetch roster once and match by first name.
+      fetch('/api/coach?action=roster&code='+encodeURIComponent(code)+'&coachToken='+encodeURIComponent(coach.token))
+        .then(function(r){ return r.json(); }).then(function(j){
+          if(!j||!j.members) return;
+          var keep={};
+          j.members.forEach(function(m){
+            var w=m.week||{}, s=(w.stick||0)+(w.shoot||0)+(w.dryland||0);
+            var hit=(f==='nogoal')?!m.idpGoal:(f==='untrained'?s===0:false);
+            if(hit) keep[(m.firstName||m.playerId||'').toLowerCase()]=true;
+          });
+          var shown=0;
+          cards.forEach(function(c){
+            var first=(c.getAttribute('data-name')||'').trim().split(/\s+/)[0].toLowerCase();
+            var on=!!keep[first]; c.classList.toggle('filtered-out',!on); if(on) shown++;
+          });
+          if(lab) lab.textContent=(f==='nogoal'?'Players who need a goal':'Not training yet')+' \u00b7 '+shown;
+          bar.setAttribute('data-on','1');
+        }).catch(function(){});
+    }
+    var clearBtn=document.getElementById('rFilterClear');
+    if(clearBtn) clearBtn.addEventListener('click',function(){ try{ localStorage.removeItem('thwapRosterFilter'); }catch(e){} applyFilter(); });
+    if(location.hash==='#roster') applyFilter();
+    window.addEventListener('hashchange',function(){ if(location.hash==='#roster') applyFilter(); });
+    /* Photo picker (downscale to a square data URL). */
+    var photoBtn=document.getElementById('addPhotoBtn'), fileEl=document.getElementById('addPhotoFile'),
+        imgEl=document.getElementById('addPhotoImg'), plusEl=document.getElementById('addPhotoPlus'); var photoData='';
+    if(photoBtn&&fileEl) photoBtn.addEventListener('click',function(){ fileEl.click(); });
+    if(fileEl) fileEl.addEventListener('change',function(){
+      var f=fileEl.files&&fileEl.files[0]; if(!f) return;
+      var rd=new FileReader();
+      rd.onload=function(){ var img=new Image(); img.onload=function(){
+        var S=256, cv=document.createElement('canvas'); cv.width=S; cv.height=S;
+        var ctx=cv.getContext('2d'), m=Math.min(img.width,img.height);
+        ctx.drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,S,S);
+        photoData=cv.toDataURL('image/jpeg',0.82); imgEl.src=photoData; imgEl.hidden=false; if(plusEl) plusEl.hidden=true;
+      }; img.src=rd.result; };
+      rd.readAsDataURL(f);
+    });
+    /* Add-player submit. */
+    var form=document.getElementById('addPlayerForm'), errEl=document.getElementById('apErr'), saveBtn=document.getElementById('apSave');
+    if(form) form.addEventListener('submit',function(e){
+      e.preventDefault(); if(errEl) errEl.textContent='';
+      var first=String((document.getElementById('apFirst')||{}).value||'').trim();
+      var email=String((document.getElementById('apEmail')||{}).value||'').trim();
+      if(!first){ if(errEl) errEl.textContent='Enter a first name.'; return; }
+      if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ if(errEl) errEl.textContent='Enter one parent email.'; return; }
+      var body={ code:code, coachToken:coach.token, firstName:first,
+        lastName:String((document.getElementById('apLast')||{}).value||'').trim(),
+        position:(document.getElementById('apPos')||{}).value||'',
+        number:(document.getElementById('apNum')||{}).value||null,
+        parentEmail:email, photo:photoData };
+      if(saveBtn){ saveBtn.disabled=true; saveBtn.textContent='Adding...'; }
+      fetch('/api/coach?action=add-player',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+        .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
+        .then(function(res){
+          if(saveBtn){ saveBtn.disabled=false; saveBtn.textContent='Add player'; }
+          if(res.ok&&res.j.ok){ location.hash='#roster'; location.reload(); }
+          else if(errEl){ errEl.textContent=(res.j&&res.j.error)||'Could not add player.'; }
+        })
+        .catch(function(){ if(saveBtn){ saveBtn.disabled=false; saveBtn.textContent='Add player'; } if(errEl) errEl.textContent='Could not reach the server.'; });
+    });
+    /* Remove buttons on roster cards. */
+    var grid=document.getElementById('roster-grid');
+    if(grid) grid.querySelectorAll('.pcard[data-name]').forEach(function(card){
+      var nm=card.getAttribute('data-name')||''; var first=nm.trim().split(/\s+/)[0]; if(!first) return;
+      var rm=document.createElement('button'); rm.type='button'; rm.className='pcard-remove'; rm.textContent='\u00d7'; rm.setAttribute('aria-label','Remove '+first);
+      rm.addEventListener('click',function(e){
+        e.preventDefault(); e.stopPropagation();
+        if(!window.confirm('Remove '+first+' from the roster?')) return;
+        fetch('/api/coach?action=remove-player',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code,coachToken:coach.token,playerId:first.toLowerCase()})})
+          .then(function(r){ return r.json(); }).then(function(j){ if(j&&j.ok){ card.parentNode.removeChild(card); } }).catch(function(){});
+      });
+      card.appendChild(rm);
+    });
   })();
 })();
 /* ---- Plan editor (coach): a 7-day x 3-category grid. Loads the team plan from
@@ -2431,15 +2533,18 @@ fetch('stickers/stickers.json').then(function(r){return r.json();}).then(functio
 </script>
 <script>(function(){
 /* ---- Mobile kebab menu ---- */
-var btn=document.getElementById('kebab');
-var menu=document.getElementById('kebabMenu');
-if(!btn||!menu)return;
-function open(){ menu.hidden=false; btn.setAttribute('aria-expanded','true'); }
-function close(){ menu.hidden=true; btn.setAttribute('aria-expanded','false'); }
-btn.addEventListener('click',function(e){ e.stopPropagation(); if(menu.hidden)open(); else close(); });
-menu.addEventListener('click',function(){ close(); });
-document.addEventListener('click',function(e){ if(!menu.hidden && !menu.contains(e.target) && e.target!==btn) close(); });
-document.addEventListener('keydown',function(e){ if(e.key==='Escape') close(); });
+/* ---- Mobile kebab menu (player #kebab + coach #kebabC) ---- */
+[['kebab','kebabMenu'],['kebabC','kebabMenuC']].forEach(function(pair){
+  var btn=document.getElementById(pair[0]);
+  var menu=document.getElementById(pair[1]);
+  if(!btn||!menu)return;
+  function open(){ menu.hidden=false; btn.setAttribute('aria-expanded','true'); }
+  function close(){ menu.hidden=true; btn.setAttribute('aria-expanded','false'); }
+  btn.addEventListener('click',function(e){ e.stopPropagation(); if(menu.hidden)open(); else close(); });
+  menu.addEventListener('click',function(){ close(); });
+  document.addEventListener('click',function(e){ if(!menu.hidden && !menu.contains(e.target) && e.target!==btn) close(); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') close(); });
+});
 })();
 </script>
 <script>(function(){
@@ -2641,7 +2746,7 @@ var current=null, tf='week', plFilter='all', plFrom='leaderboard';
 
 window.openPlayerPage=function(name, from){
   current=name.trim();
-  plFrom=(from==='card')?'card':'leaderboard';
+  plFrom=(from==='card')?'card':(from==='coachhome'?'coachhome':(from==='team'?'team':'leaderboard'));
   tf='week';
   plFilter='all';
   if(tfEl) tfEl.querySelectorAll('.segbtn').forEach(function(x){var on=x.getAttribute('data-tf')==='week';x.classList.toggle('on',on);x.setAttribute('aria-selected',on?'true':'false');});
@@ -2723,7 +2828,29 @@ window.thwapStatsRefresh=function(){ if(current && location.hash==='#player') bu
         .catch(function(){});
     } else if(dev){ dev.hidden=true; }
   };
-  if(editBtn){ editBtn.addEventListener('click',function(){ input.value=(textEl.classList.contains('empty')?'':textEl.textContent); view.hidden=true; editRow.hidden=false; input.focus(); }); }
+  /* Kraken-style IDP skill presets: tap to fill the free-text goal (freeform still allowed). */
+  var IDP_PRESETS=[
+    'Puck protection in corners & explosive first 3 strides',
+    'Stick-on-puck angling & breakout first pass',
+    'Net drive, stopping on pucks & quick release',
+    'Backward transitions & gap control at the blue line',
+    'Head-up scanning before receiving & finding open ice',
+    'Quick edge turns & deception on puck retrievals',
+    'Two-way backchecking & active defensive stick',
+    'Deceptive stickhandling & change of pace entries'
+  ];
+  function paintPresets(){
+    var wrap=document.getElementById('idpPresets'); if(!wrap) return;
+    var cur=(input.value||'').trim();
+    wrap.innerHTML='';
+    IDP_PRESETS.forEach(function(p){
+      var b=document.createElement('button'); b.type='button'; b.className='idp-preset'+(p===cur?' on':''); b.textContent=p;
+      b.addEventListener('click',function(){ input.value=p; input.focus(); paintPresets(); });
+      wrap.appendChild(b);
+    });
+  }
+  if(input) input.addEventListener('input',paintPresets);
+  if(editBtn){ editBtn.addEventListener('click',function(){ input.value=(textEl.classList.contains('empty')?'':textEl.textContent); view.hidden=true; editRow.hidden=false; paintPresets(); input.focus(); }); }
   if(cancelBtn){ cancelBtn.addEventListener('click',function(){ view.hidden=false; editRow.hidden=true; }); }
   if(saveBtn){ saveBtn.addEventListener('click',function(){
     var text=String(input.value||'').trim(); if(!curSlug) return;
@@ -2743,6 +2870,10 @@ window.thwapStatsRefresh=function(){ if(current && location.hash==='#player') bu
     if(plFrom==='card'){
       location.hash='#home';
       setTimeout(function(){ if(window.openPlayerCardToBack) window.openPlayerCardToBack(); },60);
+    } else if(plFrom==='coachhome'){
+      location.hash='#coachhome';
+    } else if(plFrom==='team'){
+      location.hash='#roster';
     } else {
       location.hash='#progress';
     }
