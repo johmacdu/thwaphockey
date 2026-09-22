@@ -85,6 +85,57 @@ describe('content rules', () => {
   });
 });
 
+describe('card close controls stay on top of the player card', () => {
+  // Helper: pull the z-index number out of a CSS rule for a given selector.
+  function zIndexFor(selector) {
+    // Escape the leading dot / hash for the regex, match the rule body, find z-index.
+    const esc = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const rule = html.match(new RegExp(`${esc}\\{([^}]*)\\}`));
+    if (!rule) return null;
+    const z = rule[1].match(/z-index:\s*(\d+)/);
+    return z ? Number(z[1]) : null;
+  }
+
+  // The card scene stacks its 3D faces and the "See my stats" layer up to
+  // z-index:6. A close control must beat that or it renders behind the card.
+  const SCENE_MAX_Z = 6;
+
+  it('the home card overlay close (x) exists and is labelled', () => {
+    const x = doc.getElementById('cardClose');
+    expect(x, '#cardClose exists').toBeTruthy();
+    expect(x.classList.contains('cardclose')).toBe(true);
+    expect(x.getAttribute('aria-label')).toBeTruthy();
+  });
+
+  it('.cardclose z-index is above the card scene layers', () => {
+    const z = zIndexFor('.cardclose');
+    expect(z, '.cardclose has a z-index').not.toBeNull();
+    expect(z).toBeGreaterThan(SCENE_MAX_Z);
+  });
+
+  it('the stickers deck "Put card away" control exists', () => {
+    const btn = doc.getElementById('cardAway');
+    expect(btn, '#cardAway exists').toBeTruthy();
+    expect(btn.classList.contains('cardaway')).toBe(true);
+  });
+
+  it('.cardaway is positioned and z-indexed above the deck card', () => {
+    const rule = html.match(/\.cardaway\{([^}]*)\}/);
+    expect(rule, '.cardaway rule exists').not.toBeNull();
+    // A z-index only applies to a positioned element, so both must be present.
+    expect(rule[1]).toMatch(/position:\s*(relative|absolute|fixed|sticky)/);
+    const z = zIndexFor('.cardaway');
+    expect(z, '.cardaway has a z-index').not.toBeNull();
+    expect(z).toBeGreaterThan(SCENE_MAX_Z);
+  });
+
+  it('the "See my stats" layer it must beat is really at z-index 6', () => {
+    // Guards SCENE_MAX_Z: if this layer is raised, this test flags that the
+    // close-control z-index above may need raising too.
+    expect(zIndexFor('.cb-stats-layer')).toBe(SCENE_MAX_Z);
+  });
+});
+
 describe('accessibility', () => {
   it('has a keyboard focus-visible ring rule', () => {
     expect(html).toMatch(/:focus-visible/);
