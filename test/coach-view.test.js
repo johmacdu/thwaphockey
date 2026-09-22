@@ -196,3 +196,42 @@ describe('Mobile splash: Sass is half on-screen at the left edge', () => {
     expect(leftVw).toBeGreaterThan(-40);  // but not shoved fully off like -52vw
   });
 });
+
+describe('Bug 2: a coach can never get stranded on the hidden #home', () => {
+  it('a hashchange listener redirects a coach off #home to #coachhome', () => {
+    // #home is display:none!important for a coach; without this redirect, any path
+    // that lands a coach on #home (native href, handler race) shows a blank page,
+    // which read as "the Team X does not close the page".
+    expect(html).toMatch(/body\.classList\.contains\('is-coach'\)\)\{\s*location\.hash='#coachhome'/);
+    // and #home is indeed force-hidden for coaches (the reason the redirect exists)
+    expect(html).toMatch(/body\.is-coach #home\{display:none!important\}/);
+  });
+});
+
+describe('Menus start closed: [hidden] overrides display', () => {
+  // Recurring Thwap bug: a popup with the hidden attribute still shows because a
+  // CSS rule gives it display:flex, which beats the browser's implicit
+  // [hidden]{display:none}. Every flex/grid popup that starts hidden needs an
+  // explicit [hidden]{display:none}. The footer menu (Sign out / Report a bug)
+  // was open on load for exactly this reason.
+  it('.footmenu has an explicit [hidden]{display:none} rule', () => {
+    expect(html).toMatch(/\.footmenu\[hidden\]\{display:none\}/);
+  });
+  it('.kebabmenu has an explicit [hidden]{display:none} rule', () => {
+    expect(html).toMatch(/\.kebabmenu\[hidden\]\{display:none\}/);
+  });
+  it('.pgate has an explicit [hidden]{display:none} rule (full-screen overlay tap-blocker)', () => {
+    // .pgate is position:fixed;inset:0;z-index:80. Without this, a hidden switch/
+    // profile gate sat invisibly over the whole Team page and swallowed every tap
+    // (incl. the close X) - the dead Team X for both player and coach.
+    expect(html).toMatch(/\.pgate\[hidden\]\{display:none\}/);
+  });
+  it('the Team edit pencil is gated coach-only (inside .roster-coachonly)', () => {
+    const edit = doc.getElementById('rosterEdit');
+    expect(edit).toBeTruthy();
+    expect(edit.closest('.roster-coachonly')).not.toBeNull();
+    // and .roster-coachonly is hidden by default, shown only for a coach
+    expect(html).toMatch(/\.roster-coachonly\{display:none\}/);
+    expect(html).toMatch(/body\.is-coach \.roster-coachonly\{display:block\}/);
+  });
+});

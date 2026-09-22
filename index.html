@@ -224,6 +224,7 @@ body.login-locked .topbar{position:relative;z-index:120}
 .cardoverlay.show{opacity:1}.cardoverlay[hidden]{display:none}
 /* Parent email-OTP gate modal (persists across tab switches, unlike prompt). */
 .pgate{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(9,15,11,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;transition:opacity .2s ease}
+.pgate[hidden]{display:none}
 .pgate.show{opacity:1}
 #switchGate:not([hidden]){opacity:1}
 #switchGate[hidden]{display:none}
@@ -764,6 +765,7 @@ button.row:active{background:var(--soft)}
 .footkebab{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:999px;font-size:18px;line-height:1;cursor:pointer;font-family:inherit}
 .footkebab:hover{border-color:var(--line2)}
 .footmenu{position:absolute;right:0;bottom:calc(100% + 8px);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:6px;min-width:184px;box-shadow:0 10px 30px rgba(0,0,0,.14);display:flex;flex-direction:column;gap:2px;z-index:60}
+.footmenu[hidden]{display:none}
 .footmenu-item{display:block;padding:10px 12px;border-radius:9px;color:var(--text);font-size:14px;font-weight:800;cursor:pointer}
 .footmenu-item:hover{background:var(--bg2,rgba(0,0,0,.05))}
 /* Easter eggs on the drill pages. Long-press the header emoji to fire, then it
@@ -2107,6 +2109,15 @@ window.thwapActiveTeam=function(coach){
 })();
 showHomePlayer();
 window.addEventListener('hashchange',function(){ if(location.hash===''||location.hash==='#home') showHomePlayer(); });
+/* A coach must never land on #home: it is display:none!important for coaches, so
+   landing there shows a blank/stuck page (this is why the Team X looked like it
+   did nothing - a handler/native-href race could drop the coach on #home). Any
+   hashchange to #home or empty redirects a coach to their real home, #coachhome. */
+window.addEventListener('hashchange',function(){
+  if((location.hash===''||location.hash==='#home') && document.body.classList.contains('is-coach')){
+    location.hash='#coachhome';
+  }
+});
 /* Close (x) on coach/shared pages (Team, Plan, Standings) must land on the viewer's
    real home: a coach's home is #coachhome (#home is hidden for coaches), a player's
    is #home. href='#home' is the no-JS fallback; this routes coaches correctly. */
