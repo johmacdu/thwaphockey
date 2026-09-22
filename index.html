@@ -1960,8 +1960,21 @@ window.thwapActiveTeam=function(coach){
     });
     updateBar();
   }
-  /* Re-render the grid counts when returning from the picker. */
-  window.addEventListener('hashchange',function(){ if(location.hash==='#plan') render(); });
+  /* Load the plan once (seed defaults if it has no drills), then render. Returns a
+     promise so navigation can wait for it. Guards against the race where the grid
+     rendered empty before the async get-plan resolved. */
+  var planLoaded=false, planLoading=null;
+  function loadPlan(){
+    if(planLoaded) return Promise.resolve();
+    if(planLoading) return planLoading;
+    planLoading=fetch('/api/coach?action=get-plan&code='+encodeURIComponent(code))
+      .then(function(r){ return r.json(); })
+      .then(function(j){ var p=(j&&j.ok&&j.plan)?j.plan:null; if(p&&planHasDrills(p)){ plan=p; } else { seedDefaults(); setDirty(true); } planLoaded=true; render(); })
+      .catch(function(){ seedDefaults(); planLoaded=true; render(); });
+    return planLoading;
+  }
+  /* Re-render on return from the picker, and load-then-render when landing on Plan. */
+  window.addEventListener('hashchange',function(){ if(location.hash==='#plan'){ if(planLoaded) render(); else loadPlan(); } });
   /* Footer: live count + time estimate; Reset clears staged; Save commits to the plan. */
   function updateBar(){
     if(!barEl) return;
@@ -1978,10 +1991,7 @@ window.thwapActiveTeam=function(coach){
     render();
     location.hash='#plan';
   });
-  fetch('/api/coach?action=get-plan&code='+encodeURIComponent(code))
-    .then(function(r){ return r.json(); })
-    .then(function(j){ var p=(j&&j.ok&&j.plan)?j.plan:null; if(p&&planHasDrills(p)){ plan=p; } else { seedDefaults(); setDirty(true); } render(); })
-    .catch(function(){ seedDefaults(); render(); });
+  loadPlan();
   if(saveBtn){ saveBtn.addEventListener('click',function(){
     saveBtn.textContent='Saving...';
     fetch('/api/coach?action=set-plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code,coachToken:coach.token,plan:plan})})
