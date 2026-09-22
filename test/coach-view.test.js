@@ -196,3 +196,17 @@ describe('Mobile splash: Sass is half on-screen at the left edge', () => {
     expect(leftVw).toBeGreaterThan(-40);  // but not shoved fully off like -52vw
   });
 });
+
+describe('Menus start closed: [hidden] overrides display', () => {
+  // Recurring Thwap bug: a popup with the hidden attribute still shows because a
+  // CSS rule gives it display:flex, which beats the browser's implicit
+  // [hidden]{display:none}. Every flex/grid popup that starts hidden needs an
+  // explicit [hidden]{display:none}. The footer menu (Sign out / Report a bug)
+  // was open on load for exactly this reason.
+  it('.footmenu has an explicit [hidden]{display:none} rule', () => {
+    expect(html).toMatch(/\.footmenu\[hidden\]\{display:none\}/);
+  });
+  it('.kebabmenu has an explicit [hidden]{display:none} rule', () => {
+    expect(html).toMatch(/\.kebabmenu\[hidden\]\{display:none\}/);
+  });
+});
