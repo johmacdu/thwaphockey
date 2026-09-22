@@ -197,6 +197,17 @@ describe('Mobile splash: Sass is half on-screen at the left edge', () => {
   });
 });
 
+describe('Bug 2: a coach can never get stranded on the hidden #home', () => {
+  it('a hashchange listener redirects a coach off #home to #coachhome', () => {
+    // #home is display:none!important for a coach; without this redirect, any path
+    // that lands a coach on #home (native href, handler race) shows a blank page,
+    // which read as "the Team X does not close the page".
+    expect(html).toMatch(/body\.classList\.contains\('is-coach'\)\)\{\s*location\.hash='#coachhome'/);
+    // and #home is indeed force-hidden for coaches (the reason the redirect exists)
+    expect(html).toMatch(/body\.is-coach #home\{display:none!important\}/);
+  });
+});
+
 describe('Menus start closed: [hidden] overrides display', () => {
   // Recurring Thwap bug: a popup with the hidden attribute still shows because a
   // CSS rule gives it display:flex, which beats the browser's implicit

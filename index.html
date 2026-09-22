@@ -2108,6 +2108,15 @@ window.thwapActiveTeam=function(coach){
 })();
 showHomePlayer();
 window.addEventListener('hashchange',function(){ if(location.hash===''||location.hash==='#home') showHomePlayer(); });
+/* A coach must never land on #home: it is display:none!important for coaches, so
+   landing there shows a blank/stuck page (this is why the Team X looked like it
+   did nothing - a handler/native-href race could drop the coach on #home). Any
+   hashchange to #home or empty redirects a coach to their real home, #coachhome. */
+window.addEventListener('hashchange',function(){
+  if((location.hash===''||location.hash==='#home') && document.body.classList.contains('is-coach')){
+    location.hash='#coachhome';
+  }
+});
 /* Close (x) on coach/shared pages (Team, Plan, Standings) must land on the viewer's
    real home: a coach's home is #coachhome (#home is hidden for coaches), a player's
    is #home. href='#home' is the no-JS fallback; this routes coaches correctly. */
