@@ -369,3 +369,82 @@ describe('add-player: parent email + photo', () => {
     expect(res.body.member.photo).toContain('data:image/jpeg');
   });
 });
+
+describe('edit player, coach password, and email requests', () => {
+  it('coach edits an existing player and reads it back', async () => {
+    const login = await loginSeedCoach();
+    const token = login.body.token;
+    const add = makeRes();
+    await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, firstName: 'Editme', number: 5, parentEmail: 'p@x.com' }), add);
+    const upd = makeRes();
+    await _handlers.updatePlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, playerId: 'editme', firstName: 'Editme', lastName: 'Jones', number: 77, position: 'D' }), upd);
+    expect(upd.statusCode).toBe(200);
+    expect(upd.body.member.lastName).toBe('Jones');
+    expect(upd.body.member.number).toBe(77);
+    expect(upd.body.member.position).toBe('D');
+  });
+
+  it('rejects update with an empty first name, and unknown player', async () => {
+    const login = await loginSeedCoach();
+    const r1 = makeRes();
+    await _handlers.updatePlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: login.body.token, playerId: 'editme', firstName: '  ' }), r1);
+    expect(r1.statusCode).toBe(400);
+    const r2 = makeRes();
+    await _handlers.updatePlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: login.body.token, playerId: 'ghost', lastName: 'X' }), r2);
+    expect(r2.statusCode).toBe(404);
+  });
+
+  it('blocks update-player without a coach token', async () => {
+    await loginSeedCoach();
+    const res = makeRes();
+    await _handlers.updatePlayer(post({ code: _seed.SEED_TEAM_CODE, playerId: 'editme', lastName: 'X' }), res);
+    expect(res.statusCode).toBe(401);
+  });
+
+  it('coach changes password with the right current password, then logs in with the new one', async () => {
+    const login = await loginSeedCoach();
+    const token = login.body.token;
+    const set = makeRes();
+    await _handlers.setPassword(post({ coachToken: token, currentPassword: _seed.SEED_COACH_PASSWORD, newPassword: 'newpass1' }), set);
+    expect(set.statusCode).toBe(200);
+    const relog = makeRes();
+    await _handlers.coachLogin(post({ email: _seed.SEED_COACH_EMAIL, password: 'newpass1' }), relog);
+    expect(relog.statusCode).toBe(200);
+    // restore for other tests that assume the seed password
+    const restore = makeRes();
+    await _handlers.setPassword(post({ coachToken: token, currentPassword: 'newpass1', newPassword: _seed.SEED_COACH_PASSWORD }), restore);
+    expect(restore.statusCode).toBe(200);
+  });
+
+  it('rejects a password change with the wrong current password or a too-short new one', async () => {
+    const login = await loginSeedCoach();
+    const token = login.body.token;
+    const wrong = makeRes();
+    await _handlers.setPassword(post({ coachToken: token, currentPassword: 'nope', newPassword: 'abcdef' }), wrong);
+    expect(wrong.statusCode).toBe(401);
+    const short = makeRes();
+    await _handlers.setPassword(post({ coachToken: token, currentPassword: _seed.SEED_COACH_PASSWORD, newPassword: 'abc' }), short);
+    expect(short.statusCode).toBe(400);
+  });
+
+  it('request-password answers ok even for an unknown email (no probing)', async () => {
+    const res = makeRes();
+    await _handlers.requestPassword(post({ email: 'nobody@example.com' }), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.ok).toBe(true);
+  });
+
+  it('reset-password rejects an invalid token', async () => {
+    const res = makeRes();
+    await _handlers.resetPassword(post({ token: 'bogus', newPassword: 'abcdef' }), res);
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('request-code answers ok (no roster probing)', async () => {
+    await loginSeedCoach();
+    const res = makeRes();
+    await _handlers.requestCode(post({ code: _seed.SEED_TEAM_CODE, playerId: 'editme' }), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.ok).toBe(true);
+  });
+});

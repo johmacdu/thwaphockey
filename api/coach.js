@@ -34,6 +34,7 @@ import {
   getCoach, setCoach, getIdpGoal, setIdpGoal, getGameGoalLog, logGameGoal,
   getTeamPlan, setTeamPlan,
   addDrillSuggestion, listDrillSuggestions,
+  updateMember, createResetToken, consumeResetToken,
   listTeamCoaches, ensureHeadCoach, addAssistantCoach, removeAssistantCoach, MAX_ASSISTANTS,
 } from '../lib/teams_store.js';
 import { ensureSchedule, getSchedule, addEvent as addScheduleEvent, nextEvent } from '../lib/schedule_store.js';
@@ -212,6 +213,107 @@ async function removePlayer(req, res) {
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
   const out = await removeMember(code, playerId);
   return res.status(200).json({ ok: true, ...out });
+}
+
+// POST edit an existing player's fields (name / number / position / photo). Coach-only.
+async function updatePlayer(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  const coach = await requireCoach(req, res); if (!coach) return;
+  const { code, playerId, firstName, lastName, number, position, photo } = parseBody(req);
+  if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  if (firstName !== undefined && !String(firstName || '').trim()) {
+    return res.status(400).json({ error: 'first name cannot be empty' });
+  }
+  const rec = await updateMember(playerId, { firstName, lastName, number, position, photo });
+  if (!rec) return res.status(404).json({ error: 'unknown player' });
+  return res.status(200).json({ ok: true, member: rec });
+}
+
+// POST change the coach's own login password. Coach-only (must know the current one).
+async function setPassword(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  const coach = await requireCoach(req, res); if (!coach) return;
+  const { currentPassword, newPassword } = parseBody(req);
+  const rec = await getCoach(coach.email);
+  if (!rec || !safeEqual(rec.passHash, passHash(currentPassword))) {
+    return res.status(401).json({ error: 'current password did not match' });
+  }
+  const clean = String(newPassword || '');
+  if (clean.length < 6) return res.status(400).json({ error: 'new password must be at least 6 characters' });
+  await setCoach(coach.email, { ...rec, passHash: passHash(clean) });
+  return res.status(200).json({ ok: true });
+}
+
+// Send a plain email via Resend (no SDK). Returns true on 2xx, false otherwise.
+async function sendMail(to, subject, text) {
+  const key = process.env.RESEND_API_KEY;
+  const from = process.env.PHOTO_FROM_EMAIL;
+  if (!key || !from) return false;
+  try {
+    const resp = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from, to: [to], subject, text }),
+    });
+    return resp.ok;
+  } catch (e) {
+    return false;
+  }
+}
+
+// POST a coach password-reset request. Emails a one-time reset LINK (never the
+// password itself), so the email is not a standing gate. Always answers ok so a
+// public form cannot probe which emails are coaches.
+async function requestPassword(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  await ensureSeed();
+  const { email } = parseBody(req);
+  const cleanEmail = String(email || '').trim().toLowerCase();
+  res.setHeader('Cache-Control', 'no-store');
+  if (!EMAIL_RE.test(cleanEmail)) return res.status(400).json({ error: 'bad email' });
+  const coach = await getCoach(cleanEmail);
+  if (coach) {
+    const token = await createResetToken(cleanEmail);
+    const base = process.env.SITE_URL || 'https://thwaphockey.com';
+    const link = `${base}/?reset=${token}`;
+    await sendMail(cleanEmail, 'Reset your Thwap Hockey coach password',
+      `Someone asked to reset the coach password for your Thwap Hockey team.\n\n` +
+      `Open this link to set a new password (expires in 30 minutes):\n${link}\n\n` +
+      `If you did not ask for this, you can ignore this email.`);
+  }
+  return res.status(200).json({ ok: true });
+}
+
+// POST set a new coach password using a reset token (from the emailed link).
+async function resetPassword(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  const { token, newPassword } = parseBody(req);
+  const email = await consumeResetToken(token);
+  if (!email) return res.status(400).json({ error: 'that reset link is invalid or expired' });
+  const clean = String(newPassword || '');
+  if (clean.length < 6) return res.status(400).json({ error: 'new password must be at least 6 characters' });
+  const rec = await getCoach(email);
+  if (!rec) return res.status(400).json({ error: 'that reset link is invalid or expired' });
+  await setCoach(email, { ...rec, passHash: passHash(clean) });
+  return res.status(200).json({ ok: true });
+}
+
+// POST a player-code request. Emails the player's code (jersey + season year) to
+// the parent email on file. Always answers ok so it cannot probe the roster.
+async function requestCode(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  const { code, playerId } = parseBody(req);
+  res.setHeader('Cache-Control', 'no-store');
+  if (!(await getTeam(code))) return res.status(200).json({ ok: true });
+  const m = await getMember(playerId);
+  if (m && m.parentEmail && m.number != null) {
+    const name = m.firstName || 'your player';
+    await sendMail(m.parentEmail, 'Your Thwap Hockey player code',
+      `The player code for ${name} is the jersey number followed by the season year.\n\n` +
+      `For jersey #${m.number}: ${m.number}2026 or ${m.number}2027.\n\n` +
+      `Use it to sign in on Thwap Hockey. If you did not ask for this, you can ignore this email.`);
+  }
+  return res.status(200).json({ ok: true });
 }
 
 async function roster(req, res) {
@@ -468,6 +570,11 @@ export default async function handler(req, res) {
     case 'create-team': return createTeam(req, res);
     case 'add-player': return addPlayer(req, res);
     case 'remove-player': return removePlayer(req, res);
+    case 'update-player': return updatePlayer(req, res);
+    case 'set-password': return setPassword(req, res);
+    case 'request-password': return requestPassword(req, res);
+    case 'reset-password': return resetPassword(req, res);
+    case 'request-code': return requestCode(req, res);
     case 'roster': return roster(req, res);
     case 'player': return playerRollup(req, res);
     case 'join': return join(req, res);
@@ -492,6 +599,7 @@ export default async function handler(req, res) {
 // Exported for unit tests (call sub-handlers directly with a query.action-free req).
 export const _handlers = {
   coachLogin, createTeam, addPlayer, removePlayer, roster, playerRollup,
+  updatePlayer, setPassword, requestPassword, resetPassword, requestCode,
   join, schedule, setIdp, idpGoal, logGoal, gameGoalLogRead,
   getPlan, setPlan,
   suggestDrill, drillSuggestions,
