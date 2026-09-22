@@ -55,15 +55,14 @@ describe('coach-login + seed', () => {
     expect(res.body.coach.teams).toContain(_seed.SEED_TEAM_CODE);
   });
 
-  it('seeds three demo teams and returns a named teamList', async () => {
+  it('seeds exactly one team (Jr Rangers 10U) - no multi-team switcher', async () => {
     const res = await loginSeedCoach();
-    expect(res.body.coach.teams.length).toBe(3);
-    expect(res.body.coach.teams).toEqual(expect.arrayContaining(['RANGERS72', 'RANGERS8U', 'RANGERS12U']));
-    // The 10U team is first so teams[0] (the landing team) is deterministic:
-    // every login lands on the same coach experience regardless of seed order.
+    expect(res.body.coach.teams.length).toBe(1);
+    expect(res.body.coach.teams).toEqual([_seed.SEED_TEAM_CODE]);
+    // The single team is the landing team, so every login lands on the same view.
     expect(res.body.coach.teams[0]).toBe(_seed.SEED_TEAM_CODE);
     const names = (res.body.coach.teamList || []).map((t) => t.name);
-    expect(names).toEqual(expect.arrayContaining(['Jr Rangers 10U', 'Jr Rangers 8U', 'Jr Rangers 12U']));
+    expect(names).toEqual(['Jr Rangers 10U']);
   });
 
   it('rejects a wrong password', async () => {
@@ -481,14 +480,14 @@ describe('assistant coach with login credentials', () => {
 describe('seeded coach password', () => {
   it('the seeded coach logs in with the current default password', async () => {
     const res = makeRes();
-    await _handlers.coachLogin(post({ email: _seed.SEED_COACH_EMAIL, password: 'rangers2026' }), res);
+    await _handlers.coachLogin(post({ email: _seed.SEED_COACH_EMAIL, password: 'ranger10u' }), res);
     expect(res.statusCode).toBe(200);
     expect(res.body.token).toBeTruthy();
   });
 
   it('the prior default password no longer works', async () => {
     const res = makeRes();
-    await _handlers.coachLogin(post({ email: _seed.SEED_COACH_EMAIL, password: 'ranger10u' }), res);
+    await _handlers.coachLogin(post({ email: _seed.SEED_COACH_EMAIL, password: 'rangers2026' }), res);
     expect(res.statusCode).toBe(401);
   });
 });

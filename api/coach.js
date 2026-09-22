@@ -43,12 +43,12 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // --- seed (Jr Rangers 10U) --------------------------------------------------
 // One known team for this phase. jason@riversidepayments.com / ranger10u, whose
-// own child is player 'alder' (#71). Seeded idempotently on first coach touch so
-// no manual DB step is needed; safe to call repeatedly.
+// own child is player 'alder' (#71). One team only (Jr Rangers 10U). Seeded
+// idempotently on first coach touch so no manual DB step is needed.
 const SEED_TEAM_CODE = 'RANGERS72';
 const SEED_COACH_EMAIL = 'jason@riversidepayments.com';
-const SEED_COACH_PASSWORD = 'rangers2026';
-const SEED_COACH_PASSWORD_PRIOR = 'ranger10u'; // superseded default; migrate an untouched coach off it
+const SEED_COACH_PASSWORD = 'ranger10u';
+const SEED_COACH_PASSWORD_PRIOR = 'rangers2026'; // superseded default; migrate an untouched coach off it
 const SEED_CHILD_PLAYER_ID = 'alder';
 
 function passHash(password) {
@@ -65,23 +65,11 @@ function safeEqual(a, b) {
 }
 
 async function ensureSeed() {
-  // Demo teams so the pilot coach (Jason) can exercise the multi-team switcher.
-  // Small rosters; the 10U team keeps the full ROSTER.
+  // Jason coaches ONE team: the Jr Rangers 10U with the full roster. No demo
+  // teams, so there is no multi-team switcher and every login lands on the same
+  // (only) team. Seeded idempotently; safe to call repeatedly.
   const DEMO_TEAMS = [
     { code: SEED_TEAM_CODE, name: 'Jr Rangers 10U', ageGroup: '10U', members: ROSTER.map((p) => ({ playerId: p.id, firstName: p.name, number: p.number })) },
-    { code: 'RANGERS8U', name: 'Jr Rangers 8U', ageGroup: '8U', members: [
-      { playerId: 'mikey', firstName: 'Mikey', number: 8 },
-      { playerId: 'sawyer', firstName: 'Sawyer', number: 14 },
-      { playerId: 'nora', firstName: 'Nora', number: 22 },
-      { playerId: 'beau', firstName: 'Beau', number: 5 },
-    ] },
-    { code: 'RANGERS12U', name: 'Jr Rangers 12U', ageGroup: '12U', members: [
-      { playerId: 'carter', firstName: 'Carter', number: 44 },
-      { playerId: 'declan', firstName: 'Declan', number: 17 },
-      { playerId: 'ruby', firstName: 'Ruby', number: 9 },
-      { playerId: 'jonah', firstName: 'Jonah', number: 61 },
-      { playerId: 'silas', firstName: 'Silas', number: 33 },
-    ] },
   ];
   // Create any team that does not exist yet, with its members (idempotent).
   for (const t of DEMO_TEAMS) {
@@ -101,13 +89,12 @@ async function ensureSeed() {
   const allCodes = DEMO_TEAMS.map((t) => t.code);
   const existing = await getCoach(SEED_COACH_EMAIL);
   if (existing) {
-    // Backfill any demo teams the coach is missing (so an already-seeded coach
-    // gains the new teams without a reset).
+    // Pin the seed coach to exactly the canonical team set (currently the one 10U
+    // team). This also PRUNES any extra teams a previously-seeded account still
+    // carries (the retired 8U/12U demo teams), so every login lands on the same
+    // single team with no switcher.
     const have = existing.teams || [];
-    // Canonical order first (RANGERS72 = the 10U team) so teams[0] is deterministic
-    // for any reader; then any extra teams the coach already had. Dedup preserves
-    // first occurrence, so allCodes leads.
-    const merged = Array.from(new Set([...allCodes, ...have]));
+    const merged = allCodes.slice();
     // Migrate the password to the new default ONLY if it is unset or still the
     // prior default; never clobber a password the coach set themselves.
     const untouched = !existing.passHash || safeEqual(existing.passHash, passHash(SEED_COACH_PASSWORD_PRIOR));
