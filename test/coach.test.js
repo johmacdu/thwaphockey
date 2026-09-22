@@ -17,6 +17,7 @@ function setEnv() {
   process.env.KV_REST_API_TOKEN = 'fake';
   process.env.PHOTO_TOKEN_SECRET = 'test-secret-please-change';
   process.env.SESSION_TOKEN_SECRET = 'session-secret-please-change';
+  process.env.THWAP_ADMIN_TOKEN = 'admin-test-token';
 }
 setEnv();
 
@@ -486,5 +487,42 @@ describe('seeded coach password', () => {
     const res = makeRes();
     await _handlers.coachLogin(post({ email: _seed.SEED_COACH_EMAIL, password: 'ranger10u' }), res);
     expect(res.statusCode).toBe(401);
+  });
+});
+
+describe('Thwap admin: drill-suggestion review', () => {
+  it('blocks review without the admin key', async () => {
+    const res = makeRes();
+    await _handlers.reviewSuggestions(get({}), res);
+    expect(res.statusCode).toBe(401);
+  });
+
+  it('lists a coach suggestion across teams and flips its status', async () => {
+    const login = await loginSeedCoach();
+    const token = login.body.token;
+    const add = makeRes();
+    await _handlers.suggestDrill(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, category: 'shoot', text: 'One-timer off a pass' }), add);
+    const id = add.body.suggestion.id;
+
+    const listRes = makeRes();
+    await _handlers.reviewSuggestions(get({ key: 'admin-test-token' }), listRes);
+    expect(listRes.statusCode).toBe(200);
+    const found = listRes.body.suggestions.find((s) => s.id === id);
+    expect(found).toBeTruthy();
+    expect(found.teamCode).toBe(_seed.SEED_TEAM_CODE);
+
+    const resolveRes = makeRes();
+    await _handlers.resolveSuggestion(post({ code: _seed.SEED_TEAM_CODE, id, status: 'accepted' }, { key: 'admin-test-token' }), resolveRes);
+    expect(resolveRes.statusCode).toBe(200);
+    expect(resolveRes.body.suggestion.status).toBe('accepted');
+  });
+
+  it('blocks resolve without the admin key and rejects a bad status', async () => {
+    const noKey = makeRes();
+    await _handlers.resolveSuggestion(post({ code: _seed.SEED_TEAM_CODE, id: 'x', status: 'accepted' }, {}), noKey);
+    expect(noKey.statusCode).toBe(401);
+    const badStatus = makeRes();
+    await _handlers.resolveSuggestion(post({ code: _seed.SEED_TEAM_CODE, id: 'nope', status: 'banana' }, { key: 'admin-test-token' }), badStatus);
+    expect(badStatus.statusCode).toBe(404);
   });
 });

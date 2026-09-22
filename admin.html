@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thwap Admin - Drill suggestions</title>
+<style>
+:root{
+  --bg:#F3F7F4;--panel:#FFFFFF;--line:#DCE5DE;--line2:#C9D5CC;--text:#15221B;
+  --muted:#5F6F64;--green:#2F6B41;--lime:#B9F06B;--ink:#15221B;--soft:#E7EEE8;
+  --alert-text:#C0362C;--card2:#F7FAF7;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;padding:24px 16px}
+.wrap{max-width:760px;margin:0 auto}
+h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:14px;margin:0 0 20px}
+.keybar{display:flex;gap:8px;margin-bottom:18px}
+.keybar input{flex:1;padding:10px 12px;border:1px solid var(--line);border-radius:12px;font:inherit;background:var(--panel);color:var(--text)}
+.keybar button{padding:10px 18px;border:0;border-radius:12px;background:var(--lime);color:var(--ink);font-weight:850;font-size:14px;cursor:pointer}
+.seg{display:inline-flex;gap:4px;background:var(--soft);border-radius:999px;padding:4px;margin-bottom:16px}
+.seg button{font-size:13px;font-weight:800;padding:6px 14px;border:0;border-radius:999px;color:var(--muted);background:none;cursor:pointer}
+.seg button.on{background:var(--lime);color:var(--ink)}
+.msg{color:var(--muted);font-size:14px;padding:20px 0;text-align:center}
+.msg.err{color:var(--alert-text)}
+.row{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:14px;margin-bottom:10px}
+.row.dismissed{opacity:.55}
+.row-top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.cat{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;padding:3px 9px;border-radius:999px;background:var(--soft);color:var(--green)}
+.status{margin-left:auto;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;color:var(--muted)}
+.status.accepted{color:var(--green)}
+.status.dismissed{color:var(--alert-text)}
+.txt{font-size:15px;font-weight:600;line-height:1.4}
+.meta{font-size:12px;color:var(--muted);margin-top:6px}
+.acts{display:flex;gap:8px;margin-top:10px}
+.acts button{font:inherit;font-size:13px;font-weight:800;border-radius:10px;padding:8px 14px;cursor:pointer;border:1px solid var(--line2);background:transparent;color:var(--text)}
+.acts .accept{background:var(--lime);color:var(--ink);border-color:transparent}
+.acts .dismiss{color:var(--alert-text)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Drill suggestions</h1>
+  <p class="sub">Thwap review. Coaches recommend drills; accept the good ones into the library or dismiss.</p>
+  <div class="keybar">
+    <input id="key" type="password" placeholder="Admin key" autocomplete="off">
+    <button id="load">Load</button>
+  </div>
+  <div class="seg" id="filter" hidden>
+    <button data-f="new" class="on">New</button>
+    <button data-f="accepted">Accepted</button>
+    <button data-f="dismissed">Dismissed</button>
+    <button data-f="all">All</button>
+  </div>
+  <div id="msg" class="msg">Enter the admin key and press Load.</div>
+  <div id="list"></div>
+</div>
+<script>
+(function(){
+  var key='', all=[], filter='new';
+  var keyEl=document.getElementById('key'), msg=document.getElementById('msg'),
+      list=document.getElementById('list'), seg=document.getElementById('filter');
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  var CAT={stick:'Hands',shoot:'Shoot',dryland:'Dryland'};
+  function render(){
+    var rows=all.filter(function(s){ return filter==='all'?true:(s.status||'new')===filter; });
+    if(!rows.length){ list.innerHTML=''; msg.textContent='Nothing here.'; msg.className='msg'; return; }
+    msg.textContent=''; msg.className='msg';
+    list.innerHTML=rows.map(function(s){
+      var st=s.status||'new';
+      return "<div class='row "+st+"'>"+
+        "<div class='row-top'><span class='cat'>"+esc(CAT[s.category]||s.category)+"</span>"+
+        "<span class='status "+st+"'>"+st+"</span></div>"+
+        "<div class='txt'>"+esc(s.text)+"</div>"+
+        "<div class='meta'>"+esc(s.teamName||s.teamCode)+" &middot; "+esc(s.byCoach||'')+" &middot; "+esc((s.at||'').slice(0,10))+"</div>"+
+        "<div class='acts'>"+
+          "<button class='accept' data-id='"+esc(s.id)+"' data-code='"+esc(s.teamCode)+"' data-st='accepted'>Accept</button>"+
+          "<button class='dismiss' data-id='"+esc(s.id)+"' data-code='"+esc(s.teamCode)+"' data-st='dismissed'>Dismiss</button>"+
+        "</div></div>";
+    }).join('');
+    list.querySelectorAll('.acts button').forEach(function(b){
+      b.addEventListener('click',function(){ resolve(b.getAttribute('data-code'), b.getAttribute('data-id'), b.getAttribute('data-st')); });
+    });
+  }
+  function load(){
+    key=keyEl.value.trim(); if(!key){ msg.textContent='Enter the admin key.'; msg.className='msg err'; return; }
+    msg.textContent='Loading...'; msg.className='msg';
+    fetch('/api/coach?action=review-suggestions&key='+encodeURIComponent(key))
+      .then(function(r){ if(r.status===401){ throw new Error('Bad admin key.'); } return r.json(); })
+      .then(function(j){ all=(j&&j.suggestions)||[]; seg.hidden=false; render(); })
+      .catch(function(e){ msg.textContent=e.message||'Could not load.'; msg.className='msg err'; });
+  }
+  function resolve(code,id,status){
+    fetch('/api/coach?action=resolve-suggestion&key='+encodeURIComponent(key),
+      {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code,id:id,status:status})})
+      .then(function(r){ return r.json(); })
+      .then(function(j){ if(j&&j.ok){ all.forEach(function(s){ if(s.id===id&&s.teamCode===code) s.status=status; }); render(); } })
+      .catch(function(){});
+  }
+  document.getElementById('load').addEventListener('click',load);
+  keyEl.addEventListener('keydown',function(e){ if(e.key==='Enter') load(); });
+  seg.querySelectorAll('button').forEach(function(b){
+    b.addEventListener('click',function(){ filter=b.getAttribute('data-f'); seg.querySelectorAll('button').forEach(function(x){ x.classList.toggle('on', x===b); }); render(); });
+  });
+})();
+</script>
+</body>
+</html>
