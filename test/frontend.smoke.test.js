@@ -85,6 +85,52 @@ describe('content rules', () => {
   });
 });
 
+describe('coach view navigation', () => {
+  it('coach/shared close buttons use the js-home-close hook (not href=".")', () => {
+    expect(doc.getElementById('rosterClose')?.classList.contains('js-home-close')).toBe(true);
+    const closers = [...doc.querySelectorAll('a.js-home-close')];
+    expect(closers.length).toBeGreaterThanOrEqual(3);
+    closers.forEach((a) => expect(a.getAttribute('href')).toBe('#home'));
+    expect(html).toMatch(/is-coach'\)\s*\?\s*'#coachhome'\s*:\s*'#home'/);
+  });
+
+  it('roster player cards link to the player page, not the coach-hidden home', () => {
+    const cards = [...doc.querySelectorAll('#roster-grid .pcard[data-name]')];
+    expect(cards.length).toBeGreaterThan(0);
+    cards.forEach((c) => expect(c.getAttribute('href')).toBe('#player'));
+  });
+
+  it('coach roster tap opens the player page with Back to Team', () => {
+    expect(html).toMatch(/openPlayerPage\(name,\s*'team'\)/);
+  });
+
+  it('the "View as player" toggle and "Back to coach" bar are removed', () => {
+    expect(doc.getElementById('viewAsPlayer')).toBeNull();
+    expect(doc.getElementById('viewAsBack')).toBeNull();
+    expect(html.includes('Back to coach')).toBe(false);
+    expect(html.includes('viewas-active')).toBe(false);
+  });
+
+  it('the Players-header edit control is an icon button with an aria-label', () => {
+    const edit = doc.getElementById('rosterEdit');
+    expect(edit).toBeTruthy();
+    expect(edit.getAttribute('aria-label')).toBeTruthy();
+    expect((edit.textContent || '').trim()).not.toBe('Edit');
+  });
+
+  it('the active coach team is deterministic (prefers the 10U team)', () => {
+    // Guards the "different coaching experiences" bug: teams[0] varied between
+    // seeded accounts, so the landing team must prefer RANGERS72 explicitly.
+    expect(html).toMatch(/indexOf\('RANGERS72'\)!==-1\)\s*return\s*'RANGERS72'/);
+  });
+
+  it('the +Player card has a solid (white) background, not the dark card front', () => {
+    const m = html.match(/\.pcard-add\{([^}]*)\}/);
+    expect(m).not.toBeNull();
+    expect(m[1]).toMatch(/background:\s*#fff/i);
+  });
+});
+
 describe('accessibility', () => {
   it('has a keyboard focus-visible ring rule', () => {
     expect(html).toMatch(/:focus-visible/);
