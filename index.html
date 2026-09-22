@@ -498,6 +498,11 @@ body.is-coach .roster .pcard-remove{display:grid;place-items:center}
 .crow.trained .crow-wk-n{color:var(--green)}
 /* Coaches: heading + a team-visible strip of coach chips + head-only invite. */
 .coachcoaches{margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}
+/* Coach unlock entry: only shown when a coach token exists but this session is
+   locked (shared device). The kid sees their normal view; this is the way in. */
+.coachlock-entry{display:none;font-family:inherit;font-size:13px;font-weight:800;background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:7px 14px;cursor:pointer;margin-left:8px}
+body.coach-locked .coachlock-entry{display:inline-flex;align-items:center}
+.coachlock-forgot{margin-top:4px;font-family:inherit;font-size:13px;font-weight:800;background:none;border:0;color:var(--muted);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .cchip-strip{display:flex;flex-direction:column;gap:8px;margin-top:10px}
 .roster-coachonly{display:none}
 body.is-coach .roster-coachonly{display:block}
@@ -1104,6 +1109,17 @@ body.login-locked{overflow:hidden}
     <p class='pgate-msg' id='peMsg' aria-live='polite'></p>
   </form>
 </div>
+<div class='pgate' id='coachLock' hidden>
+  <form class='pgate-box' id='coachLockForm' novalidate>
+    <button type='button' class='pgate-x' id='coachLockX' aria-label='Close'>&#215;</button>
+    <h2 class='pgate-h'>Coach access</h2>
+    <p class='pgate-p'>Enter the team password to open the coach view.</p>
+    <input class='pgate-in' id='coachLockPw' type='password' autocomplete='current-password' placeholder='Team password' required>
+    <button type='submit' class='pgate-go' id='coachLockGo'>Open coach view</button>
+    <button type='button' class='coachlock-forgot' id='coachLockForgot'>Forgot password?</button>
+    <p class='pgate-msg' id='coachLockMsg' aria-live='polite'></p>
+  </form>
+</div>
 <div class='pgate' id='coachProfileGate' hidden>
   <form class='pgate-box' id='coachProfileForm' novalidate>
     <button type='button' class='pgate-x' id='coachProfileX' aria-label='Close'>&#215;</button>
@@ -1282,7 +1298,7 @@ body.login-locked{overflow:hidden}
 
 <section id='home'>
 <div class='wipnote'>👋 Early prototype. We're testing the look and feel. Training drills and stickers are still being built.</div>
-<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.svg' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><span class='nav-authed'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a></span><span class='nav-guest'><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#stickers'>Stickers</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a></span><span class='nav-guest'><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
+<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.svg' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><span class='nav-authed'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a></span><span class='nav-guest'><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='coachlock-entry' id='coachLockEntry'>Coach</button><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#stickers'>Stickers</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a></span><span class='nav-guest'><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
 <div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>there</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><script>(function(){try{var authed=/(?:^|; )thwapAuth=/.test(document.cookie);var p=localStorage.getItem('bfPlayer');var b=document.getElementById('homePlayer');if(b){if(p&&authed){b.textContent=p.trim().split(/\s+/)[0];}else{b.classList.add('needpick');}}}catch(e){}
 /* Team plan: hide the category rows the coach turned OFF for today. On any failure
    or unset plan, all three stay shown (the built-in rotation), so home is never empty. */
@@ -1342,7 +1358,58 @@ window.thwapActiveTeam=function(coach){
   var coach=null;
   try{ coach=JSON.parse(localStorage.getItem('thwapCoach')||'null'); }catch(e){}
   if(!coach||!coach.token){ return; }
-  document.body.classList.add('is-coach');
+  /* Shared-device gate: the coach token persists (frictionless), but the coach
+     view is NOT revealed until the password is entered THIS session. The unlock
+     flag lives only in memory, so a reload re-locks and a kid on the same device
+     cannot reach the team's data. Nothing coach-related is fetched until unlock. */
+  var unlocked=false;
+  function reveal(){
+    if(unlocked) return; unlocked=true;
+    document.body.classList.remove('coach-locked');
+    document.body.classList.add('is-coach');
+    bootCoach();
+    if(location.hash===''||location.hash==='#home'||location.hash==='#login') location.hash='#coachhome';
+  }
+  window.thwapCoachUnlocked=function(){ return unlocked; };
+  /* Wire the lock sheet + the "Coach" entry, then wait. */
+  document.body.classList.add('coach-locked');
+  (function(){
+    var entry=document.getElementById('coachLockEntry'),
+        gate=document.getElementById('coachLock'),
+        form=document.getElementById('coachLockForm'),
+        pw=document.getElementById('coachLockPw'),
+        x=document.getElementById('coachLockX'),
+        msg=document.getElementById('coachLockMsg'),
+        forgot=document.getElementById('coachLockForgot');
+    function openLock(){ if(gate){ gate.hidden=false; } if(msg) msg.textContent=''; if(pw){ pw.value=''; setTimeout(function(){ pw.focus(); },50); } }
+    function closeLock(){ if(gate) gate.hidden=true; }
+    if(entry) entry.addEventListener('click',openLock);
+    if(x) x.addEventListener('click',closeLock);
+    if(form) form.addEventListener('submit',function(e){
+      e.preventDefault();
+      var p=String(pw&&pw.value||''); if(!p){ if(msg) msg.textContent='Enter the team password.'; return; }
+      if(msg) msg.textContent='Checking...';
+      /* Verify against coach-login (the password is the coach credential). */
+      fetch('/api/coach?action=coach-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:coach.email,password:p})})
+        .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
+        .then(function(res){
+          if(res.ok&&res.j&&res.j.ok){
+            /* refresh the stored token/name in case they changed */
+            try{ var c=JSON.parse(localStorage.getItem('thwapCoach')||'{}'); c.token=res.j.token; if(res.j.coach){ c.name=res.j.coach.name; c.email=res.j.coach.email; c.teams=res.j.coach.teams; } localStorage.setItem('thwapCoach',JSON.stringify(c)); coach=c; }catch(_){}
+            closeLock(); reveal();
+          } else { if(msg) msg.textContent='That password did not match.'; }
+        })
+        .catch(function(){ if(msg) msg.textContent='Could not reach the server.'; });
+    });
+    if(forgot) forgot.addEventListener('click',function(){
+      if(msg) msg.textContent='Sending a reset link...';
+      fetch('/api/coach?action=request-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:coach.email})})
+        .then(function(){ if(msg) msg.textContent='If that email is a coach, a reset link is on its way.'; })
+        .catch(function(){ if(msg) msg.textContent='Could not reach the server.'; });
+    });
+  })();
+  /* The coach view boot (was the IIFE body). Runs ONLY after reveal(). */
+  function bootCoach(){
   var code=window.thwapActiveTeam(coach);
   var myEmail=(coach.email||'').toLowerCase();
   /* Coach Home (JTBD): participation pulse + two tappable count blocks
@@ -1690,6 +1757,7 @@ window.thwapActiveTeam=function(coach){
       card.appendChild(rm);
     });
   })();
+  }
 })();
 /* ---- Plan editor (coach): a 7-day x 3-category grid. Each category cell shows how
    many drills are picked that day and opens the #drillpick page. Drills come from the
@@ -4441,12 +4509,15 @@ if(waitForm){
 }
 function gate(){
   var hasCoach=false; try{ hasCoach=!!JSON.parse(localStorage.getItem('thwapCoach')||'null'); }catch(_){}
-  document.body.classList.toggle('is-authed', isAuthed() || hasCoach);
-  document.body.classList.toggle('is-coach', hasCoach);
+  /* Coach view is gated by a per-session unlock (shared-device safety). A coach
+     token present but locked behaves like a normal player/guest until unlocked. */
+  var coachOn=hasCoach && !!(window.thwapCoachUnlocked && window.thwapCoachUnlocked());
+  document.body.classList.toggle('is-authed', isAuthed() || coachOn);
+  document.body.classList.toggle('is-coach', coachOn);
   /* A coach has no kid home (today's plan). Land them on Team instead. */
-  if(hasCoach && (location.hash===''||location.hash==='#home')){ location.hash='#coachhome'; return; }
+  if(coachOn && (location.hash===''||location.hash==='#home')){ location.hash='#coachhome'; return; }
   if(location.hash==='#login'){ show(); maybeSplash(); return; }
-  if(isAuthed() || hasCoach){ hide(); } else { show(); maybeSplash(); }
+  if(isAuthed() || coachOn){ hide(); } else { show(); maybeSplash(); }
 }
 /* Header guest nav (shown when logged out): Sign In and Join Waitlist both play
    the THWAP! animation first, then open the requested sheet. */
