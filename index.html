@@ -461,7 +461,7 @@ body.is-coach .rfilter[data-on]{display:flex}
 .rfilter-clear{font-family:inherit;font-size:var(--fs-meta);font-weight:800;color:var(--green2);background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:5px 10px;cursor:pointer}
 .pcard.filtered-out{display:none}
 /* Empty-state add-player card in the roster grid. */
-.pcard-add{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:2px dashed var(--line);background:transparent;color:var(--muted);cursor:pointer;font-family:inherit}
+.pcard-add{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:2px dashed var(--line2);background:#fff;color:#5a6672;cursor:pointer;font-family:inherit;box-shadow:none}
 .pcard-add .plus{font-family:'Archivo Black',system-ui,sans-serif;font-size:34px;line-height:1}
 .pcard-add .lab{font-size:var(--fs-support);font-weight:800}
 .addform{max-width:460px;margin:var(--sp-4) auto 0;display:flex;flex-direction:column;gap:var(--sp-4)}
@@ -498,17 +498,6 @@ body.is-coach .roster .pcard-remove{display:grid;place-items:center}
 .crow.trained .crow-wk-n{color:var(--green)}
 /* Coaches: heading + a team-visible strip of coach chips + head-only invite. */
 .coachcoaches{margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}
-/* View as player: coach-parent switch to their own kid's view (parent-email link). */
-.viewas{display:flex;align-items:center;gap:10px;width:100%;margin-top:var(--gap-section);padding:12px 14px;border:1px solid var(--line2);border-radius:14px;background:var(--panel);font-family:inherit;text-align:left;cursor:pointer}
-.viewas-ico{font-size:20px;flex:none}
-.viewas-tx{flex:1;min-width:0}
-.viewas-t{display:block;font-weight:800;font-size:15px;color:var(--text)}
-.viewas-s{display:block;font-size:12px;color:var(--muted)}
-.viewas-chev{color:var(--muted);font-weight:900;font-size:20px;flex:none}
-.viewas-backbar{position:fixed;left:0;right:0;top:0;z-index:40;display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top,0px) + 10px) 16px 10px;background:var(--ink);color:var(--lime);font-size:13px;font-weight:800;cursor:pointer}
-.viewas-backbar-nm{margin-left:auto;opacity:.85}
-body.viewas-active #player .glassback{display:none}
-body.viewas-active #player{padding-top:0}
 /* Coach unlock entry: only shown when a coach token exists but this session is
    locked (shared device). The kid sees their normal view; this is the way in. */
 .coachlock-entry{display:none;font-family:inherit;font-size:13px;font-weight:800;background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:7px 14px;cursor:pointer;margin-left:8px}
@@ -521,7 +510,8 @@ body.coach-locked .coachlock-entry{display:inline-flex;align-items:center}
 .staff-av img{width:100%;height:100%;object-fit:cover}
 .staff-nm{font-weight:800;font-size:15px;color:var(--text)}
 .staff-role{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;color:var(--muted)}
-.staff-pencil{margin-left:auto;font-family:inherit;font-size:16px;background:none;border:0;color:var(--muted);cursor:pointer;padding:6px}
+.staff-pencil{margin-left:24px;flex:none;display:inline-grid;place-items:center;width:36px;height:36px;border-radius:50%;font-family:inherit;font-size:15px;color:var(--text);cursor:pointer;background:color-mix(in srgb,var(--panel) 62%,transparent);border:1px solid color-mix(in srgb,var(--text) 12%,transparent);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);box-shadow:0 4px 14px var(--shadow)}
+.staff-pencil:hover{background:color-mix(in srgb,var(--panel) 80%,transparent)}
 .staff-remove{margin-left:auto;font-family:inherit;font-size:12px;font-weight:800;color:var(--alert-text);background:none;border:0;cursor:pointer}
 .coachcoaches-add{margin-top:10px;font-family:inherit;font-size:13px;font-weight:800;background:transparent;color:var(--text);border:1px solid var(--line2);border-radius:10px;padding:9px 14px;cursor:pointer}
 .roster-coachonly{display:none}
@@ -1105,11 +1095,6 @@ body.login-locked{overflow:hidden}
   <div class='ch-block-txt'><p class='lb-scope' id='chAttnLab'>Not training yet</p><p class='ch-blocksub' id='chAttnSub'>Haven&rsquo;t trained</p></div>
 </a>
 </div>
-<button type='button' class='viewas' id='viewAsPlayer' hidden>
-  <span class='viewas-ico'>🧒</span>
-  <span class='viewas-tx'><span class='viewas-t' id='viewAsName'>View as player</span><span class='viewas-s'>Your kid&rsquo;s player view</span></span>
-  <span class='viewas-chev'>&rsaquo;</span>
-</button>
 </section>
 <section id='roster' class='page'>
 <a class='glassclose js-home-close' id='rosterClose' href='#home' aria-label='Close'>✕</a>
@@ -1120,8 +1105,8 @@ body.login-locked{overflow:hidden}
   <div class='cchip-strip' id='coachStrip'></div>
   <button type='button' class='coachcoaches-add' id='coachAddAsst' hidden>+ Add assistant</button>
 </div>
-<div class='roster-playershead roster-coachonly'><div class='coachcoaches-h'>Players</div><button type='button' class='roster-edit' id='rosterEdit'>Edit</button></div>
-<div class='roster' id='roster-grid'><a href='#home' class='pcard' data-name='Alder Reese'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>71</span><span class='pcard-bnname'>Alder</span></div></a><a href='#home' class='pcard' data-name='Brooklyn Coughlan'><div class='pcard-bignum pos-def'><span class='pcard-bn'>92</span><span class='pcard-bnname'>Brooklyn</span></div></a><a href='#home' class='pcard' data-name='Dawson Huffman'><div class='pcard-bignum pos-def'><span class='pcard-bn'>19</span><span class='pcard-bnname'>Dawson</span></div></a><a href='#home' class='pcard' data-name='Dominic Cinque'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>98</span><span class='pcard-bnname'>Dominic</span></div></a><a href='#home' class='pcard' data-name='Eugene Kuhn'><div class='pcard-bignum pos-def'><span class='pcard-bn'>3</span><span class='pcard-bnname'>Eugene</span></div></a><a href='#home' class='pcard' data-name='Evan Ewing'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>13</span><span class='pcard-bnname'>Evan</span></div></a><a href='#home' class='pcard' data-name='Greyson Wertz'><div class='pcard-bignum pos-def'><span class='pcard-bn'>32</span><span class='pcard-bnname'>Greyson</span></div></a><a href='#home' class='pcard' data-name='Issac Moyer'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>53</span><span class='pcard-bnname'>Issac</span></div></a><a href='#home' class='pcard' data-name='Johnny Eraman'><div class='pcard-bignum pos-goalie'><span class='pcard-bn'>1</span><span class='pcard-bnname'>Johnny</span></div></a><a href='#home' class='pcard' data-name='Joziah Soto'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>59</span><span class='pcard-bnname'>Joziah</span></div></a><a href='#home' class='pcard pcard-you-card' data-name='Lewie'><img class='pcard-cardart' src='cards/lewie_photo.png' alt='Lewie'></a><a href='#home' class='pcard' data-name='Liam Delatorre'><div class='pcard-bignum pos-def'><span class='pcard-bn'>29</span><span class='pcard-bnname'>Liam</span></div></a><a href='#home' class='pcard' data-name='Maddux Jones'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>18</span><span class='pcard-bnname'>Maddux</span></div></a><a href='#home' class='pcard' data-name='Oliver Moyer'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>90</span><span class='pcard-bnname'>Oliver</span></div></a><a href='#home' class='pcard' data-name='Teddy Diss'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>11</span><span class='pcard-bnname'>Teddy</span></div></a><a href='#home' class='pcard' data-name='William Schnell'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>16</span><span class='pcard-bnname'>William</span></div></a></div>
+<div class='roster-playershead roster-coachonly'><div class='coachcoaches-h'>Players</div><button type='button' class='roster-edit' id='rosterEdit' aria-label='Edit players'><span aria-hidden='true'>&#9998;</span></button></div>
+<div class='roster' id='roster-grid'><a href='#player' class='pcard' data-name='Alder Reese'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>71</span><span class='pcard-bnname'>Alder</span></div></a><a href='#player' class='pcard' data-name='Brooklyn Coughlan'><div class='pcard-bignum pos-def'><span class='pcard-bn'>92</span><span class='pcard-bnname'>Brooklyn</span></div></a><a href='#player' class='pcard' data-name='Dawson Huffman'><div class='pcard-bignum pos-def'><span class='pcard-bn'>19</span><span class='pcard-bnname'>Dawson</span></div></a><a href='#player' class='pcard' data-name='Dominic Cinque'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>98</span><span class='pcard-bnname'>Dominic</span></div></a><a href='#player' class='pcard' data-name='Eugene Kuhn'><div class='pcard-bignum pos-def'><span class='pcard-bn'>3</span><span class='pcard-bnname'>Eugene</span></div></a><a href='#player' class='pcard' data-name='Evan Ewing'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>13</span><span class='pcard-bnname'>Evan</span></div></a><a href='#player' class='pcard' data-name='Greyson Wertz'><div class='pcard-bignum pos-def'><span class='pcard-bn'>32</span><span class='pcard-bnname'>Greyson</span></div></a><a href='#player' class='pcard' data-name='Issac Moyer'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>53</span><span class='pcard-bnname'>Issac</span></div></a><a href='#player' class='pcard' data-name='Johnny Eraman'><div class='pcard-bignum pos-goalie'><span class='pcard-bn'>1</span><span class='pcard-bnname'>Johnny</span></div></a><a href='#player' class='pcard' data-name='Joziah Soto'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>59</span><span class='pcard-bnname'>Joziah</span></div></a><a href='#player' class='pcard pcard-you-card' data-name='Lewie'><img class='pcard-cardart' src='cards/lewie_photo.png' alt='Lewie'></a><a href='#player' class='pcard' data-name='Liam Delatorre'><div class='pcard-bignum pos-def'><span class='pcard-bn'>29</span><span class='pcard-bnname'>Liam</span></div></a><a href='#player' class='pcard' data-name='Maddux Jones'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>18</span><span class='pcard-bnname'>Maddux</span></div></a><a href='#player' class='pcard' data-name='Oliver Moyer'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>90</span><span class='pcard-bnname'>Oliver</span></div></a><a href='#player' class='pcard' data-name='Teddy Diss'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>11</span><span class='pcard-bnname'>Teddy</span></div></a><a href='#player' class='pcard' data-name='William Schnell'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>16</span><span class='pcard-bnname'>William</span></div></a></div>
 <div class='rsearch-empty' id='rsearchEmpty' hidden></div>
 <div class='pgate' id='switchGate' hidden>
   <form class='pgate-box' id='switchGateForm' novalidate>
@@ -1334,7 +1319,6 @@ body.login-locked{overflow:hidden}
 
 <section id='player' class='page'>
 <button type='button' class='glassback' id='plBack' aria-label='Back'>Back</button>
-<div class='viewas-backbar' id='viewAsBack' hidden>&lsaquo; Back to coach<span class='viewas-backbar-nm' id='viewAsBackNm'></span></div>
 <div class='pl-head'><img class='pl-photo' id='plPhoto' src='' alt=''><div><div class='pl-name' id='plName'>Player</div><div class='pl-pos' id='plPos'></div></div></div>
 <div class='seg' id='plTf' role='tablist' aria-label='Timeframe'>
 <button type='button' class='segbtn on' data-tf='week' role='tab' aria-selected='true'>This week</button>
@@ -1490,36 +1474,10 @@ window.thwapActiveTeam=function(coach){
   function bootCoach(){
   var code=window.thwapActiveTeam(coach);
   var myEmail=(coach.email||'').toLowerCase();
-  /* View as player: a coach who is also a parent (coach.childPlayerId set) can flip
-     to their own kid's normal player view. Going coach->player needs no password
-     (less access). "Back to coach" returns free while still unlocked this session.
-     Backgrounding the app re-locks (clears the session unlock), so a kid who picks
-     up the phone later lands on the player view and cannot return to coach without
-     the password. */
+  /* Coach unlock re-locks on backgrounding: clear the session unlock so a fresh
+     load re-gates. (The old "View as player" toggle was removed: a coach opens any
+     player straight into the normal stat page, same view as a player sees.) */
   (function(){
-    var kid=coach.childPlayerId; if(!kid) return;
-    var entry=document.getElementById('viewAsPlayer');
-    var nameEl=document.getElementById('viewAsName');
-    var back=document.getElementById('viewAsBack'), backNm=document.getElementById('viewAsBackNm');
-    var kidName=kid.charAt(0).toUpperCase()+kid.slice(1);
-    if(entry){ entry.hidden=false; if(nameEl) nameEl.textContent='View as '+kidName; }
-    if(backNm) backNm.textContent=kidName;
-    function toPlayer(){
-      document.body.classList.remove('is-coach');
-      document.body.classList.add('viewas-active');
-      if(back) back.hidden=false;
-      if(window.openPlayerPage) window.openPlayerPage(kidName,'coachhome');
-      else location.hash='#player';
-    }
-    function toCoach(){
-      document.body.classList.remove('viewas-active');
-      document.body.classList.add('is-coach');
-      if(back) back.hidden=true;
-      location.hash='#coachhome';
-    }
-    if(entry) entry.addEventListener('click',toPlayer);
-    if(back) back.addEventListener('click',toCoach);
-    /* Re-lock on backgrounding: clear the session unlock so a fresh load re-gates. */
     document.addEventListener('visibilitychange',function(){
       if(document.visibilityState==='hidden'){ try{ sessionStorage.removeItem('thwapCoachUnlocked'); }catch(_){} }
     });
@@ -2164,9 +2122,9 @@ window.thwapActiveTeam=function(coach){
       /* Coach: tap a player -> their stats + IDP (view/edit). Player/parent: tap a
          teammate -> open their card and rotate it front/back (read-only). No
          switch-player gate - accounts handle identity now. */
-      var isCoach=false; try{ isCoach=!!JSON.parse(localStorage.getItem('thwapCoach')||'null'); }catch(_){}
+      var isCoach=document.body.classList.contains('is-coach');
       var name=cardEl.getAttribute('data-name');
-      if(isCoach && window.openPlayerPage){ window.openPlayerPage(name); return; }
+      if(isCoach && window.openPlayerPage){ window.openPlayerPage(name,'team'); return; }
       if(window.openTeammateCard){ window.openTeammateCard(name); return; }
     });
   });
