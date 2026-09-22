@@ -529,6 +529,40 @@ body.is-coach .roster .pcard-remove{display:grid;place-items:center}
 .plancats{display:flex;gap:8px;flex-wrap:wrap}
 .plancat{font-family:inherit;font-size:13px;font-weight:800;padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:var(--soft);color:var(--muted);cursor:pointer}
 .plancat.on{background:var(--lime);color:var(--ink);border-color:transparent}
+.plancat-n{display:inline-block;margin-left:6px;min-width:16px;padding:0 5px;border-radius:999px;background:var(--ink);color:var(--lime);font-size:11px;line-height:16px;text-align:center}
+.plancat:not(.on) .plancat-n{background:var(--line);color:var(--muted)}
+.plan-hint{margin:10px 2px 0;font-size:12px;color:var(--muted)}
+/* Drill picker (coach): inline X-close page. A category's full drill list from the
+   same buildCatalog() the players use; tap a row to include it in the plan, tap the
+   How-to to open the same video + steps panel players see. */
+.dpk-sub{margin:-4px 0 14px;color:var(--muted);font-size:14px}
+.dpk-list{display:flex;flex-direction:column;gap:10px}
+.dpk-row{border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden}
+.dpk-row.picked{border-color:var(--lime);box-shadow:0 0 0 1px var(--lime) inset}
+.dpk-main{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;background:none;border:0;font-family:inherit;text-align:left;color:inherit;cursor:pointer}
+.dpk-emoji{font-size:24px;flex:none}
+.dpk-nm{flex:1 1 auto;font-weight:800;font-size:15px;color:var(--text)}
+.dpk-check{flex:none;width:26px;height:26px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-weight:900;color:transparent}
+.dpk-row.picked .dpk-check{background:var(--lime);border-color:transparent;color:var(--ink)}
+.dpk-how{display:flex;align-items:center;gap:6px;padding:8px 14px 12px;background:none;border:0;border-top:1px solid var(--line);width:100%;font-family:inherit;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);cursor:pointer}
+.dpk-how-chev{transition:transform .15s ease}
+.dpk-row.how-open .dpk-how-chev{transform:rotate(90deg)}
+.dpk-body{display:none;padding:0 14px 16px}
+.dpk-row.how-open .dpk-body{display:block}
+.dpk-body p{margin:0 0 12px;font-size:14px;color:var(--muted);line-height:1.5}
+.dpk-body ol{margin:0;padding-left:22px;color:var(--text);font-size:14px;font-weight:600;line-height:1.6}
+.dpk-body ol li{margin-bottom:8px}
+/* Suggest a drill (coach): a small backlog form Thwap reviews. */
+.sugg{margin-top:26px;padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--card2)}
+.sugg-h{font-family:'Archivo Black',system-ui,sans-serif;font-size:16px;color:var(--text)}
+.sugg-p{margin:6px 0 12px;font-size:13px;color:var(--muted);line-height:1.5}
+.sugg-seg{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.sugg-cat{font-family:inherit;font-size:13px;font-weight:800;padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:var(--soft);color:var(--muted);cursor:pointer}
+.sugg-cat.on{background:var(--lime);color:var(--ink);border-color:transparent}
+.sugg-in{width:100%;font-family:inherit;font-size:14px;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--text);box-sizing:border-box}
+.sugg-send{margin-top:10px;font-family:inherit;font-size:14px;font-weight:850;background:var(--lime);color:var(--ink);border:1px solid transparent;border-radius:12px;padding:10px 18px;cursor:pointer}
+.sugg-send:disabled{opacity:.5;cursor:default}
+.sugg-done{margin-top:10px;color:var(--green);font-weight:800;font-size:13px}
 .plansave{margin-top:16px;font-family:inherit;font-size:15px;font-weight:850;background:var(--lime);color:var(--ink);border:1px solid transparent;border-radius:12px;padding:10px 20px;cursor:pointer}
 .plansave:disabled{opacity:.5;cursor:default}
 .plan-done{margin-top:12px;color:var(--green);font-weight:800;font-size:14px}
@@ -1044,7 +1078,25 @@ body.login-locked{overflow:hidden}
   <div class='plangrid' id='planGrid'></div>
   <button type='button' class='plansave' id='planSave' disabled>Save plan</button>
   <p class='plan-done' id='planDone' hidden>Saved! Your team sees this plan.</p>
+  <div class='sugg' id='suggBox'>
+    <div class='sugg-h'>Recommend a drill</div>
+    <p class='sugg-p'>Know a drill the team should train? Send it to Thwap. We review every suggestion and add the good ones to the library.</p>
+    <div class='sugg-seg' id='suggSeg' role='group' aria-label='Category'>
+      <button type='button' class='sugg-cat on' data-cat='stick'>🏒 Hands</button>
+      <button type='button' class='sugg-cat' data-cat='shoot'>🥅 Shoot</button>
+      <button type='button' class='sugg-cat' data-cat='dryland'>⚡ Dryland</button>
+    </div>
+    <input class='sugg-in' id='suggIn' type='text' maxlength='140' placeholder='Drill name and a one-line description'>
+    <button type='button' class='sugg-send' id='suggSend' disabled>Send to Thwap</button>
+    <p class='sugg-done' id='suggDone' hidden>Thanks! Thwap will review it.</p>
+  </div>
 </div>
+</section>
+<section id='drillpick' class='page'>
+<a class='glassclose' href='#plan' aria-label='Close'>✕</a>
+<div class='hero'><div class='kicker' id='dpkKicker'>Coach</div><h1 id='dpkTitle'>Pick drills</h1></div>
+<p class='dpk-sub' id='dpkSub'>Tap a drill to add it. Tap How-to to see the video and steps.</p>
+<div class='dpk-list' id='dpkList'></div>
 </section>
 <section id='progress' class='page'>
 <a class='glassclose' href='.' aria-label='Close'>✕</a>
@@ -1452,9 +1504,12 @@ window.thwapActiveTeam=function(coach){
     });
   })();
 })();
-/* ---- Plan editor (coach): a 7-day x 3-category grid. Loads the team plan from
-   get-plan, toggles which categories are ON per weekday, saves via set-plan.
-   Coach-only (bails without a coach token / grid). ---- */
+/* ---- Plan editor (coach): a 7-day x 3-category grid. Each category cell shows how
+   many drills are picked that day and opens the #drillpick page. Drills come from the
+   SAME buildCatalog() the players use (window.thwapDrillCatalog), so there is one
+   library. Plan shape migrated from #93's on/off arrays (plan[day]=['shoot']) to
+   per-category drill lists (plan[day]={shoot:['Wrist Shots',...]}); an old array is
+   read as "category on, no specific drills". Coach-only. ---- */
 (function(){
   var grid=document.getElementById('planGrid'); if(!grid) return;
   var coach=null; try{ coach=JSON.parse(localStorage.getItem('thwapCoach')||'null'); }catch(e){}
@@ -1466,34 +1521,105 @@ window.thwapActiveTeam=function(coach){
   var todayKey=(function(){ try{ var w=window.thwapWeekday&&window.thwapWeekday(); var map=['sun','mon','tue','wed','thu','fri','sat']; return map[w]||''; }catch(e){ return ''; } })();
   var plan={}, dirty=false;
   function setDirty(d){ dirty=d; if(saveBtn){ saveBtn.disabled=!d; } if(d&&doneEl) doneEl.hidden=true; }
+  /* Read a day/category as an array of drill names, tolerating the old on/off shape. */
+  function drillsFor(day,cat){
+    var v=plan[day];
+    if(!v) return [];
+    if(Array.isArray(v)) return v.indexOf(cat)>=0?['__all__']:[]; /* legacy: category on */
+    return Array.isArray(v[cat])?v[cat]:[];
+  }
+  function setDrills(day,cat,arr){
+    var v=plan[day];
+    if(!v||Array.isArray(v)){ /* migrate legacy row to object, preserving on-categories */
+      var obj={}; if(Array.isArray(v)) v.forEach(function(c){ obj[c]=obj[c]||[]; });
+      plan[day]=v=obj;
+    }
+    if(arr&&arr.length) v[cat]=arr; else delete v[cat];
+    setDirty(true);
+  }
   function render(){
     grid.innerHTML='';
     DAYS.forEach(function(d){
-      var on=plan[d[0]]||[];
       var row=document.createElement('div');
       row.className='planrow'+(d[0]===todayKey?' today':'');
       var day='<div class="planrow-day">'+d[1]+(d[0]===todayKey?'<span class="todaytag">Today</span>':'')+'</div>';
       var cats='<div class="plancats">'+CATS.map(function(c){
-        return '<button type="button" class="plancat'+(on.indexOf(c[0])>=0?' on':'')+'" data-day="'+d[0]+'" data-cat="'+c[0]+'">'+c[1]+'</button>';
+        var n=drillsFor(d[0],c[0]).length;
+        return '<button type="button" class="plancat'+(n>0?' on':'')+'" data-day="'+d[0]+'" data-cat="'+c[0]+'">'+c[1]+
+          '<span class="plancat-n">'+n+'</span></button>';
       }).join('')+'</div>';
       row.innerHTML=day+cats;
       grid.appendChild(row);
     });
     grid.querySelectorAll('.plancat').forEach(function(b){
       b.addEventListener('click',function(){
-        var day=b.getAttribute('data-day'), cat=b.getAttribute('data-cat');
-        var arr=plan[day]||(plan[day]=[]);
-        var i=arr.indexOf(cat);
-        if(i>=0) arr.splice(i,1); else arr.push(cat);
-        b.classList.toggle('on', arr.indexOf(cat)>=0);
-        setDirty(true);
+        openPicker(b.getAttribute('data-day'), b.getAttribute('data-cat'));
       });
     });
   }
+  /* Seed sensible defaults for a brand-new plan: Wed practice = a couple of each,
+     other weekdays a light single focus, game/weekend left to the coach. */
+  function seedDefaults(cat){
+    var lib=(window.thwapDrillCatalog&&window.thwapDrillCatalog(cat))||[];
+    function first(n){ return lib.slice(0,n).map(function(x){return x.name;}); }
+    plan={
+      mon:{stick:first(1)}, tue:{dryland:first(2)}, wed:{stick:first(2),shoot:first(2),dryland:first(2)},
+      thu:{shoot:first(1)}, fri:{stick:first(1)}, sat:{}, sun:{}
+    };
+  }
+  /* --- Drill picker page (#drillpick) --- */
+  var pickList=document.getElementById('dpkList'), pkTitle=document.getElementById('dpkTitle'), pkKicker=document.getElementById('dpkKicker');
+  var pkDay='', pkCat='';
+  var CATLABEL={stick:'Hands',shoot:'Shoot',dryland:'Dryland'};
+  var DAYLABEL={mon:'Monday',tue:'Tuesday',wed:'Wednesday',thu:'Thursday',fri:'Friday',sat:'Saturday',sun:'Sunday'};
+  function openPicker(day,cat){
+    pkDay=day; pkCat=cat;
+    if(pkKicker) pkKicker.textContent=DAYLABEL[day]||'Coach';
+    if(pkTitle) pkTitle.textContent=(CATLABEL[cat]||cat)+' drills';
+    renderPicker();
+    location.hash='#drillpick';
+  }
+  function ytEmbed(video,name){
+    var m=String(video||'').match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([A-Za-z0-9_-]{11})/);
+    if(m) return "<div class='exvideo'><iframe src='https://www.youtube-nocookie.com/embed/"+m[1]+
+      "' title='"+esc(name)+" video' frameborder='0' loading='lazy' allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture' allowfullscreen></iframe></div>";
+    return "<div class='exvideo placeholder'><span>&#9654;</span><small>Video coming soon</small></div>";
+  }
+  function esc(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function renderPicker(){
+    if(!pickList) return;
+    var lib=(window.thwapDrillCatalog&&window.thwapDrillCatalog(pkCat))||[];
+    var picked=drillsFor(pkDay,pkCat);
+    var all=picked.indexOf('__all__')>=0;
+    pickList.innerHTML='';
+    if(!lib.length){ pickList.innerHTML='<p class="dpk-sub">No drills in this category yet.</p>'; return; }
+    lib.forEach(function(dr){
+      var on=all||picked.indexOf(dr.name)>=0;
+      var row=document.createElement('div');
+      row.className='dpk-row'+(on?' picked':'');
+      var steps=(dr.steps&&dr.steps.length)?('<ol>'+dr.steps.map(function(s){return '<li>'+esc(s)+'</li>';}).join('')+'</ol>'):'';
+      row.innerHTML=
+        '<button type="button" class="dpk-main"><span class="dpk-emoji">'+(dr.emoji||'🏒')+'</span>'+
+          '<span class="dpk-nm">'+esc(dr.name)+'</span><span class="dpk-check">&#10003;</span></button>'+
+        '<button type="button" class="dpk-how"><span class="dpk-how-chev">&rsaquo;</span> How-to</button>'+
+        '<div class="dpk-body">'+ytEmbed(dr.video,dr.name)+(dr.cue?'<p>'+esc(dr.cue)+'</p>':'')+steps+'</div>';
+      row.querySelector('.dpk-main').addEventListener('click',function(){
+        var cur=drillsFor(pkDay,pkCat).filter(function(x){return x!=='__all__';});
+        var i=cur.indexOf(dr.name);
+        if(i>=0) cur.splice(i,1); else cur.push(dr.name);
+        setDrills(pkDay,pkCat,cur);
+        row.classList.toggle('picked', cur.indexOf(dr.name)>=0);
+      });
+      row.querySelector('.dpk-how').addEventListener('click',function(){ row.classList.toggle('how-open'); });
+      pickList.appendChild(row);
+    });
+  }
+  /* Re-render the grid counts when returning from the picker. */
+  window.addEventListener('hashchange',function(){ if(location.hash==='#plan') render(); });
   fetch('/api/coach?action=get-plan&code='+encodeURIComponent(code))
     .then(function(r){ return r.json(); })
-    .then(function(j){ plan=(j&&j.ok&&j.plan)?j.plan:{}; render(); })
-    .catch(function(){ render(); });
+    .then(function(j){ var p=(j&&j.ok&&j.plan)?j.plan:null; if(p&&Object.keys(p).length){ plan=p; } else { seedDefaults(); setDirty(true); } render(); })
+    .catch(function(){ seedDefaults(); render(); });
   if(saveBtn){ saveBtn.addEventListener('click',function(){
     saveBtn.textContent='Saving...';
     fetch('/api/coach?action=set-plan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code,coachToken:coach.token,plan:plan})})
@@ -1501,6 +1627,27 @@ window.thwapActiveTeam=function(coach){
       .then(function(j){ saveBtn.textContent='Save plan'; if(j&&j.ok){ setDirty(false); if(doneEl) doneEl.hidden=false; } })
       .catch(function(){ saveBtn.textContent='Save plan'; });
   }); }
+  /* --- Suggest a drill (coach) -> Thwap backlog --- */
+  (function(){
+    var seg=document.getElementById('suggSeg'), inp=document.getElementById('suggIn'),
+        send=document.getElementById('suggSend'), done=document.getElementById('suggDone');
+    if(!seg||!inp||!send) return;
+    var cat='stick';
+    seg.querySelectorAll('.sugg-cat').forEach(function(b){
+      b.addEventListener('click',function(){ cat=b.getAttribute('data-cat');
+        seg.querySelectorAll('.sugg-cat').forEach(function(x){ x.classList.toggle('on', x===b); }); });
+    });
+    inp.addEventListener('input',function(){ send.disabled=!inp.value.trim(); if(done) done.hidden=true; });
+    send.addEventListener('click',function(){
+      var text=inp.value.trim(); if(!text) return;
+      send.textContent='Sending...'; send.disabled=true;
+      fetch('/api/coach?action=suggest-drill',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({code:code,coachToken:coach.token,category:cat,text:text})})
+        .then(function(r){ return r.json(); })
+        .then(function(j){ send.textContent='Send to Thwap'; if(j&&j.ok){ inp.value=''; if(done) done.hidden=false; } else { send.disabled=false; } })
+        .catch(function(){ send.textContent='Send to Thwap'; send.disabled=false; });
+    });
+  })();
 })();
 /* Change-player roster: show the SAME coded card as the home page for every
    player, and gate a switch behind the parent email + player code (jersey number
@@ -2716,6 +2863,23 @@ function buildCatalog(){
   };
   return _catalogCache;
 }
+/* Public accessor for the coach drill picker: full drill OBJECTS (name/emoji/cue/
+   steps/video) per COACH category, from the same source arrays the players train on.
+   Deduped by name, order preserved. stick<-DRILLS, shoot<-SHOOT_DAYS, dryland<-WORKOUTS. */
+window.thwapDrillCatalog=function(cat){
+  function collect(list){
+    var seen={}, out=[];
+    (list||[]).forEach(function(d){
+      if(!d||!d.name||seen[d.name]) return; seen[d.name]=1;
+      out.push({name:d.name, emoji:d.emoji||'', cue:d.cue||'', steps:d.steps||[], video:d.video||''});
+    });
+    return out;
+  }
+  if(cat==='stick') return collect(window.DRILLS);
+  if(cat==='shoot'){ var s=[]; (window.SHOOT_DAYS||[]).forEach(function(day){ (day||[]).forEach(function(x){ s.push(x); }); }); return collect(s); }
+  if(cat==='dryland'){ var w=[]; (window.WORKOUTS||[]).forEach(function(wk){ (wk.drills||[]).forEach(function(x){ w.push(x); }); }); return collect(w); }
+  return [];
+};
 /* Real per-player completion counts, read from the same live board the leaderboard
    uses (window.thwapBoard, populated below). disc is the display name; the board
    keys are stick/shoot/dryland. Everyone reads 0 until the API responds. */
