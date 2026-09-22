@@ -1112,7 +1112,7 @@ body.login-locked{overflow:hidden}
 </button>
 </section>
 <section id='roster' class='page'>
-<a class='glassclose' id='rosterClose' href='.' aria-label='Close'>✕</a>
+<a class='glassclose js-home-close' id='rosterClose' href='#home' aria-label='Close'>✕</a>
 <div class='hero'><div class='kicker'>Jr Rangers 10U, 16 Rangers</div><h1 class='rosterh-player'>Who&rsquo;s putting in the work?</h1><h1 class='rosterh-coach'>Your Team</h1><p class='rosterp-player'>Tap your card so your training counts.</p><p class='rosterp-coach'>Tap a player to see how they&rsquo;re doing.</p></div>
 <div class='rfilter' id='rFilter' hidden><span id='rFilterLab'></span> <button type='button' class='rfilter-clear' id='rFilterClear'>Clear</button></div>
 <div class='coachcoaches roster-coachonly' id='coachCoaches' hidden>
@@ -1239,7 +1239,7 @@ body.login-locked{overflow:hidden}
 </section>
 
 <section id='plan' class='page'>
-<a class='glassclose' href='.' aria-label='Close'>✕</a>
+<a class='glassclose js-home-close' href='#home' aria-label='Close'>✕</a>
 <div class='hero'><div class='kicker'>Coach</div><h1>Weekly Plan</h1><p>Pick what your team trains each day.</p></div>
 <div class='planwrap' id='planWrap'>
   <div class='plancard'>
@@ -1274,7 +1274,7 @@ body.login-locked{overflow:hidden}
 </div>
 </section>
 <section id='progress' class='page'>
-<a class='glassclose' href='.' aria-label='Close'>✕</a>
+<a class='glassclose js-home-close' href='#home' aria-label='Close'>✕</a>
 <div class='hero'><div class='kicker'>Rangers 10U</div><h1>Standings</h1></div>
 <div class='seg' id='timeframe' role='tablist' aria-label='Timeframe'>
 <button type='button' class='segbtn on' data-tf='week' role='tab' aria-selected='true'>This week</button>
@@ -2199,6 +2199,17 @@ window.thwapActiveTeam=function(coach){
 })();
 showHomePlayer();
 window.addEventListener('hashchange',function(){ if(location.hash===''||location.hash==='#home') showHomePlayer(); });
+/* Close (x) on coach/shared pages (Team, Plan, Standings) must land on the viewer's
+   real home: a coach's home is #coachhome (#home is hidden for coaches), a player's
+   is #home. href='#home' is the no-JS fallback; this routes coaches correctly. */
+(function(){
+  document.addEventListener('click',function(e){
+    var c=e.target.closest && e.target.closest('a.js-home-close');
+    if(!c) return;
+    e.preventDefault();
+    location.hash = document.body.classList.contains('is-coach') ? '#coachhome' : '#home';
+  });
+})();
 /* Day tooltip: tap toggles it; tapping it again, outside, or Escape closes it (4s auto-hide fallback) */
 (function(){
   var d=document.getElementById('dayTip'); if(!d)return;
