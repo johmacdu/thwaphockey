@@ -498,17 +498,6 @@ body.is-coach .roster .pcard-remove{display:grid;place-items:center}
 .crow.trained .crow-wk-n{color:var(--green)}
 /* Coaches: heading + a team-visible strip of coach chips + head-only invite. */
 .coachcoaches{margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}
-/* View as player: coach-parent switch to their own kid's view (parent-email link). */
-.viewas{display:flex;align-items:center;gap:10px;width:100%;margin-top:var(--gap-section);padding:12px 14px;border:1px solid var(--line2);border-radius:14px;background:var(--panel);font-family:inherit;text-align:left;cursor:pointer}
-.viewas-ico{font-size:20px;flex:none}
-.viewas-tx{flex:1;min-width:0}
-.viewas-t{display:block;font-weight:800;font-size:15px;color:var(--text)}
-.viewas-s{display:block;font-size:12px;color:var(--muted)}
-.viewas-chev{color:var(--muted);font-weight:900;font-size:20px;flex:none}
-.viewas-backbar{position:fixed;left:0;right:0;top:0;z-index:40;display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top,0px) + 10px) 16px 10px;background:var(--ink);color:var(--lime);font-size:13px;font-weight:800;cursor:pointer}
-.viewas-backbar-nm{margin-left:auto;opacity:.85}
-body.viewas-active #player .glassback{display:none}
-body.viewas-active #player{padding-top:0}
 /* Coach unlock entry: only shown when a coach token exists but this session is
    locked (shared device). The kid sees their normal view; this is the way in. */
 .coachlock-entry{display:none;font-family:inherit;font-size:13px;font-weight:800;background:transparent;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:7px 14px;cursor:pointer;margin-left:8px}
@@ -857,12 +846,17 @@ html[data-theme='dark'] .login-frost{background:linear-gradient(180deg,rgba(120,
 .login-consent input{margin-top:2px;flex:none}
 .login-consent a{color:var(--green);font-weight:800;text-decoration:underline;text-underline-offset:2px}
 .policy-sheet{position:fixed;inset:0;z-index:120;background:rgba(20,34,25,.5);display:none;align-items:center;justify-content:center;padding:20px}
-.policy-sheet.show{display:flex}
-.policy-box{max-width:480px;width:100%;max-height:80vh;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px}
-.policy-box h2{font-family:'Archivo Black',system-ui,sans-serif;font-size:20px;margin:0 0 4px}
-.policy-box .policy-ph{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--warn-text);margin:0 0 10px}
-.policy-box p{font-size:14px;color:var(--muted);line-height:1.55;margin:0 0 10px}
-.policy-close{margin-top:8px;font-family:inherit;font-size:14px;font-weight:850;background:var(--lime);color:var(--ink);border:0;border-radius:12px;padding:10px 18px;cursor:pointer}
+.policy-page{position:fixed;inset:0;z-index:140;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;pointer-events:auto}
+.policy-page[hidden]{display:none}
+.policy-x{z-index:141}
+.policy-inner{max-width:640px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 76px) 20px 60px}
+.policy-h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:var(--fs-title);line-height:1.05;margin:0 0 4px;color:var(--text)}
+.policy-eff{font-size:13px;font-weight:800;color:var(--muted);margin:0 0 20px}
+.policy-body h2{font-family:'Archivo Black',system-ui,sans-serif;font-size:18px;color:var(--text);margin:22px 0 6px}
+.policy-body p{font-size:15px;color:var(--text2);line-height:1.6;margin:0 0 12px}
+.policy-body ul{margin:0 0 12px;padding-left:22px}
+.policy-body li{font-size:15px;color:var(--text2);line-height:1.6;margin-bottom:6px}
+.policy-body a{color:var(--green);font-weight:700}
 .login-go{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;background:var(--green);color:var(--onaccent);font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;font-size:16px;border:0;border-radius:14px;cursor:pointer;transition:transform .08s ease,filter .12s ease}
 .login-go:hover{filter:brightness(1.04)}
 .login-go:active{transform:scale(.98)}
@@ -1020,12 +1014,12 @@ body.login-locked{overflow:hidden}
     <p class='login-err' id='loginErr' aria-live='polite'></p>
     <p class='login-alt'>New to <img class='login-wordmark' id='loginMark' src='wordmark-tm-light.svg' alt='Thwap Hockey'>? <a href='#' id='loginWaitlist'>Join the waitlist.</a></p>
   </form>
-  <div class='policy-sheet' id='policySheet'>
-    <div class='policy-box'>
-      <h2 id='policyTitle'>Policy</h2>
-      <p class='policy-ph'>Placeholder &mdash; final text coming soon</p>
-      <p id='policyBody'></p>
-      <button type='button' class='policy-close' id='policyClose'>Close</button>
+  <div class='policy-page' id='policySheet' hidden>
+    <button type='button' class='glassclose policy-x' id='policyClose' aria-label='Close'>&#215;</button>
+    <div class='policy-inner'>
+      <h1 class='policy-h1' id='policyTitle'>Policy</h1>
+      <p class='policy-eff' id='policyEff'></p>
+      <div class='policy-body' id='policyBody'></div>
     </div>
   </div>
   <form class='login-modal' id='waitForm' role='dialog' aria-modal='true' aria-labelledby='waitTitle' hidden novalidate>
@@ -4435,17 +4429,60 @@ syncConsent();
 /* Terms / Privacy links open a placeholder policy sheet (real text later). */
 (function(){
   var sheet=document.getElementById('policySheet'), title=document.getElementById('policyTitle'),
-      pbody=document.getElementById('policyBody'), pclose=document.getElementById('policyClose'),
+      eff=document.getElementById('policyEff'), pbody=document.getElementById('policyBody'), pclose=document.getElementById('policyClose'),
       tLink=document.getElementById('loginTerms'), pLink=document.getElementById('loginPrivacy');
-  var TXT={
-    terms:['Terms of Use','By using Thwap Hockey you agree to use it for youth hockey home training. This is placeholder text; the final Terms of Use will be published here before any team beyond the pilot is onboarded.'],
-    privacy:['Privacy Policy','Thwap Hockey collects a player first name, jersey number, position and training activity to show progress to the player and their coach. A parent email is collected to obtain parental consent. This is placeholder text; the final Privacy Policy will be published here before any team beyond the pilot is onboarded.']
-  };
-  function open(which){ var t=TXT[which]; if(!t||!sheet) return; if(title) title.textContent=t[0]; if(pbody) pbody.textContent=t[1]; sheet.classList.add('show'); }
-  if(tLink) tLink.addEventListener('click',function(e){ e.preventDefault(); open('terms'); });
-  if(pLink) pLink.addEventListener('click',function(e){ e.preventDefault(); open('privacy'); });
-  if(pclose) pclose.addEventListener('click',function(){ sheet.classList.remove('show'); });
-  if(sheet) sheet.addEventListener('click',function(e){ if(e.target===sheet) sheet.classList.remove('show'); });
+  var EFFECTIVE='Effective September 2026';
+  var TERMS=
+    "<p>Thwap Hockey is a home-training app for youth hockey players. It gives a player short daily stickhandling, shooting and dryland drills, tracks the training they mark done, and shows that progress to the player and their team coach. By using Thwap Hockey you agree to these terms.</p>"+
+    "<h2>Who uses it</h2>"+
+    "<p>Thwap Hockey is used by youth players, their parents, and their team coaches. A player under 13 may use the app only with a parent's involvement and consent. A coach uses the app to set the team plan and see how players are progressing.</p>"+
+    "<h2>What you agree to</h2>"+
+    "<ul>"+
+    "<li>Use the app for its purpose: youth hockey training and coaching.</li>"+
+    "<li>Keep your sign-in details private. A team password gates the coach view; do not share it with players.</li>"+
+    "<li>Do not upload content that is not yours to share, and do not misuse another person's account.</li>"+
+    "</ul>"+
+    "<h2>Training and safety</h2>"+
+    "<p>The drills are general training suggestions, not medical or professional coaching advice. A player should train within their ability and stop if something hurts. Thwap Hockey is not responsible for injuries that happen during training.</p>"+
+    "<h2>Changes</h2>"+
+    "<p>We may update these terms as the app grows. When the terms change in a way that matters, we will ask you to agree again at sign-in. Continuing to use the app after a change means you accept the updated terms.</p>"+
+    "<h2>Contact</h2>"+
+    "<p>Questions about these terms: <a href='mailto:hello@thwaphockey.com'>hello@thwaphockey.com</a>.</p>";
+  var PRIVACY=
+    "<p>Thwap Hockey is built for children, so we collect as little as we can and we are plain about what we keep and why.</p>"+
+    "<h2>What we collect</h2>"+
+    "<ul>"+
+    "<li><b>About a player:</b> first name, jersey number, position, and the training the player marks done. This is what shows the player and their coach how they are progressing.</li>"+
+    "<li><b>A parent email:</b> collected when a player is added to a team, so we can reach a parent and obtain consent.</li>"+
+    "<li><b>A coach:</b> name, email, and an optional photo.</li>"+
+    "</ul>"+
+    "<p>We do not collect a home address, phone number, precise location, or a child's contact information beyond what is above.</p>"+
+    "<h2>Parental consent</h2>"+
+    "<p>For a player under 13, we ask a parent to consent before that child's information is used, in line with COPPA (US) and PIPEDA (Canada). A parent can review their child's information, ask us to correct it, or ask us to delete it at any time by emailing us.</p>"+
+    "<h2>How we use it</h2>"+
+    "<p>We use this information only to run the app: to show a player their drills and progress, to let their coach see team progress, and to contact a parent about consent. We do not sell personal information, and we do not show third-party advertising to children.</p>"+
+    "<h2>Who can see it</h2>"+
+    "<p>A player's training is visible to that player, their parent, and their team's coaches. It is not shared publicly. We use trusted service providers to run the app (hosting and email delivery) and share only what those services need to work.</p>"+
+    "<h2>Keeping it and removing it</h2>"+
+    "<p>We keep a player's information while they are on a team. A parent or coach can remove a player, and a parent can ask us to delete their child's information entirely. Email us and we will take care of it.</p>"+
+    "<h2>Contact</h2>"+
+    "<p>Privacy questions, or to review, correct, or delete a child's information: <a href='mailto:privacy@thwaphockey.com'>privacy@thwaphockey.com</a>.</p>";
+  var TXT={ terms:['Terms of Use',TERMS], privacy:['Privacy Policy',PRIVACY] };
+  var lastFocus=null;
+  function openPolicy(which){
+    var t=TXT[which]; if(!t||!sheet) return;
+    lastFocus=document.activeElement;
+    if(title) title.textContent=t[0];
+    if(eff) eff.textContent=EFFECTIVE;
+    if(pbody) pbody.innerHTML=t[1];
+    sheet.hidden=false; sheet.scrollTop=0;
+  }
+  function closePolicy(){ if(sheet) sheet.hidden=true; try{ if(lastFocus&&lastFocus.focus) lastFocus.focus(); }catch(_){}
+  }
+  if(tLink) tLink.addEventListener('click',function(e){ e.preventDefault(); openPolicy('terms'); });
+  if(pLink) pLink.addEventListener('click',function(e){ e.preventDefault(); openPolicy('privacy'); });
+  if(pclose) pclose.addEventListener('click',closePolicy);
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&sheet&&!sheet.hidden) closePolicy(); });
 })();
 function cookieGet(name){
   var m=document.cookie.match(new RegExp('(?:^|; )'+name.replace(/([.$?*|{}()\[\]\\\/\+^])/g,'\\$1')+'=([^;]*)'));
