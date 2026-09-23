@@ -371,6 +371,31 @@ describe('add-player: parent email + photo', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body.member.photo).toContain('data:image/jpeg');
   });
+
+  it('stores a second parent email on add and rejects an invalid one', async () => {
+    const login = await loginSeedCoach();
+    const token = login.body.token;
+    const ok = makeRes();
+    await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, firstName: 'Twoemail', parentEmail: 'dad@x.com', parentEmail2: 'mom@x.com' }), ok);
+    expect(ok.statusCode).toBe(200);
+    expect(ok.body.member.parentEmail).toBe('dad@x.com');
+    expect(ok.body.member.parentEmail2).toBe('mom@x.com');
+    const bad = makeRes();
+    await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, firstName: 'Badmom', parentEmail: 'dad@x.com', parentEmail2: 'not-an-email' }), bad);
+    expect(bad.statusCode).toBe(400);
+  });
+
+  it('coach updates both parent emails', async () => {
+    const login = await loginSeedCoach();
+    const token = login.body.token;
+    const add = makeRes();
+    await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, firstName: 'Emailedit', parentEmail: 'a@x.com' }), add);
+    const upd = makeRes();
+    await _handlers.updatePlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, playerId: 'emailedit', parentEmail: 'newdad@x.com', parentEmail2: 'newmom@x.com' }), upd);
+    expect(upd.statusCode).toBe(200);
+    expect(upd.body.member.parentEmail).toBe('newdad@x.com');
+    expect(upd.body.member.parentEmail2).toBe('newmom@x.com');
+  });
 });
 
 describe('edit player, coach password, and email requests', () => {
