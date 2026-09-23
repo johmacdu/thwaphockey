@@ -708,15 +708,15 @@ button.row:active{background:var(--soft)}
 .pl-spoke{stroke-dasharray:120;stroke-dashoffset:120;animation:plshoot .35s cubic-bezier(.2,.9,.3,1) forwards}
 @keyframes plshoot{to{stroke-dashoffset:0}}
 .pl-totals{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.idp{margin:14px 0;padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--card2)}
+.idp{margin:6px 0 18px;padding:0;border:0;background:none}
 .idp-head{font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);display:flex;align-items:center;gap:8px}
 .idp-emoji{font-size:36px}
-.idp-view{display:flex;align-items:center;gap:12px;width:100%;margin:8px 0 0;padding:0;background:none;border:0;text-align:left;font-family:inherit;color:inherit}
+.idp-view{display:flex;align-items:center;gap:12px;width:100%;margin:4px 0 0;padding:0;background:none;border:0;text-align:left;font-family:inherit;color:inherit}
 .idp-view.is-tappable{cursor:pointer}
 .idp-view-chev{margin-left:auto;font-weight:900;font-size:22px;color:var(--muted);flex:none}
 .idp-view:disabled .idp-view-chev{display:none}
-.idp-text{margin:0;font-family:'Archivo Black',system-ui,sans-serif;font-size:16px;color:var(--text);line-height:1.3;flex:1 1 auto}
-.idp-text.empty{font-family:inherit;font-weight:600;color:var(--muted)}
+.idp-text{margin:0;font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(20px,5vw,26px);color:var(--green2);line-height:1.2;flex:1 1 auto}
+.idp-text.empty{font-family:inherit;font-weight:700;font-size:var(--fs-body);color:var(--muted)}
 .idp-edit,.idp-save,.idp-cancel{font-family:inherit;font-size:13px;font-weight:800;border-radius:10px;padding:8px 14px;cursor:pointer;border:1px solid var(--line)}
 .idp-edit{margin-top:10px;background:none;color:var(--acc)}
 .idp-in{width:100%;font-family:inherit;font-size:15px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--text);box-sizing:border-box}
@@ -728,7 +728,9 @@ button.row:active{background:var(--soft)}
 .idp-preset:active{transform:scale(.98)}
 .idp-preset.on{background:var(--lime);color:var(--ink);border-color:transparent}
 .idp-cancel{background:none;color:var(--muted)}
-.idpdev{margin:14px 0;padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--card2)}
+.idpdev{margin:24px 0 14px;padding:16px 14px;border:1px solid var(--line);border-radius:16px;background:var(--card2);border-top:2px solid var(--line2)}
+.idpdev-coachlab{font-weight:900;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.idpdev-lock{font-size:12px}
 .idpdev-vol{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
 .idpdev-vol-cell{padding:10px 8px;border:1px solid var(--line);border-radius:12px;background:var(--card);text-align:center}
 .idpdev-vol-lab{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;color:var(--muted)}
@@ -1319,13 +1321,8 @@ body.login-locked{overflow:hidden}
 <section id='player' class='page'>
 <button type='button' class='glassback' id='plBack' aria-label='Back'>Back</button>
 <div class='pl-head'><img class='pl-photo' id='plPhoto' src='' alt=''><div><div class='pl-name' id='plName'>Player</div><div class='pl-pos' id='plPos'></div></div></div>
-<div class='seg' id='plTf' role='tablist' aria-label='Timeframe'>
-<button type='button' class='segbtn on' data-tf='week' role='tab' aria-selected='true'>This week</button>
-<button type='button' class='segbtn' data-tf='all' role='tab' aria-selected='false'>All time</button>
-</div>
-<div class='pl-streak' id='plStreak'></div>
 <div class='idp' id='idpBlock' hidden>
-  <div class='idp-head'><span class='idp-emoji'>🌱</span> This Month&rsquo;s Goal</div>
+  <div class='idp-head'>Your focus this month</div>
   <button type='button' class='idp-view' id='idpView'>
     <p class='idp-text' id='idpText'>No goal set yet.</p>
     <span class='idp-view-chev' id='idpEdit'>&rsaquo;</span>
@@ -1340,15 +1337,20 @@ body.login-locked{overflow:hidden}
     </div>
   </div>
 </div>
+<div class='seg' id='plTf' role='tablist' aria-label='Timeframe'>
+<button type='button' class='segbtn on' data-tf='week' role='tab' aria-selected='true'>This week</button>
+<button type='button' class='segbtn' data-tf='all' role='tab' aria-selected='false'>All time</button>
+</div>
+<div class='pl-streak' id='plStreak'></div>
+<div id='plDisc'></div>
 <div class='idpdev' id='idpDev' hidden>
-  <div class='idp-head'>📈 Development this month</div>
+  <div class='idpdev-coachlab'><span class='idpdev-lock' aria-hidden='true'>🔒</span> Coach&rsquo;s read &middot; not shown to players</div>
   <div class='idpdev-vol' id='idpDevVol'></div>
   <div class='idpdev-trend-h'>Weekly activity</div>
   <div class='idpdev-trend' id='idpDevTrend'></div>
   <div class='idpdev-goals-h'>Game-day focus</div>
   <div class='idpdev-goals' id='idpDevGoals'></div>
 </div>
-<div id='plDisc'></div>
 <div class='pl-thwap' id='plThwap'>THWAP!</div>
 </section>
 
@@ -3353,7 +3355,7 @@ window.thwapStatsRefresh=function(){ if(current && location.hash==='#player') bu
   function showText(t){
     var isCoach=!!coachToken();
     if(t){ textEl.textContent=t; textEl.classList.remove('empty'); }
-    else { textEl.textContent=isCoach?'Tap to set a development goal':'Your coach has not set a goal yet.'; textEl.classList.add('empty'); }
+    else { textEl.textContent=isCoach?'Tap to set this player\u2019s focus':'Your coach will set your focus soon.'; textEl.classList.add('empty'); }
     /* Coach sets the goal (whole card tappable); players see it read-only. */
     if(editBtn) editBtn.style.display=isCoach?'':'none';
     view.classList.toggle('is-tappable', isCoach);
