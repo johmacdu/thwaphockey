@@ -229,6 +229,13 @@ describe('Menus start closed: [hidden] overrides display', () => {
     // (incl. the close X) - the dead Team X for both player and coach.
     expect(html).toMatch(/\.pgate\[hidden\]\{display:none\}/);
   });
+  it('the Team edit pencil meets the 44px tap target', () => {
+    const m = html.match(/\.roster-edit\{([^}]*)\}/);
+    expect(m).not.toBeNull();
+    const w = m[1].match(/width:(\d+)px/), h = m[1].match(/height:(\d+)px/);
+    expect(Number(w[1])).toBeGreaterThanOrEqual(44);
+    expect(Number(h[1])).toBeGreaterThanOrEqual(44);
+  });
   it('the Team edit pencil is gated coach-only (inside .roster-coachonly)', () => {
     const edit = doc.getElementById('rosterEdit');
     expect(edit).toBeTruthy();
