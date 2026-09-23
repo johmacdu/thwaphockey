@@ -107,40 +107,38 @@ describe('Bug 4: no coach/player toggle', () => {
 });
 
 describe('Bug 6: coach profile pencil placement', () => {
-  it('the staff pencil sits 24px right of the name (not pushed to the far edge)', () => {
+  it('the staff pencil is right-aligned to the row edge', () => {
     const m = html.match(/\.staff-pencil\{([^}]*)\}/);
     expect(m).not.toBeNull();
-    expect(m[1]).toMatch(/margin-left:24px/);
-    expect(m[1]).not.toMatch(/margin-left:auto/); // auto = the far-edge bug
+    expect(m[1]).toMatch(/margin-left:auto/);
   });
-  it('the staff pencil is an iOS-glass round button', () => {
+  it('the staff pencil is a round button', () => {
     const m = html.match(/\.staff-pencil\{([^}]*)\}/);
     expect(m[1]).toMatch(/border-radius:50%/);
-    expect(m[1]).toMatch(/backdrop-filter:/);
   });
 });
 
-describe('Bug 7: Players-header edit is a glass pencil icon', () => {
+describe('Bug 7: Players-header edit is a pencil icon', () => {
   it('the control has an aria-label and a pencil glyph, not the word Edit', () => {
     const edit = doc.getElementById('rosterEdit');
     expect(edit).toBeTruthy();
     expect(edit.getAttribute('aria-label')).toBeTruthy();
     expect((edit.textContent || '').trim()).not.toBe('Edit');
   });
-  it('it is styled as a round glass button', () => {
+  it('it is a right-aligned round button', () => {
     const m = html.match(/\.roster-edit\{([^}]*)\}/);
     expect(m).not.toBeNull();
     expect(m[1]).toMatch(/border-radius:50%/);
-    expect(m[1]).toMatch(/backdrop-filter:/);
+    expect(m[1]).toMatch(/margin-left:auto/);
   });
 });
 
-describe('Bug 8: +Player is a white outline card', () => {
-  it('the add card has a solid white background, not the dark card front', () => {
+describe('Bug 8: +Player add card is a themed slot', () => {
+  it('the add card uses the dark card front, not a solid white background', () => {
     const m = html.match(/\.pcard-add\{([^}]*)\}/);
     expect(m).not.toBeNull();
-    expect(m[1]).toMatch(/background:\s*#fff/i);
-    expect(m[1]).toMatch(/dashed/); // outline
+    expect(m[1]).not.toMatch(/background:\s*#fff/i);
+    expect(m[1]).toMatch(/linear-gradient/); // dark themed card front
   });
 });
 

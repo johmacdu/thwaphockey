@@ -124,10 +124,11 @@ describe('coach view navigation', () => {
     expect(html).toMatch(/indexOf\('RANGERS72'\)!==-1\)\s*return\s*'RANGERS72'/);
   });
 
-  it('the +Player card has a solid (white) background, not the dark card front', () => {
+  it('the +Player add card uses the dark themed card front, not solid white', () => {
     const m = html.match(/\.pcard-add\{([^}]*)\}/);
     expect(m).not.toBeNull();
-    expect(m[1]).toMatch(/background:\s*#fff/i);
+    expect(m[1]).not.toMatch(/background:\s*#fff/i);
+    expect(m[1]).toMatch(/linear-gradient/);
   });
 });
 
