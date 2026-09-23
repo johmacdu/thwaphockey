@@ -693,7 +693,7 @@ body.roster-editing #roster-grid .pcard:not(.pcard-add)::after{content:'\270E';p
 .board{overflow:hidden}
 /* Leaderboard controls */
 .seg{display:inline-flex;gap:2px;background:var(--soft);border-radius:999px;padding:3px;margin:14px 0 4px}
-#plTf{margin-bottom:12px}
+#plTf{margin-bottom:24px}
 .segbtn{font:inherit;font-size:14px;font-weight:700;color:var(--muted);background:none;border:0;padding:14px 20px;min-height:48px;border-radius:999px;cursor:pointer}
 .segbtn.on{background:var(--lime);color:var(--ink);box-shadow:0 1px 2px var(--shadow)}
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0 16px}
@@ -728,8 +728,8 @@ button.row:active{background:var(--soft)}
 .pl-photo{width:64px;height:88px;object-fit:cover;border-radius:12px;background:var(--card2);flex:0 0 auto}
 .pl-name{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;line-height:1.05}
 .pl-pos{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
-.pl-streak{font-family:'Archivo Black',system-ui,sans-serif;font-size:18px;color:var(--text);margin:28px 0 14px}
-.pl-disc{margin:0 0 22px}
+.pl-streak{font-family:'Archivo Black',system-ui,sans-serif;font-size:18px;color:var(--text);margin:40px 0 24px}
+.pl-disc{margin:0 0 34px}
 .pl-disc-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:12px}
 .pl-disc-name{font-size:18px;font-weight:900}
 .pl-disc-count{font-size:14px;font-weight:800;color:var(--green2)}
@@ -761,7 +761,7 @@ button.row:active{background:var(--soft)}
 .pl-ring-n{font-family:'Archivo Black',system-ui,sans-serif;font-size:15px;margin-top:2px}
 .pl-pop{animation:plpop .45s ease}
 @keyframes plpop{0%{transform:scale(1)}40%{transform:scale(1.1)}100%{transform:scale(1)}}
-.pl-radar-wrap{text-align:center;margin-bottom:16px}
+.pl-radar-wrap{text-align:center;margin-bottom:28px}
 .pl-radar-poly{animation:plpulse 2.4s ease-in-out infinite;transform-origin:center}
 .pl-radar-poly.grow{animation:plgrow .7s cubic-bezier(.2,1.1,.3,1) 1, plpulse 2.4s ease-in-out infinite .7s;transform-box:fill-box;transform-origin:center}
 @keyframes plgrow{0%{transform:scale(.05);opacity:0}60%{opacity:1}100%{transform:scale(1);opacity:.9}}
@@ -773,8 +773,8 @@ button.row:active{background:var(--soft)}
 @keyframes plpulse{0%,100%{opacity:.82}50%{opacity:1}}
 .pl-spoke{stroke-dasharray:120;stroke-dashoffset:120;animation:plshoot .35s cubic-bezier(.2,.9,.3,1) forwards}
 @keyframes plshoot{to{stroke-dashoffset:0}}
-.pl-totals{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.idp{margin:6px 0 18px;padding:0;border:0;background:none}
+.pl-totals{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:28px}
+.idp{margin:18px 0 32px;padding:0;border:0;background:none}
 .idp-head{font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);display:flex;align-items:center;gap:8px}
 .idp-emoji{font-size:36px}
 .idp-view{display:flex;align-items:center;gap:12px;width:100%;margin:4px 0 0;padding:0;background:none;border:0;text-align:left;font-family:inherit;color:inherit}
