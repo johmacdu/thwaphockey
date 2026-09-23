@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Lewie's Game Day Goals</title>
+<title>Your Game Plan</title>
 <link rel='preconnect' href='https://fonts.googleapis.com'>
 <link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>
 <link href='https://fonts.googleapis.com/css2?family=Archivo+Black&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;0,6..12,800;0,6..12,900&display=swap' rel='stylesheet'>
@@ -29,9 +29,22 @@ body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2));color:var(
 h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70px);line-height:.95;letter-spacing:.005em;margin:8px 0 12px}
 .header p{max-width:700px;color:var(--muted);font-size:16px;line-height:1.5;margin:0}
 .section{margin-top:34px}
+/* First goal section clears the position segment control. */
+.section.pos-shared:first-of-type{margin-top:30px}
 .section-head{padding-bottom:9px;margin-bottom:22px}
 .section-head h2{font-family:'Archivo Black',system-ui,sans-serif;font-size:22px;margin:0;letter-spacing:.005em}
 .section-head p{color:var(--muted);font-size:13px;margin:8px 0 0}
+/* Collapsible categories: the head is a button; the grid collapses. */
+.section-head{display:flex;align-items:center;gap:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:14px 4px;margin-bottom:0;border-bottom:1px solid var(--line);width:100%;text-align:left;background:none;border-left:0;border-right:0;border-top:0;font-family:inherit;color:inherit}
+.section-head .sh-txt{flex:1 1 auto;min-width:0}
+.section-head p{margin:6px 0 0}
+.sh-badge{flex:none;font-size:12px;font-weight:900;color:var(--green2);background:var(--soft);border-radius:999px;padding:3px 10px;visibility:hidden}
+.sh-badge.on{visibility:visible}
+.sh-chev{flex:none;font-size:20px;color:var(--muted);transition:transform .18s ease}
+.section.open .sh-chev{transform:rotate(90deg)}
+.section .grid{max-height:0;overflow:hidden;opacity:0;transition:max-height .25s ease,opacity .2s ease,margin .25s ease;margin-top:0}
+.section.open .grid{max-height:4000px;opacity:1;margin-top:18px}
+@media (prefers-reduced-motion: reduce){.section .grid,.sh-chev{transition:none}}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .goal{display:grid;grid-template-columns:48px 1fr;gap:14px;min-height:176px;padding:18px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,var(--panel),var(--panel2));cursor:pointer;position:relative;transition:.15s ease}
 .goal:hover{border-color:var(--line2);transform:translateY(-1px)}
@@ -42,6 +55,19 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 .goal p{margin:10px 0 12px;color:var(--muted);font-size:16px;line-height:1.45}
 .cue{color:var(--green2);font-size:14px;font-weight:850}
 .tick{display:none;position:absolute;right:14px;bottom:12px;width:26px;height:26px;border-radius:50%;background:var(--green);color:var(--onaccent);font-weight:1000;place-items:center}
+
+/* Position picker */
+.pospick{margin:2px 0 8px}
+.pospick-q{font-size:15px;font-weight:800;color:var(--text);margin:0 0 10px}
+.posseg{display:inline-grid;grid-auto-flow:column;gap:4px;padding:4px;border:1px solid var(--line);border-radius:999px;background:var(--panel)}
+.posbtn{appearance:none;font-family:inherit;font-size:15px;font-weight:850;color:var(--muted);background:transparent;border:0;border-radius:999px;padding:9px 22px;min-height:44px;cursor:pointer;transition:.15s ease}
+.posbtn.on{background:var(--green);color:var(--onaccent)}
+
+/* Position visibility: only sections for the active position are shown.
+   Shared sections are always shown. Default (no class) shows Forward. */
+.pos-only{display:none}
+body.pos-forward .pos-only-forward{display:block}
+body.pos-defense .pos-only-defense{display:block}
 
 .actionbar{
   position:fixed;
@@ -57,8 +83,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
   display:flex;
   align-items:center;
 }
-/* Footer appears only after the first goal is picked */
-.app:not(:has(.choice-input:checked)) .actionbar{display:none}
 .action-inner{
   width:100%;
   max-width:1068px;
@@ -71,9 +95,8 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
   color:var(--muted);
   font-size:14px;
   font-weight:800;
-  min-width:110px;
+  min-width:130px;
 }
-.selection-count::before{content:"0"}
 .create-label{
   margin-left:auto;
   border-radius:14px;
@@ -90,6 +113,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
   justify-content:center;
   white-space:nowrap;
 }
+.create-label.ready{background:var(--green);color:var(--onaccent);pointer-events:auto;cursor:pointer}
 .reset-label{
   margin-left:auto;
   border-radius:14px;
@@ -107,23 +131,16 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
   align-items:center;
   justify-content:center;
   white-space:nowrap;
+  opacity:.45;
+  pointer-events:none;
 }
+.reset-label.ready{opacity:1;pointer-events:auto}
 .reset-label:hover{background:var(--soft)}
 .reset-label + .create-label{margin-left:0}
-/* Reset is disabled until at least one goal is picked */
-.reset-label{opacity:.45;pointer-events:none}
-.app:has(.choice-input:checked) .reset-label{opacity:1;pointer-events:auto}
 
-/* Pure CSS count */
-.app:has(.choice-input:checked) .selection-count::before{content:"1"}
-.app:has(.choice-input:checked ~ .choice-input:checked) .selection-count::before{content:"2"}
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked) .selection-count::before{content:"3"}
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked) .selection-count::before{content:"4"}
-
-/* Create button only becomes active at 3 */
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked) .create-label{
-  background:var(--green);color:var(--onaccent);pointer-events:auto;cursor:pointer;
-}
+/* Footer appears only after the first goal is picked */
+.actionbar{display:none}
+.actionbar.show{display:flex}
 
 /* Final screen */
 .final-view{display:none;padding:64px 0 70px;margin:auto}
@@ -138,7 +155,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 .reflect h2{font-size:24px;margin:0 0 8px}
 .reflect p{color:var(--muted);font-size:15px;line-height:1.55;margin:0;max-width:690px}
 .back-label{display:inline-block;margin-top:26px;color:var(--green2);font-weight:850;font-size:14px;cursor:pointer}
-/* Final-view nav: floating glass Back (matches the rest of the app) */
 .glassback{display:none;position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:max(16px, calc(50vw - 534px));z-index:50;grid-auto-flow:column;gap:2px;place-items:center;height:44px;padding:0 16px;border-radius:999px;font-size:16px;line-height:1;font-weight:800;color:var(--text);cursor:pointer;text-decoration:none;background:var(--panel);border:1px solid var(--line);box-shadow:0 6px 20px var(--shadow)}
 .glassback:hover{background:var(--soft)}
 #finalMode:checked ~ .glassback{display:inline-grid}
@@ -153,6 +169,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 .pglog-note{width:100%;margin-top:8px;font-family:inherit;font-size:14px;padding:8px 10px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--text);box-sizing:border-box;display:none}
 .pglog-row.on .pglog-note{display:block}
 .pglog-save{margin-top:14px;font-family:inherit;font-size:15px;font-weight:850;background:var(--lime);color:var(--ink);border:1px solid transparent;border-radius:12px;padding:10px 18px;cursor:pointer}
+.pglog-save.is-disabled,.pglog-save:disabled{background:var(--soft);color:var(--muted);cursor:not-allowed;opacity:.7}
 .pglog-done{margin-top:12px;color:var(--green);font-weight:800;font-size:14px}
 .fv-foot{margin-top:30px;padding-top:20px;border-top:1px solid var(--line);display:flex;justify-content:flex-start}
 .fv-reset{background:none;border:0;padding:6px 0;font-family:inherit;font-size:15px;font-weight:850;color:var(--green2);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
@@ -170,7 +187,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 #g1:checked ~ .builder .goal-1 .tick { display:grid; }
 #g1:checked ~ .final-view .final-1 { display:grid; }
 
-
 #g2:checked ~ .builder .goal-2 {
   border-color: var(--green);
   box-shadow: inset 0 0 0 1px var(--green);
@@ -178,7 +194,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 }
 #g2:checked ~ .builder .goal-2 .tick { display:grid; }
 #g2:checked ~ .final-view .final-2 { display:grid; }
-
 
 #g3:checked ~ .builder .goal-3 {
   border-color: var(--green);
@@ -188,7 +203,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 #g3:checked ~ .builder .goal-3 .tick { display:grid; }
 #g3:checked ~ .final-view .final-3 { display:grid; }
 
-
 #g4:checked ~ .builder .goal-4 {
   border-color: var(--green);
   box-shadow: inset 0 0 0 1px var(--green);
@@ -196,7 +210,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 }
 #g4:checked ~ .builder .goal-4 .tick { display:grid; }
 #g4:checked ~ .final-view .final-4 { display:grid; }
-
 
 #g5:checked ~ .builder .goal-5 {
   border-color: var(--green);
@@ -206,7 +219,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 #g5:checked ~ .builder .goal-5 .tick { display:grid; }
 #g5:checked ~ .final-view .final-5 { display:grid; }
 
-
 #g6:checked ~ .builder .goal-6 {
   border-color: var(--green);
   box-shadow: inset 0 0 0 1px var(--green);
@@ -214,7 +226,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 }
 #g6:checked ~ .builder .goal-6 .tick { display:grid; }
 #g6:checked ~ .final-view .final-6 { display:grid; }
-
 
 #g7:checked ~ .builder .goal-7 {
   border-color: var(--green);
@@ -224,7 +235,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 #g7:checked ~ .builder .goal-7 .tick { display:grid; }
 #g7:checked ~ .final-view .final-7 { display:grid; }
 
-
 #g8:checked ~ .builder .goal-8 {
   border-color: var(--green);
   box-shadow: inset 0 0 0 1px var(--green);
@@ -232,7 +242,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 }
 #g8:checked ~ .builder .goal-8 .tick { display:grid; }
 #g8:checked ~ .final-view .final-8 { display:grid; }
-
 
 #g9:checked ~ .builder .goal-9 {
   border-color: var(--green);
@@ -242,7 +251,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 #g9:checked ~ .builder .goal-9 .tick { display:grid; }
 #g9:checked ~ .final-view .final-9 { display:grid; }
 
-
 #g10:checked ~ .builder .goal-10 {
   border-color: var(--green);
   box-shadow: inset 0 0 0 1px var(--green);
@@ -250,7 +258,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 }
 #g10:checked ~ .builder .goal-10 .tick { display:grid; }
 #g10:checked ~ .final-view .final-10 { display:grid; }
-
 
 #g11:checked ~ .builder .goal-11 {
   border-color: var(--green);
@@ -260,7 +267,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 #g11:checked ~ .builder .goal-11 .tick { display:grid; }
 #g11:checked ~ .final-view .final-11 { display:grid; }
 
-
 #g12:checked ~ .builder .goal-12 {
   border-color: var(--green);
   box-shadow: inset 0 0 0 1px var(--green);
@@ -268,7 +274,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 }
 #g12:checked ~ .builder .goal-12 .tick { display:grid; }
 #g12:checked ~ .final-view .final-12 { display:grid; }
-
 
 #g13:checked ~ .builder .goal-13 {
   border-color: var(--green);
@@ -278,7 +283,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 #g13:checked ~ .builder .goal-13 .tick { display:grid; }
 #g13:checked ~ .final-view .final-13 { display:grid; }
 
-
 #g14:checked ~ .builder .goal-14 {
   border-color: var(--green);
   box-shadow: inset 0 0 0 1px var(--green);
@@ -286,7 +290,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 }
 #g14:checked ~ .builder .goal-14 .tick { display:grid; }
 #g14:checked ~ .final-view .final-14 { display:grid; }
-
 
 #g15:checked ~ .builder .goal-15 {
   border-color: var(--green);
@@ -296,7 +299,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 #g15:checked ~ .builder .goal-15 .tick { display:grid; }
 #g15:checked ~ .final-view .final-15 { display:grid; }
 
-
 #g16:checked ~ .builder .goal-16 {
   border-color: var(--green);
   box-shadow: inset 0 0 0 1px var(--green);
@@ -304,7 +306,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 }
 #g16:checked ~ .builder .goal-16 .tick { display:grid; }
 #g16:checked ~ .final-view .final-16 { display:grid; }
-
 
 #g17:checked ~ .builder .goal-17 {
   border-color: var(--green);
@@ -314,7 +315,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 #g17:checked ~ .builder .goal-17 .tick { display:grid; }
 #g17:checked ~ .final-view .final-17 { display:grid; }
 
-
 #g18:checked ~ .builder .goal-18 {
   border-color: var(--green);
   box-shadow: inset 0 0 0 1px var(--green);
@@ -322,7 +322,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 }
 #g18:checked ~ .builder .goal-18 .tick { display:grid; }
 #g18:checked ~ .final-view .final-18 { display:grid; }
-
 
 #g19:checked ~ .builder .goal-19 {
   border-color: var(--green);
@@ -332,7 +331,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 #g19:checked ~ .builder .goal-19 .tick { display:grid; }
 #g19:checked ~ .final-view .final-19 { display:grid; }
 
-
 #g20:checked ~ .builder .goal-20 {
   border-color: var(--green);
   box-shadow: inset 0 0 0 1px var(--green);
@@ -340,7 +338,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 }
 #g20:checked ~ .builder .goal-20 .tick { display:grid; }
 #g20:checked ~ .final-view .final-20 { display:grid; }
-
 
 #g21:checked ~ .builder .goal-21 {
   border-color: var(--green);
@@ -350,7 +347,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 #g21:checked ~ .builder .goal-21 .tick { display:grid; }
 #g21:checked ~ .final-view .final-21 { display:grid; }
 
-
 #g22:checked ~ .builder .goal-22 {
   border-color: var(--green);
   box-shadow: inset 0 0 0 1px var(--green);
@@ -358,7 +354,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 }
 #g22:checked ~ .builder .goal-22 .tick { display:grid; }
 #g22:checked ~ .final-view .final-22 { display:grid; }
-
 
 #g23:checked ~ .builder .goal-23 {
   border-color: var(--green);
@@ -368,7 +363,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 #g23:checked ~ .builder .goal-23 .tick { display:grid; }
 #g23:checked ~ .final-view .final-23 { display:grid; }
 
-
 #g24:checked ~ .builder .goal-24 {
   border-color: var(--green);
   box-shadow: inset 0 0 0 1px var(--green);
@@ -376,7 +370,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 }
 #g24:checked ~ .builder .goal-24 .tick { display:grid; }
 #g24:checked ~ .final-view .final-24 { display:grid; }
-
 
 #g25:checked ~ .builder .goal-25 {
   border-color: var(--green);
@@ -386,7 +379,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 #g25:checked ~ .builder .goal-25 .tick { display:grid; }
 #g25:checked ~ .final-view .final-25 { display:grid; }
 
-
 #g26:checked ~ .builder .goal-26 {
   border-color: var(--green);
   box-shadow: inset 0 0 0 1px var(--green);
@@ -394,7 +386,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 }
 #g26:checked ~ .builder .goal-26 .tick { display:grid; }
 #g26:checked ~ .final-view .final-26 { display:grid; }
-
 
 #g27:checked ~ .builder .goal-27 {
   border-color: var(--green);
@@ -404,7 +395,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 #g27:checked ~ .builder .goal-27 .tick { display:grid; }
 #g27:checked ~ .final-view .final-27 { display:grid; }
 
-
 #g28:checked ~ .builder .goal-28 {
   border-color: var(--green);
   box-shadow: inset 0 0 0 1px var(--green);
@@ -412,7 +402,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 }
 #g28:checked ~ .builder .goal-28 .tick { display:grid; }
 #g28:checked ~ .final-view .final-28 { display:grid; }
-
 
 #g29:checked ~ .builder .goal-29 {
   border-color: var(--green);
@@ -422,7 +411,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 #g29:checked ~ .builder .goal-29 .tick { display:grid; }
 #g29:checked ~ .final-view .final-29 { display:grid; }
 
-
 #g30:checked ~ .builder .goal-30 {
   border-color: var(--green);
   box-shadow: inset 0 0 0 1px var(--green);
@@ -430,7 +418,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 }
 #g30:checked ~ .builder .goal-30 .tick { display:grid; }
 #g30:checked ~ .final-view .final-30 { display:grid; }
-
 
 #g31:checked ~ .builder .goal-31 {
   border-color: var(--green);
@@ -440,7 +427,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 #g31:checked ~ .builder .goal-31 .tick { display:grid; }
 #g31:checked ~ .final-view .final-31 { display:grid; }
 
-
 #g32:checked ~ .builder .goal-32 {
   border-color: var(--green);
   box-shadow: inset 0 0 0 1px var(--green);
@@ -448,7 +434,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 }
 #g32:checked ~ .builder .goal-32 .tick { display:grid; }
 #g32:checked ~ .final-view .final-32 { display:grid; }
-
 
 #g33:checked ~ .builder .goal-33 {
   border-color: var(--green);
@@ -458,7 +443,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 #g33:checked ~ .builder .goal-33 .tick { display:grid; }
 #g33:checked ~ .final-view .final-33 { display:grid; }
 
-
 #g34:checked ~ .builder .goal-34 {
   border-color: var(--green);
   box-shadow: inset 0 0 0 1px var(--green);
@@ -466,7 +450,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 }
 #g34:checked ~ .builder .goal-34 .tick { display:grid; }
 #g34:checked ~ .final-view .final-34 { display:grid; }
-
 
 #g35:checked ~ .builder .goal-35 {
   border-color: var(--green);
@@ -476,7 +459,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 #g35:checked ~ .builder .goal-35 .tick { display:grid; }
 #g35:checked ~ .final-view .final-35 { display:grid; }
 
-
 #g36:checked ~ .builder .goal-36 {
   border-color: var(--green);
   box-shadow: inset 0 0 0 1px var(--green);
@@ -484,7 +466,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 }
 #g36:checked ~ .builder .goal-36 .tick { display:grid; }
 #g36:checked ~ .final-view .final-36 { display:grid; }
-
 
 #g37:checked ~ .builder .goal-37 {
   border-color: var(--green);
@@ -494,7 +475,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 #g37:checked ~ .builder .goal-37 .tick { display:grid; }
 #g37:checked ~ .final-view .final-37 { display:grid; }
 
-
 #g38:checked ~ .builder .goal-38 {
   border-color: var(--green);
   box-shadow: inset 0 0 0 1px var(--green);
@@ -502,7 +482,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 }
 #g38:checked ~ .builder .goal-38 .tick { display:grid; }
 #g38:checked ~ .final-view .final-38 { display:grid; }
-
 
 #g39:checked ~ .builder .goal-39 {
   border-color: var(--green);
@@ -512,7 +491,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 #g39:checked ~ .builder .goal-39 .tick { display:grid; }
 #g39:checked ~ .final-view .final-39 { display:grid; }
 
-
 #g40:checked ~ .builder .goal-40 {
   border-color: var(--green);
   box-shadow: inset 0 0 0 1px var(--green);
@@ -521,285 +499,29 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 #g40:checked ~ .builder .goal-40 .tick { display:grid; }
 #g40:checked ~ .final-view .final-40 { display:grid; }
 
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g1:not(:checked) ~ .builder .goal-1 {
-  pointer-events:none;
-  opacity:.46;
+#g41:checked ~ .builder .goal-41 {
+  border-color: var(--green);
+  box-shadow: inset 0 0 0 1px var(--green);
+  background: linear-gradient(180deg,var(--card),var(--card2));
 }
+#g41:checked ~ .builder .goal-41 .tick { display:grid; }
+#g41:checked ~ .final-view .final-41 { display:grid; }
 
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g2:not(:checked) ~ .builder .goal-2 {
-  pointer-events:none;
-  opacity:.46;
+#g42:checked ~ .builder .goal-42 {
+  border-color: var(--green);
+  box-shadow: inset 0 0 0 1px var(--green);
+  background: linear-gradient(180deg,var(--card),var(--card2));
 }
+#g42:checked ~ .builder .goal-42 .tick { display:grid; }
+#g42:checked ~ .final-view .final-42 { display:grid; }
 
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g3:not(:checked) ~ .builder .goal-3 {
-  pointer-events:none;
-  opacity:.46;
+#g43:checked ~ .builder .goal-43 {
+  border-color: var(--green);
+  box-shadow: inset 0 0 0 1px var(--green);
+  background: linear-gradient(180deg,var(--card),var(--card2));
 }
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g4:not(:checked) ~ .builder .goal-4 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g5:not(:checked) ~ .builder .goal-5 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g6:not(:checked) ~ .builder .goal-6 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g7:not(:checked) ~ .builder .goal-7 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g8:not(:checked) ~ .builder .goal-8 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g9:not(:checked) ~ .builder .goal-9 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g10:not(:checked) ~ .builder .goal-10 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g11:not(:checked) ~ .builder .goal-11 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g12:not(:checked) ~ .builder .goal-12 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g13:not(:checked) ~ .builder .goal-13 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g14:not(:checked) ~ .builder .goal-14 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g15:not(:checked) ~ .builder .goal-15 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g16:not(:checked) ~ .builder .goal-16 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g17:not(:checked) ~ .builder .goal-17 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g18:not(:checked) ~ .builder .goal-18 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g19:not(:checked) ~ .builder .goal-19 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g20:not(:checked) ~ .builder .goal-20 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g21:not(:checked) ~ .builder .goal-21 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g22:not(:checked) ~ .builder .goal-22 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g23:not(:checked) ~ .builder .goal-23 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g24:not(:checked) ~ .builder .goal-24 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g25:not(:checked) ~ .builder .goal-25 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g26:not(:checked) ~ .builder .goal-26 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g27:not(:checked) ~ .builder .goal-27 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g28:not(:checked) ~ .builder .goal-28 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g29:not(:checked) ~ .builder .goal-29 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g30:not(:checked) ~ .builder .goal-30 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g31:not(:checked) ~ .builder .goal-31 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g32:not(:checked) ~ .builder .goal-32 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g33:not(:checked) ~ .builder .goal-33 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g34:not(:checked) ~ .builder .goal-34 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g35:not(:checked) ~ .builder .goal-35 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g36:not(:checked) ~ .builder .goal-36 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g37:not(:checked) ~ .builder .goal-37 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g38:not(:checked) ~ .builder .goal-38 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g39:not(:checked) ~ .builder .goal-39 {
-  pointer-events:none;
-  opacity:.46;
-}
-
-
-.app:has(.choice-input:checked ~ .choice-input:checked ~ .choice-input:checked ~ .choice-input:checked)
-#g40:not(:checked) ~ .builder .goal-40 {
-  pointer-events:none;
-  opacity:.46;
-}
+#g43:checked ~ .builder .goal-43 .tick { display:grid; }
+#g43:checked ~ .final-view .final-43 { display:grid; }
 
 
 @media(max-width:760px){
@@ -813,28 +535,34 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 }
 
 
-
 .glassclose{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);right:max(16px, calc(50vw - 534px));z-index:50;display:inline-grid;place-items:center;width:44px;height:44px;border-radius:50%;font-size:20px;font-weight:700;color:var(--text);cursor:pointer;text-decoration:none;background:var(--panel);border:1px solid var(--line);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);box-shadow:0 6px 20px var(--shadow)}
 .glassclose:hover{background:var(--soft)}
 .builder{padding-top:64px !important}
 </style>
 </head>
-<body>
+<body class="pos-forward">
 <div class="app">
   <a class="glassclose" href="index.html" aria-label="Close" onclick="if(history.length>1){history.back();return false;}">✕</a>
-  <input type="checkbox" id="finalMode" class="final-mode"><input type="checkbox" id="g1" class="choice-input"><input type="checkbox" id="g2" class="choice-input"><input type="checkbox" id="g3" class="choice-input"><input type="checkbox" id="g4" class="choice-input"><input type="checkbox" id="g5" class="choice-input"><input type="checkbox" id="g6" class="choice-input"><input type="checkbox" id="g7" class="choice-input"><input type="checkbox" id="g8" class="choice-input"><input type="checkbox" id="g9" class="choice-input"><input type="checkbox" id="g10" class="choice-input"><input type="checkbox" id="g11" class="choice-input"><input type="checkbox" id="g12" class="choice-input"><input type="checkbox" id="g13" class="choice-input"><input type="checkbox" id="g14" class="choice-input"><input type="checkbox" id="g15" class="choice-input"><input type="checkbox" id="g16" class="choice-input"><input type="checkbox" id="g17" class="choice-input"><input type="checkbox" id="g18" class="choice-input"><input type="checkbox" id="g19" class="choice-input"><input type="checkbox" id="g20" class="choice-input"><input type="checkbox" id="g21" class="choice-input"><input type="checkbox" id="g22" class="choice-input"><input type="checkbox" id="g23" class="choice-input"><input type="checkbox" id="g24" class="choice-input"><input type="checkbox" id="g25" class="choice-input"><input type="checkbox" id="g26" class="choice-input"><input type="checkbox" id="g27" class="choice-input"><input type="checkbox" id="g28" class="choice-input"><input type="checkbox" id="g29" class="choice-input"><input type="checkbox" id="g30" class="choice-input"><input type="checkbox" id="g31" class="choice-input"><input type="checkbox" id="g32" class="choice-input"><input type="checkbox" id="g33" class="choice-input"><input type="checkbox" id="g34" class="choice-input"><input type="checkbox" id="g35" class="choice-input"><input type="checkbox" id="g36" class="choice-input"><input type="checkbox" id="g37" class="choice-input"><input type="checkbox" id="g38" class="choice-input"><input type="checkbox" id="g39" class="choice-input"><input type="checkbox" id="g40" class="choice-input">
+  <input type="checkbox" id="finalMode" class="final-mode"><input type="checkbox" id="g1" class="choice-input"><input type="checkbox" id="g2" class="choice-input"><input type="checkbox" id="g3" class="choice-input"><input type="checkbox" id="g4" class="choice-input"><input type="checkbox" id="g5" class="choice-input"><input type="checkbox" id="g6" class="choice-input"><input type="checkbox" id="g7" class="choice-input"><input type="checkbox" id="g8" class="choice-input"><input type="checkbox" id="g9" class="choice-input"><input type="checkbox" id="g10" class="choice-input"><input type="checkbox" id="g11" class="choice-input"><input type="checkbox" id="g12" class="choice-input"><input type="checkbox" id="g13" class="choice-input"><input type="checkbox" id="g14" class="choice-input"><input type="checkbox" id="g15" class="choice-input"><input type="checkbox" id="g16" class="choice-input"><input type="checkbox" id="g17" class="choice-input"><input type="checkbox" id="g18" class="choice-input"><input type="checkbox" id="g19" class="choice-input"><input type="checkbox" id="g20" class="choice-input"><input type="checkbox" id="g21" class="choice-input"><input type="checkbox" id="g22" class="choice-input"><input type="checkbox" id="g23" class="choice-input"><input type="checkbox" id="g24" class="choice-input"><input type="checkbox" id="g25" class="choice-input"><input type="checkbox" id="g26" class="choice-input"><input type="checkbox" id="g27" class="choice-input"><input type="checkbox" id="g28" class="choice-input"><input type="checkbox" id="g29" class="choice-input"><input type="checkbox" id="g30" class="choice-input"><input type="checkbox" id="g31" class="choice-input"><input type="checkbox" id="g32" class="choice-input"><input type="checkbox" id="g33" class="choice-input"><input type="checkbox" id="g34" class="choice-input"><input type="checkbox" id="g35" class="choice-input"><input type="checkbox" id="g36" class="choice-input"><input type="checkbox" id="g37" class="choice-input"><input type="checkbox" id="g38" class="choice-input"><input type="checkbox" id="g39" class="choice-input"><input type="checkbox" id="g40" class="choice-input"><input type="checkbox" id="g41" class="choice-input"><input type="checkbox" id="g42" class="choice-input"><input type="checkbox" id="g43" class="choice-input">
 
   <label for="finalMode" class="glassback" aria-label="Back to picking goals">Back</label>
   <div class="builder">
     <header class="header">
       <div class="kicker" aria-hidden="true" style="min-height:15px"></div>
       <div class="gd-target" id="gdTarget" role="img" aria-label="Target">🎯</div>
-      <h1>Today’s Game Plan</h1>
-      <p>Pick 4 for your game plan.</p>
+      <h1>Your Game Plan</h1>
+      <p id="helper">Pick 3 goals for the game.</p>
     </header>
 
-    <section class="section"><div class="section-head"><h2>See &amp; Think the Game</h2><p>Read the play before the puck arrives.</p></div><div class="grid">
+    <div class="pospick">
+      <p class="pospick-q">What position are you playing today?</p>
+      <div class="posseg" role="group" aria-label="Position">
+        <button type="button" class="posbtn" id="posForward" data-pos="F">Forward</button>
+        <button type="button" class="posbtn" id="posDefense" data-pos="D">Defense</button>
+      </div>
+    </div>
 
+    <section class="section pos-shared"><button type="button" class="section-head"><span class="sh-txt"><h2>Brain / Pre-Scan</h2><p>Get your head up before the puck arrives.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
 <label class="goal goal-1" for="g1">
   <div class="emoji">👀</div>
   <div class="copy">
@@ -844,7 +572,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
   </div>
   <div class="tick">✓</div>
 </label>
-
 <label class="goal goal-2" for="g2">
   <div class="emoji">🧠</div>
   <div class="copy">
@@ -854,7 +581,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
   </div>
   <div class="tick">✓</div>
 </label>
-
 <label class="goal goal-3" for="g3">
   <div class="emoji">2️⃣</div>
   <div class="copy">
@@ -864,7 +590,8 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
   </div>
   <div class="tick">✓</div>
 </label>
-
+</div></section>
+<section class="section pos-shared"><button type="button" class="section-head"><span class="sh-txt"><h2>Read the Game</h2><p>Notice what is happening and use it.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
 <label class="goal goal-4" for="g4">
   <div class="emoji">🕵️</div>
   <div class="copy">
@@ -874,7 +601,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
   </div>
   <div class="tick">✓</div>
 </label>
-
 <label class="goal goal-5" for="g5">
   <div class="emoji">🐢</div>
   <div class="copy">
@@ -884,7 +610,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
   </div>
   <div class="tick">✓</div>
 </label>
-
 <label class="goal goal-6" for="g6">
   <div class="emoji">🧩</div>
   <div class="copy">
@@ -894,270 +619,18 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
   </div>
   <div class="tick">✓</div>
 </label>
-
 <label class="goal goal-7" for="g7">
   <div class="emoji">🎓</div>
   <div class="copy">
-    <div class="top"><h3>Teach Dad Something</h3><span class="tag">Read</span></div>
-    <p>Notice something during the game Dad probably cannot see from the stands. Explain it after.</p>
+    <div class="top"><h3>Teach Dad and Mom</h3><span class="tag">Read</span></div>
+    <p>Notice something during the game Dad and Mom probably cannot see from the stands. Explain it to them after.</p>
     <div class="cue">Be the hockey detective.</div>
   </div>
   <div class="tick">✓</div>
 </label>
 </div></section>
-<section class="section"><div class="section-head"><h2>Deception &amp; Creating Space</h2><p>Make defenders react to you.</p></div><div class="grid">
-
+<section class="section pos-shared"><button type="button" class="section-head"><span class="sh-txt"><h2>Make Teammates Better</h2><p>Use your game to lift the players around you.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
 <label class="goal goal-8" for="g8">
-  <div class="emoji">🪄</div>
-  <div class="copy">
-    <div class="top"><h3>Move the Defender</h3><span class="tag">Skill</span></div>
-    <p>Use your eyes, shoulders, stick, puck position, or speed to make a defender move, then attack the space he leaves.</p>
-    <div class="cue">Move him before you beat him.</div>
-  </div>
-  <div class="tick">✓</div>
-</label>
-
-<label class="goal goal-9" for="g9">
-  <div class="emoji">🧲</div>
-  <div class="copy">
-    <div class="top"><h3>Make Him Choose</h3><span class="tag">Read</span></div>
-    <p>If you have time, let the opponent commit first. Then use the space his decision creates.</p>
-    <div class="cue">Don&#x27;t rush his decision.</div>
-  </div>
-  <div class="tick">✓</div>
-</label>
-
-<label class="goal goal-10" for="g10">
-  <div class="emoji">🧲</div>
-  <div class="copy">
-    <div class="top"><h3>Pull Someone With You</h3><span class="tag">Attack</span></div>
-    <p>Carry toward a defender on purpose. When he commits to you, move the puck into the space you created.</p>
-    <div class="cue">Carry with a purpose.</div>
-  </div>
-  <div class="tick">✓</div>
-</label>
-
-<label class="goal goal-11" for="g11">
-  <div class="emoji">🐢⚡</div>
-  <div class="copy">
-    <div class="top"><h3>Change Speed</h3><span class="tag">Skill</span></div>
-    <p>Slow down, speed up, hesitate, or change direction. Don&#x27;t attack every defender at one speed.</p>
-    <div class="cue">Fast isn&#x27;t the only weapon.</div>
-  </div>
-  <div class="tick">✓</div>
-</label>
-
-<label class="goal goal-12" for="g12">
-  <div class="emoji">🛣️</div>
-  <div class="copy">
-    <div class="top"><h3>Take the Ice</h3><span class="tag">Attack</span></div>
-    <p>If nobody challenges you, take the open ice until somebody has to stop you.</p>
-    <div class="cue">Make them take it away.</div>
-  </div>
-  <div class="tick">✓</div>
-</label>
-</div></section>
-<section class="section"><div class="section-head"><h2>Modern D: Retrieval &amp; Breakout</h2><p>Keep possession and beat pressure.</p></div><div class="grid">
-
-<label class="goal goal-13" for="g13">
-  <div class="emoji">↩️</div>
-  <div class="copy">
-    <div class="top"><h3>Escape One</h3><span class="tag">Defense</span></div>
-    <p>Beat the first forechecker with your feet, edges, cutback, the net, a pass, or deception instead of throwing it away.</p>
-    <div class="cue">Beat pressure. Keep possession.</div>
-  </div>
-  <div class="tick">✓</div>
-</label>
-
-<label class="goal goal-14" for="g14">
-  <div class="emoji">🚫</div>
-  <div class="copy">
-    <div class="top"><h3>No Automatic Boards</h3><span class="tag">Defense</span></div>
-    <p>Before going up the wall, check middle, D partner, reverse, weak side, and carry.</p>
-    <div class="cue">Look before boards.</div>
-  </div>
-  <div class="tick">✓</div>
-</label>
-
-<label class="goal goal-15" for="g15">
-  <div class="emoji">⚡</div>
-  <div class="copy">
-    <div class="top"><h3>Move It Early</h3><span class="tag">Decision</span></div>
-    <p>If the right pass is already there, make it before pressure arrives.</p>
-    <div class="cue">Quick can be smarter.</div>
-  </div>
-  <div class="tick">✓</div>
-</label>
-
-<label class="goal goal-16" for="g16">
-  <div class="emoji">🛣️</div>
-  <div class="copy">
-    <div class="top"><h3>Carry or Pass?</h3><span class="tag">Decision</span></div>
-    <p>If there&#x27;s open ice, take it. If a teammate is in a better spot, move it.</p>
-    <div class="cue">Read it. Choose it.</div>
-  </div>
-  <div class="tick">✓</div>
-</label>
-
-<label class="goal goal-17" for="g17">
-  <div class="emoji">🔄</div>
-  <div class="copy">
-    <div class="top"><h3>Defense → Offense</h3><span class="tag">Transition</span></div>
-    <p>The instant you win possession, change your thinking from defend to attack.</p>
-    <div class="cue">Can we keep it and attack?</div>
-  </div>
-  <div class="tick">✓</div>
-</label>
-</div></section>
-<section class="section"><div class="section-head"><h2>Modern D: Activate</h2><p>Your play isn&#x27;t over after the breakout pass.</p></div><div class="grid">
-
-<label class="goal goal-18" for="g18">
-  <div class="emoji">🚀</div>
-  <div class="copy">
-    <div class="top"><h3>Pass + Go</h3><span class="tag">Attack</span></div>
-    <p>After a good breakout pass, move your feet immediately. Try to beat an opponent up the ice and become another option.</p>
-    <div class="cue">Pass it. Then GO.</div>
-  </div>
-  <div class="tick">✓</div>
-</label>
-
-<label class="goal goal-19" for="g19">
-  <div class="emoji">4️⃣</div>
-  <div class="copy">
-    <div class="top"><h3>Fourth Attacker</h3><span class="tag">Attack</span></div>
-    <p>When your team clearly controls the puck, find safe opportunities to join as the next attacking layer.</p>
-    <div class="cue">Join when it&#x27;s green.</div>
-  </div>
-  <div class="tick">✓</div>
-</label>
-
-<label class="goal goal-20" for="g20">
-  <div class="emoji">🚦</div>
-  <div class="copy">
-    <div class="top"><h3>Green / Yellow / Red</h3><span class="tag">Read</span></div>
-    <p>Green: we clearly have it. Yellow: puck is uncertain. Red: they have it.</p>
-    <div class="cue">GO / READ / DEFEND</div>
-  </div>
-  <div class="tick">✓</div>
-</label>
-
-<label class="goal goal-21" for="g21">
-  <div class="emoji">⏰</div>
-  <div class="copy">
-    <div class="top"><h3>Arrive Late</h3><span class="tag">Timing</span></div>
-    <p>Let defenders follow the first attackers and arrive into the space that opens behind them.</p>
-    <div class="cue">Timing creates space.</div>
-  </div>
-  <div class="tick">✓</div>
-</label>
-
-<label class="goal goal-22" for="g22">
-  <div class="emoji">👻</div>
-  <div class="copy">
-    <div class="top"><h3>Find the Weak Side</h3><span class="tag">Read</span></div>
-    <p>As the play moves to one side, look for open ice or a teammate away from everyone&#x27;s attention.</p>
-    <div class="cue">Look away from the crowd.</div>
-  </div>
-  <div class="tick">✓</div>
-</label>
-</div></section>
-<section class="section"><div class="section-head"><h2>Defend Without Chasing</h2><p>Control where the attacker can go.</p></div><div class="grid">
-
-<label class="goal goal-23" for="g23">
-  <div class="emoji">🧱</div>
-  <div class="copy">
-    <div class="top"><h3>Don&#x27;t Back Up Forever</h3><span class="tag">Defense</span></div>
-    <p>Stay close enough to challenge the attacker. Try to stop the rush before it gets deep into your zone.</p>
-    <div class="cue">Close the gap.</div>
-  </div>
-  <div class="tick">✓</div>
-</label>
-
-<label class="goal goal-24" for="g24">
-  <div class="emoji">🏠</div>
-  <div class="copy">
-    <div class="top"><h3>Protect the Middle</h3><span class="tag">Defense</span></div>
-    <p>You don&#x27;t always need to steal the puck. First take away the dangerous middle.</p>
-    <div class="cue">Middle first.</div>
-  </div>
-  <div class="tick">✓</div>
-</label>
-
-<label class="goal goal-25" for="g25">
-  <div class="emoji">♻️</div>
-  <div class="copy">
-    <div class="top"><h3>Win It Back</h3><span class="tag">Compete</span></div>
-    <p>Turnover? No frustration. Immediately become the hardest player trying to recover possession.</p>
-    <div class="cue">Next five seconds.</div>
-  </div>
-  <div class="tick">✓</div>
-</label>
-
-<label class="goal goal-26" for="g26">
-  <div class="emoji">🎯</div>
-  <div class="copy">
-    <div class="top"><h3>Control, Don&#x27;t Chase</h3><span class="tag">Defense</span></div>
-    <p>Use position, skating, and your stick to control the attacker&#x27;s choices instead of chasing the puck.</p>
-    <div class="cue">Take away what he wants.</div>
-  </div>
-  <div class="tick">✓</div>
-</label>
-</div></section>
-<section class="section"><div class="section-head"><h2>Create Offense</h2><p>Create chances with movement, timing, and teammates.</p></div><div class="grid">
-
-<label class="goal goal-27" for="g27">
-  <div class="emoji">🤝</div>
-  <div class="copy">
-    <div class="top"><h3>Pass + Move</h3><span class="tag">Attack</span></div>
-    <p>After every pass, immediately find useful space and become an option again.</p>
-    <div class="cue">Pass. Move. Get it back.</div>
-  </div>
-  <div class="tick">✓</div>
-</label>
-
-<label class="goal goal-28" for="g28">
-  <div class="emoji">🔁</div>
-  <div class="copy">
-    <div class="top"><h3>Give-and-Go Hunter</h3><span class="tag">Attack</span></div>
-    <p>Create at least three deliberate give-and-go opportunities.</p>
-    <div class="cue">Beat them with two players.</div>
-  </div>
-  <div class="tick">✓</div>
-</label>
-
-<label class="goal goal-29" for="g29">
-  <div class="emoji">🎁</div>
-  <div class="copy">
-    <div class="top"><h3>Create Someone Else&#x27;s Chance</h3><span class="tag">Attack</span></div>
-    <p>Create dangerous chances for teammates. They don&#x27;t have to score for it to count.</p>
-    <div class="cue">A great chance counts.</div>
-  </div>
-  <div class="tick">✓</div>
-</label>
-
-<label class="goal goal-30" for="g30">
-  <div class="emoji">👻</div>
-  <div class="copy">
-    <div class="top"><h3>Find the Weak Side</h3><span class="tag">Attack</span></div>
-    <p>Look away from the puck and find the player or space everyone else has forgotten.</p>
-    <div class="cue">See what others miss.</div>
-  </div>
-  <div class="tick">✓</div>
-</label>
-
-<label class="goal goal-31" for="g31">
-  <div class="emoji">🐢⚡</div>
-  <div class="copy">
-    <div class="top"><h3>Change Speed</h3><span class="tag">Attack</span></div>
-    <p>Create separation with timing and changes of pace, not only by skating faster.</p>
-    <div class="cue">Slow. Sell it. Explode.</div>
-  </div>
-  <div class="tick">✓</div>
-</label>
-</div></section>
-<section class="section"><div class="section-head"><h2>Make Teammates Better</h2><p>Use your game to lift the players around you.</p></div><div class="grid">
-
-<label class="goal goal-32" for="g32">
   <div class="emoji">🤝</div>
   <div class="copy">
     <div class="top"><h3>Make One Teammate Better</h3><span class="tag">Team</span></div>
@@ -1166,8 +639,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
   </div>
   <div class="tick">✓</div>
 </label>
-
-<label class="goal goal-33" for="g33">
+<label class="goal goal-9" for="g9">
   <div class="emoji">🗣️</div>
   <div class="copy">
     <div class="top"><h3>Be Their Eyes</h3><span class="tag">Team</span></div>
@@ -1176,8 +648,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
   </div>
   <div class="tick">✓</div>
 </label>
-
-<label class="goal goal-34" for="g34">
+<label class="goal goal-10" for="g10">
   <div class="emoji">🎁</div>
   <div class="copy">
     <div class="top"><h3>Create for Someone Else</h3><span class="tag">Team</span></div>
@@ -1186,8 +657,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
   </div>
   <div class="tick">✓</div>
 </label>
-
-<label class="goal goal-35" for="g35">
+<label class="goal goal-11" for="g11">
   <div class="emoji">🦸🚫</div>
   <div class="copy">
     <div class="top"><h3>No Superhero Hockey</h3><span class="tag">Team</span></div>
@@ -1196,10 +666,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
   </div>
   <div class="tick">✓</div>
 </label>
-</div></section>
-<section class="section"><div class="section-head"><h2>Compete &amp; Lead</h2><p>Your response matters more than the score.</p></div><div class="grid">
-
-<label class="goal goal-36" for="g36">
+<label class="goal goal-12" for="g12">
   <div class="emoji">😤🚫</div>
   <div class="copy">
     <div class="top"><h3>Zero Frustration</h3><span class="tag">Lead</span></div>
@@ -1208,8 +675,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
   </div>
   <div class="tick">✓</div>
 </label>
-
-<label class="goal goal-37" for="g37">
+<label class="goal goal-13" for="g13">
   <div class="emoji">🔥</div>
   <div class="copy">
     <div class="top"><h3>Change the Momentum</h3><span class="tag">Lead</span></div>
@@ -1218,8 +684,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
   </div>
   <div class="tick">✓</div>
 </label>
-
-<label class="goal goal-38" for="g38">
+<label class="goal goal-14" for="g14">
   <div class="emoji">➡️</div>
   <div class="copy">
     <div class="top"><h3>Win the Next Shift</h3><span class="tag">Lead</span></div>
@@ -1228,8 +693,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
   </div>
   <div class="tick">✓</div>
 </label>
-
-<label class="goal goal-39" for="g39">
+<label class="goal goal-15" for="g15">
   <div class="emoji">🗣️</div>
   <div class="copy">
     <div class="top"><h3>Positive Voice</h3><span class="tag">Lead</span></div>
@@ -1238,8 +702,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
   </div>
   <div class="tick">✓</div>
 </label>
-
-<label class="goal goal-40" for="g40">
+<label class="goal goal-16" for="g16">
   <div class="emoji">♻️</div>
   <div class="copy">
     <div class="top"><h3>Response After Mistake</h3><span class="tag">Lead</span></div>
@@ -1249,19 +712,274 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
   <div class="tick">✓</div>
 </label>
 </div></section>
+<section class="section pos-only pos-only-forward"><button type="button" class="section-head"><span class="sh-txt"><h2>Deception &amp; Space</h2><p>Make defenders react to you.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
+<label class="goal goal-17" for="g17">
+  <div class="emoji">🪄</div>
+  <div class="copy">
+    <div class="top"><h3>Move the Defender</h3><span class="tag">Skill</span></div>
+    <p>Use your eyes, shoulders, stick, puck position, or speed to make a defender move, then attack the space he leaves.</p>
+    <div class="cue">Move him before you beat him.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+<label class="goal goal-18" for="g18">
+  <div class="emoji">🧲</div>
+  <div class="copy">
+    <div class="top"><h3>Make Him Choose</h3><span class="tag">Read</span></div>
+    <p>If you have time, let the opponent commit first. Then use the space his decision creates.</p>
+    <div class="cue">Don&#x27;t rush his decision.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+<label class="goal goal-19" for="g19">
+  <div class="emoji">🧲</div>
+  <div class="copy">
+    <div class="top"><h3>Pull Someone With You</h3><span class="tag">Attack</span></div>
+    <p>Carry toward a defender on purpose. When he commits to you, move the puck into the space you created.</p>
+    <div class="cue">Carry with a purpose.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+<label class="goal goal-20" for="g20">
+  <div class="emoji">🐢⚡</div>
+  <div class="copy">
+    <div class="top"><h3>Change Speed</h3><span class="tag">Skill</span></div>
+    <p>Slow down, speed up, hesitate, or change direction. Don&#x27;t attack every defender at one speed.</p>
+    <div class="cue">Fast isn&#x27;t the only weapon.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+<label class="goal goal-21" for="g21">
+  <div class="emoji">🛣️</div>
+  <div class="copy">
+    <div class="top"><h3>Take the Ice</h3><span class="tag">Attack</span></div>
+    <p>If nobody challenges you, take the open ice until somebody has to stop you.</p>
+    <div class="cue">Make them take it away.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+</div></section>
+<section class="section pos-only pos-only-forward"><button type="button" class="section-head"><span class="sh-txt"><h2>Passing &amp; Movement</h2><p>Create chances with movement, timing, and teammates.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
+<label class="goal goal-22" for="g22">
+  <div class="emoji">🤝</div>
+  <div class="copy">
+    <div class="top"><h3>Pass + Move</h3><span class="tag">Attack</span></div>
+    <p>After every pass, immediately find useful space and become an option again.</p>
+    <div class="cue">Pass. Move. Get it back.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+<label class="goal goal-23" for="g23">
+  <div class="emoji">🔁</div>
+  <div class="copy">
+    <div class="top"><h3>Give-and-Go Hunter</h3><span class="tag">Attack</span></div>
+    <p>Create at least three deliberate give-and-go opportunities.</p>
+    <div class="cue">Beat them with two players.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+<label class="goal goal-24" for="g24">
+  <div class="emoji">🎁</div>
+  <div class="copy">
+    <div class="top"><h3>Create Someone Else&#x27;s Chance</h3><span class="tag">Attack</span></div>
+    <p>Create dangerous chances for teammates. They don&#x27;t have to score for it to count.</p>
+    <div class="cue">A great chance counts.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+<label class="goal goal-25" for="g25">
+  <div class="emoji">👻</div>
+  <div class="copy">
+    <div class="top"><h3>Find the Weak Side</h3><span class="tag">Attack</span></div>
+    <p>Look away from the puck and find the player or space everyone else has forgotten.</p>
+    <div class="cue">See what others miss.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+</div></section>
+<section class="section pos-only pos-only-forward"><button type="button" class="section-head"><span class="sh-txt"><h2>Attack the Net</h2><p>Great things happen at the front of the net.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
+<label class="goal goal-26" for="g26">
+  <div class="emoji">🏒</div>
+  <div class="copy">
+    <div class="top"><h3>Drive the Net</h3><span class="tag">Attack</span></div>
+    <p>Skate hard straight to the front of the net. Good things happen when you get there first.</p>
+    <div class="cue">Beat them to the net.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+<label class="goal goal-27" for="g27">
+  <div class="emoji">🧍</div>
+  <div class="copy">
+    <div class="top"><h3>Set a Screen</h3><span class="tag">Attack</span></div>
+    <p>Stand where the goalie can&#x27;t see the puck. Make the shot a surprise.</p>
+    <div class="cue">Be the one he can&#x27;t see around.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+<label class="goal goal-28" for="g28">
+  <div class="emoji">↩️</div>
+  <div class="copy">
+    <div class="top"><h3>Hunt the Rebound</h3><span class="tag">Attack</span></div>
+    <p>After a shot, go where the puck might bounce. Loose pucks near the net are chances.</p>
+    <div class="cue">Go where it bounces.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+<label class="goal goal-29" for="g29">
+  <div class="emoji">🥢</div>
+  <div class="copy">
+    <div class="top"><h3>Tip It In</h3><span class="tag">Attack</span></div>
+    <p>Get your stick on shots coming from your teammates. A little touch can change everything.</p>
+    <div class="cue">Get a stick on it.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+</div></section>
+<section class="section pos-only pos-only-defense"><button type="button" class="section-head"><span class="sh-txt"><h2>Retrieval &amp; Breakout</h2><p>Keep possession and beat pressure.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
+<label class="goal goal-30" for="g30">
+  <div class="emoji">↩️</div>
+  <div class="copy">
+    <div class="top"><h3>Escape One</h3><span class="tag">Defense</span></div>
+    <p>Beat the first forechecker with your feet, edges, cutback, the net, a pass, or deception instead of throwing it away.</p>
+    <div class="cue">Beat pressure. Keep possession.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+<label class="goal goal-31" for="g31">
+  <div class="emoji">🚫</div>
+  <div class="copy">
+    <div class="top"><h3>No Automatic Boards</h3><span class="tag">Defense</span></div>
+    <p>Before going up the wall, check middle, D partner, reverse, weak side, and carry.</p>
+    <div class="cue">Look before boards.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+<label class="goal goal-32" for="g32">
+  <div class="emoji">⚡</div>
+  <div class="copy">
+    <div class="top"><h3>Move It Early</h3><span class="tag">Decision</span></div>
+    <p>If the right pass is already there, make it before pressure arrives.</p>
+    <div class="cue">Quick can be smarter.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+<label class="goal goal-33" for="g33">
+  <div class="emoji">🛣️</div>
+  <div class="copy">
+    <div class="top"><h3>Carry or Pass?</h3><span class="tag">Decision</span></div>
+    <p>If there&#x27;s open ice, take it. If a teammate is in a better spot, move it.</p>
+    <div class="cue">Read it. Choose it.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+<label class="goal goal-34" for="g34">
+  <div class="emoji">🔄</div>
+  <div class="copy">
+    <div class="top"><h3>Defense → Offense</h3><span class="tag">Transition</span></div>
+    <p>The instant you win possession, change your thinking from defend to attack.</p>
+    <div class="cue">Can we keep it and attack?</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+</div></section>
+<section class="section pos-only pos-only-defense"><button type="button" class="section-head"><span class="sh-txt"><h2>Activate / Join the Rush</h2><p>Your play isn&#x27;t over after the breakout pass.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
+<label class="goal goal-35" for="g35">
+  <div class="emoji">🚀</div>
+  <div class="copy">
+    <div class="top"><h3>Pass + Go</h3><span class="tag">Attack</span></div>
+    <p>After a good breakout pass, move your feet immediately. Try to beat an opponent up the ice and become another option.</p>
+    <div class="cue">Pass it. Then GO.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+<label class="goal goal-36" for="g36">
+  <div class="emoji">4️⃣</div>
+  <div class="copy">
+    <div class="top"><h3>Fourth Attacker</h3><span class="tag">Attack</span></div>
+    <p>When your team clearly controls the puck, find safe opportunities to join as the next attacking layer.</p>
+    <div class="cue">Join when it&#x27;s green.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+<label class="goal goal-37" for="g37">
+  <div class="emoji">🚦</div>
+  <div class="copy">
+    <div class="top"><h3>Green / Yellow / Red</h3><span class="tag">Read</span></div>
+    <p>Green: we clearly have it. Yellow: puck is uncertain. Red: they have it.</p>
+    <div class="cue">GO / READ / DEFEND</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+<label class="goal goal-38" for="g38">
+  <div class="emoji">⏰</div>
+  <div class="copy">
+    <div class="top"><h3>Arrive Late</h3><span class="tag">Timing</span></div>
+    <p>Let defenders follow the first attackers and arrive into the space that opens behind them.</p>
+    <div class="cue">Timing creates space.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+<label class="goal goal-39" for="g39">
+  <div class="emoji">👻</div>
+  <div class="copy">
+    <div class="top"><h3>Find the Weak Side</h3><span class="tag">Read</span></div>
+    <p>As the play moves to one side, look for open ice or a teammate away from everyone&#x27;s attention.</p>
+    <div class="cue">Look away from the crowd.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+</div></section>
+<section class="section pos-only pos-only-defense"><button type="button" class="section-head"><span class="sh-txt"><h2>Defend Without Chasing</h2><p>Control where the attacker can go.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
+<label class="goal goal-40" for="g40">
+  <div class="emoji">🧱</div>
+  <div class="copy">
+    <div class="top"><h3>Don&#x27;t Back Up Forever</h3><span class="tag">Defense</span></div>
+    <p>Stay close enough to challenge the attacker. Try to stop the rush before it gets deep into your zone.</p>
+    <div class="cue">Close the gap.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+<label class="goal goal-41" for="g41">
+  <div class="emoji">🏠</div>
+  <div class="copy">
+    <div class="top"><h3>Protect the Middle</h3><span class="tag">Defense</span></div>
+    <p>You don&#x27;t always need to steal the puck. First take away the dangerous middle.</p>
+    <div class="cue">Middle first.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+<label class="goal goal-42" for="g42">
+  <div class="emoji">♻️</div>
+  <div class="copy">
+    <div class="top"><h3>Win It Back</h3><span class="tag">Compete</span></div>
+    <p>Turnover? No frustration. Immediately become the hardest player trying to recover possession.</p>
+    <div class="cue">Next five seconds.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+<label class="goal goal-43" for="g43">
+  <div class="emoji">🎯</div>
+  <div class="copy">
+    <div class="top"><h3>Control, Don&#x27;t Chase</h3><span class="tag">Defense</span></div>
+    <p>Use position, skating, and your stick to control the attacker&#x27;s choices instead of chasing the puck.</p>
+    <div class="cue">Take away what he wants.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+</div></section>
 
-    <div class="actionbar">
+    <div class="actionbar" id="actionbar">
       <div class="action-inner">
-        <div class="selection-count"> of 4 selected</div>
+        <div class="selection-count" id="count">Pick 3 more</div>
         <button type="button" id="resetGoals" class="reset-label">Reset goals</button>
-        <label for="finalMode" class="create-label">Create game goals</label>
+        <label for="finalMode" class="create-label" id="createBtn">Pick 3 more</label>
       </div>
     </div>
   </div>
 
   <div class="final-view">
-    <h1><span id="planName">Lewie</span>’s Game Plan</h1>
-    <p class="final-intro">These are the four things to notice, try, and compete on today. No grading. Just play, then talk about what happened.</p>
+    <h1>Your Game Plan</h1>
+    <p class="final-intro">These are the things to notice, try, and compete on today. No grading. Just play, then talk about what happened.</p>
 
     <div class="final-list">
       
@@ -1273,7 +991,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
     <div class="final-cue">Have a picture before you get it.</div>
   </div>
 </article>
-
 <article class="final-card final-2">
   <div class="final-icon">🧠</div>
   <div>
@@ -1282,7 +999,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
     <div class="final-cue">See first. Touch second.</div>
   </div>
 </article>
-
 <article class="final-card final-3">
   <div class="final-icon">2️⃣</div>
   <div>
@@ -1291,7 +1007,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
     <div class="final-cue">Always have Plan B.</div>
   </div>
 </article>
-
 <article class="final-card final-4">
   <div class="final-icon">🕵️</div>
   <div>
@@ -1300,7 +1015,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
     <div class="final-cue">I noticed a pattern, then I used it.</div>
   </div>
 </article>
-
 <article class="final-card final-5">
   <div class="final-icon">🐢</div>
   <div>
@@ -1309,7 +1023,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
     <div class="final-cue">You don&#x27;t have to play at everyone else&#x27;s speed.</div>
   </div>
 </article>
-
 <article class="final-card final-6">
   <div class="final-icon">🧩</div>
   <div>
@@ -1318,233 +1031,15 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
     <div class="final-cue">Solve the problem, don&#x27;t repeat it.</div>
   </div>
 </article>
-
 <article class="final-card final-7">
   <div class="final-icon">🎓</div>
   <div>
-    <h2>Teach Dad Something</h2>
-    <p>Notice something during the game Dad probably cannot see from the stands. Explain it after.</p>
+    <h2>Teach Dad and Mom</h2>
+    <p>Notice something during the game Dad and Mom probably cannot see from the stands. Explain it to them after.</p>
     <div class="final-cue">Be the hockey detective.</div>
   </div>
 </article>
-
 <article class="final-card final-8">
-  <div class="final-icon">🪄</div>
-  <div>
-    <h2>Move the Defender</h2>
-    <p>Use your eyes, shoulders, stick, puck position, or speed to make a defender move, then attack the space he leaves.</p>
-    <div class="final-cue">Move him before you beat him.</div>
-  </div>
-</article>
-
-<article class="final-card final-9">
-  <div class="final-icon">🧲</div>
-  <div>
-    <h2>Make Him Choose</h2>
-    <p>If you have time, let the opponent commit first. Then use the space his decision creates.</p>
-    <div class="final-cue">Don&#x27;t rush his decision.</div>
-  </div>
-</article>
-
-<article class="final-card final-10">
-  <div class="final-icon">🧲</div>
-  <div>
-    <h2>Pull Someone With You</h2>
-    <p>Carry toward a defender on purpose. When he commits to you, move the puck into the space you created.</p>
-    <div class="final-cue">Carry with a purpose.</div>
-  </div>
-</article>
-
-<article class="final-card final-11">
-  <div class="final-icon">🐢⚡</div>
-  <div>
-    <h2>Change Speed</h2>
-    <p>Slow down, speed up, hesitate, or change direction. Don&#x27;t attack every defender at one speed.</p>
-    <div class="final-cue">Fast isn&#x27;t the only weapon.</div>
-  </div>
-</article>
-
-<article class="final-card final-12">
-  <div class="final-icon">🛣️</div>
-  <div>
-    <h2>Take the Ice</h2>
-    <p>If nobody challenges you, take the open ice until somebody has to stop you.</p>
-    <div class="final-cue">Make them take it away.</div>
-  </div>
-</article>
-
-<article class="final-card final-13">
-  <div class="final-icon">↩️</div>
-  <div>
-    <h2>Escape One</h2>
-    <p>Beat the first forechecker with your feet, edges, cutback, the net, a pass, or deception instead of throwing it away.</p>
-    <div class="final-cue">Beat pressure. Keep possession.</div>
-  </div>
-</article>
-
-<article class="final-card final-14">
-  <div class="final-icon">🚫</div>
-  <div>
-    <h2>No Automatic Boards</h2>
-    <p>Before going up the wall, check middle, D partner, reverse, weak side, and carry.</p>
-    <div class="final-cue">Look before boards.</div>
-  </div>
-</article>
-
-<article class="final-card final-15">
-  <div class="final-icon">⚡</div>
-  <div>
-    <h2>Move It Early</h2>
-    <p>If the right pass is already there, make it before pressure arrives.</p>
-    <div class="final-cue">Quick can be smarter.</div>
-  </div>
-</article>
-
-<article class="final-card final-16">
-  <div class="final-icon">🛣️</div>
-  <div>
-    <h2>Carry or Pass?</h2>
-    <p>If there&#x27;s open ice, take it. If a teammate is in a better spot, move it.</p>
-    <div class="final-cue">Read it. Choose it.</div>
-  </div>
-</article>
-
-<article class="final-card final-17">
-  <div class="final-icon">🔄</div>
-  <div>
-    <h2>Defense → Offense</h2>
-    <p>The instant you win possession, change your thinking from defend to attack.</p>
-    <div class="final-cue">Can we keep it and attack?</div>
-  </div>
-</article>
-
-<article class="final-card final-18">
-  <div class="final-icon">🚀</div>
-  <div>
-    <h2>Pass + Go</h2>
-    <p>After a good breakout pass, move your feet immediately. Try to beat an opponent up the ice and become another option.</p>
-    <div class="final-cue">Pass it. Then GO.</div>
-  </div>
-</article>
-
-<article class="final-card final-19">
-  <div class="final-icon">4️⃣</div>
-  <div>
-    <h2>Fourth Attacker</h2>
-    <p>When your team clearly controls the puck, find safe opportunities to join as the next attacking layer.</p>
-    <div class="final-cue">Join when it&#x27;s green.</div>
-  </div>
-</article>
-
-<article class="final-card final-20">
-  <div class="final-icon">🚦</div>
-  <div>
-    <h2>Green / Yellow / Red</h2>
-    <p>Green: we clearly have it. Yellow: puck is uncertain. Red: they have it.</p>
-    <div class="final-cue">GO / READ / DEFEND</div>
-  </div>
-</article>
-
-<article class="final-card final-21">
-  <div class="final-icon">⏰</div>
-  <div>
-    <h2>Arrive Late</h2>
-    <p>Let defenders follow the first attackers and arrive into the space that opens behind them.</p>
-    <div class="final-cue">Timing creates space.</div>
-  </div>
-</article>
-
-<article class="final-card final-22">
-  <div class="final-icon">👻</div>
-  <div>
-    <h2>Find the Weak Side</h2>
-    <p>As the play moves to one side, look for open ice or a teammate away from everyone&#x27;s attention.</p>
-    <div class="final-cue">Look away from the crowd.</div>
-  </div>
-</article>
-
-<article class="final-card final-23">
-  <div class="final-icon">🧱</div>
-  <div>
-    <h2>Don&#x27;t Back Up Forever</h2>
-    <p>Stay close enough to challenge the attacker. Try to stop the rush before it gets deep into your zone.</p>
-    <div class="final-cue">Close the gap.</div>
-  </div>
-</article>
-
-<article class="final-card final-24">
-  <div class="final-icon">🏠</div>
-  <div>
-    <h2>Protect the Middle</h2>
-    <p>You don&#x27;t always need to steal the puck. First take away the dangerous middle.</p>
-    <div class="final-cue">Middle first.</div>
-  </div>
-</article>
-
-<article class="final-card final-25">
-  <div class="final-icon">♻️</div>
-  <div>
-    <h2>Win It Back</h2>
-    <p>Turnover? No frustration. Immediately become the hardest player trying to recover possession.</p>
-    <div class="final-cue">Next five seconds.</div>
-  </div>
-</article>
-
-<article class="final-card final-26">
-  <div class="final-icon">🎯</div>
-  <div>
-    <h2>Control, Don&#x27;t Chase</h2>
-    <p>Use position, skating, and your stick to control the attacker&#x27;s choices instead of chasing the puck.</p>
-    <div class="final-cue">Take away what he wants.</div>
-  </div>
-</article>
-
-<article class="final-card final-27">
-  <div class="final-icon">🤝</div>
-  <div>
-    <h2>Pass + Move</h2>
-    <p>After every pass, immediately find useful space and become an option again.</p>
-    <div class="final-cue">Pass. Move. Get it back.</div>
-  </div>
-</article>
-
-<article class="final-card final-28">
-  <div class="final-icon">🔁</div>
-  <div>
-    <h2>Give-and-Go Hunter</h2>
-    <p>Create at least three deliberate give-and-go opportunities.</p>
-    <div class="final-cue">Beat them with two players.</div>
-  </div>
-</article>
-
-<article class="final-card final-29">
-  <div class="final-icon">🎁</div>
-  <div>
-    <h2>Create Someone Else&#x27;s Chance</h2>
-    <p>Create dangerous chances for teammates. They don&#x27;t have to score for it to count.</p>
-    <div class="final-cue">A great chance counts.</div>
-  </div>
-</article>
-
-<article class="final-card final-30">
-  <div class="final-icon">👻</div>
-  <div>
-    <h2>Find the Weak Side</h2>
-    <p>Look away from the puck and find the player or space everyone else has forgotten.</p>
-    <div class="final-cue">See what others miss.</div>
-  </div>
-</article>
-
-<article class="final-card final-31">
-  <div class="final-icon">🐢⚡</div>
-  <div>
-    <h2>Change Speed</h2>
-    <p>Create separation with timing and changes of pace, not only by skating faster.</p>
-    <div class="final-cue">Slow. Sell it. Explode.</div>
-  </div>
-</article>
-
-<article class="final-card final-32">
   <div class="final-icon">🤝</div>
   <div>
     <h2>Make One Teammate Better</h2>
@@ -1552,8 +1047,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
     <div class="final-cue">Help someone have a great game.</div>
   </div>
 </article>
-
-<article class="final-card final-33">
+<article class="final-card final-9">
   <div class="final-icon">🗣️</div>
   <div>
     <h2>Be Their Eyes</h2>
@@ -1561,8 +1055,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
     <div class="final-cue">Talk before they get it.</div>
   </div>
 </article>
-
-<article class="final-card final-34">
+<article class="final-card final-10">
   <div class="final-icon">🎁</div>
   <div>
     <h2>Create for Someone Else</h2>
@@ -1570,8 +1063,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
     <div class="final-cue">Make the next player better.</div>
   </div>
 </article>
-
-<article class="final-card final-35">
+<article class="final-card final-11">
   <div class="final-icon">🦸🚫</div>
   <div>
     <h2>No Superhero Hockey</h2>
@@ -1579,8 +1071,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
     <div class="final-cue">Don&#x27;t save the game alone.</div>
   </div>
 </article>
-
-<article class="final-card final-36">
+<article class="final-card final-12">
   <div class="final-icon">😤🚫</div>
   <div>
     <h2>Zero Frustration</h2>
@@ -1588,8 +1079,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
     <div class="final-cue">Body language leads.</div>
   </div>
 </article>
-
-<article class="final-card final-37">
+<article class="final-card final-13">
   <div class="final-icon">🔥</div>
   <div>
     <h2>Change the Momentum</h2>
@@ -1597,8 +1087,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
     <div class="final-cue">Create the next good play.</div>
   </div>
 </article>
-
-<article class="final-card final-38">
+<article class="final-card final-14">
   <div class="final-icon">➡️</div>
   <div>
     <h2>Win the Next Shift</h2>
@@ -1606,8 +1095,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
     <div class="final-cue">Next shift.</div>
   </div>
 </article>
-
-<article class="final-card final-39">
+<article class="final-card final-15">
   <div class="final-icon">🗣️</div>
   <div>
     <h2>Positive Voice</h2>
@@ -1615,8 +1103,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
     <div class="final-cue">Bring the team with you.</div>
   </div>
 </article>
-
-<article class="final-card final-40">
+<article class="final-card final-16">
   <div class="final-icon">♻️</div>
   <div>
     <h2>Response After Mistake</h2>
@@ -1624,11 +1111,227 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
     <div class="final-cue">Win the next five seconds.</div>
   </div>
 </article>
+<article class="final-card final-17">
+  <div class="final-icon">🪄</div>
+  <div>
+    <h2>Move the Defender</h2>
+    <p>Use your eyes, shoulders, stick, puck position, or speed to make a defender move, then attack the space he leaves.</p>
+    <div class="final-cue">Move him before you beat him.</div>
+  </div>
+</article>
+<article class="final-card final-18">
+  <div class="final-icon">🧲</div>
+  <div>
+    <h2>Make Him Choose</h2>
+    <p>If you have time, let the opponent commit first. Then use the space his decision creates.</p>
+    <div class="final-cue">Don&#x27;t rush his decision.</div>
+  </div>
+</article>
+<article class="final-card final-19">
+  <div class="final-icon">🧲</div>
+  <div>
+    <h2>Pull Someone With You</h2>
+    <p>Carry toward a defender on purpose. When he commits to you, move the puck into the space you created.</p>
+    <div class="final-cue">Carry with a purpose.</div>
+  </div>
+</article>
+<article class="final-card final-20">
+  <div class="final-icon">🐢⚡</div>
+  <div>
+    <h2>Change Speed</h2>
+    <p>Slow down, speed up, hesitate, or change direction. Don&#x27;t attack every defender at one speed.</p>
+    <div class="final-cue">Fast isn&#x27;t the only weapon.</div>
+  </div>
+</article>
+<article class="final-card final-21">
+  <div class="final-icon">🛣️</div>
+  <div>
+    <h2>Take the Ice</h2>
+    <p>If nobody challenges you, take the open ice until somebody has to stop you.</p>
+    <div class="final-cue">Make them take it away.</div>
+  </div>
+</article>
+<article class="final-card final-22">
+  <div class="final-icon">🤝</div>
+  <div>
+    <h2>Pass + Move</h2>
+    <p>After every pass, immediately find useful space and become an option again.</p>
+    <div class="final-cue">Pass. Move. Get it back.</div>
+  </div>
+</article>
+<article class="final-card final-23">
+  <div class="final-icon">🔁</div>
+  <div>
+    <h2>Give-and-Go Hunter</h2>
+    <p>Create at least three deliberate give-and-go opportunities.</p>
+    <div class="final-cue">Beat them with two players.</div>
+  </div>
+</article>
+<article class="final-card final-24">
+  <div class="final-icon">🎁</div>
+  <div>
+    <h2>Create Someone Else&#x27;s Chance</h2>
+    <p>Create dangerous chances for teammates. They don&#x27;t have to score for it to count.</p>
+    <div class="final-cue">A great chance counts.</div>
+  </div>
+</article>
+<article class="final-card final-25">
+  <div class="final-icon">👻</div>
+  <div>
+    <h2>Find the Weak Side</h2>
+    <p>Look away from the puck and find the player or space everyone else has forgotten.</p>
+    <div class="final-cue">See what others miss.</div>
+  </div>
+</article>
+<article class="final-card final-26">
+  <div class="final-icon">🏒</div>
+  <div>
+    <h2>Drive the Net</h2>
+    <p>Skate hard straight to the front of the net. Good things happen when you get there first.</p>
+    <div class="final-cue">Beat them to the net.</div>
+  </div>
+</article>
+<article class="final-card final-27">
+  <div class="final-icon">🧍</div>
+  <div>
+    <h2>Set a Screen</h2>
+    <p>Stand where the goalie can&#x27;t see the puck. Make the shot a surprise.</p>
+    <div class="final-cue">Be the one he can&#x27;t see around.</div>
+  </div>
+</article>
+<article class="final-card final-28">
+  <div class="final-icon">↩️</div>
+  <div>
+    <h2>Hunt the Rebound</h2>
+    <p>After a shot, go where the puck might bounce. Loose pucks near the net are chances.</p>
+    <div class="final-cue">Go where it bounces.</div>
+  </div>
+</article>
+<article class="final-card final-29">
+  <div class="final-icon">🥢</div>
+  <div>
+    <h2>Tip It In</h2>
+    <p>Get your stick on shots coming from your teammates. A little touch can change everything.</p>
+    <div class="final-cue">Get a stick on it.</div>
+  </div>
+</article>
+<article class="final-card final-30">
+  <div class="final-icon">↩️</div>
+  <div>
+    <h2>Escape One</h2>
+    <p>Beat the first forechecker with your feet, edges, cutback, the net, a pass, or deception instead of throwing it away.</p>
+    <div class="final-cue">Beat pressure. Keep possession.</div>
+  </div>
+</article>
+<article class="final-card final-31">
+  <div class="final-icon">🚫</div>
+  <div>
+    <h2>No Automatic Boards</h2>
+    <p>Before going up the wall, check middle, D partner, reverse, weak side, and carry.</p>
+    <div class="final-cue">Look before boards.</div>
+  </div>
+</article>
+<article class="final-card final-32">
+  <div class="final-icon">⚡</div>
+  <div>
+    <h2>Move It Early</h2>
+    <p>If the right pass is already there, make it before pressure arrives.</p>
+    <div class="final-cue">Quick can be smarter.</div>
+  </div>
+</article>
+<article class="final-card final-33">
+  <div class="final-icon">🛣️</div>
+  <div>
+    <h2>Carry or Pass?</h2>
+    <p>If there&#x27;s open ice, take it. If a teammate is in a better spot, move it.</p>
+    <div class="final-cue">Read it. Choose it.</div>
+  </div>
+</article>
+<article class="final-card final-34">
+  <div class="final-icon">🔄</div>
+  <div>
+    <h2>Defense → Offense</h2>
+    <p>The instant you win possession, change your thinking from defend to attack.</p>
+    <div class="final-cue">Can we keep it and attack?</div>
+  </div>
+</article>
+<article class="final-card final-35">
+  <div class="final-icon">🚀</div>
+  <div>
+    <h2>Pass + Go</h2>
+    <p>After a good breakout pass, move your feet immediately. Try to beat an opponent up the ice and become another option.</p>
+    <div class="final-cue">Pass it. Then GO.</div>
+  </div>
+</article>
+<article class="final-card final-36">
+  <div class="final-icon">4️⃣</div>
+  <div>
+    <h2>Fourth Attacker</h2>
+    <p>When your team clearly controls the puck, find safe opportunities to join as the next attacking layer.</p>
+    <div class="final-cue">Join when it&#x27;s green.</div>
+  </div>
+</article>
+<article class="final-card final-37">
+  <div class="final-icon">🚦</div>
+  <div>
+    <h2>Green / Yellow / Red</h2>
+    <p>Green: we clearly have it. Yellow: puck is uncertain. Red: they have it.</p>
+    <div class="final-cue">GO / READ / DEFEND</div>
+  </div>
+</article>
+<article class="final-card final-38">
+  <div class="final-icon">⏰</div>
+  <div>
+    <h2>Arrive Late</h2>
+    <p>Let defenders follow the first attackers and arrive into the space that opens behind them.</p>
+    <div class="final-cue">Timing creates space.</div>
+  </div>
+</article>
+<article class="final-card final-39">
+  <div class="final-icon">👻</div>
+  <div>
+    <h2>Find the Weak Side</h2>
+    <p>As the play moves to one side, look for open ice or a teammate away from everyone&#x27;s attention.</p>
+    <div class="final-cue">Look away from the crowd.</div>
+  </div>
+</article>
+<article class="final-card final-40">
+  <div class="final-icon">🧱</div>
+  <div>
+    <h2>Don&#x27;t Back Up Forever</h2>
+    <p>Stay close enough to challenge the attacker. Try to stop the rush before it gets deep into your zone.</p>
+    <div class="final-cue">Close the gap.</div>
+  </div>
+</article>
+<article class="final-card final-41">
+  <div class="final-icon">🏠</div>
+  <div>
+    <h2>Protect the Middle</h2>
+    <p>You don&#x27;t always need to steal the puck. First take away the dangerous middle.</p>
+    <div class="final-cue">Middle first.</div>
+  </div>
+</article>
+<article class="final-card final-42">
+  <div class="final-icon">♻️</div>
+  <div>
+    <h2>Win It Back</h2>
+    <p>Turnover? No frustration. Immediately become the hardest player trying to recover possession.</p>
+    <div class="final-cue">Next five seconds.</div>
+  </div>
+</article>
+<article class="final-card final-43">
+  <div class="final-icon">🎯</div>
+  <div>
+    <h2>Control, Don&#x27;t Chase</h2>
+    <p>Use position, skating, and your stick to control the attacker&#x27;s choices instead of chasing the puck.</p>
+    <div class="final-cue">Take away what he wants.</div>
+  </div>
+</article>
     </div>
 
     <section class="reflect">
-      <h2>Teach Dad one thing.</h2>
-      <p>Notice something from the ice that Dad probably couldn’t see from the stands. After the game, explain what you saw, why it mattered, and how it changed what you did.</p>
+      <h2>Teach Dad and Mom one thing.</h2>
+      <p>Notice something from the ice that Dad and Mom probably couldn&#x2019;t see from the stands. After the game, explain what you saw, why it mattered, and how it changed what you did.</p>
     </section>
 
     <div class="pglog" id="pgLog">
@@ -1644,9 +1347,81 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 (function(){
   var KEY = 'thwapGameGoals';
   var FKEY = 'thwapGameGoalsFinal';   // remember whether the Game Plan view is open
-  var LIMIT = 4;
+  var PKEY = 'thwapGamePosition';      // 'F' or 'D'
+  var TARGET = 3;
+  var hasTeamGoal = false;
+  var selfCap = TARGET - (hasTeamGoal ? 1 : 0);   // how many the kid picks
+
   var boxes = Array.prototype.slice.call(document.querySelectorAll('.choice-input'));
   var finalMode = document.getElementById('finalMode');
+  var helper = document.getElementById('helper');
+  var countEl = document.getElementById('count');
+  var createBtn = document.getElementById('createBtn');
+  var resetBtn = document.getElementById('resetGoals');
+  var actionbar = document.getElementById('actionbar');
+
+  function checkedCount(){
+    var c = 0;
+    for(var i=0;i<boxes.length;i++){ if(boxes[i].checked) c++; }
+    return c;
+  }
+
+  function updateUI(){
+    var c = checkedCount();
+    var remaining = selfCap - c;
+
+    // Helper line under the title.
+    if(helper){
+      if(c <= 0) helper.textContent = 'Pick ' + selfCap + ' goals for the game.';
+      else if(c < selfCap) helper.textContent = c + ' of ' + selfCap + ' picked';
+      else helper.textContent = 'Your game plan is set \uD83C\uDFAF';
+    }
+
+    // Footer count + create button.
+    if(c >= selfCap){
+      if(countEl) countEl.textContent = 'Your game plan is set';
+      if(createBtn){ createBtn.textContent = 'See your game plan'; createBtn.classList.add('ready'); }
+    } else {
+      var word = 'Pick ' + remaining + ' more';
+      if(countEl) countEl.textContent = word;
+      if(createBtn){ createBtn.textContent = word; createBtn.classList.remove('ready'); }
+    }
+
+    // Footer shows once the first goal is picked.
+    if(actionbar) actionbar.classList.toggle('show', c > 0);
+
+    // Reset enabled once at least one is picked.
+    if(resetBtn) resetBtn.classList.toggle('ready', c > 0);
+
+    // Block further checks past the cap (uncheck one first). Gentle, not an error.
+    for(var i=0;i<boxes.length;i++){
+      if(!boxes[i].checked){
+        var lbl = document.querySelector('.goal-' + boxes[i].id.replace('g','') );
+        if(c >= selfCap){ if(lbl){ lbl.style.opacity = '.46'; lbl.style.pointerEvents = 'none'; } }
+        else { if(lbl){ lbl.style.opacity = ''; lbl.style.pointerEvents = ''; } }
+      } else {
+        var lbl2 = document.querySelector('.goal-' + boxes[i].id.replace('g','') );
+        if(lbl2){ lbl2.style.opacity = ''; lbl2.style.pointerEvents = ''; }
+      }
+    }
+
+    // Per-category "N picked" badge (so a collapsed section still shows its picks).
+    // Checkboxes are hoisted to the top of the DOM, so count via each section's
+    // labels and their `for` targets rather than descendant inputs.
+    var secs = document.querySelectorAll('section.section');
+    for(var s=0;s<secs.length;s++){
+      var badge = secs[s].querySelector('.sh-badge');
+      if(!badge) continue;
+      var labels = secs[s].querySelectorAll('label.goal');
+      var picked = 0;
+      for(var li=0; li<labels.length; li++){
+        var tgt = document.getElementById(labels[li].getAttribute('for'));
+        if(tgt && tgt.checked) picked++;
+      }
+      if(picked > 0){ badge.textContent = picked + ' picked'; badge.classList.add('on'); }
+      else { badge.classList.remove('on'); }
+    }
+  }
 
   function save(){
     try{
@@ -1663,62 +1438,91 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
     if(!Array.isArray(saved)) saved = [];
     var count = 0;
     for(var i=0;i<saved.length;i++){
-      if(count >= LIMIT) break;
+      if(count >= selfCap) break;
       var el = document.getElementById(saved[i]);
       if(el && el.classList.contains('choice-input') && !el.checked){ el.checked = true; count++; }
     }
-    /* Come back to the Game Plan if it was open and four goals are still picked. */
     var wantFinal = false; try{ wantFinal = localStorage.getItem(FKEY) === '1'; }catch(e){}
-    if(finalMode && wantFinal && count >= LIMIT) finalMode.checked = true;
+    if(finalMode && wantFinal && count >= selfCap) finalMode.checked = true;
   }
 
-  /* Show the chosen player's first name on the Game Plan. */
-  function setName(){
-    var el = document.getElementById('planName'); if(!el) return;
-    var n = 'Lewie';
-    try{ n = (localStorage.getItem('bfPlayer') || 'Lewie').trim().split(/\s+/)[0]; }catch(e){}
-    el.textContent = n || 'Lewie';
+  // ---- Position picker ----
+  var fBtn = document.getElementById('posForward');
+  var dBtn = document.getElementById('posDefense');
+  function applyPos(pos){
+    var isD = pos === 'D';
+    document.body.classList.toggle('pos-forward', !isD);
+    document.body.classList.toggle('pos-defense', isD);
+    if(fBtn) fBtn.classList.toggle('on', !isD);
+    if(dBtn) dBtn.classList.toggle('on', isD);
   }
+  function setPos(pos){
+    applyPos(pos);
+    try{ localStorage.setItem(PKEY, pos); }catch(e){}
+    // Switching position does NOT clear already-picked shared goals; just re-run UI.
+    updateUI();
+  }
+  if(fBtn) fBtn.addEventListener('click', function(){ setPos('F'); });
+  if(dBtn) dBtn.addEventListener('click', function(){ setPos('D'); });
+  var startPos = 'F';
+  try{ var sp = localStorage.getItem(PKEY); if(sp === 'F' || sp === 'D') startPos = sp; }catch(e){}
+  applyPos(startPos);
 
-  for(var i=0;i<boxes.length;i++){ boxes[i].addEventListener('change', save); }
+  for(var i=0;i<boxes.length;i++){ boxes[i].addEventListener('change', function(){ save(); updateUI(); }); }
   if(finalMode) finalMode.addEventListener('change', saveFinal);
 
-  /* Reset (on the grid): clear picks and saved state. */
-  var reset = document.getElementById('resetGoals');
-  if(reset){
-    reset.addEventListener('click', function(){
+  // Reset (grid): clear picks and saved state; position stays remembered.
+  if(resetBtn){
+    resetBtn.addEventListener('click', function(){
       for(var j=0;j<boxes.length;j++){ boxes[j].checked = false; }
       if(finalMode) finalMode.checked = false;
       try{ localStorage.removeItem(KEY); localStorage.removeItem(FKEY); }catch(e){}
+      updateUI();
     });
   }
-  /* Reset (on the grid) clears everything; the Game Plan uses Back to return. */
-  /* Reset goals for next game (on the Game Plan): clear all and return to the empty grid. */
+  // Reset goals for next game (Game Plan): clear all and return to the empty grid; position stays.
   var rfn = document.getElementById('resetForNext');
   if(rfn){
     rfn.addEventListener('click', function(){
       for(var j=0;j<boxes.length;j++){ boxes[j].checked = false; }
       if(finalMode) finalMode.checked = false;
       try{ localStorage.removeItem(KEY); localStorage.removeItem(FKEY); }catch(e){}
+      updateUI();
     });
   }
 
-  setName();
   restore();
+  updateUI();
 
-  /* ---- Post-game reflection log (Step 4): after the game, for each of the 4
-     chosen goals show a check + optional note, and log the checked ones to
-     /api/coach?action=log-game-goal with the player's id (bfPlayer first name). ---- */
+  // ---- Collapsible categories (collapsed by default; a picked section auto-opens) ----
+  var sectionEls = document.querySelectorAll('section.section');
+  for(var si=0; si<sectionEls.length; si++){
+    (function(sec){
+      var head = sec.querySelector('.section-head');
+      if(!head) return;
+      // Auto-open a section that already has a pick restored; else collapsed.
+      var hasPick = false;
+      var lbls = sec.querySelectorAll('label.goal');
+      for(var k=0;k<lbls.length;k++){ var t=document.getElementById(lbls[k].getAttribute('for')); if(t&&t.checked){ hasPick=true; break; } }
+      if(hasPick) sec.classList.add('open');
+      head.setAttribute('aria-expanded', hasPick ? 'true' : 'false');
+      head.addEventListener('click', function(){
+        var open = sec.classList.toggle('open');
+        head.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    })(sectionEls[si]);
+  }
+
   function playerId(){ try{ return (localStorage.getItem('bfPlayer')||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,''); }catch(e){ return ''; } }
   function chosenGoals(){
     var out=[];
     for(var i=0;i<boxes.length;i++){
       if(!boxes[i].checked) continue;
-      var n=boxes[i].id.replace('g','');
-      var card=document.querySelector('.final-'+n+' h2');
+      var num=boxes[i].id.replace('g','');
+      var card=document.querySelector('.final-'+num+' h2');
       out.push({ goalId:boxes[i].id, title:card?card.textContent.trim():boxes[i].id });
     }
-    return out.slice(0,LIMIT);
+    return out.slice(0,selfCap);
   }
   function buildPgLog(){
     var rows=document.getElementById('pgLogRows'); if(!rows) return;
@@ -1729,17 +1533,24 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
         "<input type='text' class='pglog-note' maxlength='140' placeholder='What did you do? (optional)'>"+
         "</div>";
     }).join('');
-    /* set titles safely (avoid injecting goal text as HTML) */
     var rowEls=rows.querySelectorAll('.pglog-row');
     for(var i=0;i<rowEls.length;i++){ rowEls[i].querySelector('.t').textContent=goals[i].title; }
     rows.querySelectorAll('.pglog-cb').forEach(function(cb){
-      cb.addEventListener('change',function(){ cb.closest('.pglog-row').classList.toggle('on',cb.checked); });
+      cb.addEventListener('change',function(){ cb.closest('.pglog-row').classList.toggle('on',cb.checked); syncLogBtn(); });
     });
     var done=document.getElementById('pgLogDone'); if(done) done.hidden=true;
+    syncLogBtn();
+  }
+  function syncLogBtn(){
+    var btn=document.getElementById('pgLogSave'); if(!btn) return;
+    var any=document.querySelectorAll('#pgLogRows .pglog-cb:checked').length > 0;
+    btn.disabled=!any;
+    btn.classList.toggle('is-disabled', !any);
   }
   var pgSave=document.getElementById('pgLogSave');
   if(pgSave){
     pgSave.addEventListener('click',function(){
+      if(pgSave.disabled) return;
       var pid=playerId(); if(!pid){ return; }
       var rowEls=document.querySelectorAll('#pgLogRows .pglog-row');
       var posts=[];
@@ -1753,7 +1564,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
       Promise.all(posts).then(function(){ pgSave.textContent='Log my game'; var d=document.getElementById('pgLogDone'); if(d) d.hidden=false; }).catch(function(){ pgSave.textContent='Log my game'; });
     });
   }
-  /* Rebuild the log rows whenever the Game Plan view is shown. */
   if(finalMode){ finalMode.addEventListener('change',function(){ if(finalMode.checked) buildPgLog(); }); if(finalMode.checked) buildPgLog(); }
 })();
 </script>
@@ -1769,7 +1579,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
     if(reduce){ react(); return; }
     var r=t.getBoundingClientRect();
     var cy=r.top+r.height/2, cx=r.left+r.width/2;
-    var dart=document.createElement('div'); dart.className='gd-dart'; dart.textContent='➤'; dart.style.top=cy+'px'; dart.style.left=(window.innerWidth+60)+'px';
+    var dart=document.createElement('div'); dart.className='gd-dart'; dart.textContent='\u27A4'; dart.style.top=cy+'px'; dart.style.left=(window.innerWidth+60)+'px';
     document.body.appendChild(dart);
     requestAnimationFrame(function(){
       dart.style.transition='left .34s cubic-bezier(.4,0,.7,1)';
