@@ -327,6 +327,32 @@ describe('team schedule', () => {
     expect(res.body.schedule.events.some((e) => e.opponent === 'Test FC')).toBe(true);
   });
 
+  it('coach sets and clears a team focus on a game', async () => {
+    const login = await loginSeedCoach();
+    const token = login.body.token;
+    const seed = makeRes();
+    await _handlers.schedule(get({ code: _seed.SEED_TEAM_CODE }), seed);
+    const eventId = seed.body.schedule.events[0].id;
+    const set = makeRes();
+    await _handlers.setGameFocus(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, eventId, goalId: 'g7', goalTitle: 'Move It Early' }), set);
+    expect(set.statusCode).toBe(200);
+    expect(set.body.schedule.events.find((e) => e.id === eventId).focus.goalTitle).toBe('Move It Early');
+    const clear = makeRes();
+    await _handlers.setGameFocus(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, eventId }), clear);
+    expect(clear.statusCode).toBe(200);
+    expect(clear.body.schedule.events.find((e) => e.id === eventId).focus).toBeUndefined();
+  });
+
+  it('set-game-focus 404s on an unknown event and 401s without a coach token', async () => {
+    const login = await loginSeedCoach();
+    const nf = makeRes();
+    await _handlers.setGameFocus(post({ code: _seed.SEED_TEAM_CODE, coachToken: login.body.token, eventId: 'nope', goalId: 'g1', goalTitle: 'x' }), nf);
+    expect(nf.statusCode).toBe(404);
+    const noauth = makeRes();
+    await _handlers.setGameFocus(post({ code: _seed.SEED_TEAM_CODE, eventId: 'g-0926', goalId: 'g1', goalTitle: 'x' }), noauth);
+    expect(noauth.statusCode).toBe(401);
+  });
+
   it('rejects add-event without a coach token', async () => {
     await loginSeedCoach();
     const res = makeRes();

@@ -119,6 +119,21 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 .thwap-press.is-pressed{transform:scale(.96)}
 @media (prefers-reduced-motion: reduce){.thwap-press{transition:opacity .12s ease}.thwap-press.is-pressed{transform:none;opacity:.8}}
 .nav{display:grid;grid-template-columns:50px 1fr auto;gap:14px;align-items:center;padding:16px 2px;min-height:auto;border-bottom:1px solid var(--line)}
+/* Player Home: white "next game" card. Whole card taps to the game-day goals page. */
+.pnextgame{display:block;text-decoration:none;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);padding:18px;margin-bottom:14px;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease}
+.pnextgame:hover{transform:translateY(-2px);box-shadow:0 10px 24px var(--shadow)}
+.pnextgame:active{transform:scale(.99)}
+.png-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.png-gd{display:inline-block;background:var(--orange);color:#3a2200;font-family:'Archivo Black',system-ui,sans-serif;font-size:11px;padding:5px 11px;border-radius:999px;letter-spacing:.04em}
+.png-count{text-align:center;background:var(--lime);color:var(--ink);border-radius:12px;padding:5px 10px;font-family:'Archivo Black',system-ui,sans-serif;line-height:.85}
+.png-count b{font-size:19px;display:block}.png-count span{font-size:9px;font-weight:900;text-transform:uppercase}
+.png-opp{font-family:'Archivo Black',system-ui,sans-serif;font-size:24px;margin:12px 0 2px;line-height:1}
+.png-meta{font-size:var(--fs-support);color:var(--muted)}
+.png-focus{margin-top:14px;background:color-mix(in srgb,var(--lime) 22%,var(--card));border:1px solid color-mix(in srgb,var(--lime) 55%,var(--line));border-radius:12px;padding:11px 13px}
+.png-focus-lab{display:block;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:var(--green)}
+.png-focus-goal{display:block;font-family:'Archivo Black',system-ui,sans-serif;font-size:17px;color:var(--text);margin-top:2px}
+.png-cta{display:flex;align-items:center;gap:6px;margin-top:14px;font-family:'Anton',system-ui,sans-serif;font-size:17px;letter-spacing:.02em;color:var(--green)}
+.png-cta .chev{font-size:18px}
 a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient(180deg,var(--panel2),var(--panel));padding:18px;min-height:94px;box-shadow:0 6px 18px var(--shadow)}.ico{width:50px;height:50px;border-radius:16px;background:var(--soft);display:grid;place-items:center;font-size:25px}.nav h2{margin:0;font-size:19px;font-weight:800;letter-spacing:.005em}.nav p{margin:5px 0 0;font-size:16px;color:var(--muted)}.chev{font-size:44px;color:var(--chev)}
 .nav.soon{cursor:default;opacity:.72}.nav.soon:hover{border-color:var(--line);transform:none}
 /* Bolder, consistent discipline color: green stick, blue shoot, orange dryland.
@@ -1472,7 +1487,16 @@ body.login-locked{overflow:hidden}
   }).catch(function(){});
 })();})();</script><div class='forrow'><span class='forline'>3 things, about 30 min</span><button type='button' class='daytip daytip-chip' id='dayTip' aria-label='Show today’s date'>Today<span class='daydate' id='dayDate'>Sunday, September 13</span></button></div></div>
 <div class='cards'>
-<a class='nav' href='hockey_game_goals.html'><div class='ico'>🎯</div><div><h2>Game Day Goals</h2><p>Pick your 4 goals for today’s game</p></div><div class='chev'>›</div></a>
+<a class='pnextgame' id='pNextGame' href='hockey_game_goals.html'>
+  <div class='png-top'>
+    <span class='png-gd' id='pngGd'>Game day</span>
+    <span class='png-count' id='pngCount' hidden><b id='pngDays'></b><span>days</span></span>
+  </div>
+  <div class='png-opp' id='pngOpp'>Game Day Goals</div>
+  <div class='png-meta' id='pngMeta'>Pick your 3 goals for the next game</div>
+  <div class='png-focus' id='pngFocus' hidden><span class='png-focus-lab'>Coach wants everyone on</span><span class='png-focus-goal' id='pngFocusGoal'></span></div>
+  <div class='png-cta' id='pngCta'>Set your 3 game goals <span class='chev' aria-hidden='true'>›</span></div>
+</a>
 <a class='nav nav-stick' href='#stick'><div class='ico'>🏒</div><div><h2>Stickhandling</h2><p>Hands + puck control, about 10-15 min</p></div><div class='chev'>›</div></a>
 <a class='nav nav-shoot' href='#shoot'><div class='ico'>🥅</div><div><h2>Shooting</h2><p>Accuracy + release, about 15 min</p></div><div class='chev'>›</div></a>
 <a class='nav nav-dryland' href='#dryland'><div class='ico'>⚡</div><div><h2>Dryland</h2><p>Speed + power + balance, about 15 min</p></div><div class='chev'>›</div></a>
@@ -2297,6 +2321,35 @@ window.thwapActiveTeam=function(coach){
   if(document.readyState==='complete'){ init(); } else { window.addEventListener('load', init); }
 })();
 showHomePlayer();
+/* Player Home "next game" card: reads the team schedule + the coach's focus, and
+   reflects whether this player has set their 3 goals yet (thwapGameGoals). The
+   whole card links to the game-day goals page. Coach view never sees #home. */
+(function(){
+  var card=document.getElementById('pNextGame'); if(!card) return;
+  var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  function pd(d){ return new Date((d||'')+'T12:00:00'); }
+  function ftime(t){ if(!t) return ''; var p=String(t).split(':'); var h=parseInt(p[0],10); var m=p[1]||'00'; var ap=h<12?'AM':'PM'; var h12=h%12||12; return h12+':'+m+' '+ap; }
+  function daysUntil(d){ var today=new Date(); today.setHours(12,0,0,0); return Math.round((pd(d)-today)/86400000); }
+  var CODE='RANGERS72';
+  fetch('/api/coach?action=schedule&code='+encodeURIComponent(CODE))
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      var g=j&&j.ok&&j.next&&j.next.nextGame; if(!g) return; /* no game: card keeps its generic copy */
+      var dt=pd(g.date);
+      var gd=document.getElementById('pngGd'); if(gd) gd.textContent='Game day '+DOW[dt.getDay()];
+      var opp=document.getElementById('pngOpp'); if(opp) opp.textContent=(g.home?'':'at ')+(g.opponent||'TBD');
+      var meta=document.getElementById('pngMeta');
+      if(meta){ var bits=[MON[dt.getMonth()]+' '+dt.getDate()]; if(g.time) bits.push(ftime(g.time)); if(g.place) bits.push(g.place); meta.textContent=bits.join(' | '); }
+      var days=daysUntil(g.date), cnt=document.getElementById('pngCount'), dn=document.getElementById('pngDays');
+      if(cnt&&dn&&days>=0&&days<=14){ dn.textContent=days===0?'today':days; cnt.hidden=false; if(days===0){ cnt.querySelector('span').textContent=''; } }
+      if(g.focus&&g.focus.goalTitle){ var fw=document.getElementById('pngFocus'), fg=document.getElementById('pngFocusGoal'); if(fg) fg.textContent=g.focus.goalTitle; if(fw) fw.hidden=false; }
+      /* goals set? thwapGameGoals holds the player's picks. */
+      var set=false; try{ var picks=JSON.parse(localStorage.getItem('thwapGameGoals')||'[]'); set=Array.isArray(picks)&&picks.length>0; }catch(_){}
+      var cta=document.getElementById('pngCta');
+      if(set&&cta){ cta.innerHTML='Your 3 goals are set <span class="chev" aria-hidden="true">\u203a</span>'; }
+    }).catch(function(){});
+})();
 window.addEventListener('hashchange',function(){ if(location.hash===''||location.hash==='#home') showHomePlayer(); });
 /* A coach must never land on #home: it is display:none!important for coaches, so
    landing there shows a blank/stuck page (this is why the Team X looked like it

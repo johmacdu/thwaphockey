@@ -37,7 +37,7 @@ import {
   updateMember, createResetToken, consumeResetToken,
   listTeamCoaches, ensureHeadCoach, addAssistantCoach, removeAssistantCoach, MAX_ASSISTANTS,
 } from '../lib/teams_store.js';
-import { ensureSchedule, getSchedule, addEvent as addScheduleEvent, nextEvent } from '../lib/schedule_store.js';
+import { ensureSchedule, getSchedule, addEvent as addScheduleEvent, setEventFocus, nextEvent } from '../lib/schedule_store.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -408,6 +408,20 @@ async function addEvent(req, res) {
   return res.status(200).json({ ok: true, schedule: sched, next: nextEvent(sched) });
 }
 
+// POST set (or clear) the coach's team-focus goal on one game. Coach-only.
+// body: { code, eventId, goalId, goalTitle }  (omit goalId to clear)
+async function setGameFocus(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  const coach = await requireCoach(req, res); if (!coach) return;
+  const { code, eventId, goalId, goalTitle } = parseBody(req);
+  if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  if (!eventId) return res.status(400).json({ error: 'eventId required' });
+  const focus = goalId ? { goalId, goalTitle } : null;
+  const sched = await setEventFocus(code, eventId, focus);
+  if (!sched) return res.status(404).json({ error: 'unknown event' });
+  return res.status(200).json({ ok: true, schedule: sched, next: nextEvent(sched) });
+}
+
 // POST set the signed-in coach's own name + photo (data URL). Enriches the
 // team-visible coaches strip.
 async function setCoachProfile(req, res) {
@@ -626,6 +640,7 @@ export default async function handler(req, res) {
     case 'join': return join(req, res);
     case 'schedule': return schedule(req, res);
     case 'add-event': return addEvent(req, res);
+    case 'set-game-focus': return setGameFocus(req, res);
     case 'set-coach-profile': return setCoachProfile(req, res);
     case 'get-plan': return getPlan(req, res);
     case 'set-plan': return setPlan(req, res);
@@ -653,6 +668,6 @@ export const _handlers = {
   suggestDrill, drillSuggestions,
   reviewSuggestions, resolveSuggestion,
   teamCoaches, inviteCoach, removeCoach,
-  addEvent, setCoachProfile,
+  addEvent, setGameFocus, setCoachProfile,
 };
 export const _seed = { SEED_TEAM_CODE, SEED_COACH_EMAIL, SEED_COACH_PASSWORD, SEED_CHILD_PLAYER_ID, ensureSeed, mintCoachToken };
