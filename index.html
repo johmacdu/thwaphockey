@@ -475,8 +475,6 @@ body.is-coach .rfilter[data-on]{display:flex}
 .addphoto-plus{font-family:'Archivo Black',system-ui,sans-serif;font-size:30px;color:var(--muted)}
 .addphoto-lab{font-size:var(--fs-meta);font-weight:800;text-transform:uppercase;letter-spacing:.02em;color:var(--muted)}
 /* Per-player remove control on the coach roster. */
-.pcard-remove{position:absolute;top:6px;right:6px;z-index:3;width:26px;height:26px;border-radius:50%;border:0;background:var(--alert-text);color:#fff;font-weight:900;font-size:15px;line-height:1;cursor:pointer;display:none}
-body.is-coach .roster .pcard-remove{display:grid;place-items:center}
 .coachbar{margin-top:16px}
 .coachbar-title{font-weight:800;font-size:14px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
 .coachbar-team{display:block;font-family:'Archivo Black',system-ui,sans-serif;font-size:18px;text-transform:none;letter-spacing:0;color:var(--text);margin-top:2px}
@@ -1828,19 +1826,7 @@ window.thwapActiveTeam=function(coach){
         })
         .catch(function(){ if(saveBtn){ saveBtn.disabled=false; saveBtn.textContent='Add player'; } if(errEl) errEl.textContent='Could not reach the server.'; });
     });
-    /* Remove buttons on roster cards. */
-    var grid=document.getElementById('roster-grid');
-    if(grid) grid.querySelectorAll('.pcard[data-name]').forEach(function(card){
-      var nm=card.getAttribute('data-name')||''; var first=nm.trim().split(/\s+/)[0]; if(!first) return;
-      var rm=document.createElement('button'); rm.type='button'; rm.className='pcard-remove'; rm.textContent='\u00d7'; rm.setAttribute('aria-label','Remove '+first);
-      rm.addEventListener('click',function(e){
-        e.preventDefault(); e.stopPropagation();
-        if(!window.confirm('Remove '+first+' from the roster?')) return;
-        fetch('/api/coach?action=remove-player',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code,coachToken:coach.token,playerId:first.toLowerCase()})})
-          .then(function(r){ return r.json(); }).then(function(j){ if(j&&j.ok){ card.parentNode.removeChild(card); } }).catch(function(){});
-      });
-      card.appendChild(rm);
-    });
+    /* Remove lives in the player-edit sheet (with a confirm), not as a per-card x. */
   })();
   }
 })();
