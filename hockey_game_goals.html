@@ -154,7 +154,13 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
 .final-view{display:none;padding:64px 0 70px;margin:auto}
 .final-intro{color:var(--muted);font-size:16px;line-height:1.5;margin:0 0 28px}
 .final-list{display:grid;gap:14px}
-.final-card{display:none;border:1px solid var(--line);border-radius:20px;background:linear-gradient(180deg,var(--panel),var(--panel2));padding:22px;grid-template-columns:54px 1fr;gap:15px}
+.final-card{position:relative;display:none;border:1px solid var(--line);border-radius:20px;background:linear-gradient(180deg,var(--panel),var(--panel2));padding:22px;grid-template-columns:54px 1fr;gap:15px}
+/* Goal cards (not the coach's pinned goal) are checkable in the final view. */
+.final-card:not(.coachgoal-card){padding-right:56px;cursor:pointer;transition:transform .12s ease,border-color .12s ease,box-shadow .12s ease}
+.final-card:not(.coachgoal-card):active{transform:scale(.985)}
+.final-card:not(.coachgoal-card).done{border-color:var(--green);box-shadow:0 0 0 1px var(--green) inset}
+.final-card:not(.coachgoal-card)::after{content:'';position:absolute;top:20px;right:20px;width:28px;height:28px;border-radius:50%;border:2px solid var(--line2);background:transparent;transition:.12s ease}
+.final-card:not(.coachgoal-card).done::after{content:'\2713';border-color:var(--green);background:var(--green);color:var(--onaccent);font-weight:900;display:grid;place-items:center;line-height:28px;text-align:center}
 .final-icon{font-size:35px;line-height:1}
 .final-card h2{margin:0 0 8px;font-size:23px}
 .final-card p{margin:0 0 10px;color:var(--muted);font-size:15px;line-height:1.5}
@@ -164,6 +170,22 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
 .coachgoal-lab{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--green)}
 .coachgoal-text{margin:4px 0 0;font-size:21px;font-family:'Archivo Black',system-ui,sans-serif;line-height:1.2;color:var(--text)}
 .final-cue{color:var(--green2);font-weight:850;font-size:14px}
+/* Teach card: matching checkable card; text box shows only when checked. */
+.teachcard{position:relative;display:grid;grid-template-columns:54px 1fr;gap:15px;border:1px solid var(--line);border-radius:20px;background:linear-gradient(180deg,var(--panel),var(--panel2));padding:22px 56px 22px 22px;margin-top:14px;cursor:pointer;transition:transform .12s ease,border-color .12s ease,box-shadow .12s ease}
+.teachcard:active{transform:scale(.985)}
+.teachcard.done{border-color:var(--green);box-shadow:0 0 0 1px var(--green) inset}
+.teachcard::after{content:'';position:absolute;top:20px;right:20px;width:28px;height:28px;border-radius:50%;border:2px solid var(--line2);background:transparent;transition:.12s ease}
+.teachcard.done::after{content:'\2713';border-color:var(--green);background:var(--green);color:var(--onaccent);font-weight:900;display:grid;place-items:center;line-height:28px;text-align:center}
+.teachcard .teach-ic{font-size:35px;line-height:1}
+.teachcard h2{margin:0 0 8px;font-size:21px}
+.teachcard p{color:var(--muted);font-size:14px;line-height:1.5;margin:0 0 10px}
+.teach-note{display:none;width:100%;box-sizing:border-box;border:1px solid var(--line2);border-radius:12px;background:var(--card);color:var(--text);font-family:'Nunito Sans',system-ui,sans-serif;font-size:17px;font-weight:700;line-height:1.4;padding:13px 14px;resize:vertical;min-height:88px}
+.teachcard.done .teach-note{display:block}
+.teach-note::placeholder{color:var(--muted);font-weight:700}
+/* Puck rain celebration: real CSS-drawn black pucks. */
+.puck-rain{position:fixed;inset:0;pointer-events:none;z-index:300;overflow:hidden}
+.puck{position:absolute;top:-8vh;width:34px;height:13px;border-radius:50%;background:radial-gradient(ellipse at 50% 35%,#3a3a3a,#0a0a0a 70%);box-shadow:0 2px 4px rgba(0,0,0,.4), inset 0 -2px 3px rgba(0,0,0,.6), inset 0 2px 2px rgba(255,255,255,.12);will-change:transform;animation:puckfall linear forwards}
+@keyframes puckfall{to{transform:translateY(120vh) rotate(240deg)}}
 .reflect{margin-top:30px;padding-top:24px;border-top:1px solid var(--line)}
 .reflect h2{font-size:24px;margin:0 0 8px}
 .reflect p{color:var(--muted);font-size:15px;line-height:1.55;margin:0;max-width:690px}
@@ -171,20 +193,11 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
 .glassback{display:none;position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:max(16px, calc(50vw - 534px));z-index:50;grid-auto-flow:column;gap:2px;place-items:center;height:44px;padding:0 16px;border-radius:999px;font-size:16px;line-height:1;font-weight:800;color:var(--text);cursor:pointer;text-decoration:none;background:var(--panel);border:1px solid var(--line);box-shadow:0 6px 20px var(--shadow)}
 .glassback:hover{background:var(--soft)}
 #finalMode:checked ~ .glassback{display:inline-grid}
-.pglog{margin-top:28px;padding-top:22px;border-top:1px solid var(--line)}
-.pglog-h{font-family:'Archivo Black',system-ui,sans-serif;font-size:20px;margin:0}
-.pglog-sub{margin:6px 0 14px;color:var(--muted);font-size:14px;line-height:1.4}
-.pglog-rows{display:flex;flex-direction:column;gap:10px}
-.pglog-row{padding:12px;border:1px solid var(--line);border-radius:16px;background:var(--card)}
-.pglog-check{display:flex;align-items:center;gap:10px;cursor:pointer}
-.pglog-check input{width:20px;height:20px;accent-color:var(--lime);flex:none}
-.pglog-check .t{font-weight:800;font-size:15px;color:var(--text)}
-.pglog-note{width:100%;margin-top:8px;font-family:inherit;font-size:14px;padding:8px 10px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--text);box-sizing:border-box;display:none}
-.pglog-row.on .pglog-note{display:block}
-.pglog-save{margin-top:14px;font-family:inherit;font-size:15px;font-weight:850;background:var(--lime);color:var(--ink);border:1px solid transparent;border-radius:12px;padding:10px 18px;cursor:pointer}
+.pglog-save{display:block;width:100%;margin-top:20px;font-family:'Archivo Black',system-ui,sans-serif;font-size:16px;background:var(--green);color:var(--onaccent);border:0;border-radius:14px;padding:15px;cursor:pointer}
 .pglog-save.is-disabled,.pglog-save:disabled{background:var(--soft);color:var(--muted);cursor:not-allowed;opacity:.7}
-.pglog-done{margin-top:12px;color:var(--green);font-weight:800;font-size:14px}
-.fv-foot{margin-top:30px;padding-top:20px;border-top:1px solid var(--line);display:flex;justify-content:flex-start}
+.pglog-done{margin-top:12px;color:var(--green);font-weight:800;font-size:14px;text-align:center}
+.fv-foot{margin-top:16px;display:flex;justify-content:center}
+.fv-reset{background:none;border:0;color:var(--muted);font-family:inherit;font-size:14px;font-weight:800;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .fv-reset{background:none;border:0;padding:6px 0;font-family:inherit;font-size:15px;font-weight:850;color:var(--green2);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .fv-reset:hover{color:var(--text)}
 
@@ -561,7 +574,7 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
   <label for="finalMode" class="glassback" aria-label="Back to picking goals">Back</label>
   <div class="builder">
     <header class="header">
-      <div class="kicker" aria-hidden="true" style="min-height:15px"></div>
+      <div class="kicker" id="gpGame" aria-hidden="true" style="min-height:15px"></div>
       <div class="gd-target" id="gdTarget" role="img" aria-label="Target">🎯</div>
       <h1>Your Game Plan</h1>
     </header>
@@ -1350,18 +1363,17 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
 </article>
     </div>
 
-    <section class="reflect">
-      <h2>Teach Dad and Mom one thing.</h2>
-      <p>Notice something from the ice that Dad and Mom probably couldn&#x2019;t see from the stands. After the game, explain what you saw, why it mattered, and how it changed what you did.</p>
+    <section class="reflect teachcard" id="teachCard">
+      <div class="teach-ic" aria-hidden="true">👨‍👩‍👦</div>
+      <div class="teach-body">
+        <h2>Teach Dad and Mom one thing.</h2>
+        <p>Notice something from the ice they couldn&#x2019;t see from the stands. Check this when you do it, then type what you saw.</p>
+        <textarea class="teach-note" id="pgTeach" maxlength="280" placeholder="What did you teach them?"></textarea>
+      </div>
     </section>
 
-    <div class="pglog" id="pgLog">
-      <h2 class="pglog-h">How'd the game go?</h2>
-      <p class="pglog-sub">Check the goals you focused on. Add a note if you want. Your coach sees this.</p>
-      <div class="pglog-rows" id="pgLogRows"></div>
-      <button type="button" class="pglog-save" id="pgLogSave">Log my game</button>
-      <p class="pglog-done" id="pgLogDone" hidden>Logged! Nice work out there.</p>
-    </div>
+    <button type="button" class="pglog-save" id="pgLogSave" disabled>Log my goals</button>
+    <p class="pglog-done" id="pgLogDone" hidden>Logged! Nice work out there.</p>
     <div class="fv-foot"><button type="button" id="resetForNext" class="fv-reset">Reset goals for next game</button></div>
   </div></div>
 <script>
@@ -1498,6 +1510,21 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
   try{ var sp = localStorage.getItem(PKEY); if(sp === 'F' || sp === 'D' || sp === 'B') startPos = sp; }catch(e){}
   applyPos(startPos);
 
+  // Game-aware header: opponent + date from the team schedule (the coach's team
+  // goal is shown separately by the pinned card below).
+  (function(){
+    var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    fetch('/api/coach?action=schedule&code=RANGERS72')
+      .then(function(r){ return r.json(); })
+      .then(function(j){
+        var g=j&&j.ok&&j.next&&j.next.nextGame; if(!g) return;
+        var dt=new Date(g.date+'T12:00:00');
+        var gEl=document.getElementById('gpGame');
+        if(gEl){ gEl.textContent=(g.home?'':'at ')+(g.opponent||'TBD')+' | '+DOW[dt.getDay()]+' '+MON[dt.getMonth()]+' '+dt.getDate(); }
+      }).catch(function(){});
+  })();
+
   // Coach's team goal: one shared focus that fills a slot in every player's plan.
   // When set, the kid picks TARGET-1 of their own; the goal shows as a pinned card.
   (function(){
@@ -1563,57 +1590,63 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
   }
 
   function playerId(){ try{ return (localStorage.getItem('bfPlayer')||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,''); }catch(e){ return ''; } }
-  function chosenGoals(){
-    var out=[];
-    for(var i=0;i<boxes.length;i++){
-      if(!boxes[i].checked) continue;
-      var num=boxes[i].id.replace('g','');
-      var card=document.querySelector('.final-'+num+' h2');
-      out.push({ goalId:boxes[i].id, title:card?card.textContent.trim():boxes[i].id });
-    }
-    return out.slice(0,selfCap);
-  }
-  function buildPgLog(){
-    var rows=document.getElementById('pgLogRows'); if(!rows) return;
-    var goals=chosenGoals();
-    rows.innerHTML=goals.map(function(g){
-      return "<div class='pglog-row' data-goal='"+g.goalId+"'>"+
-        "<label class='pglog-check'><input type='checkbox' class='pglog-cb'><span class='t'></span></label>"+
-        "<input type='text' class='pglog-note' maxlength='140' placeholder='What did you do? (optional)'>"+
-        "</div>";
-    }).join('');
-    var rowEls=rows.querySelectorAll('.pglog-row');
-    for(var i=0;i<rowEls.length;i++){ rowEls[i].querySelector('.t').textContent=goals[i].title; }
-    rows.querySelectorAll('.pglog-cb').forEach(function(cb){
-      cb.addEventListener('change',function(){ cb.closest('.pglog-row').classList.toggle('on',cb.checked); syncLogBtn(); });
-    });
-    var done=document.getElementById('pgLogDone'); if(done) done.hidden=true;
-    syncLogBtn();
-  }
+  function cardGoalId(card){ var m=(card.className.match(/final-(\d+)/)||[])[1]; return m?('g'+m):''; }
+  function doneCards(){ return Array.prototype.slice.call(document.querySelectorAll('.final-card:not(.coachgoal-card).done')).filter(function(c){ return getComputedStyle(c).display!=='none'; }); }
+  function teachDone(){ var t=document.getElementById('teachCard'); if(!(t&&t.classList.contains('done'))) return false; var ta=t.querySelector('.teach-note'); return !!(ta&&ta.value.trim()); }
   function syncLogBtn(){
     var btn=document.getElementById('pgLogSave'); if(!btn) return;
-    var any=document.querySelectorAll('#pgLogRows .pglog-cb:checked').length > 0;
+    var any=doneCards().length>0 || teachDone();
     btn.disabled=!any;
     btn.classList.toggle('is-disabled', !any);
+  }
+  (function(){
+    var list=document.querySelector('.final-list');
+    if(list) list.addEventListener('click',function(e){
+      var card=e.target.closest && e.target.closest('.final-card:not(.coachgoal-card)'); if(!card) return;
+      card.classList.toggle('done');
+      var d=document.getElementById('pgLogDone'); if(d) d.hidden=true;
+      syncLogBtn();
+    });
+    var teach=document.getElementById('teachCard');
+    if(teach) teach.addEventListener('click',function(e){
+      if(e.target.closest && e.target.closest('.teach-note')) return;
+      teach.classList.toggle('done');
+      var d=document.getElementById('pgLogDone'); if(d) d.hidden=true;
+      if(teach.classList.contains('done')){ var ta=teach.querySelector('.teach-note'); if(ta) setTimeout(function(){ ta.focus(); },60); }
+      syncLogBtn();
+    });
+    var teachNoteEl=document.getElementById('pgTeach');
+    if(teachNoteEl) teachNoteEl.addEventListener('input',function(){ var d=document.getElementById('pgLogDone'); if(d) d.hidden=true; syncLogBtn(); });
+  })();
+  function puckRain(){
+    var layer=document.createElement('div'); layer.className='puck-rain';
+    for(var i=0;i<40;i++){
+      var p=document.createElement('div'); p.className='puck';
+      p.style.left=(Math.random()*100)+'vw';
+      p.style.transform='scale('+(0.7+Math.random()*0.9)+')';
+      p.style.animationDuration=(1.1+Math.random()*1.4)+'s';
+      p.style.animationDelay=(Math.random()*0.5)+'s';
+      layer.appendChild(p);
+    }
+    document.body.appendChild(layer);
+    setTimeout(function(){ if(layer.parentNode) layer.parentNode.removeChild(layer); }, 3400);
   }
   var pgSave=document.getElementById('pgLogSave');
   if(pgSave){
     pgSave.addEventListener('click',function(){
       if(pgSave.disabled) return;
       var pid=playerId(); if(!pid){ return; }
-      var rowEls=document.querySelectorAll('#pgLogRows .pglog-row');
-      var posts=[];
-      rowEls.forEach(function(row){
-        var cb=row.querySelector('.pglog-cb'); if(!cb||!cb.checked) return;
-        var note=row.querySelector('.pglog-note');
-        var title=row.querySelector('.t').textContent;
-        posts.push(fetch('/api/coach?action=log-game-goal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({playerId:pid,goalId:row.getAttribute('data-goal'),goalTitle:title,done:true,note:note?note.value:''})}));
+      var posts=doneCards().map(function(card){
+        var h=card.querySelector('h2');
+        return fetch('/api/coach?action=log-game-goal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({playerId:pid,goalId:cardGoalId(card),goalTitle:h?h.textContent.trim():'',done:true,note:''})});
       });
+      if(teachDone()){ var ta=document.getElementById('pgTeach'); posts.push(fetch('/api/coach?action=log-game-goal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({playerId:pid,goalId:'teach',goalTitle:'Taught Dad and Mom',done:true,note:ta?ta.value:''})})); }
+      puckRain();
       pgSave.textContent='Logging...';
-      Promise.all(posts).then(function(){ pgSave.textContent='Log my game'; var d=document.getElementById('pgLogDone'); if(d) d.hidden=false; }).catch(function(){ pgSave.textContent='Log my game'; });
+      Promise.all(posts).then(function(){ pgSave.textContent='Log my goals'; var d=document.getElementById('pgLogDone'); if(d) d.hidden=false; }).catch(function(){ pgSave.textContent='Log my goals'; });
     });
   }
-  if(finalMode){ finalMode.addEventListener('change',function(){ if(finalMode.checked) buildPgLog(); }); if(finalMode.checked) buildPgLog(); }
+  if(finalMode){ finalMode.addEventListener('change',function(){ if(finalMode.checked) syncLogBtn(); }); if(finalMode.checked) syncLogBtn(); }
 })();
 </script>
 <script>(function(){
