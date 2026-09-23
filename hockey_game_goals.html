@@ -158,6 +158,11 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
 .final-icon{font-size:35px;line-height:1}
 .final-card h2{margin:0 0 8px;font-size:23px}
 .final-card p{margin:0 0 10px;color:var(--muted);font-size:15px;line-height:1.5}
+/* Coach's team goal: a pinned card atop the plan, distinct from the kid's picks. */
+.coachgoal-card{display:grid;border-color:color-mix(in srgb,var(--lime) 55%,var(--line));background:linear-gradient(180deg,color-mix(in srgb,var(--lime) 12%,var(--panel)),var(--panel))}
+.coachgoal-card[hidden]{display:none}
+.coachgoal-lab{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--green)}
+.coachgoal-text{margin:4px 0 0;font-size:21px;font-family:'Archivo Black',system-ui,sans-serif;line-height:1.2;color:var(--text)}
 .final-cue{color:var(--green2);font-weight:850;font-size:14px}
 .reflect{margin-top:30px;padding-top:24px;border-top:1px solid var(--line)}
 .reflect h2{font-size:24px;margin:0 0 8px}
@@ -991,6 +996,13 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
     <p class="final-intro">These are the things to notice, try, and compete on today. No grading. Just play, then talk about what happened.</p>
 
     <div class="final-list">
+      <article class="final-card coachgoal-card" id="coachGoalCard" hidden>
+        <div class="final-icon">📣</div>
+        <div>
+          <div class="coachgoal-lab">Coach&rsquo;s goal for the team</div>
+          <h3 class="coachgoal-text" id="coachGoalText"></h3>
+        </div>
+      </article>
       
 <article class="final-card final-1">
   <div class="final-icon">👀</div>
@@ -1359,7 +1371,8 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
   var PKEY = 'thwapGamePosition';      // 'F' or 'D'
   var TARGET = 3;
   var hasTeamGoal = false;
-  var selfCap = TARGET - (hasTeamGoal ? 1 : 0);   // how many the kid picks
+  var selfCap = TARGET;   // how many the kid picks; drops to TARGET-1 when a coach team goal exists
+  function recomputeCap(){ selfCap = TARGET - (hasTeamGoal ? 1 : 0); }
 
   var boxes = Array.prototype.slice.call(document.querySelectorAll('.choice-input'));
   var finalMode = document.getElementById('finalMode');
@@ -1484,6 +1497,24 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
   var startPos = 'F';
   try{ var sp = localStorage.getItem(PKEY); if(sp === 'F' || sp === 'D' || sp === 'B') startPos = sp; }catch(e){}
   applyPos(startPos);
+
+  // Coach's team goal: one shared focus that fills a slot in every player's plan.
+  // When set, the kid picks TARGET-1 of their own; the goal shows as a pinned card.
+  (function(){
+    var card = document.getElementById('coachGoalCard');
+    var textEl = document.getElementById('coachGoalText');
+    fetch('/api/coach?action=team-goal')
+      .then(function(r){ return r.json(); })
+      .then(function(j){
+        if(j && j.ok && j.teamGoal && j.teamGoal.text){
+          hasTeamGoal = true; recomputeCap();
+          if(textEl) textEl.textContent = j.teamGoal.text;
+          if(card) card.hidden = false;
+          updateUI();
+        }
+      })
+      .catch(function(){});
+  })();
 
   for(var i=0;i<boxes.length;i++){ boxes[i].addEventListener('change', function(){ save(); updateUI(); }); }
   if(finalMode) finalMode.addEventListener('change', saveFinal);
