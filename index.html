@@ -502,6 +502,7 @@ body.is-coach .roster .pcard-remove{display:grid;place-items:center}
 /* Coaches: heading + a team-visible strip of coach chips + head-only invite. */
 .coachcoaches{margin-top:22px;padding-top:16px;border-top:1px solid var(--line)}
 .cchip-strip{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+#coachStrip{display:contents}
 /* Direction C: dark team banner carries title + coaches inline (both roles). */
 .teambanner{position:relative;padding:30px 0 4px;margin:0}
 .teambanner .kicker{color:var(--green)}
@@ -544,6 +545,16 @@ body.roster-editing #roster-grid .pcard:not(.pcard-add)::after{content:'\270E';p
 .sheet[hidden]{display:none}
 .sheet-scrim{position:absolute;inset:0;background:rgba(0,0,0,.35)}
 .sheet-panel{position:absolute;top:0;right:0;bottom:0;width:min(420px,90vw);background:var(--bg);border-left:1px solid var(--line);box-shadow:-12px 0 32px rgba(0,0,0,.28);padding:calc(env(safe-area-inset-top,0px) + 24px) 20px 24px;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
+.sheet-lab{display:flex;flex-direction:column;gap:5px;font-size:var(--fs-support);font-weight:800;color:var(--muted)}
+.sheet-lab .pgate-in{margin:0}
+.sheet-pin{display:flex;flex-direction:column;gap:2px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:var(--fs-support);font-weight:800;color:var(--muted)}
+.sheet-pin-val{font-family:'Archivo Black',system-ui,sans-serif;font-size:22px;color:var(--text);letter-spacing:.02em}
+.sheet-pin-hint{font-size:var(--fs-meta);font-weight:700;color:var(--muted)}
+.pe-confirm{background:var(--card);border:1px solid var(--alert-text);border-radius:12px;padding:14px}
+.pe-confirm-q{margin:0 0 10px;font-size:var(--fs-support);font-weight:800;color:var(--text)}
+.pe-confirm-row{display:flex;gap:8px}
+.pe-confirm-cancel{flex:1;font-family:inherit;font-weight:800;font-size:14px;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px;cursor:pointer;color:var(--text)}
+.pe-confirm-go{flex:1;font-family:inherit;font-weight:800;font-size:14px;background:var(--alert-text);color:#fff;border:0;border-radius:10px;padding:10px;cursor:pointer}
 .pe-remove{margin-top:4px;font-family:inherit;font-size:14px;font-weight:800;background:transparent;color:var(--alert-text);border:1px solid var(--line2);border-radius:12px;padding:10px 16px;cursor:pointer}
 .pe-remove:hover{background:var(--soft)}
 /* Coach profile: password section. */
@@ -1156,23 +1167,27 @@ body.login-locked{overflow:hidden}
   <form class='sheet-panel' id='playerEditForm' novalidate>
     <button type='button' class='pgate-x' id='peX' aria-label='Close'>&#215;</button>
     <h2 class='pgate-h'>Edit player</h2>
-    <button type='button' class='cprof-photo' id='pePhoto'>
-      <img id='peImg' alt='' hidden>
-      <span id='peInitials' class='cprof-initials'>+</span>
-      <span class='cprof-photo-lab'>Photo</span>
-    </button>
-    <input type='file' id='peFile' accept='image/*' hidden>
-    <input class='pgate-in' id='peFirst' type='text' autocomplete='off' placeholder='First name' required>
-    <input class='pgate-in' id='peLast' type='text' autocomplete='off' placeholder='Last name'>
-    <input class='pgate-in' id='peNum' type='text' inputmode='numeric' autocomplete='off' placeholder='Jersey number'>
-    <select class='pgate-in' id='pePos'>
+    <label class='sheet-lab'>First name<input class='pgate-in' id='peFirst' type='text' autocomplete='off' required></label>
+    <label class='sheet-lab'>Last name<input class='pgate-in' id='peLast' type='text' autocomplete='off'></label>
+    <label class='sheet-lab'>Jersey number<input class='pgate-in' id='peNum' type='text' inputmode='numeric' autocomplete='off'></label>
+    <label class='sheet-lab'>Position<select class='pgate-in' id='pePos'>
       <option value='F'>Forward</option>
       <option value='D'>Defense</option>
       <option value='G'>Goalie</option>
       <option value='FD'>Forward/Defense</option>
-    </select>
+    </select></label>
+    <label class='sheet-lab'>Parent email (1)<input class='pgate-in' id='peEmail' type='email' inputmode='email' autocomplete='off' placeholder='parent@email.com'></label>
+    <label class='sheet-lab'>Parent email (2)<input class='pgate-in' id='peEmail2' type='email' inputmode='email' autocomplete='off' placeholder='second parent (optional)'></label>
+    <div class='sheet-pin'>Player code (PIN)<span class='sheet-pin-val' id='pePin'>&mdash;</span><span class='sheet-pin-hint'>In case the player or parent forgets it.</span></div>
     <button type='submit' class='pgate-go' id='peSave'>Save</button>
     <button type='button' class='pe-remove' id='peRemove'>Remove from roster</button>
+    <div class='pe-confirm' id='peConfirm' hidden>
+      <p class='pe-confirm-q' id='peConfirmQ'>Remove this player from the roster?</p>
+      <div class='pe-confirm-row'>
+        <button type='button' class='pe-confirm-cancel' id='peConfirmCancel'>Cancel</button>
+        <button type='button' class='pe-confirm-go' id='peConfirmGo'>Remove</button>
+      </div>
+    </div>
     <p class='pgate-msg' id='peMsg' aria-live='polite'></p>
   </form>
 </div>
@@ -1196,8 +1211,9 @@ body.login-locked{overflow:hidden}
     <p class='pgate-msg' id='asMsg' aria-live='polite'></p>
   </form>
 </div>
-<div class='pgate' id='coachProfileGate' hidden>
-  <form class='pgate-box' id='coachProfileForm' novalidate>
+<div class='sheet' id='coachProfileGate' hidden>
+  <div class='sheet-scrim' id='coachProfileScrim'></div>
+  <form class='sheet-panel' id='coachProfileForm' novalidate>
     <button type='button' class='pgate-x' id='coachProfileX' aria-label='Close'>&#215;</button>
     <h2 class='pgate-h'>Your coach profile</h2>
     <p class='pgate-p'>Your name and photo help the team know who is coaching.</p>
@@ -1207,7 +1223,7 @@ body.login-locked{overflow:hidden}
       <span class='cprof-photo-lab'>Add photo</span>
     </button>
     <input type='file' id='coachProfileFile' accept='image/*' hidden>
-    <input class='pgate-in' id='coachProfileName' type='text' autocomplete='name' placeholder='Coach name' required>
+    <label class='sheet-lab'>Coach name<input class='pgate-in' id='coachProfileName' type='text' autocomplete='name' placeholder='Coach name' required></label>
     <button type='submit' class='pgate-go'>Save profile</button>
     <p class='pgate-msg' id='coachProfileMsg' aria-live='polite'></p>
     <div class='cprof-pw'>
@@ -1226,19 +1242,14 @@ body.login-locked{overflow:hidden}
 <a class='glassclose' href='#roster' aria-label='Close'>✕</a>
 <div class='hero'><div class='kicker'>Jr Rangers 10U</div><h1>Add a player</h1><p>They will show up on your roster.</p></div>
 <form class='addform' id='addPlayerForm' novalidate>
-  <button type='button' class='addphoto' id='addPhotoBtn'>
-    <img id='addPhotoImg' alt='' hidden>
-    <span id='addPhotoPlus' class='addphoto-plus'>+</span>
-    <span class='addphoto-lab'>Add photo (optional)</span>
-  </button>
-  <input type='file' id='addPhotoFile' accept='image/*' hidden>
   <label class='addfield'><span class='addfield-lab'>First name</span><input class='login-in' id='apFirst' type='text' autocomplete='off' required></label>
   <label class='addfield'><span class='addfield-lab'>Last name</span><input class='login-in' id='apLast' type='text' autocomplete='off'></label>
   <label class='addfield'><span class='addfield-lab'>Position</span>
     <span class='login-selwrap'><select class='login-in login-select' id='apPos'><option value='forward'>Forward</option><option value='defense'>Defense</option><option value='goalie'>Goalie</option></select><span class='login-selchev' aria-hidden='true'>&#8250;</span></span>
   </label>
   <label class='addfield'><span class='addfield-lab'>Jersey number</span><input class='login-in' id='apNum' type='number' inputmode='numeric' min='0' max='99'></label>
-  <label class='addfield'><span class='addfield-lab'>Parent email</span><input class='login-in' id='apEmail' type='email' inputmode='email' placeholder='name@email.com' required></label>
+  <label class='addfield'><span class='addfield-lab'>Parent email (1)</span><input class='login-in' id='apEmail' type='email' inputmode='email' placeholder='name@email.com' required></label>
+  <label class='addfield'><span class='addfield-lab'>Parent email (2)</span><input class='login-in' id='apEmail2' type='email' inputmode='email' placeholder='second parent (optional)'></label>
   <button type='submit' class='pgate-go' id='apSave'>Add player</button>
   <p class='login-err' id='apErr' aria-live='polite'></p>
 </form>
@@ -1604,6 +1615,7 @@ window.thwapActiveTeam=function(coach){
       var heroName=document.getElementById('chProfileName'); if(heroName) heroName.addEventListener('click',open);
       window.thwapOpenCoachProfile=open;
       if(xBtn) xBtn.addEventListener('click',close);
+      var scrim=document.getElementById('coachProfileScrim'); if(scrim) scrim.addEventListener('click',close);
       if(photoBtn&&fileEl) photoBtn.addEventListener('click',function(){ fileEl.click(); });
       if(fileEl) fileEl.addEventListener('change',function(){
         var f=fileEl.files&&fileEl.files[0]; if(!f) return;
@@ -1700,14 +1712,17 @@ window.thwapActiveTeam=function(coach){
     var peForm=document.getElementById('playerEditForm');
     var peFirst=document.getElementById('peFirst'), peLast=document.getElementById('peLast'),
         peNum=document.getElementById('peNum'), pePos=document.getElementById('pePos'),
-        peMsg=document.getElementById('peMsg'), peImg=document.getElementById('peImg'),
-        peInitials=document.getElementById('peInitials'), peFile=document.getElementById('peFile'),
-        pePhoto=document.getElementById('pePhoto'), peRemove=document.getElementById('peRemove');
-    var pePhotoData='', pePid='';
-    function peSheetShow(on){ if(sheet) sheet.hidden=!on; }
+        peEmail=document.getElementById('peEmail'), peEmail2=document.getElementById('peEmail2'),
+        pePin=document.getElementById('pePin'), peMsg=document.getElementById('peMsg'),
+        peRemove=document.getElementById('peRemove');
+    var pePid='';
+    var SEASON_CODES=['2027','2026'];
+    function pinFor(num){ var n=String(num==null?'':num).trim(); return n?(n+SEASON_CODES[0]):'\u2014'; }
+    function peSheetShow(on){ if(sheet) sheet.hidden=!on; if(!on){ var c=document.getElementById('peConfirm'); if(c) c.hidden=true; } }
     function openPlayerEdit(name){
       var first=String(name||'').trim().split(/\s+/)[0]; pePid=first.toLowerCase();
-      if(peMsg) peMsg.textContent=''; pePhotoData='';
+      if(peMsg) peMsg.textContent='';
+      var c=document.getElementById('peConfirm'); if(c) c.hidden=true;
       fetch('/api/coach?action=roster&code='+encodeURIComponent(code)+'&coachToken='+encodeURIComponent(coach.token))
         .then(function(r){ return r.json(); }).then(function(j){
           var m=(j&&j.members||[]).filter(function(x){ return (x.playerId||x.firstName||'').toLowerCase()===pePid; })[0]||{};
@@ -1715,38 +1730,38 @@ window.thwapActiveTeam=function(coach){
           if(peLast) peLast.value=m.lastName||'';
           if(peNum) peNum.value=(m.number!=null?m.number:'');
           if(pePos) pePos.value=m.position||'F';
-          if(m.photo && peImg){ peImg.src=m.photo; peImg.hidden=false; if(peInitials) peInitials.hidden=true; }
-          else if(peImg){ peImg.hidden=true; if(peInitials){ peInitials.hidden=false; peInitials.textContent=(first.charAt(0)||'+').toUpperCase(); } }
+          if(peEmail) peEmail.value=m.parentEmail||'';
+          if(peEmail2) peEmail2.value=m.parentEmail2||'';
+          if(pePin) pePin.textContent=pinFor(m.number);
           peSheetShow(true);
         }).catch(function(){ peSheetShow(true); });
     }
     document.getElementById('peX') && document.getElementById('peX').addEventListener('click',function(){ peSheetShow(false); });
     document.getElementById('peScrim') && document.getElementById('peScrim').addEventListener('click',function(){ peSheetShow(false); });
-    if(pePhoto) pePhoto.addEventListener('click',function(){ if(peFile) peFile.click(); });
-    if(peFile) peFile.addEventListener('change',function(){
-      var f=peFile.files&&peFile.files[0]; if(!f) return;
-      var rd=new FileReader(); rd.onload=function(){
-        var img=new Image(); img.onload=function(){
-          var s=256, cv=document.createElement('canvas'); cv.width=s; cv.height=s;
-          var mn=Math.min(img.width,img.height), sx=(img.width-mn)/2, sy=(img.height-mn)/2;
-          cv.getContext('2d').drawImage(img,sx,sy,mn,mn,0,0,s,s);
-          pePhotoData=cv.toDataURL('image/jpeg',0.82);
-          if(peImg){ peImg.src=pePhotoData; peImg.hidden=false; } if(peInitials) peInitials.hidden=true;
-        }; img.src=rd.result;
-      }; rd.readAsDataURL(f);
-    });
+    /* Live PIN recompute as the coach edits the jersey number. */
+    if(peNum) peNum.addEventListener('input',function(){ if(pePin) pePin.textContent=pinFor(peNum.value); });
     if(peForm) peForm.addEventListener('submit',function(e){
       e.preventDefault();
       var body={code:code,coachToken:coach.token,playerId:pePid,
-        firstName:peFirst.value,lastName:peLast.value,number:peNum.value,position:pePos.value};
-      if(pePhotoData) body.photo=pePhotoData;
+        firstName:peFirst.value,lastName:peLast.value,number:peNum.value,position:pePos.value,
+        parentEmail:peEmail?peEmail.value:'',parentEmail2:peEmail2?peEmail2.value:''};
       if(peMsg) peMsg.textContent='Saving...';
       fetch('/api/coach?action=update-player',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
         .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
         .then(function(res){ if(res.ok&&res.j.ok){ peSheetShow(false); location.reload(); } else if(peMsg){ peMsg.textContent=(res.j&&res.j.error)||'Could not save.'; } })
         .catch(function(){ if(peMsg) peMsg.textContent='Could not reach the server.'; });
     });
+    /* Remove is destructive: reveal an inline confirm, only the confirm button fires the delete. */
+    var peConfirm=document.getElementById('peConfirm'),
+        peConfirmQ=document.getElementById('peConfirmQ'),
+        peConfirmCancel=document.getElementById('peConfirmCancel'),
+        peConfirmGo=document.getElementById('peConfirmGo');
     if(peRemove) peRemove.addEventListener('click',function(){
+      if(peConfirmQ) peConfirmQ.textContent='Remove '+(peFirst&&peFirst.value||'this player')+' from the roster? This cannot be undone.';
+      if(peConfirm) peConfirm.hidden=false;
+    });
+    if(peConfirmCancel) peConfirmCancel.addEventListener('click',function(){ if(peConfirm) peConfirm.hidden=true; });
+    if(peConfirmGo) peConfirmGo.addEventListener('click',function(){
       if(peMsg) peMsg.textContent='Removing...';
       fetch('/api/coach?action=remove-player',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code,coachToken:coach.token,playerId:pePid})})
         .then(function(r){ return r.json(); }).then(function(j){ if(j&&j.ok){ peSheetShow(false); location.reload(); } else if(peMsg){ peMsg.textContent='Could not remove.'; } })
@@ -1788,34 +1803,21 @@ window.thwapActiveTeam=function(coach){
     if(clearBtn) clearBtn.addEventListener('click',function(){ try{ localStorage.removeItem('thwapRosterFilter'); }catch(e){} applyFilter(); });
     if(location.hash==='#roster') applyFilter();
     window.addEventListener('hashchange',function(){ if(location.hash==='#roster') applyFilter(); });
-    /* Photo picker (downscale to a square data URL). */
-    var photoBtn=document.getElementById('addPhotoBtn'), fileEl=document.getElementById('addPhotoFile'),
-        imgEl=document.getElementById('addPhotoImg'), plusEl=document.getElementById('addPhotoPlus'); var photoData='';
-    if(photoBtn&&fileEl) photoBtn.addEventListener('click',function(){ fileEl.click(); });
-    if(fileEl) fileEl.addEventListener('change',function(){
-      var f=fileEl.files&&fileEl.files[0]; if(!f) return;
-      var rd=new FileReader();
-      rd.onload=function(){ var img=new Image(); img.onload=function(){
-        var S=256, cv=document.createElement('canvas'); cv.width=S; cv.height=S;
-        var ctx=cv.getContext('2d'), m=Math.min(img.width,img.height);
-        ctx.drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,S,S);
-        photoData=cv.toDataURL('image/jpeg',0.82); imgEl.src=photoData; imgEl.hidden=false; if(plusEl) plusEl.hidden=true;
-      }; img.src=rd.result; };
-      rd.readAsDataURL(f);
-    });
     /* Add-player submit. */
     var form=document.getElementById('addPlayerForm'), errEl=document.getElementById('apErr'), saveBtn=document.getElementById('apSave');
     if(form) form.addEventListener('submit',function(e){
       e.preventDefault(); if(errEl) errEl.textContent='';
       var first=String((document.getElementById('apFirst')||{}).value||'').trim();
       var email=String((document.getElementById('apEmail')||{}).value||'').trim();
+      var email2=String((document.getElementById('apEmail2')||{}).value||'').trim();
       if(!first){ if(errEl) errEl.textContent='Enter a first name.'; return; }
       if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ if(errEl) errEl.textContent='Enter one parent email.'; return; }
+      if(email2 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email2)){ if(errEl) errEl.textContent='The second parent email is invalid.'; return; }
       var body={ code:code, coachToken:coach.token, firstName:first,
         lastName:String((document.getElementById('apLast')||{}).value||'').trim(),
         position:(document.getElementById('apPos')||{}).value||'',
         number:(document.getElementById('apNum')||{}).value||null,
-        parentEmail:email, photo:photoData };
+        parentEmail:email, parentEmail2:email2 };
       if(saveBtn){ saveBtn.disabled=true; saveBtn.textContent='Adding...'; }
       fetch('/api/coach?action=add-player',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
         .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })

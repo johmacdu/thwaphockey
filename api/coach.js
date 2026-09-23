@@ -193,13 +193,14 @@ async function createTeam(req, res) {
 async function addPlayer(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
   const coach = await requireCoach(req, res); if (!coach) return;
-  const { code, firstName, lastName, number, position, parentEmail, photo } = parseBody(req);
+  const { code, firstName, lastName, number, position, parentEmail, parentEmail2, photo } = parseBody(req);
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
   if (!String(firstName || '').trim()) return res.status(400).json({ error: 'first name required' });
   if (!EMAIL_RE.test(String(parentEmail || '').trim().toLowerCase())) return res.status(400).json({ error: 'a parent email is required' });
+  if (String(parentEmail2 || '').trim() && !EMAIL_RE.test(String(parentEmail2).trim().toLowerCase())) return res.status(400).json({ error: 'second parent email is invalid' });
   // id = lowercase first name (same id space as player:<id>).
   const playerId = String(firstName).trim().toLowerCase();
-  const rec = await addMember(code, { playerId, firstName, lastName, number, position, parentEmail, photo, status: 'active' });
+  const rec = await addMember(code, { playerId, firstName, lastName, number, position, parentEmail, parentEmail2, photo, status: 'active' });
   return res.status(200).json({ ok: true, member: rec });
 }
 
@@ -216,12 +217,18 @@ async function removePlayer(req, res) {
 async function updatePlayer(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
   const coach = await requireCoach(req, res); if (!coach) return;
-  const { code, playerId, firstName, lastName, number, position, photo } = parseBody(req);
+  const { code, playerId, firstName, lastName, number, position, photo, parentEmail, parentEmail2 } = parseBody(req);
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
   if (firstName !== undefined && !String(firstName || '').trim()) {
     return res.status(400).json({ error: 'first name cannot be empty' });
   }
-  const rec = await updateMember(playerId, { firstName, lastName, number, position, photo });
+  if (parentEmail !== undefined && String(parentEmail || '').trim() && !EMAIL_RE.test(String(parentEmail).trim().toLowerCase())) {
+    return res.status(400).json({ error: 'parent email is invalid' });
+  }
+  if (parentEmail2 !== undefined && String(parentEmail2 || '').trim() && !EMAIL_RE.test(String(parentEmail2).trim().toLowerCase())) {
+    return res.status(400).json({ error: 'second parent email is invalid' });
+  }
+  const rec = await updateMember(playerId, { firstName, lastName, number, position, photo, parentEmail, parentEmail2 });
   if (!rec) return res.status(404).json({ error: 'unknown player' });
   return res.status(200).json({ ok: true, member: rec });
 }
