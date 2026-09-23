@@ -33,6 +33,7 @@ import {
   getTeam, setTeam, listMembers, addMember, getMember, removeMember,
   getCoach, setCoach, getIdpGoal, setIdpGoal, getGameGoalLog, logGameGoal,
   getTeamPlan, setTeamPlan,
+  getTeamGoal, setTeamGoal,
   addDrillSuggestion, listDrillSuggestions, setSuggestionStatus, listAllTeamCodes,
   updateMember, createResetToken, consumeResetToken,
   listTeamCoaches, ensureHeadCoach, addAssistantCoach, removeAssistantCoach, MAX_ASSISTANTS,
@@ -449,6 +450,25 @@ async function setPlan(req, res) {
   return res.status(200).json({ ok: true, plan: saved });
 }
 
+// GET the team's shared game-day goal. Public (players read it into their plan).
+async function teamGoal(req, res) {
+  if (!methodGuard(req, res, 'GET')) return;
+  const code = (req.query && req.query.code) || SEED_TEAM_CODE;
+  if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  res.setHeader('Cache-Control', 'no-store');
+  return res.status(200).json({ ok: true, teamGoal: await getTeamGoal(code) });
+}
+
+// POST the team's shared game-day goal. Coach-only. Empty text clears it.
+async function setTeamGoalHandler(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  const coach = await requireCoach(req, res); if (!coach) return;
+  const { code, text } = parseBody(req);
+  if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  const rec = await setTeamGoal(code, { text });
+  return res.status(200).json({ ok: true, teamGoal: rec });
+}
+
 // POST a coach's drill recommendation to the Thwap backlog. Coach-only.
 async function suggestDrill(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
@@ -629,6 +649,8 @@ export default async function handler(req, res) {
     case 'set-coach-profile': return setCoachProfile(req, res);
     case 'get-plan': return getPlan(req, res);
     case 'set-plan': return setPlan(req, res);
+    case 'team-goal': return teamGoal(req, res);
+    case 'set-team-goal': return setTeamGoalHandler(req, res);
     case 'suggest-drill': return suggestDrill(req, res);
     case 'drill-suggestions': return drillSuggestions(req, res);
     case 'review-suggestions': return reviewSuggestions(req, res);
@@ -650,6 +672,7 @@ export const _handlers = {
   updatePlayer, setPassword, requestPassword, resetPassword, requestCode,
   join, schedule, setIdp, idpGoal, logGoal, gameGoalLogRead,
   getPlan, setPlan,
+  teamGoal, setTeamGoal: setTeamGoalHandler,
   suggestDrill, drillSuggestions,
   reviewSuggestions, resolveSuggestion,
   teamCoaches, inviteCoach, removeCoach,

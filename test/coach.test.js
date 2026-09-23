@@ -229,6 +229,50 @@ describe('team weekly plan', () => {
   });
 });
 
+describe('team goal (coach -> every player Game Day plan)', () => {
+  it('defaults to null when unset', async () => {
+    await loginSeedCoach();
+    const res = makeRes();
+    await _handlers.teamGoal(get({ code: _seed.SEED_TEAM_CODE }), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.teamGoal).toBeNull();
+  });
+
+  it('coach sets a team goal and it reads back with setBy=coach', async () => {
+    const login = await loginSeedCoach();
+    const token = login.body.token;
+    const setRes = makeRes();
+    await _handlers.setTeamGoal(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, text: 'Talk on the ice' }), setRes);
+    expect(setRes.statusCode).toBe(200);
+    expect(setRes.body.teamGoal.text).toBe('Talk on the ice');
+    expect(setRes.body.teamGoal.setBy).toBe('coach');
+
+    const getRes = makeRes();
+    await _handlers.teamGoal(get({ code: _seed.SEED_TEAM_CODE }), getRes);
+    expect(getRes.body.teamGoal.text).toBe('Talk on the ice');
+  });
+
+  it('empty text clears the team goal', async () => {
+    const login = await loginSeedCoach();
+    const token = login.body.token;
+    await _handlers.setTeamGoal(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, text: 'Backcheck hard' }), makeRes());
+    const clearRes = makeRes();
+    await _handlers.setTeamGoal(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, text: '   ' }), clearRes);
+    expect(clearRes.statusCode).toBe(200);
+    expect(clearRes.body.teamGoal).toBeNull();
+    const getRes = makeRes();
+    await _handlers.teamGoal(get({ code: _seed.SEED_TEAM_CODE }), getRes);
+    expect(getRes.body.teamGoal).toBeNull();
+  });
+
+  it('blocks set-team-goal without a coach token', async () => {
+    await loginSeedCoach();
+    const res = makeRes();
+    await _handlers.setTeamGoal(post({ code: _seed.SEED_TEAM_CODE, text: 'x' }), res);
+    expect(res.statusCode).toBe(401);
+  });
+});
+
 describe('drill suggestions (coach -> Thwap backlog)', () => {
   it('coach suggests a drill and it reads back, newest first', async () => {
     const login = await loginSeedCoach();
