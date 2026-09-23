@@ -29,21 +29,22 @@ body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2));color:var(
 h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70px);line-height:.95;letter-spacing:.005em;margin:8px 0 12px}
 .header p{max-width:700px;color:var(--muted);font-size:16px;line-height:1.5;margin:0}
 .section{margin-top:34px}
-/* First goal section clears the position segment control. */
-.section.pos-shared:first-of-type{margin-top:30px}
-.section-head{padding-bottom:9px;margin-bottom:22px}
-.section-head h2{font-family:'Archivo Black',system-ui,sans-serif;font-size:22px;margin:0;letter-spacing:.005em}
-.section-head p{color:var(--muted);font-size:13px;margin:8px 0 0}
-/* Collapsible categories: the head is a button; the grid collapses. */
-.section-head{display:flex;align-items:center;gap:12px;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:14px 4px;margin-bottom:0;border-bottom:1px solid var(--line);width:100%;text-align:left;background:none;border-left:0;border-right:0;border-top:0;font-family:inherit;color:inherit}
+/* First goal section clears the position picker. */
+.section.pos-shared:first-of-type{margin-top:26px}
+/* Collapsible categories: header is a button; grid collapses. No divider lines;
+   generous spacing separates the accordions instead. */
+.section-head{display:flex;align-items:center;gap:13px;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:12px 12px;margin:0;width:100%;text-align:left;background:none;border:0;border-radius:16px;font-family:inherit;color:inherit;transition:background .12s ease}
+.section-head:hover{background:var(--card2)}
+.sh-ico{flex:none;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-size:22px;background:var(--soft)}
 .section-head .sh-txt{flex:1 1 auto;min-width:0}
-.section-head p{margin:6px 0 0}
-.sh-badge{flex:none;font-size:12px;font-weight:900;color:var(--green2);background:var(--soft);border-radius:999px;padding:3px 10px;visibility:hidden}
+.section-head h2{font-family:'Archivo Black',system-ui,sans-serif;font-size:19px;margin:0;line-height:1.1;letter-spacing:.005em}
+.section-head p{color:var(--muted);font-size:13px;margin:4px 0 0}
+.sh-badge{flex:none;font-size:12px;font-weight:900;color:var(--ink);background:var(--lime);border-radius:999px;padding:3px 10px;visibility:hidden}
 .sh-badge.on{visibility:visible}
-.sh-chev{flex:none;font-size:20px;color:var(--muted);transition:transform .18s ease}
+.sh-chev{flex:none;font-size:22px;color:var(--muted);transition:transform .18s ease;margin-left:2px}
 .section.open .sh-chev{transform:rotate(90deg)}
 .section .grid{max-height:0;overflow:hidden;opacity:0;transition:max-height .25s ease,opacity .2s ease,margin .25s ease;margin-top:0}
-.section.open .grid{max-height:4000px;opacity:1;margin-top:18px}
+.section.open .grid{max-height:4000px;opacity:1;margin-top:14px;padding-bottom:22px;border-bottom:1px solid var(--line)}
 @media (prefers-reduced-motion: reduce){.section .grid,.sh-chev{transition:none}}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .goal{display:grid;grid-template-columns:48px 1fr;gap:14px;min-height:176px;padding:18px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,var(--panel),var(--panel2));cursor:pointer;position:relative;transition:.15s ease}
@@ -57,17 +58,24 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 .tick{display:none;position:absolute;right:14px;bottom:12px;width:26px;height:26px;border-radius:50%;background:var(--green);color:var(--onaccent);font-weight:1000;place-items:center}
 
 /* Position picker */
-.pospick{margin:2px 0 8px}
-.pospick-q{font-size:15px;font-weight:800;color:var(--text);margin:0 0 10px}
-.posseg{display:inline-grid;grid-auto-flow:column;gap:4px;padding:4px;border:1px solid var(--line);border-radius:999px;background:var(--panel)}
-.posbtn{appearance:none;font-family:inherit;font-size:15px;font-weight:850;color:var(--muted);background:transparent;border:0;border-radius:999px;padding:9px 22px;min-height:44px;cursor:pointer;transition:.15s ease}
-.posbtn.on{background:var(--green);color:var(--onaccent)}
+.pospick{margin:2px 0 20px}
+.madlib{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(20px,5.4vw,28px);line-height:1.25;margin:0 0 8px;color:var(--text);letter-spacing:.005em}
+#helper{color:var(--muted);font-size:15px;font-weight:700;margin:0}
+.pos-word{color:var(--green2);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px;cursor:pointer;-webkit-tap-highlight-color:transparent;background:none;border:0;font:inherit;padding:0 2px}
+.pos-word:hover{opacity:.82}
+.pos-sheet{margin:12px 0 0;border:1px solid var(--line);border-radius:16px;background:var(--card);box-shadow:0 10px 26px var(--shadow);overflow:hidden;max-width:280px}
+.pos-opt{display:flex;width:100%;align-items:center;gap:12px;padding:14px 18px;min-height:44px;background:none;border:0;border-top:1px solid var(--line);font:inherit;font-size:16px;font-weight:800;color:var(--text);cursor:pointer;text-align:left}
+.pos-opt:first-child{border-top:0}
+.pos-opt .pos-dot{width:12px;height:12px;border-radius:50%;flex:none}
+.pos-opt.on{background:color-mix(in srgb,var(--lime) 30%,var(--card));font-weight:900}
+.pos-opt.on:after{content:'\2713';margin-left:auto;color:var(--green);font-weight:900}
 
 /* Position visibility: only sections for the active position are shown.
    Shared sections are always shown. Default (no class) shows Forward. */
 .pos-only{display:none}
 body.pos-forward .pos-only-forward{display:block}
 body.pos-defense .pos-only-defense{display:block}
+body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
 
 .actionbar{
   position:fixed;
@@ -551,18 +559,19 @@ body.pos-defense .pos-only-defense{display:block}
       <div class="kicker" aria-hidden="true" style="min-height:15px"></div>
       <div class="gd-target" id="gdTarget" role="img" aria-label="Target">🎯</div>
       <h1>Your Game Plan</h1>
-      <p id="helper">Pick 3 goals for the game.</p>
     </header>
 
     <div class="pospick">
-      <p class="pospick-q">What position are you playing today?</p>
-      <div class="posseg" role="group" aria-label="Position">
-        <button type="button" class="posbtn" id="posForward" data-pos="F">Forward</button>
-        <button type="button" class="posbtn" id="posDefense" data-pos="D">Defense</button>
+      <p class="madlib">Today I&rsquo;m playing <button type="button" class="pos-word" id="posWord" aria-haspopup="true" aria-expanded="false">forward</button>.</p>
+      <p id="helper">Pick 3 goals for the game.</p>
+      <div class="pos-sheet" id="posSheet" role="menu" hidden>
+        <button type="button" class="pos-opt" data-pos="F" role="menuitemradio"><span class="pos-dot" style="background:var(--orange)"></span>Forward</button>
+        <button type="button" class="pos-opt" data-pos="D" role="menuitemradio"><span class="pos-dot" style="background:var(--blue)"></span>Defense</button>
+        <button type="button" class="pos-opt" data-pos="B" role="menuitemradio"><span class="pos-dot" style="background:var(--lime)"></span>Forward and defense</button>
       </div>
     </div>
 
-    <section class="section pos-shared"><button type="button" class="section-head"><span class="sh-txt"><h2>Brain / Pre-Scan</h2><p>Get your head up before the puck arrives.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
+    <section class="section pos-shared"><button type="button" class="section-head"><span class="sh-ico" style="background:color-mix(in srgb,var(--blue) 22%,transparent)">🧠</span><span class="sh-txt"><h2>Brain / Pre-Scan</h2><p>Get your head up before the puck arrives.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
 <label class="goal goal-1" for="g1">
   <div class="emoji">👀</div>
   <div class="copy">
@@ -591,7 +600,7 @@ body.pos-defense .pos-only-defense{display:block}
   <div class="tick">✓</div>
 </label>
 </div></section>
-<section class="section pos-shared"><button type="button" class="section-head"><span class="sh-txt"><h2>Read the Game</h2><p>Notice what is happening and use it.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
+<section class="section pos-shared"><button type="button" class="section-head"><span class="sh-ico" style="background:color-mix(in srgb,var(--green2) 22%,transparent)">👀</span><span class="sh-txt"><h2>Read the Game</h2><p>Notice what is happening and use it.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
 <label class="goal goal-4" for="g4">
   <div class="emoji">🕵️</div>
   <div class="copy">
@@ -629,7 +638,7 @@ body.pos-defense .pos-only-defense{display:block}
   <div class="tick">✓</div>
 </label>
 </div></section>
-<section class="section pos-shared"><button type="button" class="section-head"><span class="sh-txt"><h2>Make Teammates Better</h2><p>Use your game to lift the players around you.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
+<section class="section pos-shared"><button type="button" class="section-head"><span class="sh-ico" style="background:color-mix(in srgb,var(--lime) 22%,transparent)">🤝</span><span class="sh-txt"><h2>Make Teammates Better</h2><p>Use your game to lift the players around you.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
 <label class="goal goal-8" for="g8">
   <div class="emoji">🤝</div>
   <div class="copy">
@@ -712,7 +721,7 @@ body.pos-defense .pos-only-defense{display:block}
   <div class="tick">✓</div>
 </label>
 </div></section>
-<section class="section pos-only pos-only-forward"><button type="button" class="section-head"><span class="sh-txt"><h2>Deception &amp; Space</h2><p>Make defenders react to you.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
+<section class="section pos-only pos-only-forward"><button type="button" class="section-head"><span class="sh-ico" style="background:color-mix(in srgb,var(--orange) 22%,transparent)">🪄</span><span class="sh-txt"><h2>Deception &amp; Space</h2><p>Make defenders react to you.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
 <label class="goal goal-17" for="g17">
   <div class="emoji">🪄</div>
   <div class="copy">
@@ -759,7 +768,7 @@ body.pos-defense .pos-only-defense{display:block}
   <div class="tick">✓</div>
 </label>
 </div></section>
-<section class="section pos-only pos-only-forward"><button type="button" class="section-head"><span class="sh-txt"><h2>Passing &amp; Movement</h2><p>Create chances with movement, timing, and teammates.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
+<section class="section pos-only pos-only-forward"><button type="button" class="section-head"><span class="sh-ico" style="background:color-mix(in srgb,var(--green2) 22%,transparent)">🔄</span><span class="sh-txt"><h2>Passing &amp; Movement</h2><p>Create chances with movement, timing, and teammates.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
 <label class="goal goal-22" for="g22">
   <div class="emoji">🤝</div>
   <div class="copy">
@@ -797,7 +806,7 @@ body.pos-defense .pos-only-defense{display:block}
   <div class="tick">✓</div>
 </label>
 </div></section>
-<section class="section pos-only pos-only-forward"><button type="button" class="section-head"><span class="sh-txt"><h2>Attack the Net</h2><p>Great things happen at the front of the net.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
+<section class="section pos-only pos-only-forward"><button type="button" class="section-head"><span class="sh-ico" style="background:color-mix(in srgb,var(--orange) 22%,transparent)">🥅</span><span class="sh-txt"><h2>Attack the Net</h2><p>Great things happen at the front of the net.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
 <label class="goal goal-26" for="g26">
   <div class="emoji">🏒</div>
   <div class="copy">
@@ -835,7 +844,7 @@ body.pos-defense .pos-only-defense{display:block}
   <div class="tick">✓</div>
 </label>
 </div></section>
-<section class="section pos-only pos-only-defense"><button type="button" class="section-head"><span class="sh-txt"><h2>Retrieval &amp; Breakout</h2><p>Keep possession and beat pressure.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
+<section class="section pos-only pos-only-defense"><button type="button" class="section-head"><span class="sh-ico" style="background:color-mix(in srgb,var(--blue) 22%,transparent)">↩️</span><span class="sh-txt"><h2>Retrieval &amp; Breakout</h2><p>Keep possession and beat pressure.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
 <label class="goal goal-30" for="g30">
   <div class="emoji">↩️</div>
   <div class="copy">
@@ -882,7 +891,7 @@ body.pos-defense .pos-only-defense{display:block}
   <div class="tick">✓</div>
 </label>
 </div></section>
-<section class="section pos-only pos-only-defense"><button type="button" class="section-head"><span class="sh-txt"><h2>Activate / Join the Rush</h2><p>Your play isn&#x27;t over after the breakout pass.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
+<section class="section pos-only pos-only-defense"><button type="button" class="section-head"><span class="sh-ico" style="background:color-mix(in srgb,var(--lime) 22%,transparent)">🚀</span><span class="sh-txt"><h2>Activate / Join the Rush</h2><p>Your play isn&#x27;t over after the breakout pass.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
 <label class="goal goal-35" for="g35">
   <div class="emoji">🚀</div>
   <div class="copy">
@@ -929,7 +938,7 @@ body.pos-defense .pos-only-defense{display:block}
   <div class="tick">✓</div>
 </label>
 </div></section>
-<section class="section pos-only pos-only-defense"><button type="button" class="section-head"><span class="sh-txt"><h2>Defend Without Chasing</h2><p>Control where the attacker can go.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
+<section class="section pos-only pos-only-defense"><button type="button" class="section-head"><span class="sh-ico" style="background:color-mix(in srgb,var(--pnw) 22%,transparent)">🧱</span><span class="sh-txt"><h2>Defend Without Chasing</h2><p>Control where the attacker can go.</p></span><span class="sh-badge">0 picked</span><span class="sh-chev" aria-hidden="true">&#8250;</span></button><div class="grid">
 <label class="goal goal-40" for="g40">
   <div class="emoji">🧱</div>
   <div class="copy">
@@ -1446,26 +1455,34 @@ body.pos-defense .pos-only-defense{display:block}
     if(finalMode && wantFinal && count >= selfCap) finalMode.checked = true;
   }
 
-  // ---- Position picker ----
-  var fBtn = document.getElementById('posForward');
-  var dBtn = document.getElementById('posDefense');
+  // ---- Position picker (madlib: tap the word to switch) ----
+  var posWord = document.getElementById('posWord');
+  var posSheet = document.getElementById('posSheet');
+  var posOpts = posSheet ? posSheet.querySelectorAll('.pos-opt') : [];
   function applyPos(pos){
-    var isD = pos === 'D';
-    document.body.classList.toggle('pos-forward', !isD);
-    document.body.classList.toggle('pos-defense', isD);
-    if(fBtn) fBtn.classList.toggle('on', !isD);
-    if(dBtn) dBtn.classList.toggle('on', isD);
+    document.body.classList.toggle('pos-forward', pos === 'F');
+    document.body.classList.toggle('pos-defense', pos === 'D');
+    document.body.classList.toggle('pos-both', pos === 'B');
+    if(posWord) posWord.firstChild.nodeValue = pos === 'D' ? 'defense' : (pos === 'B' ? 'forward and defense' : 'forward');
+    for(var i=0;i<posOpts.length;i++){ posOpts[i].classList.toggle('on', posOpts[i].getAttribute('data-pos') === pos); }
+  }
+  function openSheet(open){
+    if(!posSheet||!posWord) return;
+    posSheet.hidden = !open;
+    posWord.setAttribute('aria-expanded', open ? 'true' : 'false');
   }
   function setPos(pos){
     applyPos(pos);
     try{ localStorage.setItem(PKEY, pos); }catch(e){}
+    openSheet(false);
     // Switching position does NOT clear already-picked shared goals; just re-run UI.
     updateUI();
   }
-  if(fBtn) fBtn.addEventListener('click', function(){ setPos('F'); });
-  if(dBtn) dBtn.addEventListener('click', function(){ setPos('D'); });
+  if(posWord) posWord.addEventListener('click', function(e){ e.stopPropagation(); openSheet(posSheet.hidden); });
+  for(var pi=0; pi<posOpts.length; pi++){ posOpts[pi].addEventListener('click', function(){ setPos(this.getAttribute('data-pos')); }); }
+  document.addEventListener('click', function(e){ if(posSheet && !posSheet.hidden && !posSheet.contains(e.target) && e.target !== posWord){ openSheet(false); } });
   var startPos = 'F';
-  try{ var sp = localStorage.getItem(PKEY); if(sp === 'F' || sp === 'D') startPos = sp; }catch(e){}
+  try{ var sp = localStorage.getItem(PKEY); if(sp === 'F' || sp === 'D' || sp === 'B') startPos = sp; }catch(e){}
   applyPos(startPos);
 
   for(var i=0;i<boxes.length;i++){ boxes[i].addEventListener('change', function(){ save(); updateUI(); }); }
@@ -1494,23 +1511,24 @@ body.pos-defense .pos-only-defense{display:block}
   restore();
   updateUI();
 
-  // ---- Collapsible categories (collapsed by default; a picked section auto-opens) ----
+  // ---- Collapsible categories (first category open by default; a picked section also auto-opens) ----
   var sectionEls = document.querySelectorAll('section.section');
   for(var si=0; si<sectionEls.length; si++){
-    (function(sec){
+    (function(sec, idx){
       var head = sec.querySelector('.section-head');
       if(!head) return;
-      // Auto-open a section that already has a pick restored; else collapsed.
+      // Open the first category on load; auto-open any section that already has a pick.
       var hasPick = false;
       var lbls = sec.querySelectorAll('label.goal');
       for(var k=0;k<lbls.length;k++){ var t=document.getElementById(lbls[k].getAttribute('for')); if(t&&t.checked){ hasPick=true; break; } }
-      if(hasPick) sec.classList.add('open');
-      head.setAttribute('aria-expanded', hasPick ? 'true' : 'false');
+      var startOpen = hasPick || idx === 0;
+      if(startOpen) sec.classList.add('open');
+      head.setAttribute('aria-expanded', startOpen ? 'true' : 'false');
       head.addEventListener('click', function(){
         var open = sec.classList.toggle('open');
         head.setAttribute('aria-expanded', open ? 'true' : 'false');
       });
-    })(sectionEls[si]);
+    })(sectionEls[si], si);
   }
 
   function playerId(){ try{ return (localStorage.getItem('bfPlayer')||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,''); }catch(e){ return ''; } }
