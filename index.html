@@ -122,17 +122,21 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 .pnextgame{display:block;text-decoration:none;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:14px;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease}
 .pnextgame:hover{transform:translateY(-2px);box-shadow:0 10px 24px var(--shadow)}
 .pnextgame:active{transform:scale(.99)}
-.png-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.png-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.png-top:empty{display:none}
 .png-gd{display:inline-block;background:var(--orange);color:#3a2200;font-family:'Archivo Black',system-ui,sans-serif;font-size:11px;padding:5px 11px;border-radius:999px;letter-spacing:.04em}
 .png-count{text-align:center;background:var(--lime);color:var(--ink);border-radius:12px;padding:5px 10px;font-family:'Archivo Black',system-ui,sans-serif;line-height:.85}
 .png-count b{font-size:19px;display:block}.png-count span{font-size:9px;font-weight:900;text-transform:uppercase}
-.png-opp{font-family:'Archivo Black',system-ui,sans-serif;font-size:24px;margin:12px 0 2px;line-height:1}
-.png-meta{font-size:14px;color:var(--muted)}
+.png-opp{font-family:'Archivo Black',system-ui,sans-serif;font-size:24px;margin:0 0 3px;line-height:1.05}
+.png-count{flex:none}
+.png-meta{font-size:14px;color:var(--muted);line-height:1.35}
 .png-focus{margin-top:14px;background:color-mix(in srgb,var(--lime) 22%,var(--card));border:1px solid color-mix(in srgb,var(--lime) 55%,var(--line));border-radius:12px;padding:11px 13px}
 .png-focus-lab{display:block;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:var(--green)}
-.png-focus-goal{display:block;font-family:'Archivo Black',system-ui,sans-serif;font-size:17px;color:var(--text);margin-top:2px}
-.png-cta{display:flex;align-items:center;gap:6px;margin-top:14px;font-family:'Anton',system-ui,sans-serif;font-size:17px;letter-spacing:.02em;color:var(--green)}
-.png-cta .chev{font-size:18px}
+.png-focus-goal{display:block;font-family:'Archivo Black',system-ui,sans-serif;font-size:17px;color:var(--text);margin-top:2px;line-height:1.15}
+.png-cta{display:flex;align-items:center;gap:6px;margin-top:16px;font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;font-size:15px;letter-spacing:.005em;color:var(--green)}
+.png-cta .chev{font-family:system-ui,sans-serif;font-size:18px;font-weight:700}
+.png-cta-done{color:var(--muted)}
+.png-cta-done::before{content:'\2713';display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--green);color:var(--onaccent);font-size:12px;font-weight:900;margin-right:2px}
 a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient(180deg,var(--panel2),var(--panel));padding:18px;min-height:94px;box-shadow:0 6px 18px var(--shadow)}.ico{width:50px;height:50px;border-radius:16px;background:var(--soft);display:grid;place-items:center;font-size:25px}.nav h2{margin:0;font-size:19px;font-weight:800;letter-spacing:.005em}.nav p{margin:5px 0 0;font-size:16px;color:var(--muted)}.chev{font-size:44px;color:var(--chev)}
 .nav.soon{cursor:default;opacity:.72}.nav.soon:hover{border-color:var(--line);transform:none}
 /* Bolder, consistent discipline color: green stick, blue shoot, orange dryland.
@@ -1501,8 +1505,10 @@ body.login-locked{overflow:hidden}
 })();})();</script><div class='forrow'><span class='forline'>3 things, about 30 min</span><button type='button' class='daytip daytip-chip' id='dayTip' aria-label='Show today’s date'>Today<span class='daydate' id='dayDate'>Sunday, September 13</span></button></div></div>
 <div class='cards'>
 <a class='pnextgame' id='pNextGame' href='hockey_game_goals.html'>
-  <div class='png-top'><span class='png-gd' id='pngGd'>Game day</span><span class='png-count' id='pngCount' hidden><b id='pngDays'></b><span>days</span></span></div>
-  <div class='png-opp' id='pngOpp'>Game Day Goals</div>
+  <div class='png-top'>
+    <div class='png-opp' id='pngOpp'>Game Day Goals</div>
+    <span class='png-count' id='pngCount' hidden><b id='pngDays'></b><span>days</span></span>
+  </div>
   <div class='png-meta' id='pngMeta'>Pick your 3 goals for the next game</div>
   <div class='png-focus' id='pngFocus' hidden><span class='png-focus-lab'>Coach wants everyone on</span><span class='png-focus-goal' id='pngFocusGoal'></span></div>
   <div class='png-cta' id='pngCta'>Set your game goals <span class='chev' aria-hidden='true'>›</span></div>
@@ -2365,8 +2371,7 @@ window.addEventListener('hashchange',function(){ if(location.hash===''||location
     .then(function(j){
       var g=j&&j.ok&&j.next&&j.next.nextGame; if(!g) return;
       var dt=pd(g.date);
-      var gd=document.getElementById('pngGd'); if(gd) gd.textContent='Game day '+DOW[dt.getDay()];
-      var opp=document.getElementById('pngOpp'); if(opp) opp.textContent=(g.home?'':'at ')+(g.opponent||'TBD');
+      var opp=document.getElementById('pngOpp'); if(opp) opp.textContent='Game '+(g.home?'vs ':'at ')+(g.opponent||'TBD');
       var meta=document.getElementById('pngMeta');
       if(meta){ var b=[MON[dt.getMonth()]+' '+dt.getDate()]; if(g.time) b.push(ftime(g.time)); if(g.place) b.push(g.place); meta.textContent=b.join(' | '); }
       var days=daysUntil(g.date), cnt=document.getElementById('pngCount'), dn=document.getElementById('pngDays');
@@ -2377,7 +2382,7 @@ window.addEventListener('hashchange',function(){ if(location.hash===''||location
     .then(function(r){ return r.json(); })
     .then(function(j){ if(j&&j.ok&&j.teamGoal&&j.teamGoal.text){ var fg=document.getElementById('pngFocusGoal'), fw=document.getElementById('pngFocus'); if(fg) fg.textContent=j.teamGoal.text; if(fw) fw.hidden=false; } }).catch(function(){});
   var set=false; try{ var picks=JSON.parse(localStorage.getItem('thwapGameGoals')||'[]'); set=Array.isArray(picks)&&picks.length>0; }catch(_){}
-  if(set){ var cta=document.getElementById('pngCta'); if(cta) cta.innerHTML='Your goals are set <span class="chev" aria-hidden="true">\u203a</span>'; }
+  if(set){ var cta=document.getElementById('pngCta'); if(cta){ cta.textContent='Your game goals are set'; cta.classList.add('png-cta-done'); } }
 })();
 /* A coach must never land on #home: it is display:none!important for coaches, so
    landing there shows a blank/stuck page (this is why the Team X looked like it
