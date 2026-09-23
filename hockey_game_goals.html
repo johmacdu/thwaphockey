@@ -563,7 +563,7 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
     <header class="header">
       <div class="kicker" aria-hidden="true" style="min-height:15px"></div>
       <div class="gd-target" id="gdTarget" role="img" aria-label="Target">🎯</div>
-      <h1>Your Game Plan</h1>
+      <h1 id="planTitle">Your Game Plan</h1>
     </header>
 
     <div class="pospick">
@@ -992,8 +992,8 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
   </div>
 
   <div class="final-view">
-    <h1>Your Game Plan</h1>
-    <p class="final-intro">These are the things to notice, try, and compete on today. No grading. Just play, then talk about what happened.</p>
+    <h1 id="planTitleFinal">Your Game Plan</h1>
+    <p class="final-intro" id="finalIntro">These are the things to notice, try, and compete on today. No grading. Just play, then talk about what happened.</p>
 
     <div class="final-list">
       <article class="final-card coachgoal-card" id="coachGoalCard" hidden>
@@ -1512,6 +1512,39 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
           if(card) card.hidden = false;
           updateUI();
         }
+      })
+      .catch(function(){});
+  })();
+
+  // Personalize the plan title with the logged-in player's first name, and tie the
+  // day line to the next scheduled game. Falls back to neutral copy when unknown.
+  (function(){
+    var t1 = document.getElementById('planTitle');
+    var t2 = document.getElementById('planTitleFinal');
+    var first = '';
+    try{
+      var p = (localStorage.getItem('bfPlayer') || '').trim();
+      var authed = /(?:^|; )thwapAuth=/.test(document.cookie);
+      if(p && authed) first = p.split(/\s+/)[0];
+    }catch(e){}
+    if(first){
+      var title = first + '\u2019s Game Plan';
+      if(t1) t1.textContent = title;
+      if(t2) t2.textContent = title;
+      try{ document.title = title; }catch(e){}
+    }
+    // Next-game day line: "Your plan for Saturday's game." when a game is scheduled.
+    var DOW = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    var intro = document.getElementById('finalIntro');
+    fetch('/api/coach?action=schedule')
+      .then(function(r){ return r.json(); })
+      .then(function(j){
+        var g = j && j.ok && j.next && j.next.nextGame;
+        if(!g || !g.date) return;
+        var d = new Date(g.date + 'T12:00:00');
+        if(isNaN(d.getTime())) return;
+        var line = 'Your plan for ' + DOW[d.getDay()] + '\u2019s game.';
+        if(intro) intro.textContent = line + ' These are the things to notice, try, and compete on. No grading \u2014 just play, then talk about what happened.';
       })
       .catch(function(){});
   })();
