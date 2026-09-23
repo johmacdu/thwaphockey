@@ -223,6 +223,11 @@ describe('Menus start closed: [hidden] overrides display', () => {
     expect(m).not.toBeNull();
     expect(m[1]).toMatch(/text-align:left/);
   });
+  it('.bcoach has an explicit [hidden]{display:none} rule (Add assistant hidden for players)', () => {
+    // .bcoach is display:inline-flex; without this, the hidden Add-assistant
+    // button showed for players (display overrode the hidden attribute).
+    expect(html).toMatch(/\.bcoach\[hidden\]\{display:none\}/);
+  });
   it('.pgate has an explicit [hidden]{display:none} rule (full-screen overlay tap-blocker)', () => {
     // .pgate is position:fixed;inset:0;z-index:80. Without this, a hidden switch/
     // profile gate sat invisibly over the whole Team page and swallowed every tap
