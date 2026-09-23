@@ -428,6 +428,35 @@ body.is-coach #home{display:none!important}
 /* Block head: big color-coded count + label/subhead. Count is a status signal:
    amber = goals to set, red = not trained, green when zero (handled). */
 .ch-blocks{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-3)}
+.ch-nextwrap{margin-top:var(--gap-section)}
+.ch-seclab{font-weight:900;font-size:var(--fs-eyebrow);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 var(--sp-2)}
+.nextgame{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);padding:16px;color:var(--text);cursor:pointer;font-family:inherit;transition:border-color .12s ease,box-shadow .12s ease}
+.nextgame:hover{border-color:var(--line2);box-shadow:0 6px 18px var(--shadow)}
+.ng-when{flex:none;width:56px;text-align:center}
+.ng-mon{display:block;font-size:11px;font-weight:900;text-transform:uppercase;color:var(--muted);letter-spacing:.04em}
+.ng-day{display:block;font-family:'Archivo Black',system-ui,sans-serif;font-size:28px;line-height:.95}
+.ng-body{flex:1;min-width:0}
+.ng-lab{display:block;font-size:var(--fs-eyebrow);font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.ng-opp{display:block;font-weight:800;font-size:var(--fs-cardtitle);margin:2px 0 1px}
+.ng-meta{display:block;font-size:var(--fs-support);color:var(--muted)}
+.ng-chev{flex:none;color:var(--muted);font-size:22px}
+.sched-add{width:100%;font-family:inherit;font-weight:800;font-size:14px;background:var(--lime);color:var(--ink);border:0;border-radius:12px;padding:13px;cursor:pointer;margin-bottom:6px}
+.sched-ev{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--card);margin-bottom:8px}
+.sched-ev .d{flex:none;width:46px;text-align:center}
+.sched-ev .d .m{display:block;font-size:10px;font-weight:900;text-transform:uppercase;color:var(--muted)}
+.sched-ev .d .n{display:block;font-family:'Archivo Black',system-ui,sans-serif;font-size:20px;line-height:.95}
+.sched-ev .b{flex:1;min-width:0}
+.sched-ev .o{display:block;font-weight:800}
+.sched-ev .meta{display:block;font-size:12px;color:var(--muted)}
+.sched-ev .tag{flex:none;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.03em;padding:3px 8px;border-radius:999px}
+.tag-home{background:#DCFCE7;color:#14532D}.tag-away{background:#E0F2FE;color:#0C4A6E}
+.sched-empty{color:var(--muted);font-weight:700}
+.sched-ha{display:flex;gap:8px}
+.sched-ha label{flex:1}
+.sched-ha input{display:none}
+.sched-ha span{display:block;text-align:center;padding:13px;border:1px solid var(--line2);border-radius:12px;background:var(--card);font-weight:800;cursor:pointer;font-size:14px;color:var(--text)}
+.sched-ha input:checked+span{background:var(--lime);border-color:transparent;color:var(--ink)}
+.backlink{align-self:flex-start;font-weight:800;font-size:13px;color:var(--muted);background:none;border:0;cursor:pointer;padding:0;font-family:inherit}
 .ch-block{display:flex;flex-direction:column;align-items:flex-start;gap:var(--sp-1);padding:var(--sp-4);border:1px solid var(--line);border-radius:var(--r-card);background:var(--card);text-decoration:none;color:var(--text);min-height:var(--tap)}
 .ch-block .lb-scope{margin:0;font-size:var(--fs-cardtitle)}
 .ch-block .ch-blocksub{margin:0}
@@ -1123,6 +1152,15 @@ body.login-locked{overflow:hidden}
 <div class='board ch-topfive' id='chTop'></div>
 </div>
 
+<div class='ch-nextwrap'>
+<p class='ch-seclab'>Next up</p>
+<button type='button' class='nextgame' id='chNextGame'>
+  <span class='ng-when'><span class='ng-mon' id='ngMon'>&mdash;</span><span class='ng-day' id='ngDay'></span></span>
+  <span class='ng-body'><span class='ng-lab' id='ngLab'>Next game</span><span class='ng-opp' id='ngOpp'>No games scheduled</span><span class='ng-meta' id='ngMeta'>Tap to add one</span></span>
+  <span class='ng-chev' aria-hidden='true'>&#8250;</span>
+</button>
+</div>
+
 <div class='lb-divider'></div>
 
 <div class='ch-blocks'>
@@ -1235,6 +1273,35 @@ body.login-locked{overflow:hidden}
       <p class='pgate-msg' id='coachPwMsg' aria-live='polite'></p>
     </div>
   </form>
+</div>
+<div class='sheet' id='schedSheet' hidden>
+  <div class='sheet-scrim' id='schedScrim'></div>
+  <div class='sheet-panel'>
+    <button type='button' class='pgate-x' id='schedX' aria-label='Close'>&#215;</button>
+    <div class='sched-list' id='schedList'>
+      <h2 class='pgate-h'>Schedule</h2>
+      <button type='button' class='sched-add' id='schedShowAdd'>+ Add a game</button>
+      <p class='ch-seclab'>Upcoming</p>
+      <div id='schedEvents'></div>
+      <p class='sched-empty' id='schedEmpty' hidden>No games yet. Add your first one.</p>
+    </div>
+    <form class='sched-addform' id='schedAddForm' novalidate hidden>
+      <button type='button' class='backlink' id='schedBack'>&#8249; Back to schedule</button>
+      <h2 class='pgate-h'>Add a game</h2>
+      <label class='sheet-lab'>Date<input class='pgate-in' id='sgDate' type='date' required></label>
+      <label class='sheet-lab'>Opponent<input class='pgate-in' id='sgOpp' type='text' autocomplete='off' placeholder='Team name' required></label>
+      <div class='sheet-lab'>Home or away?
+        <div class='sched-ha'>
+          <label><input type='radio' name='sgHA' id='sgHome' checked><span>Home</span></label>
+          <label><input type='radio' name='sgHA'><span>Away</span></label>
+        </div>
+      </div>
+      <label class='sheet-lab'>Time<input class='pgate-in' id='sgTime' type='time'></label>
+      <label class='sheet-lab'>Place<input class='pgate-in' id='sgPlace' type='text' autocomplete='off' placeholder='Rink or city'></label>
+      <button type='submit' class='pgate-go' id='sgSave'>Save game</button>
+      <p class='pgate-msg' id='sgMsg' aria-live='polite'></p>
+    </form>
+  </div>
 </div>
 </section>
 
@@ -1467,6 +1534,76 @@ window.thwapActiveTeam=function(coach){
   var myEmail=(coach.email||'').toLowerCase();
   /* A coach opens any player straight into the normal stat page, same view as a
      player sees. */
+  /* Schedule: fill the Coach Home "Next game" block, and a side sheet that lists
+     upcoming games + a dead-simple add-game form (POST add-event). */
+  (function(){
+    var block=document.getElementById('chNextGame'); if(!block) return;
+    var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    function parseDate(d){ return new Date((d||'')+'T12:00:00'); }
+    function fmtTime(t){ if(!t) return ''; var p=String(t).split(':'); var h=parseInt(p[0],10); var m=p[1]||'00'; var ap=h<12?'AM':'PM'; var h12=h%12; if(h12===0)h12=12; return h12+':'+m+' '+ap; }
+    function metaLine(ev){ var dt=parseDate(ev.date); var bits=[DOW[dt.getDay()]]; if(ev.time) bits.push(fmtTime(ev.time)); if(ev.place) bits.push(ev.place); return bits.join(' | '); }
+    function fillNext(next){
+      var g=next&&next.nextGame;
+      var mon=document.getElementById('ngMon'), day=document.getElementById('ngDay'),
+          opp=document.getElementById('ngOpp'), meta=document.getElementById('ngMeta'), lab=document.getElementById('ngLab');
+      if(g){ var dt=parseDate(g.date); mon.textContent=MON[dt.getMonth()]; day.textContent=dt.getDate();
+        lab.textContent=(g.kind==='tournament'?'Next tournament':'Next game');
+        opp.textContent=(g.home?'':'at ')+(g.opponent||'TBD'); meta.textContent=metaLine(g);
+      } else { mon.textContent='\u2014'; day.textContent=''; lab.textContent='Next game'; opp.textContent='No games scheduled'; meta.textContent='Tap to add one'; }
+    }
+    function renderList(sched){
+      var wrap=document.getElementById('schedEvents'), empty=document.getElementById('schedEmpty'); if(!wrap) return;
+      var today=new Date().toISOString().slice(0,10);
+      var events=((sched&&sched.events)||[]).filter(function(e){ return (e.endDate||e.date)>=today; })
+        .sort(function(a,b){ return (a.date+(a.time||'99:99')).localeCompare(b.date+(b.time||'99:99')); });
+      wrap.innerHTML='';
+      if(empty) empty.hidden=events.length>0;
+      events.forEach(function(ev){
+        var dt=parseDate(ev.date);
+        var row=document.createElement('div'); row.className='sched-ev';
+        var isHome=!!ev.home; var isTourn=ev.kind==='tournament';
+        row.innerHTML='<span class="d"><span class="m">'+MON[dt.getMonth()]+'</span><span class="n">'+dt.getDate()+'</span></span>'+
+          '<span class="b"><span class="o"></span><span class="meta"></span></span>'+
+          (isTourn?'<span class="tag tag-away">Tourn</span>':'<span class="tag '+(isHome?'tag-home">Home':'tag-away">Away')+'</span>');
+        row.querySelector('.o').textContent=(isHome?'':'at ')+(ev.opponent||'TBD');
+        row.querySelector('.meta').textContent=metaLine(ev);
+        wrap.appendChild(row);
+      });
+    }
+    var sheet=document.getElementById('schedSheet'),
+        listView=document.getElementById('schedList'), addView=document.getElementById('schedAddForm');
+    function showList(){ if(listView) listView.hidden=false; if(addView) addView.hidden=true; }
+    function showAdd(){ if(listView) listView.hidden=true; if(addView) addView.hidden=false; }
+    function openSheet(){ if(sheet) sheet.hidden=false; showList(); }
+    function closeSheet(){ if(sheet) sheet.hidden=true; showList(); }
+    block.addEventListener('click',openSheet);
+    var xBtn=document.getElementById('schedX'); if(xBtn) xBtn.addEventListener('click',closeSheet);
+    var scrim=document.getElementById('schedScrim'); if(scrim) scrim.addEventListener('click',closeSheet);
+    var showAddBtn=document.getElementById('schedShowAdd'); if(showAddBtn) showAddBtn.addEventListener('click',showAdd);
+    var backBtn=document.getElementById('schedBack'); if(backBtn) backBtn.addEventListener('click',showList);
+    var addForm=document.getElementById('schedAddForm');
+    if(addForm) addForm.addEventListener('submit',function(e){
+      e.preventDefault();
+      var msg=document.getElementById('sgMsg');
+      var date=(document.getElementById('sgDate')||{}).value||'';
+      var opp=String((document.getElementById('sgOpp')||{}).value||'').trim();
+      if(!date){ if(msg) msg.textContent='Pick a date.'; return; }
+      if(!opp){ if(msg) msg.textContent='Enter an opponent.'; return; }
+      var ev={ kind:'game', date:date, opponent:opp,
+        home:!!(document.getElementById('sgHome')||{}).checked,
+        time:(document.getElementById('sgTime')||{}).value||'',
+        place:String((document.getElementById('sgPlace')||{}).value||'').trim() };
+      if(msg) msg.textContent='Saving...';
+      fetch('/api/coach?action=add-event',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code,coachToken:coach.token,event:ev})})
+        .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
+        .then(function(res){ if(res.ok&&res.j.ok){ if(addForm) addForm.reset(); renderList(res.j.schedule); fillNext(res.j.next); showList(); }
+          else if(msg){ msg.textContent=(res.j&&res.j.error)||'Could not save.'; } })
+        .catch(function(){ if(msg) msg.textContent='Could not reach the server.'; });
+    });
+    fetch('/api/coach?action=schedule&code='+encodeURIComponent(code))
+      .then(function(r){ return r.json(); }).then(function(j){ if(j&&j.ok){ fillNext(j.next); renderList(j.schedule); } }).catch(function(){});
+  })();
   /* Coach Home (JTBD): participation pulse + two tappable count blocks
      (Player goals, Not training yet) that link to the filtered Team page. */
   (function(){
