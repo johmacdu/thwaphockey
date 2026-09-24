@@ -760,3 +760,31 @@ describe('Thwap admin: Drills view accepts the admin session token', () => {
     expect(noauth.statusCode).toBe(401);
   });
 });
+
+
+describe('set-game-position (player-owned, separate from roster position)', () => {
+  it('saves gamePosition without touching the coach roster position, rejects bad values', async () => {
+    const login = await loginSeedCoach();
+    const token = login.body.token;
+    const addRes = makeRes();
+    await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, firstName: 'Gamer', number: 21, position: 'FD', parentEmail: 'p@example.com' }), addRes);
+    expect(addRes.statusCode, JSON.stringify(addRes.body)).toBe(200);
+
+    // player sets their game-day position (no coach token needed)
+    const set = makeRes();
+    await _handlers.setGamePosition(post({ playerId: 'gamer', gamePosition: 'D' }), set);
+    expect(set.statusCode).toBe(200);
+    expect(set.body.gamePosition).toBe('D');
+
+    // it persisted on the record and did NOT overwrite the roster position
+    const roll = makeRes();
+    await _handlers.playerRollup(get({ playerId: 'gamer' }), roll);
+    expect(roll.body.member.gamePosition).toBe('D');
+    expect(roll.body.member.position).toBe('FD');
+
+    // bad value rejected
+    const bad = makeRes();
+    await _handlers.setGamePosition(post({ playerId: 'gamer', gamePosition: 'X' }), bad);
+    expect(bad.statusCode).toBe(400);
+  });
+});
