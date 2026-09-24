@@ -655,3 +655,68 @@ describe('Thwap admin: roster editor', () => {
     expect(res.statusCode).toBe(404);
   });
 });
+
+describe('Thwap admin: email + password login', () => {
+  const EMAIL = 'hi@woodymacduffie.com';
+
+  it('reports first-run (exists, no password) then set-password mints a token', async () => {
+    const st = makeRes();
+    await _handlers.adminStatus(get({ email: EMAIL }), st);
+    expect(st.statusCode).toBe(200);
+    expect(st.body.exists).toBe(true);
+    expect(st.body.hasPassword).toBe(false);
+
+    const setRes = makeRes();
+    await _handlers.adminSetPassword(post({ email: EMAIL, password: 'a-strong-pass' }), setRes);
+    expect(setRes.statusCode).toBe(200);
+    expect(typeof setRes.body.token).toBe('string');
+
+    const st2 = makeRes();
+    await _handlers.adminStatus(get({ email: EMAIL }), st2);
+    expect(st2.body.hasPassword).toBe(true);
+  });
+
+  it('rejects a short password on set', async () => {
+    const res = makeRes();
+    await _handlers.adminSetPassword(post({ email: EMAIL, password: 'short' }), res);
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('refuses to reset a password once set (no hijack)', async () => {
+    await _handlers.adminSetPassword(post({ email: EMAIL, password: 'first-pass-123' }), makeRes());
+    const again = makeRes();
+    await _handlers.adminSetPassword(post({ email: EMAIL, password: 'second-pass-456' }), again);
+    expect(again.statusCode).toBe(409);
+  });
+
+  it('logs in with the right password and rejects the wrong one', async () => {
+    await _handlers.adminSetPassword(post({ email: EMAIL, password: 'correct-horse' }), makeRes());
+    const good = makeRes();
+    await _handlers.adminLogin(post({ email: EMAIL, password: 'correct-horse' }), good);
+    expect(good.statusCode).toBe(200);
+    expect(typeof good.body.token).toBe('string');
+
+    const bad = makeRes();
+    await _handlers.adminLogin(post({ email: EMAIL, password: 'nope' }), bad);
+    expect(bad.statusCode).toBe(401);
+  });
+
+  it('the admin session token authorizes admin-roster (no shared key)', async () => {
+    await _seed.ensureSeed();
+    await _handlers.adminSetPassword(post({ email: EMAIL, password: 'roster-pass-1' }), makeRes());
+    const login = makeRes();
+    await _handlers.adminLogin(post({ email: EMAIL, password: 'roster-pass-1' }), login);
+    const token = login.body.token;
+
+    const res = makeRes();
+    await _handlers.adminRoster(get({ adminToken: token }), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.players.length).toBeGreaterThan(0);
+
+    // a coach token must NOT authorize an admin action
+    const coachLogin = await loginSeedCoach();
+    const bad = makeRes();
+    await _handlers.adminRoster(get({ adminToken: coachLogin.body.token }), bad);
+    expect(bad.statusCode).toBe(401);
+  });
+});

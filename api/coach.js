@@ -36,6 +36,7 @@ import {
   getTeamGoal, setTeamGoal,
   addDrillSuggestion, listDrillSuggestions, setSuggestionStatus, listAllTeamCodes,
   updateMember, createResetToken, consumeResetToken,
+  getAdmin, setAdmin,
   listTeamCoaches, ensureHeadCoach, addAssistantCoach, removeAssistantCoach, MAX_ASSISTANTS,
 } from '../lib/teams_store.js';
 import { ensureSchedule, getSchedule, addEvent as addScheduleEvent, nextEvent } from '../lib/schedule_store.js';
@@ -48,6 +49,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 // idempotently on first coach touch so no manual DB step is needed.
 const SEED_TEAM_CODE = 'RANGERS72';
 const SEED_COACH_EMAIL = 'jason@riversidepayments.com';
+const SEED_ADMIN_EMAIL = 'hi@woodymacduffie.com';
 const SEED_COACH_PASSWORD = 'ranger10u';
 const SEED_COACH_PASSWORD_PRIOR = 'rangers2026'; // superseded default; migrate an untouched coach off it
 const SEED_CHILD_PLAYER_ID = 'alder';
@@ -116,6 +118,16 @@ async function ensureSeed() {
   });
 }
 
+// Seed the admin account once, with NO password (passHash null). First visit to
+// /admin sets the password. Never bakes a password into the code. Idempotent:
+// only creates the record if it does not already exist, so it never clobbers a
+// password the admin already set.
+async function ensureAdminSeed() {
+  const existing = await getAdmin(SEED_ADMIN_EMAIL);
+  if (existing) return existing;
+  return setAdmin(SEED_ADMIN_EMAIL, { name: 'Admin', passHash: null, createdAt: new Date().toISOString() });
+}
+
 // --- coach session token ----------------------------------------------------
 // Reuse the HMAC session mint/verify. The session token is dot-delimited AND
 // mintSession lowercases the pid, so the pseudo playerId must contain no dots and
@@ -140,6 +152,38 @@ async function requireCoach(req, res) {
   const rec = await getCoach(c.email);
   if (!rec) { res.status(401).json({ error: 'unknown coach' }); return null; }
   return rec;
+}
+
+// --- admin session token (email + password) --------------------------------
+// Same HMAC session mint as coaches, namespaced admin: so an admin token can
+// never be confused with a coach token. The email is hex-encoded inside the pid.
+function mintAdminToken(email) {
+  const e = String(email).toLowerCase();
+  return mintSession(`admin:${hexEncode(e)}`, e);
+}
+function adminFromToken(token) {
+  const claims = verifySession(token);
+  if (!claims || !String(claims.playerId || '').startsWith('admin:')) return null;
+  try { return { email: hexDecode(String(claims.playerId).slice('admin:'.length)) }; }
+  catch { return null; }
+}
+// Authorize an admin request. Accepts the new admin session token (adminToken in
+// body or query, or Bearer), and still accepts the legacy shared admin key so
+// nothing that already used it breaks. Returns the admin record, or null (after
+// writing a 401) when neither path authorizes.
+async function requireAdmin(req, res) {
+  const { adminToken } = parseBody(req);
+  const auth = (req.headers && req.headers.authorization) ? String(req.headers.authorization) : '';
+  const bearer = auth.indexOf('Bearer ') === 0 ? auth.slice(7) : '';
+  const token = adminToken || (req.query && req.query.adminToken) || bearer || '';
+  const a = adminFromToken(token);
+  if (a) {
+    const rec = await getAdmin(a.email);
+    if (rec) return rec;
+  }
+  if (adminOk(req)) return { email: 'shared-key', legacy: true };
+  res.status(401).json({ error: 'admin auth required' });
+  return null;
 }
 
 function methodGuard(req, res, want) {
@@ -237,7 +281,7 @@ async function updatePlayer(req, res) {
 // GET (admin key) full roster across all teams, for the admin roster editor.
 async function adminRoster(req, res) {
   if (!methodGuard(req, res, 'GET')) return;
-  if (!adminOk(req)) return res.status(401).json({ error: 'unauthorized' });
+  if (!(await requireAdmin(req, res))) return;
   await ensureSeed();
   const codes = await listAllTeamCodes();
   const out = [];
@@ -258,7 +302,7 @@ async function adminRoster(req, res) {
 // update-player, but authorized by the admin key instead of a coach token.
 async function adminUpdatePlayer(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
-  if (!adminOk(req)) return res.status(401).json({ error: 'unauthorized' });
+  if (!(await requireAdmin(req, res))) return;
   const { playerId, firstName, lastName, number, position, parentEmail, parentEmail2 } = parseBody(req);
   if (!(await getMember(playerId))) return res.status(404).json({ error: 'unknown player' });
   if (firstName !== undefined && !String(firstName || '').trim()) {
@@ -273,6 +317,53 @@ async function adminUpdatePlayer(req, res) {
   const rec = await updateMember(playerId, { firstName, lastName, number, position, parentEmail, parentEmail2 });
   if (!rec) return res.status(404).json({ error: 'unknown player' });
   return res.status(200).json({ ok: true, member: rec });
+}
+
+// GET whether the admin account exists and whether a password has been set yet.
+// Public (no secret): only reveals the boolean, so the login UI can show the
+// first-run "set a password" screen vs the normal login.
+async function adminStatus(req, res) {
+  if (!methodGuard(req, res, 'GET')) return;
+  await ensureAdminSeed();
+  const email = String((req.query && req.query.email) || SEED_ADMIN_EMAIL).trim().toLowerCase();
+  const rec = await getAdmin(email);
+  res.setHeader('Cache-Control', 'no-store');
+  return res.status(200).json({ ok: true, exists: !!rec, hasPassword: !!(rec && rec.passHash) });
+}
+
+// POST set the admin password. Allowed ONLY when no password is set yet
+// (first-run). Rotating an existing password requires being logged in and is a
+// separate flow, so this can never be used to hijack a live admin account.
+async function adminSetPassword(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  await ensureAdminSeed();
+  const { email, password } = parseBody(req);
+  const cleanEmail = String(email || SEED_ADMIN_EMAIL).trim().toLowerCase();
+  const rec = await getAdmin(cleanEmail);
+  if (!rec) return res.status(404).json({ error: 'unknown admin' });
+  if (rec.passHash) return res.status(409).json({ error: 'password already set' });
+  const clean = String(password || '');
+  if (clean.length < 8) return res.status(400).json({ error: 'password must be at least 8 characters' });
+  await setAdmin(cleanEmail, { ...rec, passHash: passHash(clean) });
+  const token = mintAdminToken(cleanEmail);
+  res.setHeader('Cache-Control', 'no-store');
+  return res.status(200).json({ ok: true, token });
+}
+
+// POST admin login with email + password. Mints an admin session token.
+async function adminLogin(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  await ensureAdminSeed();
+  const { email, password } = parseBody(req);
+  const cleanEmail = String(email || '').trim().toLowerCase();
+  if (!EMAIL_RE.test(cleanEmail)) return res.status(400).json({ error: 'bad email' });
+  const rec = await getAdmin(cleanEmail);
+  res.setHeader('Cache-Control', 'no-store');
+  if (!rec || !rec.passHash || !safeEqual(rec.passHash, passHash(password))) {
+    return res.status(401).json({ error: 'bad credentials' });
+  }
+  const token = mintAdminToken(cleanEmail);
+  return res.status(200).json({ ok: true, token, admin: { email: cleanEmail, name: rec.name || 'Admin' } });
 }
 
 // POST change the coach's own login password. Coach-only (must know the current one).
@@ -680,6 +771,9 @@ export default async function handler(req, res) {
     case 'update-player': return updatePlayer(req, res);
     case 'admin-roster': return adminRoster(req, res);
     case 'admin-update-player': return adminUpdatePlayer(req, res);
+    case 'admin-login': return adminLogin(req, res);
+    case 'admin-set-password': return adminSetPassword(req, res);
+    case 'admin-status': return adminStatus(req, res);
     case 'set-password': return setPassword(req, res);
     case 'request-password': return requestPassword(req, res);
     case 'reset-password': return resetPassword(req, res);
@@ -714,6 +808,7 @@ export const _handlers = {
   coachLogin, createTeam, addPlayer, removePlayer, roster, playerRollup,
   updatePlayer, setPassword, requestPassword, resetPassword, requestCode,
   adminRoster, adminUpdatePlayer,
+  adminLogin, adminSetPassword, adminStatus,
   join, schedule, setIdp, idpGoal, logGoal, gameGoalLogRead,
   getPlan, setPlan,
   teamGoal, setTeamGoal: setTeamGoalHandler,
