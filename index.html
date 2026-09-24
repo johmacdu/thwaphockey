@@ -1386,7 +1386,7 @@ body.login-locked{overflow:hidden}
 <div class='dpk-list' id='dpkList'></div>
 <div class='actionbar' id='dpkBar' hidden>
   <div class='action-inner'>
-    <div class='action-count'><span class='action-count-n' id='dpkBarN'>0 drills</span><span class='action-count-t' id='dpkBarT'></span></div>
+    <div class='action-count'><span class='action-count-n' id='dpkBarN'>Nothing picked yet</span><span class='action-count-t' id='dpkBarT'></span></div>
     <button type='button' class='reset-label' id='dpkReset'>Reset</button>
     <button type='button' class='create-label' id='dpkSave'>Save</button>
   </div>
@@ -2192,11 +2192,20 @@ window.thwapActiveTeam=function(coach){
     if(!barEl) return;
     barEl.hidden=false;
     var n=pkStaged.length, mins=estMin(pkCat,n);
-    if(barN) barN.textContent=n+(n===1?' drill':' drills');
-    if(barT) barT.textContent=n?('~'+mins+' min'+(mins>=DAY_MIN?' (full)':'')):'nothing picked yet';
+    if(!n){
+      if(barN) barN.textContent='Nothing picked yet';
+      if(barT) barT.textContent='';
+    } else {
+      var drillWord=(n===1?'drill':'drills');
+      var verb=(n===1?'is':'are');
+      var minWord=(mins===1?'min':'mins');
+      var full=(mins>=DAY_MIN?" \u2014 that's a full day":'');
+      if(barN) barN.textContent=n+' '+drillWord+' '+verb+' ~'+mins+' '+minWord+full;
+      if(barT) barT.textContent='';
+    }
     barEl.classList.toggle('over', mins>DAY_MIN);
   }
-  function flashOver(){ if(barT){ barT.textContent='~'+DAY_MIN+' min is a full day for one category'; } if(barEl) barEl.classList.add('over'); }
+  function flashOver(){ if(barN){ barN.textContent='~'+DAY_MIN+' mins is a full day for one category'; } if(barT){ barT.textContent=''; } if(barEl) barEl.classList.add('over'); }
   if(resetBtn) resetBtn.addEventListener('click',function(){ pkStaged=[]; renderPicker(); });
   if(pkSaveBtn) pkSaveBtn.addEventListener('click',function(){
     setDrills(pkDay,pkCat,pkStaged.slice()); /* commit to plan (marks dirty for Save plan) */
