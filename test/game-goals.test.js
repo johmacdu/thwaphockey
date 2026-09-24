@@ -15,8 +15,14 @@ const html = readFileSync(resolve(__dirname, '../hockey_game_goals.html'), 'utf8
 describe('Game-day goals page', () => {
   it('the position mad-lib reads "Next game", not "Today"', () => {
     expect(html).toMatch(/id="ngTip"[^>]*>Next game/);
-    expect(html).toMatch(/I&rsquo;m playing <button[^>]*id="posWord"/);
+    expect(html).toMatch(/I&rsquo;m playing <span class="pos-hold"><button[^>]*id="posWord"/);
     expect(html).not.toMatch(/Today I&rsquo;m playing/);
+  });
+
+  it('the trailing period is glued to the position word so it never orphans on a line', () => {
+    // button + "." live together inside .pos-hold, which is nowrap
+    expect(html).toMatch(/<span class="pos-hold"><button[^>]*id="posWord"[^>]*>forward<\/button>\.<\/span>/);
+    expect(html).toMatch(/\.pos-hold\{white-space:nowrap\}/);
   });
 
   it('goal categories are cards (bordered section shell), goals nested inside', () => {

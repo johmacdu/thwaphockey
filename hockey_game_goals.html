@@ -65,6 +65,10 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 /* Position picker */
 .pospick{margin:2px 0 20px}
 .madlib{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(20px,5.4vw,28px);line-height:1.25;margin:0 0 8px;color:var(--text);letter-spacing:.005em}
+/* Keep the position word and its trailing period on the same line so the "." can
+   never wrap onto a line by itself (happened at some widths, esp. with the wider
+   "forward and defense" value). The position word may still wrap internally. */
+.pos-hold{white-space:nowrap}
 /* "Next game" reveals the matchup + date as a tooltip (hover on desktop, tap on
    mobile). The bubble text is filled from the schedule; empty = no bubble. */
 .ng-tip{position:relative;cursor:pointer;text-decoration:underline dotted var(--muted);text-underline-offset:4px;outline:none}
@@ -633,7 +637,7 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
     </header>
 
     <div class="pospick">
-      <p class="madlib"><span class="ng-tip" id="ngTip" tabindex="0" role="button" aria-label="Next game details">Next game<span class="ng-tip-bubble" id="gpGame" role="tooltip"></span></span> I&rsquo;m playing <button type="button" class="pos-word" id="posWord" aria-haspopup="true" aria-expanded="false">forward</button>.</p>
+      <p class="madlib"><span class="ng-tip" id="ngTip" tabindex="0" role="button" aria-label="Next game details">Next game<span class="ng-tip-bubble" id="gpGame" role="tooltip"></span></span> I&rsquo;m playing <span class="pos-hold"><button type="button" class="pos-word" id="posWord" aria-haspopup="true" aria-expanded="false">forward</button>.</span></p>
       <p id="helper">Pick 3 goals for the game.</p>
       <div class="pos-sheet" id="posSheet" role="menu" hidden>
         <button type="button" class="pos-opt" data-pos="F" role="menuitemradio"><span class="pos-dot" style="background:var(--orange)"></span>Forward</button>
