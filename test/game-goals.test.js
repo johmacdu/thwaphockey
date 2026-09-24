@@ -26,12 +26,22 @@ describe('Game-day goals page', () => {
   });
 });
 
+describe('Game-day category text matches the app type ramp', () => {
+  it('the category subtitle is 16px like .nav p, and the title is 19px like .nav h2', () => {
+    expect(html).toMatch(/\.section-head p\{[^}]*font-size:16px/);
+    expect(html).toMatch(/\.section-head h2\{[^}]*font-size:19px/);
+  });
+  it('an expanded category has extra bottom padding under the title', () => {
+    expect(html).toMatch(/\.section\.open \.section-head\{padding-bottom:20px\}/);
+  });
+});
+
 describe('Game-day goal cards pop and breathe', () => {
   it('base goal cards have a shadow and a bigger grid gap', () => {
-    expect(html).toMatch(/\.goal\{[^}]*box-shadow:0 4px 14px/);
+    expect(html).toMatch(/\.goal\{[^}]*box-shadow:0 2px 7px/);
     expect(html).toMatch(/\.grid\{[^}]*gap:18px\}/);
   });
   it('selected goal cards get a 2px green ring and glow', () => {
-    expect(html).toMatch(/box-shadow: inset 0 0 0 2px var\(--green\), 0 8px 22px rgba\(47,191,113,\.28\)/);
+    expect(html).toMatch(/box-shadow: inset 0 0 0 2px var\(--green\), 0 4px 11px rgba\(47,191,113,\.16\)/);
   });
 });
