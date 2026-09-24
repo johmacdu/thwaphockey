@@ -1,7 +1,7 @@
 // test/done.test.js
 //
-// Unit tests for api/done.js: the PIN-gated mark-done handler. The store is
-// faked so a successful POST actually bumps the in-memory player. PIN = jersey
+// Unit tests for api/done.js: the mark-done handler (no PIN gate). The store is
+// faked so a successful POST actually bumps the in-memory player. 
 // number + SEASON_YEAR (default 2027). Lewie is #72 -> "722027".
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -53,28 +53,21 @@ describe('done handler', () => {
 
   it('400 on an unknown discipline', async () => {
     const res = makeRes();
-    await handler(post({ player: 'lewie', pin: '722027', discipline: 'skating' }), res);
+    await handler(post({ player: 'lewie', discipline: 'skating' }), res);
     expect(res.statusCode).toBe(400);
     expect(res.body.error).toBe('bad discipline');
   });
 
   it('400 on an unknown player', async () => {
     const res = makeRes();
-    await handler(post({ player: 'nobody', pin: '722027', discipline: 'stick' }), res);
+    await handler(post({ player: 'nobody', discipline: 'stick' }), res);
     expect(res.statusCode).toBe(400);
     expect(res.body.error).toBe('unknown player');
   });
 
-  it('403 on a wrong PIN', async () => {
+  it('200 and bumps the player with NO pin (logged-in player logs own work)', async () => {
     const res = makeRes();
-    await handler(post({ player: 'lewie', pin: '000000', discipline: 'stick' }), res);
-    expect(res.statusCode).toBe(403);
-    expect(res.body.error).toBe('bad pin');
-  });
-
-  it('200 and bumps the player on the correct PIN', async () => {
-    const res = makeRes();
-    await handler(post({ player: 'lewie', pin: '722027', discipline: 'stick' }), res);
+    await handler(post({ player: 'lewie', discipline: 'stick' }), res);
     expect(res.statusCode).toBe(200);
     expect(res.body.player.stick).toBe(1);
     // The bump persisted through the faked store.
@@ -83,7 +76,7 @@ describe('done handler', () => {
 
   it('accepts a raw JSON string body (Vercel unparsed case)', async () => {
     const res = makeRes();
-    await handler(post(JSON.stringify({ player: 'lewie', pin: '722027', discipline: 'shoot' })), res);
+    await handler(post(JSON.stringify({ player: 'lewie', discipline: 'shoot' })), res);
     expect(res.statusCode).toBe(200);
     expect(res.body.player.shoot).toBe(1);
   });
