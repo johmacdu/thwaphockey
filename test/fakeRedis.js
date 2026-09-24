@@ -34,6 +34,35 @@ export class FakeRedis {
     return n;
   }
 
+  // --- set ops (waitlist emails) ---
+  // sadd returns the count of NEW members added (0 if already present).
+  // eslint-disable-next-line require-await
+  async sadd(key, ...members) {
+    let set = this.map.get(key);
+    if (!(set instanceof Set)) { set = new Set(); this.map.set(key, set); }
+    let added = 0;
+    for (const m of members) { if (!set.has(m)) { set.add(m); added += 1; } }
+    return added;
+  }
+
+  // --- list ops (waitlist entries; lpush prepends so lrange is newest-first) ---
+  // eslint-disable-next-line require-await
+  async lpush(key, ...values) {
+    let list = this.map.get(key);
+    if (!Array.isArray(list)) { list = []; this.map.set(key, list); }
+    for (const v of values) list.unshift(v);
+    return list.length;
+  }
+
+  // lrange(key, 0, -1) returns the whole list; supports negative stop like Redis.
+  // eslint-disable-next-line require-await
+  async lrange(key, start, stop) {
+    const list = this.map.get(key);
+    if (!Array.isArray(list)) return [];
+    const end = stop < 0 ? list.length + stop + 1 : stop + 1;
+    return list.slice(start, end);
+  }
+
   // Test helper: seed a key directly.
   _seed(key, value) {
     this.map.set(key, value);
