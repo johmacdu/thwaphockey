@@ -1768,11 +1768,17 @@ window.thwapActiveTeam=function(coach){
         if(top && ranked.length){
           if(topLab) topLab.hidden=false;
           var medals=['\uD83E\uDD47','\uD83E\uDD48','\uD83E\uDD49'];
+          /* Bar = progress toward a weekly drill target (same for everyone), NOT
+             rank-relative. Rank-relative always filled the leader to 100% (so a
+             lone/top player looked "done" when they weren't). 10 drills = a full
+             training week; the bar fills as a player approaches it, capped at 100%. */
+          var WEEK_TARGET=10;
           top.innerHTML='';
           ranked.forEach(function(x,i){
             function nameOf(m){ return ((m.firstName||m.playerId||'')+(m.lastName?(' '+m.lastName.charAt(0)+'.'):'')).trim(); }
             var el=document.createElement('button'); el.type='button'; el.className='row';
-            el.innerHTML='<span>'+(i<3?medals[i]:(i+1))+'</span><strong></strong><div class="bar"><div class="fill" style="width:'+Math.round(100*x.tot/(ranked[0].tot||1))+'%"></div></div><span class="score">'+x.tot+'</span>';
+            var pct=Math.min(100,Math.round(100*x.tot/WEEK_TARGET));
+            el.innerHTML='<span>'+(i<3?medals[i]:(i+1))+'</span><strong></strong><div class="bar"><div class="fill" style="width:'+pct+'%"></div></div><span class="score">'+x.tot+'</span>';
             el.querySelector('strong').textContent=nameOf(x.m);
             el.addEventListener('click',(function(nm){ return function(){ if(window.openPlayerPage) window.openPlayerPage(nm,'coachhome'); }; })(nameOf(x.m)));
             top.appendChild(el);

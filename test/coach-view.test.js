@@ -403,3 +403,13 @@ describe('Coach-home: hero name is tappable + Top-this-week row layout', () => {
     expect(html).toMatch(/\.ch-topfive \.row \.bar\{height:10px;min-width:60px\}/);
   });
 });
+
+describe('Coach-home: Top-this-week bar is progress toward a weekly target', () => {
+  it('the bar scales to a fixed weekly drill target (10), capped, NOT rank-relative', () => {
+    // fixed target constant, not the old ranked[0].tot leader-relative math
+    expect(html).toMatch(/var WEEK_TARGET=10;/);
+    expect(html).toMatch(/Math\.min\(100,Math\.round\(100\*x\.tot\/WEEK_TARGET\)\)/);
+    // the old leader-relative divisor is gone
+    expect(html).not.toMatch(/100\*x\.tot\/\(ranked\[0\]\.tot\|\|1\)/);
+  });
+});
