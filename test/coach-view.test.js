@@ -274,6 +274,14 @@ describe('Drill picker cards are legible and accessible', () => {
   });
 });
 
+describe('Coach home hand waves like the player page', () => {
+  it('the wave easter egg wires every .hero-wave (both homes), not just #heroWave', () => {
+    expect(html).toMatch(/var waves=document\.querySelectorAll\('\.hero-wave'\)/);
+    const coachHome=html.slice(html.indexOf("id='coachhome'"), html.indexOf("id='roster'"));
+    expect(coachHome).toMatch(/class='hero-wave'/);
+  });
+});
+
 describe('Menus start closed: [hidden] overrides display', () => {
   // Recurring Thwap bug: a popup with the hidden attribute still shows because a
   // CSS rule gives it display:flex, which beats the browser's implicit
