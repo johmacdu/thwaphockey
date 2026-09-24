@@ -165,3 +165,22 @@ describe('Cross-tab identity guard', () => {
     expect(html).toMatch(/IDENTITY_KEYS *= *\['bfPlayer', 'thwapAuth', 'thwapCoach'\]/);
   });
 });
+
+describe('Drill videos on all three disciplines', () => {
+  it('stick, shoot AND dryland renderers all insert the Watch-how video (videoBlock)', () => {
+    // videoBlock is defined once and called by each discipline's tile builder:
+    // 1 definition (`function videoBlock(dr){`) + 3 call sites = 4 occurrences.
+    const calls = (html.match(/videoBlock\(dr\)/g) || []).length;
+    expect(calls).toBe(4);
+    // the drill data carries real YouTube URLs for all disciplines
+    expect(html).toMatch(/name:'Narrow-to-Wide'[\s\S]{0,120}video:'https:\/\/www\.youtube/); // stick (DRILLS)
+    expect(html).toMatch(/name:'Moving Warm-Up'[\s\S]{0,120}video:'https:\/\/www\.youtube/); // shoot (SHOOT_DAYS)
+  });
+  it('each discipline launches the full-screen guided runner from its Start button', () => {
+    // three thwapDrillTimer launch sites (dryland, stick, shoot), each with a Start label
+    const launches = (html.match(/window\.thwapDrillTimer\(/g) || []).length;
+    expect(launches).toBeGreaterThanOrEqual(3);
+    const startLabels = (html.match(/doneLabel=prog\[i\]\?'Done \u2713':'Start'/g) || []).length;
+    expect(startLabels).toBeGreaterThanOrEqual(3);
+  });
+});

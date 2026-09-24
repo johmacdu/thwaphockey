@@ -3855,7 +3855,7 @@ function render(){
         "<div class='exhead'><div class='exem'>"+dr.emoji+"</div>"+
           "<div><h3>"+esc(dr.name)+"<span class='exbadge'>Done</span></h3><div class='exdose'>"+esc(dr.cat)+"</div></div>"+
           "<div class='exchev'>›</div></div>"+
-        "<div class='exbody'><p>"+esc(dr.cue)+"</p>"+steps+
+        "<div class='exbody'><p>"+esc(dr.cue)+"</p>"+videoBlock(dr)+steps+
           "<button type='button' class='exdone'>"+doneLabel+"</button></div>"+
       "</div>");
   });
@@ -4513,7 +4513,7 @@ function render(){
         "<div class='exhead'><div class='exem'>"+dr.emoji+"</div>"+
           "<div><h3>"+esc(dr.name)+"<span class='exbadge'>Done</span></h3><div class='exdose'>"+esc(dr.theme||'Shooting')+"</div></div>"+
           "<div class='exchev'>›</div></div>"+
-        "<div class='exbody'>"+steps+cue+
+        "<div class='exbody'>"+cue+videoBlock(dr)+steps+
           "<button type='button' class='exdone'>"+doneLabel+"</button></div>"+
       "</div>");
   });
