@@ -148,3 +148,13 @@ describe('accessibility', () => {
     expect(doc.getElementById('themeToggle')?.getAttribute('aria-label')).toBeTruthy();
   });
 });
+
+describe('Team page: scaled roster card keeps the Jr Rangers / Vancouver WA block inside', () => {
+  it('the association/location fix is scoped to #roster only', () => {
+    expect(html).toMatch(/#roster \.pcard \.cf2-foot\{padding-right:22px\}/);
+    expect(html).toMatch(/#roster \.pcard \.cf2-team\{letter-spacing:\.04em\}/);
+  });
+  it('the base card foot rule is unchanged, so other surfaces render as before', () => {
+    expect(html).toMatch(/\.cf2-foot\{position:absolute;left:0;right:0;bottom:0;z-index:4;padding:12px 16px 16px/);
+  });
+});

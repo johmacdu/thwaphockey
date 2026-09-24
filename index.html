@@ -381,6 +381,13 @@ body.viewing-teammate .cardctl,body.viewing-teammate .cb-stats-layer,body.viewin
 .cf2-nm i{display:block;width:200px;max-width:96%;height:6px;background:#C0252A;margin:6px 0 7px}
 .cf2-pos{font-family:'Oswald',system-ui,sans-serif;font-weight:500;font-size:clamp(12px,4vw,17px);text-transform:uppercase;letter-spacing:.14em;color:#E7ECF0}
 .cf2-team{text-align:right;font-family:'Oswald',system-ui,sans-serif;font-weight:600;font-size:11px;line-height:1.3;text-transform:uppercase;letter-spacing:.08em;color:#DCE2E8;flex:0 0 auto;white-space:nowrap}
+/* Team page only: the roster cards are rendered scaled from a 300px base, which
+   pushes the right-aligned Jr Rangers / Vancouver WA block off the right edge
+   (clipped by .cf2 overflow:hidden). Give the foot more right room and pull the
+   team block in so it sits fully inside the card. Other card surfaces are fine
+   and untouched. */
+#roster .pcard .cf2-foot{padding-right:22px}
+#roster .pcard .cf2-team{letter-spacing:.04em}
 .pl-decal{position:absolute;width:56px;height:56px;object-fit:contain;filter:drop-shadow(0 2px 5px rgba(0,0,0,.45));pointer-events:none;-webkit-user-drag:none;user-select:none;-webkit-touch-callout:none;z-index:4}
 .pl-decalwrap{position:absolute;transform:translate(-50%,-50%);z-index:4;touch-action:none;cursor:grab;-webkit-touch-callout:none}
 .pl-decalwrap:active{cursor:grabbing}
