@@ -639,7 +639,7 @@ function adminOk(req) {
 // GET all coach drill suggestions across every team (Thwap review backlog). Admin-only.
 async function reviewSuggestions(req, res) {
   if (!methodGuard(req, res, 'GET')) return;
-  if (!adminOk(req)) return res.status(401).json({ error: 'unauthorized' });
+  if (!(await requireAdmin(req, res))) return;
   await ensureSeed();
   const codes = await listAllTeamCodes();
   const out = [];
@@ -656,7 +656,7 @@ async function reviewSuggestions(req, res) {
 // POST accept/dismiss a suggestion (flip its status). Admin-only.
 async function resolveSuggestion(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
-  if (!adminOk(req)) return res.status(401).json({ error: 'unauthorized' });
+  if (!(await requireAdmin(req, res))) return;
   const { code, id, status } = parseBody(req);
   const rec = await setSuggestionStatus(code, id, status);
   if (!rec) return res.status(404).json({ error: 'unknown suggestion or bad status' });
