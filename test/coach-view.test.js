@@ -282,6 +282,29 @@ describe('Coach home hand waves like the player page', () => {
   });
 });
 
+describe('Roster edit mode: pencil toggles to Cancel/Done, cards drop the badge', () => {
+  it('the header has a pencil plus a hidden Cancel/Done action pair', () => {
+    expect(doc.getElementById('rosterEdit')).toBeTruthy();
+    const acts=doc.getElementById('rosterEditActions');
+    expect(acts).toBeTruthy();
+    expect(acts.hasAttribute('hidden')).toBe(true);
+    expect(doc.getElementById('rosterEditCancel')).toBeTruthy();
+    expect(doc.getElementById('rosterEditDone')).toBeTruthy();
+  });
+  it('the [hidden] overrides beat body.is-coach .roster-coachonly{display:block}', () => {
+    expect(html).toMatch(/body\.is-coach \.roster-editactions\[hidden\]\{display:none\}/);
+    expect(html).toMatch(/body\.is-coach \.roster-edit\[hidden\]\{display:none\}/);
+  });
+  it('the per-card pencil badge (::after) is gone', () => {
+    expect(html).not.toMatch(/#roster-grid \.pcard:not\(\.pcard-add\)::after/);
+  });
+  it('the pencil enters edit mode and Cancel/Done exit it', () => {
+    expect(html).toMatch(/editBtn\.addEventListener\('click',function\(\)\{ setEditing\(true\); \}\)/);
+    expect(html).toMatch(/editCancel\.addEventListener\('click',function\(\)\{ setEditing\(false\); \}\)/);
+    expect(html).toMatch(/editDone\.addEventListener\('click',function\(\)\{ setEditing\(false\); \}\)/);
+  });
+});
+
 describe('Menus start closed: [hidden] overrides display', () => {
   // Recurring Thwap bug: a popup with the hidden attribute still shows because a
   // CSS rule gives it display:flex, which beats the browser's implicit
