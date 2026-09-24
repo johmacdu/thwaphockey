@@ -500,6 +500,16 @@ body.is-coach #home{display:none!important}
 .ch-count.done{color:var(--green)}
 .ch-topfive-lab{margin-top:var(--gap-block)!important}
 .ch-topfive{margin-top:var(--sp-2)}
+/* Top this week rows: the shared Standings grid (30px 1fr 74px 28px) shoves the
+   fixed bar + score to the far right when there's one player, leaving a big empty
+   gap and a tiny bar. Here the medal + name hug the left, the bar FLEXES to fill
+   the middle, and the score hugs the right, so the row reads as one connected
+   unit at any player count. Text follows the ramp (no more tiny type). */
+.ch-topfive .row{grid-template-columns:auto auto 1fr auto;gap:var(--sp-3);padding:var(--sp-4) var(--sp-3)}
+.ch-topfive .row>span:first-child{font-size:var(--fs-cardtitle);line-height:1}   /* medal / rank number */
+.ch-topfive .row strong{font-size:var(--fs-body);font-weight:800;color:var(--text)}
+.ch-topfive .row .bar{height:10px;min-width:60px}
+.ch-topfive .row .score{font-size:var(--fs-cardtitle);font-weight:950}
 /* Coach-home action rows: bigger + tactile. */
 #coachhome .board .row{padding:var(--sp-4) var(--sp-3);gap:12px}
 #coachhome .board .row .row-nm{font-size:var(--fs-body);font-weight:800}
@@ -1730,6 +1740,10 @@ window.thwapActiveTeam=function(coach){
   (function(){
     var nameBtn=document.getElementById('chProfileName'), kick=document.getElementById('chKicker');
     if(nameBtn&&coach.name&&coach.name!=='Coach') nameBtn.textContent=coach.name;
+    /* The hero "Hey <name>" button opens the coach profile editor. It was styled
+       as a tappable button but never had a handler; bind lazily so it works
+       regardless of which IIFE defines thwapOpenCoachProfile first. */
+    if(nameBtn) nameBtn.addEventListener('click',function(){ if(window.thwapOpenCoachProfile) window.thwapOpenCoachProfile(); });
     fetch('/api/coach?action=roster&code='+encodeURIComponent(code)+'&coachToken='+encodeURIComponent(coach.token))
       .then(function(r){ return r.json(); })
       .then(function(j){
