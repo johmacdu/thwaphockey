@@ -594,9 +594,15 @@ body.is-coach .roster-coachonly{display:block}
 .roster-edit{margin-left:auto;flex:none;display:inline-grid;place-items:center;width:44px;height:44px;border-radius:50%;font-family:inherit;font-size:19px;color:var(--text);cursor:pointer;background:var(--card);border:1px solid var(--line);box-shadow:0 2px 8px var(--shadow)}
 .roster-edit:hover{border-color:var(--line2)}
 .roster-edit.on{background:var(--lime);color:var(--ink);border-color:transparent}
+.roster-edit[hidden],body.is-coach .roster-edit[hidden]{display:none}
+.roster-editactions{margin-left:auto;flex:none;display:flex;gap:8px}
+.roster-editactions[hidden],body.is-coach .roster-editactions[hidden]{display:none}
+.roster-editcancel,.roster-editdone{min-height:44px;font-family:inherit;font-weight:800;font-size:14px;border-radius:12px;padding:8px 16px;cursor:pointer}
+.roster-editcancel{background:var(--card2);border:1px solid var(--line);color:var(--text)}
+.roster-editdone{background:var(--lime);border:1px solid transparent;color:var(--ink)}
 /* Edit mode: cards show a subtle editable affordance. */
 body.roster-editing #roster-grid .pcard:not(.pcard-add){box-shadow:0 0 0 2px var(--lime) inset;position:relative}
-body.roster-editing #roster-grid .pcard:not(.pcard-add)::after{content:'\270E';position:absolute;top:6px;right:8px;font-size:14px;background:var(--lime);color:var(--ink);border-radius:50%;width:22px;height:22px;display:grid;place-items:center}
+
 /* Player-edit side sheet (X-close, slides from the right; no modal chrome). */
 .sheet{position:fixed;inset:0;z-index:60}
 .sheet[hidden]{display:none}
@@ -1242,7 +1248,7 @@ body.login-locked{overflow:hidden}
   </div>
 </div>
 <div class='rfilter' id='rFilter' hidden><span id='rFilterLab'></span> <button type='button' class='rfilter-clear' id='rFilterClear'>Clear</button></div>
-<div class='roster-playershead'><div class='coachcoaches-h'>Players</div><button type='button' class='roster-edit roster-coachonly' id='rosterEdit' aria-label='Edit players'><span aria-hidden='true'>&#9998;</span></button></div>
+<div class='roster-playershead'><div class='coachcoaches-h'>Players</div><button type='button' class='roster-edit roster-coachonly' id='rosterEdit' aria-label='Edit players'><span aria-hidden='true'>&#9998;</span></button><div class='roster-editactions roster-coachonly' id='rosterEditActions' hidden><button type='button' class='roster-editcancel' id='rosterEditCancel'>Cancel</button><button type='button' class='roster-editdone' id='rosterEditDone'>Done</button></div></div>
 <div class='roster' id='roster-grid'><a href='#player' class='pcard' data-name='Alder Reese'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>71</span><span class='pcard-bnname'>Alder</span></div></a><a href='#player' class='pcard' data-name='Brooklyn Coughlan'><div class='pcard-bignum pos-def'><span class='pcard-bn'>92</span><span class='pcard-bnname'>Brooklyn</span></div></a><a href='#player' class='pcard' data-name='Dawson Huffman'><div class='pcard-bignum pos-def'><span class='pcard-bn'>19</span><span class='pcard-bnname'>Dawson</span></div></a><a href='#player' class='pcard' data-name='Dominic Cinque'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>98</span><span class='pcard-bnname'>Dominic</span></div></a><a href='#player' class='pcard' data-name='Eugene Kuhn'><div class='pcard-bignum pos-def'><span class='pcard-bn'>3</span><span class='pcard-bnname'>Eugene</span></div></a><a href='#player' class='pcard' data-name='Evan Ewing'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>13</span><span class='pcard-bnname'>Evan</span></div></a><a href='#player' class='pcard' data-name='Greyson Wertz'><div class='pcard-bignum pos-def'><span class='pcard-bn'>32</span><span class='pcard-bnname'>Greyson</span></div></a><a href='#player' class='pcard' data-name='Issac Moyer'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>53</span><span class='pcard-bnname'>Issac</span></div></a><a href='#player' class='pcard' data-name='Johnny Eraman'><div class='pcard-bignum pos-goalie'><span class='pcard-bn'>1</span><span class='pcard-bnname'>Johnny</span></div></a><a href='#player' class='pcard' data-name='Joziah Soto'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>59</span><span class='pcard-bnname'>Joziah</span></div></a><a href='#player' class='pcard pcard-you-card' data-name='Lewie'><img class='pcard-cardart' src='cards/lewie_photo.png' alt='Lewie'></a><a href='#player' class='pcard' data-name='Liam Delatorre'><div class='pcard-bignum pos-def'><span class='pcard-bn'>29</span><span class='pcard-bnname'>Liam</span></div></a><a href='#player' class='pcard' data-name='Maddux Jones'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>18</span><span class='pcard-bnname'>Maddux</span></div></a><a href='#player' class='pcard' data-name='Oliver Moyer'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>90</span><span class='pcard-bnname'>Oliver</span></div></a><a href='#player' class='pcard' data-name='Teddy Diss'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>11</span><span class='pcard-bnname'>Teddy</span></div></a><a href='#player' class='pcard' data-name='William Schnell'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>16</span><span class='pcard-bnname'>William</span></div></a></div>
 <div class='rsearch-empty' id='rsearchEmpty' hidden></div>
 <div class='pgate' id='switchGate' hidden>
@@ -1926,12 +1932,19 @@ window.thwapActiveTeam=function(coach){
        side sheet; otherwise the card behaves normally (stat page). */
     var editing=false;
     var editBtn=document.getElementById('rosterEdit');
+    var editActions=document.getElementById('rosterEditActions');
     function setEditing(on){
       editing=on;
       document.body.classList.toggle('roster-editing', on);
-      if(editBtn){ editBtn.classList.toggle('on', on); editBtn.setAttribute('aria-label', on?'Done editing players':'Edit players'); }
+      /* Header swaps between the pencil (enter) and Cancel/Done (exit). Saving is
+         per-player in the edit sheet, so Cancel and Done both just exit edit mode. */
+      if(editBtn){ editBtn.hidden=on; editBtn.classList.toggle('on', on); }
+      if(editActions){ editActions.hidden=!on; }
     }
-    if(editBtn) editBtn.addEventListener('click',function(){ setEditing(!editing); });
+    if(editBtn) editBtn.addEventListener('click',function(){ setEditing(true); });
+    var editCancel=document.getElementById('rosterEditCancel'), editDone=document.getElementById('rosterEditDone');
+    if(editCancel) editCancel.addEventListener('click',function(){ setEditing(false); });
+    if(editDone) editDone.addEventListener('click',function(){ setEditing(false); });
     (function(){
       var grid=document.getElementById('roster-grid'); if(!grid) return;
       grid.addEventListener('click',function(e){
