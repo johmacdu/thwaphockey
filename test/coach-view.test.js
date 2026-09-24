@@ -245,6 +245,17 @@ describe('IDP focus card reads as one tappable unit', () => {
   });
 });
 
+describe('Player stat page rings filter the activity list (week view)', () => {
+  it('week rings are buttons carrying data-disc and toggle plFilter', () => {
+    // ring is now a <button> with data-disc (not an inert div)
+    expect(html).toMatch(/class='pl-ring"\+dim\+sel\+"' data-disc='"\+disc\+"'/);
+    // ring tap toggles plFilter and re-renders
+    expect(html).toMatch(/plFilter=\(plFilter===d\)\?'all':d; build\(\);/);
+    // selected/dim styles exist
+    expect(html).toMatch(/\.pl-ring\.pl-ring-sel\{/);
+  });
+});
+
 describe('Menus start closed: [hidden] overrides display', () => {
   // Recurring Thwap bug: a popup with the hidden attribute still shows because a
   // CSS rule gives it display:flex, which beats the browser's implicit
