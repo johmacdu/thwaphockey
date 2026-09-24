@@ -1211,7 +1211,7 @@ body.login-locked{overflow:hidden}
 </section>
 
 <section id='stick' class='page'>
-<a class='glassclose' href='.' aria-label='Close'>✕</a><div class='heroCard'><div class='big eggstick' id='eggStick' role='img' aria-label='Hockey stick'><img class='egg-ico' src='login/icon-stick.webp' alt=''></div><h1><button type='button' class='titletip' data-daytip>Today’s<span class='titletip-date'>Sunday, September 13</span></button> Stickhandling</h1><p>Head up, soft hands and clean puck movement.</p><div class='pills'><span class='pill' id='stickTime'>about 10-15 min</span><span class='pill pill-optional' id='stickOptional' hidden>optional training</span></div></div>
+<a class='glassclose' href='.' aria-label='Close'>✕</a><div class='heroCard'><div class='big eggstick' id='eggStick' role='img' aria-label='Hockey stick'><img class='egg-ico' id='eggStickImg' src='login/icon-stick.webp' alt=''></div><h1><button type='button' class='titletip' data-daytip>Today’s<span class='titletip-date'>Sunday, September 13</span></button> Stickhandling</h1><p>Head up, soft hands and clean puck movement.</p><div class='pills'><span class='pill' id='stickTime'>about 10-15 min</span><span class='pill pill-optional' id='stickOptional' hidden>optional training</span></div></div>
 <div id='stickList'></div>
 </section>
 
@@ -1585,7 +1585,7 @@ body.login-locked{overflow:hidden}
 <a class='pnextgame' id='pNextGame' href='hockey_game_goals.html'>
   <div class='png-top'>
     <div class='png-head'>
-      <span class='png-goallight' id='eggGoal' role='img' aria-label='Goal light'><img class='egg-ico egg-ico-sm' src='login/icon-goal.webp' alt=''></span>
+      <span class='png-goallight' role='img' aria-label='Goal light'><img class='egg-ico egg-ico-sm' src='login/icon-goal.webp' alt=''></span>
       <div class='png-opp' id='pngOpp'>Game Day Goals</div>
     </div>
     <span class='png-count' id='pngCount' hidden><b id='pngDays'></b><span>days</span></span>
@@ -4302,6 +4302,20 @@ document.addEventListener('click',function(e){
 /* bob stays small and strictly upward, inside the headroom, so he never touches the bottom line */
 @keyframes sassSkate{0%{margin-top:0}50%{margin-top:-5px}100%{margin-top:0}}
 @media (prefers-reduced-motion: reduce){#sassLogo.skating{animation:sassAcross 2.2s ease-in-out forwards}}
+/* Long-press the Sass logo: a slapshot puck flies into the wordmark, shattering
+   it into pieces, then it reassembles. */
+#sassLogo.wm-windup{animation:wmWindup .5s ease}
+@keyframes wmWindup{0%{transform:rotate(0)}30%{transform:rotate(-18deg) translateX(-3px)}55%{transform:rotate(13deg) translateX(4px)}100%{transform:rotate(0)}}
+.wm-puck{position:fixed;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#3a3a3a,#0a0a0a 70%);border:1.5px solid rgba(255,255,255,.85);box-shadow:0 2px 6px rgba(0,0,0,.5);z-index:141;pointer-events:none;transform:translate(-50%,-50%)}
+.wm-puck.fly{animation:wmPuck .26s linear forwards}
+@keyframes wmPuck{0%{transform:translate(-50%,-50%)}100%{transform:translate(-50%,-50%) translate(var(--tx),var(--ty))}}
+.wm-shatter{position:fixed;z-index:140;pointer-events:none}
+.wm-shard{position:absolute;inset:0;background-size:100% 100%;background-repeat:no-repeat;will-change:transform,opacity}
+.wm-shatter.go .wm-shard{animation:wmShard .6s ease-out forwards}
+@keyframes wmShard{0%{transform:translate(0,0) rotate(0);opacity:1}100%{transform:translate(var(--dx),var(--dy)) rotate(var(--rot));opacity:0}}
+#brandMark.wm-reassemble{animation:wmReassemble .42s cubic-bezier(.2,1.1,.3,1)}
+@keyframes wmReassemble{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
+@media (prefers-reduced-motion: reduce){#sassLogo.wm-windup,.wm-puck.fly,.wm-shatter.go .wm-shard,#brandMark.wm-reassemble{animation:none}}
 </style>
 <script>(function(){
   var logo=document.getElementById('sassLogo'); if(!logo)return;
@@ -4330,6 +4344,64 @@ document.addEventListener('click',function(e){
       logo.removeEventListener('animationend',done);
     });
   });
+})();</script>
+<script>(function(){
+/* Long-press the Sass logo -> a slapshot puck flies into the wordmark, shatters
+   it into pieces, then it reassembles. Quick click still runs the skate egg. */
+var logo=document.getElementById('sassLogo'); if(!logo) return;
+function reduceM(){ return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
+function rnd(a,b){ return a+Math.random()*(b-a); }
+function shatterWordmark(){
+  var wm=document.getElementById('brandMark'); if(!wm) return;
+  var r=wm.getBoundingClientRect(); if(!r.width) return;
+  var src=wm.getAttribute('src');
+  var tris=[[[0,0],[50,0],[0,50]],[[50,0],[50,50],[0,50]],[[50,0],[100,0],[50,50]],[[100,0],[100,50],[50,50]],[[0,50],[50,50],[0,100]],[[50,50],[50,100],[0,100]],[[50,50],[100,50],[50,100]],[[100,50],[100,100],[50,100]]];
+  var layer=document.createElement('div'); layer.className='wm-shatter';
+  layer.style.left=r.left+'px'; layer.style.top=r.top+'px'; layer.style.width=r.width+'px'; layer.style.height=r.height+'px';
+  document.body.appendChild(layer);
+  tris.forEach(function(poly){
+    var sh=document.createElement('div'); sh.className='wm-shard';
+    sh.style.backgroundImage='url('+src+')';
+    var cp='polygon('+poly.map(function(p){return p[0]+'% '+p[1]+'%';}).join(',')+')';
+    sh.style.clipPath=cp; sh.style.webkitClipPath=cp;
+    var cx=(poly[0][0]+poly[1][0]+poly[2][0])/3, cy=(poly[0][1]+poly[1][1]+poly[2][1])/3;
+    sh.style.setProperty('--dx',Math.round((cx-50)/50*rnd(60,120))+'px');
+    sh.style.setProperty('--dy',Math.round((cy-50)/50*rnd(50,100)-24)+'px');
+    sh.style.setProperty('--rot',Math.round(rnd(-170,170))+'deg');
+    layer.appendChild(sh);
+  });
+  wm.style.visibility='hidden';
+  requestAnimationFrame(function(){ layer.classList.add('go'); });
+  setTimeout(function(){
+    if(layer.parentNode)layer.parentNode.removeChild(layer);
+    wm.style.visibility='';
+    wm.classList.add('wm-reassemble'); setTimeout(function(){ wm.classList.remove('wm-reassemble'); },440);
+  },650);
+}
+function logoSlapshot(){
+  if(reduceM()) return;
+  var wm=document.getElementById('brandMark'); if(!wm) return;
+  if(document.querySelector('.wm-shatter')) return;   /* one at a time */
+  logo.classList.add('wm-windup'); setTimeout(function(){ logo.classList.remove('wm-windup'); },500);
+  var lr=logo.getBoundingClientRect(), wr=wm.getBoundingClientRect();
+  var startX=lr.right-6, startY=lr.top+lr.height*0.5;
+  var endX=wr.left+wr.width*0.42, endY=wr.top+wr.height*0.5;
+  var puck=document.createElement('span'); puck.className='wm-puck';
+  puck.style.left=startX+'px'; puck.style.top=startY+'px';
+  puck.style.setProperty('--tx',Math.round(endX-startX)+'px'); puck.style.setProperty('--ty',Math.round(endY-startY)+'px');
+  document.body.appendChild(puck);
+  requestAnimationFrame(function(){ puck.classList.add('fly'); });
+  setTimeout(function(){ shatterWordmark(); if(puck.parentNode)puck.parentNode.removeChild(puck); },255);
+}
+var timer=null, longFired=false, sx=0, sy=0;
+logo.addEventListener('pointerdown',function(e){ longFired=false; sx=e.clientX; sy=e.clientY; timer=setTimeout(function(){ longFired=true; logoSlapshot(); },500); });
+function cancel(){ if(timer){ clearTimeout(timer); timer=null; } }
+logo.addEventListener('pointerup',cancel);
+logo.addEventListener('pointerleave',cancel);
+logo.addEventListener('pointercancel',cancel);
+logo.addEventListener('pointermove',function(e){ if(Math.abs(e.clientX-sx)>10||Math.abs(e.clientY-sy)>10) cancel(); });
+logo.addEventListener('contextmenu',function(e){ e.preventDefault(); });
+logo.addEventListener('click',function(e){ if(longFired){ e.preventDefault(); e.stopImmediatePropagation(); longFired=false; } }, true);
 })();</script>
 
 
@@ -5159,19 +5231,23 @@ function tapEgg(el,fire){
     playing=true; fire(function(){playing=false;});
   });
 }
-/* Stickhandling: the stick rocks while a single puck is stickhandled back and
-   forth in front of the blade. No screen travel, no sauce flick. */
+/* Stickhandling: the header icon swaps to the puckless stick and the SAME puck
+   (a single moving puck) is stickhandled back and forth in front of the blade,
+   so it never doubles up. The puck settles back on the blade at the end. */
 tapEgg(document.getElementById('eggStick'),function(done){
   var el=document.getElementById('eggStick');
   if(reduce){ done(); return; }
+  var img=document.getElementById('eggStickImg');
   var r=el.getBoundingClientRect();
-  var px=Math.round(r.left+r.width*0.5-8)+'px';
-  var py=Math.round(r.top+r.height*0.72-8)+'px';
+  var px=Math.round(r.left+r.width*0.30-8)+'px';   /* start at the blade (bottom-left) */
+  var py=Math.round(r.top+r.height*0.80-8)+'px';
   el.classList.add('egg-go');
+  if(img) img.src='login/icon-stick-nopuck.webp';  /* the puck leaves the blade */
   var p=document.createElement('span'); p.className='eggdangle';
   p.style.setProperty('--px',px); p.style.setProperty('--py',py);
   document.body.appendChild(p);
   requestAnimationFrame(function(){ p.classList.add('weave'); });
+  setTimeout(function(){ if(img) img.src='login/icon-stick.webp'; },1150);  /* puck settles back on the blade */
   setTimeout(function(){
     el.classList.remove('egg-go');
     if(p.parentNode)p.parentNode.removeChild(p);
@@ -5227,19 +5303,6 @@ tapEgg(document.getElementById('eggBolt'),function(done){
     done();
   },1120);
 });
-/* Game Day Goals card: tapping the goal light flashes it and fires a GOAL cheer,
-   without following the card's link (preventDefault + stopPropagation). */
-(function(){
-  var g=document.getElementById('eggGoal');
-  if(!g) return;
-  g.addEventListener('click',function(e){
-    e.preventDefault(); e.stopPropagation();
-    if(g.classList.contains('egg-flash')) return;
-    g.classList.add('egg-flash');
-    setTimeout(function(){ g.classList.remove('egg-flash'); },900);
-    if(window.thwapGoalCheer) window.thwapGoalCheer();
-  });
-})();
 })();</script>
 <script>(function(){
 /* ---- Break the Ice: login gate (Pass 1 foundation) ----
