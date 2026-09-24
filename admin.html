@@ -11,6 +11,7 @@
   --alert-text:#C0362C;--card2:#F7FAF7;
 }
 *{box-sizing:border-box}
+[hidden]{display:none !important}
 body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;padding:24px 16px}
 .wrap{max-width:760px;margin:0 auto}
 h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4px}
@@ -66,9 +67,15 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
 <div class="wrap">
   <h1>Drill suggestions</h1>
   <p class="sub">Thwap review. Coaches recommend drills; accept the good ones into the library or dismiss.</p>
-  <div class="keybar">
-    <input id="key" type="password" placeholder="Admin key" autocomplete="off">
-    <button id="load">Load</button>
+  <div class="keybar" id="loginbar">
+    <input id="email" type="email" placeholder="Admin email" autocomplete="username" value="hi@woodymacduffie.com">
+    <input id="pw" type="password" placeholder="Password" autocomplete="current-password">
+    <button id="load">Sign in</button>
+  </div>
+  <div class="keybar" id="setpwbar" hidden>
+    <input id="pw1" type="password" placeholder="Set a password (8+ chars)" autocomplete="new-password">
+    <input id="pw2" type="password" placeholder="Confirm password" autocomplete="new-password">
+    <button id="setpw">Set password</button>
   </div>
   <div class="seg" id="viewnav" hidden>
     <button data-v="drills" class="on">Drills</button>
@@ -81,7 +88,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
     <button data-f="dismissed">Dismissed</button>
     <button data-f="all">All</button>
   </div>
-  <div id="msg" class="msg">Enter the admin key and press Load.</div>
+  <div id="msg" class="msg">Sign in with your admin email and password.</div>
   <div id="list"></div>
   </div>
   <div id="viewRoster" hidden>
@@ -92,10 +99,13 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
 </div>
 <script>
 (function(){
-  var key='', all=[], filter='new';
-  var keyEl=document.getElementById('key'), msg=document.getElementById('msg'),
+  var key='', token='', all=[], filter='new';
+  var msg=document.getElementById('msg'),
       list=document.getElementById('list'), seg=document.getElementById('filter');
+  var emailEl=document.getElementById('email'), pwEl=document.getElementById('pw'),
+      loginbar=document.getElementById('loginbar'), setpwbar=document.getElementById('setpwbar');
   function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function tokenQS(){ return 'adminToken='+encodeURIComponent(token); }
   var CAT={stick:'Hands',shoot:'Shoot',dryland:'Dryland'};
   function render(){
     var rows=all.filter(function(s){ return filter==='all'?true:(s.status||'new')===filter; });
@@ -117,25 +127,60 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
       b.addEventListener('click',function(){ resolve(b.getAttribute('data-code'), b.getAttribute('data-id'), b.getAttribute('data-st')); });
     });
   }
-  function load(){
-    key=keyEl.value.trim(); if(!key){ msg.textContent='Enter the admin key.'; msg.className='msg err'; return; }
-    msg.textContent='Loading...'; msg.className='msg';
+  function afterAuth(){
     document.getElementById('viewnav').hidden=false;
-    fetch('/api/coach?action=review-suggestions&key='+encodeURIComponent(key))
-      .then(function(r){ if(r.status===401){ throw new Error('Bad admin key.'); } return r.json(); })
+    fetch('/api/coach?action=review-suggestions&'+tokenQS())
+      .then(function(r){ if(r.status===401){ throw new Error('Session expired, sign in again.'); } return r.json(); })
       .then(function(j){ all=(j&&j.suggestions)||[]; seg.hidden=false; render(); })
       .catch(function(e){ msg.textContent=e.message||'Could not load.'; msg.className='msg err'; });
     loadRoster();
   }
+  function signIn(){
+    var email=emailEl.value.trim(), pw=pwEl.value;
+    if(!email){ msg.textContent='Enter your admin email.'; msg.className='msg err'; return; }
+    msg.textContent='Signing in...'; msg.className='msg';
+    // Check first-run: if no password set yet, show the set-password bar.
+    fetch('/api/coach?action=admin-status&email='+encodeURIComponent(email))
+      .then(function(r){ return r.json(); })
+      .then(function(st){
+        if(st && st.exists && !st.hasPassword){
+          loginbar.hidden=true; setpwbar.hidden=false;
+          msg.textContent='First sign in: set a password for '+email; msg.className='msg';
+          return;
+        }
+        return fetch('/api/coach?action=admin-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pw})})
+          .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
+          .then(function(res){
+            if(!res.ok){ msg.textContent=(res.j&&res.j.error)||'Sign in failed.'; msg.className='msg err'; return; }
+            token=res.j.token; msg.textContent=''; afterAuth();
+          });
+      })
+      .catch(function(){ msg.textContent='Could not sign in.'; msg.className='msg err'; });
+  }
+  function setPw(){
+    var email=emailEl.value.trim(), p1=document.getElementById('pw1').value, p2=document.getElementById('pw2').value;
+    if(p1.length<8){ msg.textContent='Password must be at least 8 characters.'; msg.className='msg err'; return; }
+    if(p1!==p2){ msg.textContent='Passwords do not match.'; msg.className='msg err'; return; }
+    fetch('/api/coach?action=admin-set-password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:p1})})
+      .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
+      .then(function(res){
+        if(!res.ok){ msg.textContent=(res.j&&res.j.error)||'Could not set password.'; msg.className='msg err'; return; }
+        token=res.j.token; setpwbar.hidden=true; loginbar.hidden=false; msg.textContent=''; afterAuth();
+      })
+      .catch(function(){ msg.textContent='Could not set password.'; msg.className='msg err'; });
+  }
   function resolve(code,id,status){
-    fetch('/api/coach?action=resolve-suggestion&key='+encodeURIComponent(key),
+    fetch('/api/coach?action=resolve-suggestion&'+tokenQS(),
       {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code,id:id,status:status})})
       .then(function(r){ return r.json(); })
       .then(function(j){ if(j&&j.ok){ all.forEach(function(s){ if(s.id===id&&s.teamCode===code) s.status=status; }); render(); } })
       .catch(function(){});
   }
-  document.getElementById('load').addEventListener('click',load);
-  keyEl.addEventListener('keydown',function(e){ if(e.key==='Enter') load(); });
+  document.getElementById('load').addEventListener('click',signIn);
+  document.getElementById('setpw').addEventListener('click',setPw);
+  pwEl.addEventListener('keydown',function(e){ if(e.key==='Enter') signIn(); });
+  emailEl.addEventListener('keydown',function(e){ if(e.key==='Enter') signIn(); });
+  document.getElementById('pw2').addEventListener('keydown',function(e){ if(e.key==='Enter') setPw(); });
   seg.querySelectorAll('button').forEach(function(b){
     b.addEventListener('click',function(){ filter=b.getAttribute('data-f'); seg.querySelectorAll('button').forEach(function(x){ x.classList.toggle('on', x===b); }); render(); });
   });
@@ -147,7 +192,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
   var CONSENT=[['','How was consent given?'],['text','Text message'],['in_person','In person'],['written','Written / signed'],['email','Email']];
   function loadRoster(){
     rmsg.textContent='Loading roster...'; rmsg.className='msg';
-    fetch('/api/coach?action=admin-roster&key='+encodeURIComponent(key))
+    fetch('/api/coach?action=admin-roster&'+tokenQS())
       .then(function(r){ if(r.status===401){ throw new Error('Bad admin key.'); } return r.json(); })
       .then(function(j){ players=(j&&j.players)||[]; renderRoster(); })
       .catch(function(e){ rmsg.textContent=e.message||'Could not load roster.'; rmsg.className='msg err'; });
@@ -205,7 +250,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
       position:card.querySelector('.f-pos').value,
       parentEmail:card.querySelector('.f-pe').value.trim(),
       parentEmail2:card.querySelector('.f-pe2').value.trim() };
-    fetch('/api/coach?action=admin-update-player&key='+encodeURIComponent(key),
+    fetch('/api/coach?action=admin-update-player&'+tokenQS(),
       {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
       .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
       .then(function(res){ if(!res.ok){ alert((res.j&&res.j.error)||'Save failed'); return; } flash(card); })
@@ -235,7 +280,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
     var btn=card.querySelector('.c-upload'); btn.disabled=true; btn.textContent='Uploading...';
     fileToDataUrl(file,function(dataUrl){
       if(!dataUrl){ alert('Could not read that image.'); btn.disabled=false; btn.textContent='Upload photo'; return; }
-      fetch('/api/photo/admin-put?key='+encodeURIComponent(key),
+      fetch('/api/photo/admin-put?'+tokenQS(),
         {method:'POST',headers:{'Content-Type':'application/json'},
          body:JSON.stringify({playerId:id,imageData:dataUrl,consent:{method:method,grantedBy:by}})})
         .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
