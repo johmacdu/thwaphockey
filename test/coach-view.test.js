@@ -312,6 +312,19 @@ describe('Player edit sheet: PIN hint explains how to reset', () => {
   });
 });
 
+describe('Add player is a side sheet, not a full page', () => {
+  it('#addplayer is a hidden .sheet with a scrim and close, keeping the form ids', () => {
+    const ap=doc.getElementById('addplayer');
+    expect(ap).toBeTruthy();
+    expect(ap.classList.contains('sheet')).toBe(true);
+    expect(ap.hasAttribute('hidden')).toBe(true);
+    expect(doc.getElementById('apScrim')).toBeTruthy();
+    expect(doc.getElementById('apX')).toBeTruthy();
+    expect(doc.getElementById('addPlayerForm')).toBeTruthy();
+    expect(doc.getElementById('apFirst')).toBeTruthy();
+  });
+});
+
 describe('Menus start closed: [hidden] overrides display', () => {
   // Recurring Thwap bug: a popup with the hidden attribute still shows because a
   // CSS rule gives it display:flex, which beats the browser's implicit
