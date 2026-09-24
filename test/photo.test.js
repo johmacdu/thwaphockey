@@ -22,6 +22,7 @@ function setEnv() {
   process.env.PHOTO_FROM_EMAIL = 'thwap@example.com';
   process.env.PHOTO_TOKEN_SECRET = 'test-secret-please-change';
   process.env.BLOB_READ_WRITE_TOKEN = 'blob_test';
+  process.env.THWAP_ADMIN_TOKEN = 'admin-test-token';
 }
 setEnv();
 
@@ -30,6 +31,9 @@ const { default: verify } = await import('../api/photo/verify.js');
 const { default: upload } = await import('../api/photo/upload.js');
 const { default: remove } = await import('../api/photo/remove.js');
 const { default: getPhoto } = await import('../api/photo/get.js');
+const { default: adminPut } = await import('../api/photo/admin-put.js');
+const { getConsent } = await import('../lib/photo_store.js');
+const { getKv } = await import('../lib/photo_common.js');
 
 function makeRes() {
   return {
@@ -200,5 +204,63 @@ describe('get and remove', () => {
     const g2 = makeRes();
     await getPhoto(get({ playerId: 'lewie' }), g2);
     expect(g2.statusCode).toBe(404);
+  });
+});
+
+describe('admin-put (admin-recorded consent)', () => {
+  const adminHdr = { authorization: 'Bearer admin-test-token' };
+  const goodConsent = { method: 'text', grantedBy: 'Josh Delatoree' };
+
+  it('rejects without the admin key', async () => {
+    const res = makeRes();
+    await adminPut(post({ playerId: 'lewie', imageData: IMG, consent: goodConsent }), res);
+    expect(res.statusCode).toBe(401);
+  });
+
+  it('rejects an unknown player', async () => {
+    const res = makeRes();
+    await adminPut(post({ playerId: 'nobody', imageData: IMG, consent: goodConsent }, adminHdr), res);
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('requires a consent method', async () => {
+    const res = makeRes();
+    await adminPut(post({ playerId: 'lewie', imageData: IMG, consent: { grantedBy: 'Josh' } }, adminHdr), res);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toMatch(/consent method/);
+  });
+
+  it('requires who granted consent', async () => {
+    const res = makeRes();
+    await adminPut(post({ playerId: 'lewie', imageData: IMG, consent: { method: 'text' } }, adminHdr), res);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toMatch(/grantedBy/);
+  });
+
+  it('rejects a bad consent method', async () => {
+    const res = makeRes();
+    await adminPut(post({ playerId: 'lewie', imageData: IMG, consent: { method: 'because-i-said-so', grantedBy: 'Josh' } }, adminHdr), res);
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('stores the photo AND a truthful recorded-consent record (not a fake email)', async () => {
+    const res = makeRes();
+    await adminPut(post({ playerId: 'lewie', imageData: IMG, consent: goodConsent }, adminHdr), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.url).toContain('blob.example');
+
+    // photo is retrievable
+    const g = makeRes();
+    await getPhoto(get({ playerId: 'lewie' }), g);
+    expect(g.statusCode).toBe(200);
+
+    // consent record is honest: method text, names the parent, flags admin-recorded,
+    // and does NOT masquerade as a verified email (no emailHash).
+    const consent = await getConsent(getKv(), 'lewie');
+    expect(consent.method).toBe('text');
+    expect(consent.grantedBy).toBe('Josh Delatoree');
+    expect(consent.adminRecorded).toBe(true);
+    expect(consent.recordedBy).toBe('admin');
+    expect(consent.emailHash).toBeUndefined();
   });
 });
