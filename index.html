@@ -557,7 +557,7 @@ body.is-coach .roster .pcard-remove{display:grid;place-items:center}
 .teambanner p{color:var(--muted);font-size:var(--fs-body);margin:0}
 .banner-coaches{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px}
 .bcoach{display:inline-flex;align-items:center;gap:9px;box-sizing:border-box;height:44px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:0 12px 0 5px;font-family:inherit;text-align:left}
-.bcoach-tappable{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.bcoach-nmbtn{background:none;border:0;padding:0;margin:0;font:inherit;color:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .bcoach-av{width:34px;height:34px;border-radius:50%;display:inline-grid;place-items:center;background:var(--card2);color:var(--muted);font-weight:900;font-size:13px;overflow:hidden;flex:none}
 .bcoach-av img{width:100%;height:100%;object-fit:cover}
 .bcoach-nm{font-weight:800;font-size:14px;color:var(--text);line-height:1.15}
@@ -1716,19 +1716,20 @@ window.thwapActiveTeam=function(coach){
         var canRemove=amHead && c.role==='assistant';
         var isMe=c.email===myEmail;
         pill.innerHTML='<span class="bcoach-av"></span>'+
-          '<span><span class="bcoach-nm"></span><span class="bcoach-role" style="display:block">'+(isHead?'Head coach':'Assistant')+'</span></span>'+
+          '<span>'+(isMe?'<button type="button" class="bcoach-nmbtn"><span class="bcoach-nm"></span></button>':'<span class="bcoach-nm"></span>')+'<span class="bcoach-role" style="display:block">'+(isHead?'Head coach':'Assistant')+'</span></span>'+
           (isMe?'<button type="button" class="bcoach-btn" aria-label="Edit your profile">\u270E</button>':(canRemove?'<button type="button" class="bcoach-btn bcoach-remove" aria-label="Remove assistant">\u2715</button>':''));
         var av=pill.querySelector('.bcoach-av');
         if(c.photo){ var im=document.createElement('img'); im.src=c.photo; im.alt=nm; av.appendChild(im); } else { av.textContent=initials(c.name,c.email); }
         pill.querySelector('.bcoach-nm').textContent=nm;
         var pencil=pill.querySelector('.bcoach-btn:not(.bcoach-remove)');
         if(isMe){
-          /* The whole chip (name + avatar + pencil) opens the coach's profile
-             editor, not just the tiny pencil - tapping "Jason" now works. */
-          pill.classList.add('bcoach-tappable');
-          pill.setAttribute('role','button'); pill.setAttribute('tabindex','0');
-          pill.addEventListener('click',function(){ if(window.thwapOpenCoachProfile) window.thwapOpenCoachProfile(); });
-          pill.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); if(window.thwapOpenCoachProfile) window.thwapOpenCoachProfile(); } });
+          /* Tapping the coach's own NAME (and the pencil) opens the profile editor.
+             Scoped to the name button, NOT the whole pill, so a stray tap on the
+             wide chip does not open it. */
+          var nmBtn=pill.querySelector('.bcoach-nmbtn');
+          function openProfile(){ if(window.thwapOpenCoachProfile) window.thwapOpenCoachProfile(); }
+          if(nmBtn) nmBtn.addEventListener('click',openProfile);
+          if(pencil) pencil.addEventListener('click',openProfile);
         }
         var rm=pill.querySelector('.bcoach-remove');
         if(rm) rm.addEventListener('click',function(){
