@@ -4184,24 +4184,12 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#shoot') re
    year), asked once per browser session and cached. Fails silently if the API is not
    reachable yet (e.g. before Vercel KV is provisioned), so the app keeps working. */
 var PLAYER=(function(){try{var s=localStorage.getItem('bfPlayer')||'Lewie';return s.trim().split(/\s+/)[0];}catch(e){return 'Lewie';}})();  /* the chosen player on this device */
-function pinKey(){ return 'thwapPin:'+PLAYER.toLowerCase(); }
-function getPin(){
-  var k=pinKey(), v=null;
-  try{ v=sessionStorage.getItem(k); }catch(e){}
-  if(v) return v;
-  v=window.prompt("What is "+PLAYER+"'s secret number?\n(Ask your coach if you are not sure.)");
-  if(v){ try{ sessionStorage.setItem(k, v.trim()); }catch(e){} return v.trim(); }
-  return null;
-}
 window.thwapMarkDone=function(discipline){
-  var pin=getPin(); if(!pin) return;              /* cancelled: keep local-only */
+  /* A logged-in player logs their own work - no secret-number prompt. */
   try{
     fetch('/api/done',{
       method:'POST', headers:{'Content-Type':'application/json'}, cache:'no-store',
-      body:JSON.stringify({player:PLAYER.toLowerCase(), pin:pin, discipline:discipline})
-    }).then(function(r){
-      if(r.status===403){ try{ sessionStorage.removeItem(pinKey()); }catch(e){}  /* wrong PIN: forget it so they can retry */
-        window.alert("That is not the right number. Ask your coach for your secret number, then try again."); }
+      body:JSON.stringify({player:PLAYER.toLowerCase(), discipline:discipline})
     }).catch(function(){});                        /* offline / no API yet: silent */
   }catch(e){}
 };
