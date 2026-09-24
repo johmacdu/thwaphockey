@@ -3880,7 +3880,7 @@ function build(){
   var nm=document.getElementById('plName'); if(nm)nm.textContent=first;
   var ps=document.getElementById('plPos'); if(ps)ps.textContent='#'+info.num+'  '+(POSNAME[info.pos]||'');
   if(window.thwapRenderIdp) window.thwapRenderIdp(slug);
-  var streak=document.getElementById('plStreak'); if(streak){var _sk=demoStreak(first,tf); if(_sk>=3){var _tier=_sk>=7?'m7':(_sk>=5?'m5':'m3');var _lab=_sk>=7?" <span class='plfire-lab'>On fire!</span>":"";streak.style.display='';streak.innerHTML="<span class='plflame "+_tier+"'>🔥</span> "+_sk+" day streak"+_lab;}else{streak.style.display='none';streak.innerHTML='';}}
+  var streak=document.getElementById('plStreak'); if(streak){var _sk=demoStreak(first,tf); if(window.thwapStreakMilestone && slug===(window.thwapPlayerId?window.thwapPlayerId():'')) window.thwapStreakMilestone(_sk); if(_sk>=3){var _tier=_sk>=7?'m7':(_sk>=5?'m5':'m3');var _lab=_sk>=7?" <span class='plfire-lab'>On fire!</span>":"";streak.style.display='';streak.innerHTML="<span class='plflame "+_tier+"'>🔥</span> "+_sk+" day streak"+_lab;}else{streak.style.display='none';streak.innerHTML='';}}
   var wrap=document.getElementById('plDisc'); if(!wrap)return;
   var DCOL={Stickhandling:'#8fd65e',Shooting:'#75B8FF',Dryland:'#FF9D4D'};
   var DEMO={Stickhandling:'🏒',Shooting:'🥅',Dryland:'⚡'};
@@ -4329,12 +4329,16 @@ if(closeBtn) closeBtn.addEventListener('click',function(){ var el=document.getEl
 .cf-sass{position:fixed;right:5vw;bottom:0;width:min(44vw,320px);z-index:132;opacity:0;pointer-events:none}
 .cf-sass.go{animation:cfSass 1.2s cubic-bezier(.2,.9,.3,1) forwards}
 @keyframes cfSass{0%{opacity:0;transform:translateY(34vh) scale(.9)}26%{opacity:1;transform:translateY(0) scale(1)}82%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(6vh) scale(1)}}
+/* Centered Sass cameo (illustrated character moment: dangle / power / on-fire). */
+.cf-cameo{position:fixed;left:50%;bottom:4vh;width:min(60vw,400px);z-index:132;opacity:0;pointer-events:none;transform:translateX(-50%) translateY(36vh)}
+.cf-cameo.go{animation:cfCameo 1.5s cubic-bezier(.2,.9,.3,1) forwards}
+@keyframes cfCameo{0%{opacity:0;transform:translateX(-50%) translateY(36vh) scale(.92)}22%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}80%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}100%{opacity:0;transform:translateX(-50%) translateY(8vh) scale(1)}}
 .cf-shake{animation:cfShake .5s ease-out}
 @keyframes cfShake{0%,100%{transform:translate(0,0)}20%{transform:translate(-8px,4px)}40%{transform:translate(7px,-5px)}60%{transform:translate(-5px,3px)}80%{transform:translate(3px,-2px)}}
 @media (prefers-reduced-motion: reduce){
   .catfx-badge.go{animation:cfBadgeStatic 1.6s ease forwards}
   @keyframes cfBadgeStatic{0%,100%{opacity:0}12%,80%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
-  .cf-stamp.go,.cf-sweep.go,.cf-bit.go,.cf-emo.go,.cf-puck.drop,.cf-conf.fall,.cf-ring.go,.cf-bolt.go,.cf-sauce.go,.cf-deke.go,.cf-slap.go,.cf-sass.go,.cf-shake{animation:none}
+  .cf-stamp.go,.cf-sweep.go,.cf-bit.go,.cf-emo.go,.cf-puck.drop,.cf-conf.fall,.cf-ring.go,.cf-bolt.go,.cf-sauce.go,.cf-deke.go,.cf-slap.go,.cf-sass.go,.cf-cameo.go,.cf-shake{animation:none}
 }
 </style>
 <script>(function(){
@@ -4386,6 +4390,13 @@ function screenCrack(color,withSass){
   setTimeout(function(){ crack.style.transition='opacity .4s'; crack.style.opacity='0'; },1250);
   setTimeout(function(){ rm(crack); rm(sass); },1780);
 }
+/* Illustrated Sass cameo: the character slides up center-stage doing the thing,
+   with a word stamp. src is one of the login/sass-*.webp cutouts. */
+function sassCameo(src,word,color){
+  var img=document.createElement('img'); img.className='cf-cameo'; img.src=src; img.alt=''; document.body.appendChild(img); go(img);
+  if(word) stamp(word,color||'#75B8FF');
+  setTimeout(function(){ rm(img); },1650);
+}
 /* ---- rotating pools: ~10 varied effects per discipline ---- */
 var POOLS={
   stick:[
@@ -4398,7 +4409,8 @@ var POOLS={
     function(c){ burst(c,14); },
     function(c){ sweep(c); stamp('MITTS!',c); },
     function(c){ sauce(); burst(c,8); },
-    function(c){ confetti(['#8FD65E','#B9F06B','#2F6B41','#ffffff']); }
+    function(c){ confetti(['#8FD65E','#B9F06B','#2F6B41','#ffffff']); },
+    function(c){ sassCameo('login/sass-dangle.webp','FILTHY!','#8FD65E'); }
   ],
   shoot:[
     function(c){ screenCrack(c,true); stamp('SNIPE!',c); },
@@ -4422,7 +4434,8 @@ var POOLS={
     function(c){ burst(c,9,'💪'); },
     function(c){ stamp('UNREAL',c); rings(c,2); },
     function(c){ bolt(); },
-    function(c){ confetti(['#FF9D4D','#FFE08A','#e58a2e','#ffffff']); }
+    function(c){ confetti(['#FF9D4D','#FFE08A','#e58a2e','#ffffff']); },
+    function(c){ sassCameo('login/sass-power.webp','POWERED UP','#FF9D4D'); }
   ]
 };
 function playPool(disc){ var c=DC[disc]||'#75B8FF'; try{ POOLS[disc][pickRotating('cat:'+disc, POOLS[disc].length)](c); }catch(e){ badge(WORDS[disc]||'NICE!',c); } }
@@ -4443,9 +4456,23 @@ window.thwapCatFxCount=function(disc){ return (POOLS[disc]||[]).length; };
 var FINALE=[
   function(){ rainPucks(22); confetti(['#8FD65E','#75B8FF','#FF9D4D','#B9F06B','#ffffff']); },
   function(){ screenCrack('#B9F06B',true); stamp('GG!','#B9F06B'); },
-  function(){ confetti(['#8FD65E','#75B8FF','#FF9D4D','#ffffff']); burst('#B9F06B',18); stamp('THATS A WRAP','#B9F06B'); }
+  function(){ confetti(['#8FD65E','#75B8FF','#FF9D4D','#ffffff']); burst('#B9F06B',18); stamp('THATS A WRAP','#B9F06B'); },
+  function(){ sassCameo('login/sass-fire.webp','ON FIRE!','#FF7A1A'); rainPucks(16); }
 ];
 window.thwapFinale=function(){ if(reduce) return; try{ FINALE[pickRotating('finale',FINALE.length)](); }catch(e){} };
+/* Streak milestone: fire the on-fire Sass cameo once each time the player crosses
+   up into a new tier (3 / 5 / 7 days); resets if the streak drops so re-climbing
+   celebrates again. Guarded per player. */
+window.thwapStreakMilestone=function(days){
+  var t=(+days>=7?7:(+days>=5?5:(+days>=3?3:0)));
+  var pid=(window.thwapPlayerId?window.thwapPlayerId():'guest');
+  var key='thwapStreakTier:'+pid, last=0;
+  try{ last=parseInt(localStorage.getItem(key)||'0',10)||0; }catch(e){}
+  if(t===last) return;
+  var up=(t>last);
+  try{ localStorage.setItem(key,String(t)); }catch(e){}
+  if(up && t>=3 && !reduce){ sassCameo('login/sass-fire.webp', (t>=7?'ON FIRE!':t+' DAY STREAK!'), '#FF7A1A'); }
+};
 })();</script>
 <script>(function(){
 /* ---- Sticker DECORATE system (Pillar 3) -------------------------------------
