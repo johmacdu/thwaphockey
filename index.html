@@ -688,7 +688,14 @@ body.roster-editing #roster-grid .pcard:not(.pcard-add)::after{content:'\270E';p
 .reset-label + .create-label{margin-left:auto}
 /* Recommend a drill: a subdued container of SECONDARY info. All controls use a
    secondary/tertiary (outline/ghost) style, never the primary lime action. */
-.sugg-wrap{margin-top:26px;padding:18px;border:1px solid var(--line);border-radius:18px;background:var(--card2)}
+.sugg-expand{margin-top:26px;width:100%;display:flex;align-items:center;gap:10px;min-height:52px;font-family:inherit;font-size:15px;font-weight:800;color:var(--text);background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:12px 16px;cursor:pointer;text-align:left}
+.sugg-expand-plus{display:grid;place-items:center;width:26px;height:26px;flex:none;border-radius:50%;background:var(--soft);color:var(--text);font-size:20px;line-height:1;font-weight:900}
+.sugg-expand[hidden]{display:none}
+.sugg-wrap{position:relative;margin-top:26px;padding:18px 18px 18px;border:1px solid var(--line);border-radius:18px;background:var(--card2)}
+.sugg-wrap[hidden]{display:none}
+.sugg-close{position:absolute;top:12px;left:12px;width:34px;height:34px;display:grid;place-items:center;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--muted);font-size:22px;line-height:1;cursor:pointer;font-family:inherit}
+.sugg-close:hover{color:var(--text)}
+.sugg-wrap .sugg-h{padding-left:42px;min-height:34px;display:flex;align-items:center}
 .sugg-h{font-family:'Archivo Black',system-ui,sans-serif;font-size:15px;color:var(--muted)}
 .sugg-p{margin:6px 0 12px;font-size:13px;color:var(--muted);line-height:1.5}
 .sugg-seg{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
@@ -1384,7 +1391,11 @@ body.login-locked{overflow:hidden}
     <button type='button' class='tgoal-save' id='tgoalSave'>Save team goal</button>
     <p class='tgoal-done' id='tgoalDone' hidden>Saved! Your team sees this.</p>
   </div>
-  <div class='sugg-wrap' id='suggBox'>
+  <button type='button' class='sugg-expand' id='suggExpand' aria-expanded='false' aria-controls='suggBox'>
+    <span class='sugg-expand-plus' aria-hidden='true'>+</span> Recommend a drill
+  </button>
+  <div class='sugg-wrap' id='suggBox' hidden>
+    <button type='button' class='sugg-close' id='suggClose' aria-label='Close'>&times;</button>
     <div class='sugg-h'>Recommend a drill</div>
     <p class='sugg-p'>Know a drill the team should train? Send it to Thwap. We review every suggestion and add the good ones to the library.</p>
     <div class='sugg-seg' id='suggSeg' role='group' aria-label='Category'>
@@ -2262,6 +2273,14 @@ window.thwapActiveTeam=function(coach){
     var seg=document.getElementById('suggSeg'), inp=document.getElementById('suggIn'),
         send=document.getElementById('suggSend'), done=document.getElementById('suggDone');
     if(!seg||!inp||!send) return;
+    /* Collapsed by default: an expand link opens the card; the card's top-left X closes it. */
+    var expand=document.getElementById('suggExpand'), box=document.getElementById('suggBox'), close=document.getElementById('suggClose');
+    function setOpen(on){
+      if(box) box.hidden=!on;
+      if(expand){ expand.hidden=on; expand.setAttribute('aria-expanded', on?'true':'false'); }
+    }
+    if(expand) expand.addEventListener('click',function(){ setOpen(true); if(inp) inp.focus(); });
+    if(close) close.addEventListener('click',function(){ setOpen(false); });
     var cat='stick';
     seg.querySelectorAll('.sugg-cat').forEach(function(b){
       b.addEventListener('click',function(){ cat=b.getAttribute('data-cat');
