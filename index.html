@@ -125,10 +125,7 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 .png-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .png-head{display:flex;align-items:center;gap:10px}
 .egg-ico-sm{width:40px}
-.png-goallight{flex:none;cursor:pointer;line-height:0;touch-action:manipulation}
-.png-goallight.egg-flash{animation:goalFlash .9s ease-out}
-@keyframes goalFlash{0%{transform:scale(1)}15%{transform:scale(1.25) rotate(-8deg);filter:drop-shadow(0 0 10px rgba(240,100,90,.9))}32%{transform:scale(1.1) rotate(7deg);filter:drop-shadow(0 0 16px rgba(240,100,90,1))}52%{transform:scale(1.18) rotate(-4deg);filter:drop-shadow(0 0 12px rgba(240,100,90,.9))}100%{transform:scale(1);filter:none}}
-@media (prefers-reduced-motion: reduce){.png-goallight.egg-flash{animation:none}}
+.png-goallight{flex:none;line-height:0}
 .png-top:empty{display:none}
 .png-gd{display:inline-block;background:var(--orange);color:#3a2200;font-family:'Archivo Black',system-ui,sans-serif;font-size:11px;padding:5px 11px;border-radius:999px;letter-spacing:.04em}
 .png-count{text-align:center;background:var(--lime);color:var(--ink);border-radius:12px;padding:5px 10px;font-family:'Archivo Black',system-ui,sans-serif;line-height:.85}
@@ -5227,19 +5224,6 @@ tapEgg(document.getElementById('eggBolt'),function(done){
     done();
   },1120);
 });
-/* Game Day Goals card: tapping the goal light flashes it and fires a GOAL cheer,
-   without following the card's link (preventDefault + stopPropagation). */
-(function(){
-  var g=document.getElementById('eggGoal');
-  if(!g) return;
-  g.addEventListener('click',function(e){
-    e.preventDefault(); e.stopPropagation();
-    if(g.classList.contains('egg-flash')) return;
-    g.classList.add('egg-flash');
-    setTimeout(function(){ g.classList.remove('egg-flash'); },900);
-    if(window.thwapGoalCheer) window.thwapGoalCheer();
-  });
-})();
 })();</script>
 <script>(function(){
 /* ---- Break the Ice: login gate (Pass 1 foundation) ----

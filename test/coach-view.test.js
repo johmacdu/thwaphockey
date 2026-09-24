@@ -337,6 +337,14 @@ describe('Game Day card: lines below the title align under the title', () => {
   });
 });
 
+describe('Home goal-lamp easter egg removed (lives only on the game goals page)', () => {
+  it('the #eggGoal tap handler and its flash CSS are gone from the home page', () => {
+    expect(html).not.toMatch(/getElementById\('eggGoal'\)/);
+    expect(html).not.toMatch(/goalFlash/);
+    expect(html).not.toMatch(/egg-flash/);
+  });
+});
+
 describe('Menus start closed: [hidden] overrides display', () => {
   // Recurring Thwap bug: a popup with the hidden attribute still shows because a
   // CSS rule gives it display:flex, which beats the browser's implicit
