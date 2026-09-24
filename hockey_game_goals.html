@@ -37,20 +37,21 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
    generous spacing separates the accordions instead. */
 .section-head{display:flex;align-items:center;gap:13px;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:16px 16px;margin:0;width:100%;text-align:left;background:none;border:0;border-radius:0;font-family:inherit;color:inherit;transition:background .12s ease}
 .section-head:hover{background:var(--card2)}
-.sh-ico{flex:none;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-size:22px;background:var(--soft)}
+.sh-ico{flex:none;width:46px;height:46px;border-radius:13px;display:grid;place-items:center;font-size:24px;background:var(--soft)}
 .section-head .sh-txt{flex:1 1 auto;min-width:0}
 .section-head h2{font-family:'Archivo Black',system-ui,sans-serif;font-size:19px;margin:0;line-height:1.1;letter-spacing:.005em}
-.section-head p{color:var(--muted);font-size:13px;margin:4px 0 0}
+.section-head p{color:var(--muted);font-size:16px;margin:5px 0 0;line-height:1.4}
 .sh-badge{flex:none;font-size:12px;font-weight:900;color:var(--ink);background:var(--lime);border-radius:999px;padding:3px 10px;visibility:hidden}
 .sh-badge.on{visibility:visible}
 .sh-chev{flex:none;font-size:22px;color:var(--muted);transition:transform .18s ease;margin-left:2px}
 .section.open .sh-chev{transform:rotate(90deg)}
 .section .grid{max-height:0;overflow:hidden;opacity:0;transition:max-height .25s ease,opacity .2s ease,margin .25s ease;margin-top:0}
+.section.open .section-head{padding-bottom:20px}
 .section.open .grid{max-height:4000px;opacity:1;margin-top:0;padding:4px 18px 22px;border-bottom:0}
 @media (prefers-reduced-motion: reduce){.section .grid,.sh-chev{transition:none}}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
-.goal{display:grid;grid-template-columns:48px 1fr;gap:14px;min-height:176px;padding:20px;border:1px solid var(--line2);border-radius:18px;background:linear-gradient(180deg,var(--panel),var(--panel2));cursor:pointer;position:relative;transition:.15s ease;box-shadow:0 4px 14px rgba(0,0,0,.22)}
-.goal:hover{border-color:var(--green2);transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.30)}
+.goal{display:grid;grid-template-columns:48px 1fr;gap:14px;min-height:176px;padding:20px;border:1px solid var(--line2);border-radius:18px;background:linear-gradient(180deg,var(--panel),var(--panel2));cursor:pointer;position:relative;transition:.15s ease;box-shadow:0 2px 7px rgba(0,0,0,.12)}
+.goal:hover{border-color:var(--green2);transform:translateY(-1px);box-shadow:0 4px 11px rgba(0,0,0,.16)}
 .emoji{font-size:31px;line-height:1}
 .top{display:flex;justify-content:space-between;gap:10px}
 .top h3{margin:0;font-size:18px}
@@ -209,387 +210,387 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
 
 #g1:checked ~ .builder .goal-1 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g1:checked ~ .builder .goal-1 .tick { display:grid; }
 #g1:checked ~ .final-view .final-1 { display:grid; }
 
 #g2:checked ~ .builder .goal-2 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g2:checked ~ .builder .goal-2 .tick { display:grid; }
 #g2:checked ~ .final-view .final-2 { display:grid; }
 
 #g3:checked ~ .builder .goal-3 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g3:checked ~ .builder .goal-3 .tick { display:grid; }
 #g3:checked ~ .final-view .final-3 { display:grid; }
 
 #g4:checked ~ .builder .goal-4 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g4:checked ~ .builder .goal-4 .tick { display:grid; }
 #g4:checked ~ .final-view .final-4 { display:grid; }
 
 #g5:checked ~ .builder .goal-5 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g5:checked ~ .builder .goal-5 .tick { display:grid; }
 #g5:checked ~ .final-view .final-5 { display:grid; }
 
 #g6:checked ~ .builder .goal-6 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g6:checked ~ .builder .goal-6 .tick { display:grid; }
 #g6:checked ~ .final-view .final-6 { display:grid; }
 
 #g7:checked ~ .builder .goal-7 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g7:checked ~ .builder .goal-7 .tick { display:grid; }
 #g7:checked ~ .final-view .final-7 { display:grid; }
 
 #g8:checked ~ .builder .goal-8 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g8:checked ~ .builder .goal-8 .tick { display:grid; }
 #g8:checked ~ .final-view .final-8 { display:grid; }
 
 #g9:checked ~ .builder .goal-9 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g9:checked ~ .builder .goal-9 .tick { display:grid; }
 #g9:checked ~ .final-view .final-9 { display:grid; }
 
 #g10:checked ~ .builder .goal-10 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g10:checked ~ .builder .goal-10 .tick { display:grid; }
 #g10:checked ~ .final-view .final-10 { display:grid; }
 
 #g11:checked ~ .builder .goal-11 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g11:checked ~ .builder .goal-11 .tick { display:grid; }
 #g11:checked ~ .final-view .final-11 { display:grid; }
 
 #g12:checked ~ .builder .goal-12 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g12:checked ~ .builder .goal-12 .tick { display:grid; }
 #g12:checked ~ .final-view .final-12 { display:grid; }
 
 #g13:checked ~ .builder .goal-13 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g13:checked ~ .builder .goal-13 .tick { display:grid; }
 #g13:checked ~ .final-view .final-13 { display:grid; }
 
 #g14:checked ~ .builder .goal-14 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g14:checked ~ .builder .goal-14 .tick { display:grid; }
 #g14:checked ~ .final-view .final-14 { display:grid; }
 
 #g15:checked ~ .builder .goal-15 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g15:checked ~ .builder .goal-15 .tick { display:grid; }
 #g15:checked ~ .final-view .final-15 { display:grid; }
 
 #g16:checked ~ .builder .goal-16 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g16:checked ~ .builder .goal-16 .tick { display:grid; }
 #g16:checked ~ .final-view .final-16 { display:grid; }
 
 #g17:checked ~ .builder .goal-17 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g17:checked ~ .builder .goal-17 .tick { display:grid; }
 #g17:checked ~ .final-view .final-17 { display:grid; }
 
 #g18:checked ~ .builder .goal-18 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g18:checked ~ .builder .goal-18 .tick { display:grid; }
 #g18:checked ~ .final-view .final-18 { display:grid; }
 
 #g19:checked ~ .builder .goal-19 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g19:checked ~ .builder .goal-19 .tick { display:grid; }
 #g19:checked ~ .final-view .final-19 { display:grid; }
 
 #g20:checked ~ .builder .goal-20 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g20:checked ~ .builder .goal-20 .tick { display:grid; }
 #g20:checked ~ .final-view .final-20 { display:grid; }
 
 #g21:checked ~ .builder .goal-21 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g21:checked ~ .builder .goal-21 .tick { display:grid; }
 #g21:checked ~ .final-view .final-21 { display:grid; }
 
 #g22:checked ~ .builder .goal-22 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g22:checked ~ .builder .goal-22 .tick { display:grid; }
 #g22:checked ~ .final-view .final-22 { display:grid; }
 
 #g23:checked ~ .builder .goal-23 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g23:checked ~ .builder .goal-23 .tick { display:grid; }
 #g23:checked ~ .final-view .final-23 { display:grid; }
 
 #g24:checked ~ .builder .goal-24 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g24:checked ~ .builder .goal-24 .tick { display:grid; }
 #g24:checked ~ .final-view .final-24 { display:grid; }
 
 #g25:checked ~ .builder .goal-25 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g25:checked ~ .builder .goal-25 .tick { display:grid; }
 #g25:checked ~ .final-view .final-25 { display:grid; }
 
 #g26:checked ~ .builder .goal-26 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g26:checked ~ .builder .goal-26 .tick { display:grid; }
 #g26:checked ~ .final-view .final-26 { display:grid; }
 
 #g27:checked ~ .builder .goal-27 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g27:checked ~ .builder .goal-27 .tick { display:grid; }
 #g27:checked ~ .final-view .final-27 { display:grid; }
 
 #g28:checked ~ .builder .goal-28 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g28:checked ~ .builder .goal-28 .tick { display:grid; }
 #g28:checked ~ .final-view .final-28 { display:grid; }
 
 #g29:checked ~ .builder .goal-29 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g29:checked ~ .builder .goal-29 .tick { display:grid; }
 #g29:checked ~ .final-view .final-29 { display:grid; }
 
 #g30:checked ~ .builder .goal-30 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g30:checked ~ .builder .goal-30 .tick { display:grid; }
 #g30:checked ~ .final-view .final-30 { display:grid; }
 
 #g31:checked ~ .builder .goal-31 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g31:checked ~ .builder .goal-31 .tick { display:grid; }
 #g31:checked ~ .final-view .final-31 { display:grid; }
 
 #g32:checked ~ .builder .goal-32 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g32:checked ~ .builder .goal-32 .tick { display:grid; }
 #g32:checked ~ .final-view .final-32 { display:grid; }
 
 #g33:checked ~ .builder .goal-33 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g33:checked ~ .builder .goal-33 .tick { display:grid; }
 #g33:checked ~ .final-view .final-33 { display:grid; }
 
 #g34:checked ~ .builder .goal-34 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g34:checked ~ .builder .goal-34 .tick { display:grid; }
 #g34:checked ~ .final-view .final-34 { display:grid; }
 
 #g35:checked ~ .builder .goal-35 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g35:checked ~ .builder .goal-35 .tick { display:grid; }
 #g35:checked ~ .final-view .final-35 { display:grid; }
 
 #g36:checked ~ .builder .goal-36 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g36:checked ~ .builder .goal-36 .tick { display:grid; }
 #g36:checked ~ .final-view .final-36 { display:grid; }
 
 #g37:checked ~ .builder .goal-37 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g37:checked ~ .builder .goal-37 .tick { display:grid; }
 #g37:checked ~ .final-view .final-37 { display:grid; }
 
 #g38:checked ~ .builder .goal-38 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g38:checked ~ .builder .goal-38 .tick { display:grid; }
 #g38:checked ~ .final-view .final-38 { display:grid; }
 
 #g39:checked ~ .builder .goal-39 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g39:checked ~ .builder .goal-39 .tick { display:grid; }
 #g39:checked ~ .final-view .final-39 { display:grid; }
 
 #g40:checked ~ .builder .goal-40 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g40:checked ~ .builder .goal-40 .tick { display:grid; }
 #g40:checked ~ .final-view .final-40 { display:grid; }
 
 #g41:checked ~ .builder .goal-41 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g41:checked ~ .builder .goal-41 .tick { display:grid; }
 #g41:checked ~ .final-view .final-41 { display:grid; }
 
 #g42:checked ~ .builder .goal-42 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g42:checked ~ .builder .goal-42 .tick { display:grid; }
 #g42:checked ~ .final-view .final-42 { display:grid; }
 
 #g43:checked ~ .builder .goal-43 {
   border-color: var(--green);
-  box-shadow: inset 0 0 0 2px var(--green), 0 8px 22px rgba(47,191,113,.28);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
   background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 #g43:checked ~ .builder .goal-43 .tick { display:grid; }
 #g43:checked ~ .final-view .final-43 { display:grid; }
