@@ -738,3 +738,25 @@ describe('Thwap admin: roster index backfill', () => {
     expect(res.body.players.find((p) => p.id === 'lewie')).toBeTruthy();
   });
 });
+
+describe('Thwap admin: Drills view accepts the admin session token', () => {
+  const EMAIL = 'hi@woodymacduffie.com';
+
+  it('review-suggestions authorizes with the admin session token', async () => {
+    await _seed.ensureSeed();
+    await _handlers.adminSetPassword(post({ email: EMAIL, password: 'drills-pass-1' }), makeRes());
+    const login = makeRes();
+    await _handlers.adminLogin(post({ email: EMAIL, password: 'drills-pass-1' }), login);
+    const token = login.body.token;
+
+    const res = makeRes();
+    await _handlers.reviewSuggestions(get({ adminToken: token }), res);
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body.suggestions)).toBe(true);
+
+    // no token, no key -> 401
+    const noauth = makeRes();
+    await _handlers.reviewSuggestions(get({}), noauth);
+    expect(noauth.statusCode).toBe(401);
+  });
+});
