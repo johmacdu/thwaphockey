@@ -638,9 +638,11 @@ body.roster-editing #roster-grid .pcard:not(.pcard-add)::after{content:'\270E';p
 .planwrap{margin-top:18px}
 /* Weekly plan: one container, days as a spacious list (not cards). Category chips
    stay the tappable element. */
-.plancard{margin-top:18px;padding:8px 16px;border:1px solid var(--line);border-radius:18px;background:var(--card)}
+.plancard{margin-top:18px;padding:18px;border:1px solid color-mix(in srgb,var(--lime) 45%,var(--line));border-radius:18px;background:linear-gradient(180deg,color-mix(in srgb,var(--lime) 10%,var(--card2)),var(--card2))}
+.plancard-h{font-family:'Archivo Black',system-ui,sans-serif;font-size:15px;color:var(--text)}
+.plancard-p{margin:6px 0 12px;font-size:13px;color:var(--muted);line-height:1.5}
 .plangrid{display:flex;flex-direction:column}
-.planrow{display:grid;grid-template-columns:72px 1fr;align-items:center;gap:14px;padding:18px 4px;border-bottom:1px solid var(--line)}
+.planrow{display:grid;grid-template-columns:72px 1fr;align-items:center;gap:14px;padding:16px 0;border-bottom:1px solid color-mix(in srgb,var(--lime) 22%,var(--line))}
 .planrow:last-child{border-bottom:0}
 .planrow.today .planrow-day{color:var(--green)}
 .planrow-day{font-weight:800;font-size:14px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted)}
@@ -1365,10 +1367,12 @@ body.login-locked{overflow:hidden}
 <div class='hero'><div class='kicker'>Coach</div><h1>Weekly Plan</h1><p>Pick what your team trains each day.</p></div>
 <div class='planwrap' id='planWrap'>
   <div class='plancard'>
+    <div class='plancard-h'>Weekly training plan</div>
+    <p class='plancard-p'>Pick what your team trains each day. Tap a discipline to add or remove it; the count shows how many drills are set. Save when you&rsquo;re done so your team sees it.</p>
     <div class='plangrid' id='planGrid'></div>
+    <button type='button' class='plansave' id='planSave' disabled>Save plan</button>
+    <p class='plan-done' id='planDone' hidden>Saved! Your team sees this plan.</p>
   </div>
-  <button type='button' class='plansave' id='planSave' disabled>Save plan</button>
-  <p class='plan-done' id='planDone' hidden>Saved! Your team sees this plan.</p>
   <div class='tgoal-wrap' id='tgoalBox'>
     <div class='tgoal-h'>Team goal for the game</div>
     <p class='tgoal-p'>Set one focus for the whole team. It shows in every player&rsquo;s Game Day plan, alongside their own two goals. Leave it empty to give players all three picks.</p>
