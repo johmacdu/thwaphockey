@@ -325,6 +325,17 @@ describe('Add player is a side sheet, not a full page', () => {
   });
 });
 
+describe('Game Day card: lines below the title align under the title', () => {
+  it('meta, focus, and cta are indented to clear the 40px goal-light + 10px gap', () => {
+    // title (.png-opp) sits after a 40px icon + 10px gap inside .png-head, so the
+    // lines below get a matching 50px left offset to align under the 'G'.
+    expect(html).toMatch(/\.png-meta\{[^}]*padding-left:50px/);
+    expect(html).toMatch(/\.png-cta\{[^}]*padding-left:50px/);
+    expect(html).toMatch(/\.png-focus\{[^}]*margin-left:50px/);
+    expect(html).toMatch(/\.egg-ico-sm\{width:40px\}/); // the offset assumption
+  });
+});
+
 describe('Menus start closed: [hidden] overrides display', () => {
   // Recurring Thwap bug: a popup with the hidden attribute still shows because a
   // CSS rule gives it display:flex, which beats the browser's implicit
