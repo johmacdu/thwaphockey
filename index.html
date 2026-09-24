@@ -149,7 +149,7 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
    Tints the icon tile and adds a colored left edge so the three read as a set. */
 .nav-stick{--dc:#8fd65e}.nav-shoot{--dc:#75B8FF}.nav-dryland{--dc:#FF9D4D}
 .nav-stick,.nav-shoot,.nav-dryland{border-left:5px solid var(--dc)}
-.nav-stick .ico,.nav-shoot .ico,.nav-dryland .ico{background:color-mix(in srgb,var(--dc) 26%,transparent)}.soontag{font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--green);border:1px solid var(--line3);border-radius:999px;padding:4px 8px;align-self:center;white-space:nowrap}
+.nav-stick .ico,.nav-shoot .ico,.nav-dryland .ico{background:color-mix(in srgb,var(--dc) 26%,transparent)}.nav-ico{width:34px;height:auto;display:block}.soontag{font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--green);border:1px solid var(--line3);border-radius:999px;padding:4px 8px;align-self:center;white-space:nowrap}
 .heroCard{padding:6px 2px 4px;margin-top:6px}.heroCard h1{font-size:40px}.big{font-size:38px}.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;margin-bottom:16px}.pill{padding:7px 10px;border-radius:999px;background:var(--soft);color:var(--green2);font-size:12px;font-weight:900}
 .pill-optional[hidden]{display:none}
 .pilltip{position:relative;padding:7px 12px;border-radius:999px;background:var(--soft);color:var(--green2);font:inherit;font-size:12px;font-weight:900;border:0;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;-webkit-tap-highlight-color:transparent}
@@ -915,11 +915,10 @@ img.plflame{width:1.15em;height:auto;vertical-align:-.22em}
 /* Stickhandling dangle: a real puck weaves an S-curve across the screen (the
    dangle trail is two fainter, smaller lag-pucks) and ends on a sauce flick,
    lofting up and off the top. Fixed layer so it never scales with the stick. */
-.eggdangle{position:fixed;top:0;left:0;width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#3a3a3a,#0a0a0a 70%);border:1.5px solid rgba(255,255,255,.85);box-shadow:0 0 0 1px rgba(0,0,0,.4),0 3px 9px rgba(0,0,0,.5);pointer-events:none;z-index:120;will-change:transform,opacity;opacity:0}
-.eggdangle.t1{width:12px;height:12px;--to:.45}
-.eggdangle.t2{width:10px;height:10px;--to:.25}
-.eggdangle.weave{animation:eggDangleWeave 1.15s cubic-bezier(.45,.05,.5,1) forwards}
-@keyframes eggDangleWeave{0%{transform:translate(var(--px),var(--py)) scale(.85);opacity:0}8%{opacity:var(--to,1)}22%{transform:translate(calc(var(--px) + 20vw),calc(var(--py) + 40px)) scale(1)}40%{transform:translate(calc(var(--px) + 40vw),calc(var(--py) - 34px)) scale(1)}58%{transform:translate(calc(var(--px) + 58vw),calc(var(--py) + 30px)) scale(1)}74%{transform:translate(calc(var(--px) + 72vw),calc(var(--py) - 8px)) scale(1);opacity:var(--to,1)}100%{transform:translate(calc(var(--px) + 94vw),calc(var(--py) - 48vh)) scale(.6) rotate(210deg);opacity:0}}
+.eggdangle{position:fixed;top:0;left:0;width:16px;height:16px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#3a3a3a,#0a0a0a 70%);border:1.5px solid rgba(255,255,255,.85);box-shadow:0 0 0 1px rgba(0,0,0,.4),0 3px 9px rgba(0,0,0,.5);pointer-events:none;z-index:120;will-change:transform;opacity:0}
+.eggdangle.weave{animation:eggDangleWeave 1.2s ease-in-out forwards}
+/* stickhandle the puck back and forth in front of the blade (no travel, no sauce) */
+@keyframes eggDangleWeave{0%{transform:translate(var(--px),var(--py));opacity:0}10%{opacity:1;transform:translate(calc(var(--px) - 28px),var(--py))}30%{transform:translate(calc(var(--px) + 30px),var(--py))}50%{transform:translate(calc(var(--px) - 26px),var(--py))}70%{transform:translate(calc(var(--px) + 24px),var(--py))}88%{opacity:1;transform:translate(var(--px),var(--py))}100%{opacity:0;transform:translate(var(--px),var(--py))}}
 /* Shooting: a puck flies in from the right, hits the post at the goal, then
    ricochets straight up and off the top of the screen. The goal is front-facing,
    so it deflects up rather than passing through. */
@@ -1595,9 +1594,9 @@ body.login-locked{overflow:hidden}
   <div class='png-focus' id='pngFocus' hidden><span class='png-focus-lab'>Coach wants everyone on</span><span class='png-focus-goal' id='pngFocusGoal'></span></div>
   <div class='png-cta' id='pngCta'>Set your game goals</div>
 </a>
-<a class='nav nav-stick' href='#stick'><div class='ico'>🏒</div><div><h2>Stickhandling</h2><p>Hands + puck control, about 10-15 min</p></div><div class='chev'>›</div></a>
-<a class='nav nav-shoot' href='#shoot'><div class='ico'>🥅</div><div><h2>Shooting</h2><p>Accuracy + release, about 15 min</p></div><div class='chev'>›</div></a>
-<a class='nav nav-dryland' href='#dryland'><div class='ico'>⚡</div><div><h2>Dryland</h2><p>Speed + power + balance, about 15 min</p></div><div class='chev'>›</div></a>
+<a class='nav nav-stick' href='#stick'><div class='ico'><img class='nav-ico' src='login/icon-stick.webp' alt=''></div><div><h2>Stickhandling</h2><p>Hands + puck control, about 10-15 min</p></div><div class='chev'>›</div></a>
+<a class='nav nav-shoot' href='#shoot'><div class='ico'><img class='nav-ico' src='login/icon-net.webp' alt=''></div><div><h2>Shooting</h2><p>Accuracy + release, about 15 min</p></div><div class='chev'>›</div></a>
+<a class='nav nav-dryland' href='#dryland'><div class='ico'><img class='nav-ico' src='login/icon-bolt.webp' alt=''></div><div><h2>Dryland</h2><p>Speed + power + balance, about 15 min</p></div><div class='chev'>›</div></a>
 </div>
 </section>
 <div class='footer'><span class='slogan'>Compete. Improve. Have fun.</span><div class='footer-actions'><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button><div class='footmenu-wrap'><button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button><div class='footmenu' id='footMenu' hidden role='menu'><a class='footmenu-item' id='menuSignout' href='#' role='menuitem'>Sign out</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a></div></div></div></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div>
@@ -4604,7 +4603,7 @@ if(closeBtn) closeBtn.addEventListener('click',function(){ var el=document.getEl
 var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 var DC={stick:'#8FD65E',shoot:'#75B8FF',dryland:'#FF9D4D'};
 var WORDS={stick:'DANGLES!',shoot:'SNIPE!',dryland:'POWER!'};
-var SASS_SHOTS=['login/sass-slapshot.webp','login/sass-snipe.webp'];   /* screen-crack picks one at random for variety; empty = plain-puck fallback */
+var SASS_SHOTS=['login/sass-slapshot.webp','login/sass-snipe.webp','login/sass-onetimer.webp'];   /* screen-crack picks one at random for variety; empty = plain-puck fallback */
 var CRACK_PATHS='<path d="M50 45 L36 30 L20 8"/><path d="M50 45 L49 24 L48 2"/><path d="M50 45 L66 28 L82 10"/><path d="M50 45 L74 44 L96 40"/><path d="M50 45 L70 64 L90 88"/><path d="M50 45 L51 72 L52 100"/><path d="M50 45 L33 66 L12 92"/><path d="M50 45 L28 50 L2 54"/><path d="M41 33 L30 38 L18 30"/><path d="M61 36 L70 30 L78 36"/><path d="M60 58 L72 60 L80 74"/><path d="M40 60 L30 66 L22 78"/><path d="M43 39 L52 41 L57 37 L54 49 L46 52 Z"/>';
 var CRACK_SVG='<svg viewBox="0 0 100 100" preserveAspectRatio="none"><g fill="none" stroke="rgba(15,20,15,.5)" stroke-width="1.2" stroke-linejoin="round">'+CRACK_PATHS+'</g><g fill="none" stroke="rgba(255,255,255,.92)" stroke-width="0.5" stroke-linejoin="round">'+CRACK_PATHS+'</g><circle cx="50" cy="45" r="3" fill="rgba(255,255,255,.85)"/></svg>';
 function rand(a,b){ return a+Math.random()*(b-a); }
@@ -4666,7 +4665,8 @@ var POOLS={
     function(c){ sweep(c); stamp('MITTS!',c); },
     function(c){ sauce(); burst(c,8); },
     function(c){ confetti(['#8FD65E','#B9F06B','#2F6B41','#ffffff']); },
-    function(c){ sassCameo('login/sass-dangle.webp','FILTHY!','#8FD65E'); }
+    function(c){ sassCameo('login/sass-dangle.webp','FILTHY!','#8FD65E'); },
+    function(c){ sassCameo('login/sass-toedrag.webp','TOE DRAG!','#8FD65E'); }
   ],
   shoot:[
     function(c){ screenCrack(c,true); stamp('SNIPE!',c); },
@@ -4692,7 +4692,8 @@ var POOLS={
     function(c){ stamp('UNREAL',c); rings(c,2); },
     function(c){ bolt(); },
     function(c){ confetti(['#FF9D4D','#FFE08A','#e58a2e','#ffffff']); },
-    function(c){ sassCameo('login/sass-power.webp','POWERED UP','#FF9D4D'); }
+    function(c){ sassCameo('login/sass-power.webp','POWERED UP','#FF9D4D'); },
+    function(c){ sassCameo('login/sass-sprint.webp','WHEELS!','#FF9D4D'); }
   ]
 };
 function playPool(disc){ var c=DC[disc]||'#75B8FF'; try{ POOLS[disc][pickRotating('cat:'+disc, POOLS[disc].length)](c); }catch(e){ badge(WORDS[disc]||'NICE!',c); } }
@@ -5158,28 +5159,24 @@ function tapEgg(el,fire){
     playing=true; fire(function(){playing=false;});
   });
 }
-/* Stickhandling dangle: the stick rocks while a puck (plus two fainter lag-pucks
-   for the trail) weaves an S-curve across the screen and sauce-flicks off the top. */
+/* Stickhandling: the stick rocks while a single puck is stickhandled back and
+   forth in front of the blade. No screen travel, no sauce flick. */
 tapEgg(document.getElementById('eggStick'),function(done){
   var el=document.getElementById('eggStick');
   if(reduce){ done(); return; }
   var r=el.getBoundingClientRect();
-  var px=Math.round(r.left+r.width*0.5-7)+'px';
-  var py=Math.round(r.top+r.height*0.55-7)+'px';
-  el.classList.add('egg-go');                       /* stick handles while the puck dangles */
-  var pucks=[];
-  ['','t1','t2'].forEach(function(cls,i){
-    var p=document.createElement('span'); p.className='eggdangle'+(cls?(' '+cls):'');
-    p.style.setProperty('--px',px); p.style.setProperty('--py',py);
-    p.style.animationDelay=(i*80)+'ms';             /* lag = trail behind the lead puck */
-    document.body.appendChild(p); pucks.push(p);
-    requestAnimationFrame(function(){ p.classList.add('weave'); });
-  });
+  var px=Math.round(r.left+r.width*0.5-8)+'px';
+  var py=Math.round(r.top+r.height*0.72-8)+'px';
+  el.classList.add('egg-go');
+  var p=document.createElement('span'); p.className='eggdangle';
+  p.style.setProperty('--px',px); p.style.setProperty('--py',py);
+  document.body.appendChild(p);
+  requestAnimationFrame(function(){ p.classList.add('weave'); });
   setTimeout(function(){
     el.classList.remove('egg-go');
-    pucks.forEach(function(p){ if(p.parentNode)p.parentNode.removeChild(p); });
+    if(p.parentNode)p.parentNode.removeChild(p);
     done();
-  },1450);
+  },1300);
 });
 /* Shooting: puck flies in from the right, punches the net, exits left. */
 tapEgg(document.getElementById('eggNet'),function(done){
