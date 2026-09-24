@@ -22,10 +22,12 @@ body{margin:0;min-height:100vh;min-height:100dvh;background:linear-gradient(180d
 .builder{padding:28px 0 170px}
 .header{padding:8px 4px 26px}
 .kicker{font-size:12px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:var(--green)}
-.gd-target{font-size:clamp(46px,9vw,70px);line-height:1;margin:6px 0 2px;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;display:inline-block;transform-origin:center}
+.gd-target{line-height:1;margin:6px 0 2px;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;display:inline-block;transform-origin:center}
+.gd-target img{width:clamp(64px,14vw,100px);height:auto;display:block}
 .gd-target.hit{animation:gdTargetHit .5s ease-out}
 @keyframes gdTargetHit{0%,100%{transform:scale(1) rotate(0)}18%{transform:scale(1.18) rotate(-4deg)}36%{transform:scale(.94) rotate(3deg)}55%{transform:scale(1.08) rotate(-2deg)}75%{transform:scale(.98)}}
-.gd-dart{position:fixed;font-size:38px;z-index:200;pointer-events:none;transform:translate(0,-50%) scaleX(-1);will-change:left,transform;filter:drop-shadow(0 3px 6px rgba(0,0,0,.35))}
+.gd-dart{position:fixed;z-index:200;pointer-events:none;transform:translateY(-50%);will-change:left,opacity;filter:drop-shadow(0 3px 6px rgba(0,0,0,.35))}
+.gd-dart img{width:clamp(56px,12vw,90px);height:auto;display:block}
 @media (prefers-reduced-motion: reduce){.gd-target.hit{animation:none}}
 h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70px);line-height:.95;letter-spacing:.005em;margin:8px 0 12px}
 .header p{max-width:700px;color:var(--muted);font-size:16px;line-height:1.5;margin:0}
@@ -621,7 +623,7 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
   <div class="builder">
     <header class="header">
       <div class="kicker" id="gpGame" aria-hidden="true" style="min-height:15px"></div>
-      <div class="gd-target" id="gdTarget" role="img" aria-label="Target">🎯</div>
+      <div class="gd-target" id="gdTarget" role="img" aria-label="Target"><img src="login/icon-target.webp" alt=""></div>
       <h1 id="planTitle">Your Game Plan</h1>
     </header>
 
@@ -1740,13 +1742,15 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
     if(reduce){ react(); return; }
     var r=t.getBoundingClientRect();
     var cy=r.top+r.height/2, cx=r.left+r.width/2;
-    var dart=document.createElement('div'); dart.className='gd-dart'; dart.textContent='\u27A4'; dart.style.top=cy+'px'; dart.style.left=(window.innerWidth+60)+'px';
+    var dart=document.createElement('img'); dart.className='gd-dart'; dart.src='login/dart.webp'; dart.alt=''; dart.style.top=cy+'px'; dart.style.left=(window.innerWidth+60)+'px';
     document.body.appendChild(dart);
     requestAnimationFrame(function(){
       dart.style.transition='left .34s cubic-bezier(.4,0,.7,1)';
       dart.style.left=cx+'px';
     });
-    setTimeout(function(){ react(); dart.remove(); }, 340);
+    setTimeout(function(){ react(); }, 330);                                  /* impact wobble */
+    setTimeout(function(){ dart.style.transition='opacity .3s ease'; dart.style.opacity='0'; }, 850);  /* stick, then fade */
+    setTimeout(function(){ dart.remove(); }, 1150);
   });
 })();</script>
 </body>
