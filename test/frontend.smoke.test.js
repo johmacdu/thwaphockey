@@ -168,10 +168,12 @@ describe('Cross-tab identity guard', () => {
 
 describe('Drill videos on all three disciplines', () => {
   it('stick, shoot AND dryland renderers all insert the Watch-how video (videoBlock)', () => {
-    // videoBlock is defined once and called by each discipline's tile builder:
-    // 1 definition (`function videoBlock(dr){`) + 3 call sites = 4 occurrences.
-    const calls = (html.match(/videoBlock\(dr\)/g) || []).length;
-    expect(calls).toBe(4);
+    // Count the three real render call sites (in a tile string: "+...videoBlock(dr)+steps").
+    // videoBlock/ytid live in the dryland IIFE, so stick+shoot call window.videoBlock;
+    // dryland calls it in-scope. The window export is what makes the cross-IIFE calls work.
+    const callSites = (html.match(/\+(?:window\.)?videoBlock\(dr\)\+steps/g) || []).length;
+    expect(callSites).toBe(3);
+    expect(html).toMatch(/window\.ytid=ytid; window\.videoBlock=videoBlock;/);
     // the drill data carries real YouTube URLs for all disciplines
     expect(html).toMatch(/name:'Narrow-to-Wide'[\s\S]{0,120}video:'https:\/\/www\.youtube/); // stick (DRILLS)
     expect(html).toMatch(/name:'Moving Warm-Up'[\s\S]{0,120}video:'https:\/\/www\.youtube/); // shoot (SHOOT_DAYS)
