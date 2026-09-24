@@ -20,8 +20,18 @@ describe('Game-day goals page', () => {
 
   it('goal categories are cards (bordered section shell), goals nested inside', () => {
     // .section is a card now (border + radius + bg), not just a top margin.
-    expect(html).toMatch(/\.section\{margin-top:16px;border:1px solid var\(--line\);border-radius:18px/);
+    expect(html).toMatch(/\.section\{margin-top:22px;border:1px solid var\(--line\);border-radius:18px/);
     // the open goals grid sits inside the card (inner padding, no divider border).
-    expect(html).toMatch(/\.section\.open \.grid\{[^}]*padding:0 16px 18px;border-bottom:0\}/);
+    expect(html).toMatch(/\.section\.open \.grid\{[^}]*padding:4px 18px 22px;border-bottom:0\}/);
+  });
+});
+
+describe('Game-day goal cards pop and breathe', () => {
+  it('base goal cards have a shadow and a bigger grid gap', () => {
+    expect(html).toMatch(/\.goal\{[^}]*box-shadow:0 4px 14px/);
+    expect(html).toMatch(/\.grid\{[^}]*gap:18px\}/);
+  });
+  it('selected goal cards get a 2px green ring and glow', () => {
+    expect(html).toMatch(/box-shadow: inset 0 0 0 2px var\(--green\), 0 8px 22px rgba\(47,191,113,\.28\)/);
   });
 });
