@@ -305,6 +305,13 @@ describe('Roster edit mode: pencil toggles to Cancel/Done, cards drop the badge'
   });
 });
 
+describe('Player edit sheet: PIN hint explains how to reset', () => {
+  it('tells the coach to change the jersey number, without leaking the code format', () => {
+    expect(html).toMatch(/To reset it, change the jersey number/);
+    expect(html).not.toMatch(/jersey number followed by the season year/i);
+  });
+});
+
 describe('Menus start closed: [hidden] overrides display', () => {
   // Recurring Thwap bug: a popup with the hidden attribute still shows because a
   // CSS rule gives it display:flex, which beats the browser's implicit
