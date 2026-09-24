@@ -256,6 +256,16 @@ describe('Player stat page rings filter the activity list (week view)', () => {
   });
 });
 
+describe('Recommend-a-drill card expands and collapses', () => {
+  it('starts collapsed behind an expand link with a top-left close', () => {
+    expect(doc.getElementById('suggExpand')).toBeTruthy();
+    expect(doc.getElementById('suggClose')).toBeTruthy();
+    expect(doc.getElementById('suggBox').hasAttribute('hidden')).toBe(true);
+    expect(html).toMatch(/\.sugg-wrap\[hidden\]\{display:none\}/);
+    expect(html).toMatch(/\.sugg-close\{[^}]*top:12px;left:12px/);
+  });
+});
+
 describe('Menus start closed: [hidden] overrides display', () => {
   // Recurring Thwap bug: a popup with the hidden attribute still shows because a
   // CSS rule gives it display:flex, which beats the browser's implicit
