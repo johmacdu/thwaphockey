@@ -2333,6 +2333,9 @@ window.thwapActiveTeam=function(coach){
   function validEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v||'').trim()); }
   document.querySelectorAll('#roster .pcard').forEach(function(cardEl){
     cardEl.addEventListener('click',function(ev){
+      /* The +Player card is a plain link to the add-player flow - let it navigate,
+         do not treat it as a player card (it has no data-name). */
+      if(cardEl.classList.contains('pcard-add')) return;
       ev.preventDefault();
       /* Coach: tap a player -> their stats + IDP (view/edit). Player/parent: tap a
          teammate -> open their card and rotate it front/back (read-only). No
