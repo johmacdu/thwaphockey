@@ -236,6 +236,15 @@ describe('Weekly plan card matches the team-goal card', () => {
   });
 });
 
+describe('IDP focus card reads as one tappable unit', () => {
+  it('the block is a card and the chevron is a circular affordance', () => {
+    expect(html).toMatch(/\.idp\{[^}]*border:1px solid var\(--line\);border-radius:16px;background:var\(--card2\)\}/);
+    expect(html).toMatch(/\.idp-view-chev\{[^}]*border-radius:50%/);
+    // player (read-only) hides the chevron entirely
+    expect(html).toMatch(/\.idp-view:disabled \.idp-view-chev\{display:none\}/);
+  });
+});
+
 describe('Menus start closed: [hidden] overrides display', () => {
   // Recurring Thwap bug: a popup with the hidden attribute still shows because a
   // CSS rule gives it display:flex, which beats the browser's implicit

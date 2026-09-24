@@ -800,12 +800,14 @@ button.row:active{background:var(--soft)}
 .pl-spoke{stroke-dasharray:120;stroke-dashoffset:120;animation:plshoot .35s cubic-bezier(.2,.9,.3,1) forwards}
 @keyframes plshoot{to{stroke-dashoffset:0}}
 .pl-totals{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:28px}
-.idp{margin:18px 0 32px;padding:0;border:0;background:none}
+.idp{margin:18px 0 32px;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--card2)}
 .idp-head{font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);display:flex;align-items:center;gap:8px}
 .idp-emoji{font-size:36px}
-.idp-view{display:flex;align-items:center;gap:12px;width:100%;margin:4px 0 0;padding:0;background:none;border:0;text-align:left;font-family:inherit;color:inherit}
+.idp-view{display:flex;align-items:center;gap:12px;width:100%;min-height:48px;margin:8px 0 0;padding:0;background:none;border:0;text-align:left;font-family:inherit;color:inherit;border-radius:12px;transition:background .12s ease}
 .idp-view.is-tappable{cursor:pointer}
-.idp-view-chev{margin-left:auto;font-weight:900;font-size:22px;color:var(--muted);flex:none}
+.idp-view.is-tappable:hover{background:var(--soft)}
+.idp-view.is-tappable:active{transform:scale(.995)}
+.idp-view-chev{margin-left:auto;flex:none;width:32px;height:32px;display:grid;place-items:center;border-radius:50%;background:var(--soft);color:var(--text);font-weight:900;font-size:20px;line-height:1}
 .idp-view:disabled .idp-view-chev{display:none}
 .idp-text{margin:0;font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(20px,5vw,26px);color:var(--green2);line-height:1.2;flex:1 1 auto}
 .idp-text.empty{font-family:inherit;font-weight:700;font-size:var(--fs-body);color:var(--muted)}
