@@ -14,7 +14,8 @@ const html = readFileSync(resolve(__dirname, '../hockey_game_goals.html'), 'utf8
 
 describe('Game-day goals page', () => {
   it('the position mad-lib reads "Next game", not "Today"', () => {
-    expect(html).toMatch(/Next game I&rsquo;m playing/);
+    expect(html).toMatch(/id="ngTip"[^>]*>Next game/);
+    expect(html).toMatch(/I&rsquo;m playing <button[^>]*id="posWord"/);
     expect(html).not.toMatch(/Today I&rsquo;m playing/);
   });
 
@@ -41,5 +42,16 @@ describe('Game-day category text matches the app ramp + expanded padding', () =>
     expect(html).toMatch(/\.section-head p\{[^}]*font-size:16px/);
     expect(html).toMatch(/\.section-head h2\{[^}]*font-size:19px/);
     expect(html).toMatch(/\.section\.open \.section-head\{padding-bottom:20px\}/);
+  });
+});
+
+describe('Next-game matchup is a tooltip, not a standing line', () => {
+  it('the matchup fills a tooltip bubble on the Next game trigger (no visible kicker line)', () => {
+    expect(html).toMatch(/class="ng-tip"[^>]*id="ngTip"/);
+    expect(html).toMatch(/class="ng-tip-bubble" id="gpGame"/);
+    // only one #gpGame (the old standing kicker div is gone)
+    expect((html.match(/id="gpGame"/g) || []).length).toBe(1);
+    // hover + focus + tap-open reveal it
+    expect(html).toMatch(/\.ng-tip:hover \.ng-tip-bubble,\.ng-tip:focus-visible \.ng-tip-bubble,\.ng-tip\.open \.ng-tip-bubble\{display:block\}/);
   });
 });
