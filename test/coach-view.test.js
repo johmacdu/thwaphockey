@@ -207,10 +207,12 @@ describe('Bug 2: a coach can never get stranded on the hidden #home', () => {
 });
 
 describe('Coach staff chip: tapping the coach name opens the profile editor', () => {
-  it('the coach own chip is made tappable (whole pill, not just the pencil)', () => {
-    expect(html).toMatch(/pill\.classList\.add\('bcoach-tappable'\)/);
-    expect(html).toMatch(/pill\.addEventListener\('click',function\(\)\{ if\(window\.thwapOpenCoachProfile\)/);
-    expect(html).toMatch(/\.bcoach-tappable\{cursor:pointer/);
+  it('the coach name is a scoped button (not the whole pill) that opens the profile', () => {
+    expect(html).toMatch(/class="bcoach-nmbtn"/);
+    expect(html).toMatch(/nmBtn\.addEventListener\('click',openProfile\)/);
+    expect(html).toMatch(/\.bcoach-nmbtn\{[^}]*cursor:pointer/);
+    // and NOT the whole-pill click that caused stray taps
+    expect(html.includes("pill.classList.add('bcoach-tappable')")).toBe(false);
   });
 });
 
