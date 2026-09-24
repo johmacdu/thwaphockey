@@ -2734,7 +2734,7 @@ function render(){
     var done=prog[i]?' done':'';
     var dose=dr.dose?"<div class='exdose'>"+esc(dr.dose)+"</div>":'';
     var steps=(dr.steps&&dr.steps.length)?"<ol>"+dr.steps.map(function(s){var ci=s.indexOf(':');if(ci>0&&ci<28){return "<li><b>"+esc(s.slice(0,ci))+"</b>"+esc(s.slice(ci))+"</li>";}return "<li>"+esc(s)+"</li>";}).join('')+"</ol>":'';
-    var doneLabel=prog[i]?'Done ✓':'Mark done';
+    var doneLabel=prog[i]?'Done ✓':'Start';
     list.insertAdjacentHTML('beforeend',
       "<div class='exrow"+done+"' data-i='"+i+"'>"+
         "<div class='exhead'><div class='exem'>"+dr.emoji+"</div>"+
@@ -2745,7 +2745,7 @@ function render(){
       "</div>");
   });
 
-  /* header taps toggle expand; Mark done toggles done + saves */
+  /* header taps toggle expand; Start runs the guided timer, which marks done at the end */
   list.querySelectorAll('.exrow').forEach(function(row){
     var i=+row.getAttribute('data-i');
     row.querySelector('.exhead').addEventListener('click',function(){
@@ -2756,18 +2756,234 @@ function render(){
     });
     row.querySelector('.exdone').addEventListener('click',function(ev){
       ev.stopPropagation();
-      var p=loadProg(w.id); p[i]=!p[i]; saveProg(w.id,p);
-      row.classList.toggle('done',!!p[i]);
-      if(p[i]&&window.thwapCategoryDone){ var _l=row.parentNode; if(_l&&_l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('dryland'); }
-      if(p[i]&&window.thwapMarkDone)window.thwapMarkDone('dryland');
-      if(window.thwapStampToday)window.thwapStampToday('dryland',!!p[i]);
-      this.textContent=p[i]?'Done ✓':'Mark done';
+      var btn=this;
+      var markDone=function(){
+        var p=loadProg(w.id); p[i]=true; saveProg(w.id,p);
+        row.classList.add('done');
+        var _l=row.parentNode;
+        if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('dryland');
+        if(window.thwapMarkDone)window.thwapMarkDone('dryland');
+        if(window.thwapStampToday)window.thwapStampToday('dryland',true);
+        btn.textContent='Done ✓';
+      };
+      if(row.classList.contains('done')){ return; }  /* already done: no-op */
+      if(window.thwapDrillTimer){ window.thwapDrillTimer(drills[i].name, markDone); }
+      else { markDone(); }  /* engine missing: fall back to immediate done */
     });
   });
 }
 
 render();
 window.addEventListener('hashchange',function(){ if(location.hash==='#dryland') render(); });
+})();</script>
+<style>
+/* Guided drill runner: full-screen page (V1: on-screen only, no audio).
+   The runner is an INTENTIONAL fixed dark "stage" (a focus/workout mode) - it does
+   NOT follow the light/dark theme on purpose, so the big number and the future
+   animated video read cleanly. Do not swap --drill-stage for var(--bg). */
+.gdr{--drill-stage:#0e1712;position:fixed;inset:0;z-index:130;display:flex;flex-direction:column;background:var(--drill-stage);padding:0}
+.gdr[hidden]{display:none}
+.gdr-top{display:flex;align-items:center;justify-content:space-between;padding:16px 18px}
+.gdr-audio{width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:rgba(255,255,255,.5);font-size:20px;display:grid;place-items:center;cursor:default}
+.gdr-audio[data-v1-disabled]{opacity:.4}
+.gdr-back{height:44px;padding:0 20px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.1);color:#fff;font-family:inherit;font-size:16px;font-weight:800;line-height:1;cursor:pointer;backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px)}
+.gdr-mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;padding:0 24px}
+.gdr-name{font-family:'Archivo Black',system-ui,sans-serif;font-size:22px;line-height:1.1;margin:0 0 4px}
+.gdr-phase{font-size:15px;font-weight:800;color:var(--lime);text-transform:uppercase;letter-spacing:.05em;min-height:20px;margin-bottom:14px}
+.gdr-big{font-family:'Archivo Black',system-ui,sans-serif;font-size:128px;line-height:1;color:#fff;margin:6px 0}
+.gdr-sub{font-size:16px;font-weight:700;color:rgba(255,255,255,.8);min-height:22px;margin-top:6px}
+.gdr-bottom{padding:20px 24px calc(24px + env(safe-area-inset-bottom));text-align:center}
+.gdr-btn{min-height:60px;width:100%;max-width:420px;border:0;border-radius:16px;font-family:inherit;font-weight:900;font-size:20px;cursor:pointer;background:var(--lime);color:#0f1712}
+.gdr-reset{display:block;width:100%;margin-top:14px;background:none;border:0;color:rgba(255,255,255,.7);font:inherit;font-weight:700;font-size:15px;text-decoration:underline;cursor:pointer}
+</style>
+<div class='gdr' id='gdrOverlay' hidden>
+  <div class='gdr-top'>
+    <button type='button' class='gdr-back' id='gdrX' aria-label='Back'>Back</button>
+    <button type='button' class='gdr-audio' id='gdrAudio' data-v1-disabled aria-label='Audio (coming soon)' title='Audio coming soon'>🔈</button>
+  </div>
+  <div class='gdr-mid'>
+    <p class='gdr-name' id='gdrName'></p>
+    <p class='gdr-phase' id='gdrPhase'></p>
+    <div class='gdr-big' id='gdrBig'></div>
+    <p class='gdr-sub' id='gdrSub'></p>
+  </div>
+  <div class='gdr-bottom'>
+    <button type='button' class='gdr-btn' id='gdrToggle'>Start</button>
+    <button type='button' class='gdr-reset' id='gdrReset'>Restart</button>
+  </div>
+</div>
+<script>(function(){
+/* Guided drill timer (V1): on-screen only, no audio. A "script" describes the
+   drill as an ordered list of PHASES the engine walks: a setup pause, a
+   countdown ("Starting in 5..1, GO"), then either REPS (tick a big count 1..N,
+   one every perRep seconds) or a HOLD (count DOWN seconds), optionally repeated
+   for a second direction. On the last phase it calls onDone() once, which is the
+   same done+stamp logic the old "Mark done" button ran.
+
+   THWAP_DRILL_SCRIPT is the editable table. Key by drill NAME (exact). Woody
+   tweaks the numbers here. Types:
+     {type:'reps', reps, perRep, sides:1|2, sideLabels:[..]}
+     {type:'hold', seconds, sides:1|2, sideLabels:[..]}
+     {type:'rounds', rounds, workLabel, restSeconds}
+     {type:'callout', shots, everySeconds, spots:[..]}   // Random Target
+   A drill with no entry falls back to reps 10 / 1.5s / 1 side. */
+var SETUP_SECS=5, COUNTDOWN=5;
+window.THWAP_DRILL_SCRIPT={
+  /* --- Stickhandling --- */
+  'Stationary Side-to-Side':{type:'reps',reps:20,perRep:1.0,sides:1},
+  'Front-to-Back':{type:'reps',reps:20,perRep:1.0,sides:1},
+  'The "L" Shape':{type:'reps',reps:10,perRep:1.5,sides:2,sideLabels:['One way','Mirror it']},
+  'Wide Extensions':{type:'reps',reps:10,perRep:1.5,sides:2,sideLabels:['Forehand','Backhand']},
+  'Narrow-to-Wide':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['One way','Other way']},
+  'Figure-8 Around Cones':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['One way','Reverse']},
+  'The Triangle Drill':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['One way','Reverse']},
+  'The Diamond Matrix':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['One way','Reverse']},
+  'Z-Pattern Slalom':{type:'reps',reps:8,perRep:2.0,sides:2,sideLabels:['One way','Reverse']},
+  'The Square Box':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['One way','Reverse']},
+  'Top-Hand Only':{type:'reps',reps:15,perRep:1.5,sides:1},
+  'Bottom-Hand Only':{type:'reps',reps:15,perRep:1.5,sides:1},
+  'Toe Drag & Rescue':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['Right','Left']},
+  'Heel-to-Toe Flips':{type:'reps',reps:10,perRep:1.5,sides:1},
+  'Flip Over Objects':{type:'reps',reps:10,perRep:2.0,sides:1},
+  'Eyes-Up Glancing':{type:'reps',reps:20,perRep:1.5,sides:1},
+  'The Wall Bounce':{type:'reps',reps:20,perRep:1.5,sides:1},
+  'Cone Weave Course':{type:'reps',reps:6,perRep:4.0,sides:2,sideLabels:['Down','Back']},
+  'Chaos Dribbling':{type:'hold',seconds:30,sides:1},
+  /* --- Dryland --- */
+  "Will's Squares (4-sq Drill)":{type:'rounds',rounds:5,workLabel:'Pattern',restSeconds:8},
+  'Skater Jumps':{type:'reps',reps:10,perRep:1.5,sides:2,sideLabels:['Right','Left']},
+  'Broad Jumps':{type:'reps',reps:8,perRep:3.0,sides:1},
+  'Box Jumps':{type:'reps',reps:10,perRep:3.0,sides:1},
+  'Reverse Lunges':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['Right leg','Left leg']},
+  'Single-Leg RDL':{type:'reps',reps:8,perRep:2.5,sides:2,sideLabels:['Right leg','Left leg']},
+  'Wall Sit':{type:'hold',seconds:30,sides:1},
+  'Sit-ups':{type:'reps',reps:15,perRep:2.0,sides:1},
+  'Plank with Shoulder Taps':{type:'hold',seconds:30,sides:1},
+  'Stair Sprints':{type:'rounds',rounds:5,workLabel:'Sprint up',restSeconds:20},
+  'Sprint Starts':{type:'rounds',rounds:5,workLabel:'Sprint',restSeconds:20},
+  'Reaction Start':{type:'reps',reps:10,perRep:3.0,sides:1},
+  'Split Squat Hold':{type:'hold',seconds:20,sides:2,sideLabels:['Right leg','Left leg']},
+  'Calf Raises':{type:'reps',reps:20,perRep:1.5,sides:1},
+  'Dead Bugs':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['Right','Left']},
+  "McDavid's":{type:'hold',seconds:60,sides:1},
+  /* --- Shooting (shots, not timed reps; Random Target uses on-screen callouts) --- */
+  'Moving Warm-Up':{type:'rounds',rounds:8,workLabel:'Shot',restSeconds:4},
+  'Change the Angle':{type:'rounds',rounds:8,workLabel:'Shot',restSeconds:5,sides:2,sideLabels:['One side','Other side']},
+  'Random Target':{type:'callout',shots:10,everySeconds:4,spots:['Top right','Bottom right','Top left','Bottom left','Glove-side armpit','Blocker-side armpit','Left ear','Right ear','Five hole']},
+  'Under Two Seconds':{type:'rounds',rounds:10,workLabel:'Quick shot',restSeconds:4},
+  'Ten Different Goals':{type:'rounds',rounds:10,workLabel:'Goal',restSeconds:5},
+  'Backhand Basics':{type:'rounds',rounds:10,workLabel:'Backhand',restSeconds:4},
+  'Backhand Accuracy':{type:'rounds',rounds:8,workLabel:'Corner',restSeconds:5},
+  'Moving Backhand':{type:'rounds',rounds:8,workLabel:'Shot',restSeconds:5},
+  'Forehand to Backhand':{type:'rounds',rounds:8,workLabel:'Shot',restSeconds:5},
+  'Backhand Only':{type:'rounds',rounds:10,workLabel:'Goal',restSeconds:5},
+  'Quick Hands':{type:'rounds',rounds:8,workLabel:'Shot',restSeconds:4,sides:2,sideLabels:['One side','Other side']},
+  'Catch and Release':{type:'rounds',rounds:10,workLabel:'Shot',restSeconds:4},
+  'Pull Across':{type:'rounds',rounds:8,workLabel:'Shot',restSeconds:5,sides:2,sideLabels:['One way','Other way']},
+  'Forehand / Backhand Finish':{type:'rounds',rounds:8,workLabel:'Finish',restSeconds:5},
+  'Rebound Finish':{type:'rounds',rounds:8,workLabel:'Rebound',restSeconds:5},
+  'Carry / Pass / Shoot':{type:'rounds',rounds:8,workLabel:'Play',restSeconds:6},
+  'Bad Puck Challenge':{type:'rounds',rounds:8,workLabel:'Shot',restSeconds:5},
+  'Angle Attack':{type:'rounds',rounds:8,workLabel:'Shot',restSeconds:5,sides:2,sideLabels:['One side','Other side']},
+  'Quick Release Challenge':{type:'rounds',rounds:5,workLabel:'Quick release',restSeconds:5}
+};
+function scriptFor(name){ return window.THWAP_DRILL_SCRIPT[name] || {type:'reps',reps:10,perRep:1.5,sides:1}; }
+
+var ov=document.getElementById('gdrOverlay');
+var elName=document.getElementById('gdrName'), elPhase=document.getElementById('gdrPhase'),
+    elBig=document.getElementById('gdrBig'), elSub=document.getElementById('gdrSub'),
+    elToggle=document.getElementById('gdrToggle'), elReset=document.getElementById('gdrReset');
+if(!ov) return;
+var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+var state=null; /* {steps:[...], idx, timer, paused, onDone} */
+
+/* Build the ordered step list for a script. Each step: {phase,big,sub,ms} */
+function buildSteps(sc){
+  var steps=[];
+  steps.push({phase:'Set up',big:'',sub:'Get the drill set up',ms:SETUP_SECS*1000});
+  var sides=sc.sides||1;
+  var labels=sc.sideLabels||[];
+  for(var s=0;s<sides;s++){
+    var sideNote=sides>1?(labels[s]||('Set '+(s+1))):'';
+    // countdown 5..1 GO
+    for(var c=COUNTDOWN;c>=1;c--) steps.push({phase:sideNote||'Ready',big:String(c),sub:'',ms:1000});
+    steps.push({phase:sideNote||'Go',big:'GO',sub:'',ms:800});
+    if(sc.type==='reps'){
+      for(var r=1;r<=sc.reps;r++) steps.push({phase:sideNote||'Reps',big:String(r),sub:'of '+sc.reps,ms:Math.round((sc.perRep||1.5)*1000)});
+    } else if(sc.type==='hold'){
+      for(var h=sc.seconds;h>=1;h--) steps.push({phase:sideNote||'Hold',big:String(h),sub:'seconds',ms:1000});
+    } else if(sc.type==='rounds'){
+      for(var rd=1;rd<=sc.rounds;rd++){
+        steps.push({phase:(sc.workLabel||'Round')+' '+rd,big:String(rd),sub:'of '+sc.rounds,ms:3000});
+        if(rd<sc.rounds) for(var rest=(sc.restSeconds||10);rest>=1;rest--) steps.push({phase:'Rest',big:String(rest),sub:'catch your breath',ms:1000});
+      }
+    } else if(sc.type==='callout'){
+      for(var sh=0;sh<sc.shots;sh++){
+        var spot=sc.spots[Math.floor(Math.random()*sc.spots.length)];
+        steps.push({phase:'Shot '+(sh+1)+' of '+sc.shots,big:spot,sub:'hit it',ms:Math.round((sc.everySeconds||4)*1000),small:true});
+      }
+    }
+  }
+  steps.push({phase:'Done',big:'✓',sub:'Nice work!',ms:1400,last:true});
+  return steps;
+}
+function paint(st){
+  elBig.textContent=st.big;
+  elBig.style.fontSize=st.small?'52px':'';
+  elPhase.textContent=st.phase||'';
+  elSub.textContent=st.sub||'';
+}
+function advance(){
+  if(!state) return;
+  if(state.idx>=state.steps.length){ finish(); return; }
+  var st=state.steps[state.idx];
+  paint(st);
+  if(st.last){ state.timer=setTimeout(finish, st.ms); return; }
+  state.timer=setTimeout(function(){ state.idx++; advance(); }, st.ms);
+}
+function finish(){
+  var cb=state&&state.onDone;
+  close();
+  if(cb) cb();
+}
+function close(){
+  if(state&&state.timer) clearTimeout(state.timer);
+  state=null; ov.hidden=true;
+  document.removeEventListener('keydown', onKey);
+}
+function onKey(e){ if(e.key==='Escape') close(); }
+function setPaused(p){
+  if(!state) return;
+  state.paused=p;
+  elToggle.textContent=p?'Resume':'Pause';
+  if(p){ if(state.timer) clearTimeout(state.timer); }
+  else { advance(); }
+}
+elToggle.addEventListener('click',function(){
+  if(!state) return;
+  if(state.started){ setPaused(!state.paused); return; }
+  state.started=true; elToggle.textContent='Pause'; advance();
+});
+elReset.addEventListener('click',function(){
+  if(!state) return;
+  if(state.timer) clearTimeout(state.timer);
+  state.idx=0; state.started=false; state.paused=false;
+  elToggle.textContent='Start';
+  paint(state.steps[0]);
+});
+document.getElementById('gdrX').addEventListener('click', close);
+
+/* PUBLIC: run the guided timer for a drill by name; onDone fires once at the end. */
+window.thwapDrillTimer=function(name, onDone){
+  var sc=scriptFor(name);
+  state={ steps:buildSteps(sc), idx:0, timer:null, paused:false, started:false, onDone:onDone };
+  document.getElementById('gdrName').textContent=name;
+  paint(state.steps[0]);
+  elToggle.textContent='Start';
+  ov.hidden=false;
+  document.addEventListener('keydown', onKey);
+};
 })();</script>
 <script>(function(){
 /* ---- Leaderboard fallback: all players zero. Real team scores come from /api/board; this is only shown before the API responds or if it is unreachable, so it must not fabricate numbers. ---- */
@@ -3600,7 +3816,7 @@ function render(){
   picks.forEach(function(dr,i){
     var done=prog[i]?' done':'';
     var steps="<ol>"+dr.steps.map(function(s){var ci=s.indexOf(':');if(ci>0&&ci<28){return "<li><b>"+esc(s.slice(0,ci))+"</b>"+esc(s.slice(ci))+"</li>";}return "<li>"+esc(s)+"</li>";}).join('')+"</ol>";
-    var doneLabel=prog[i]?'Done ✓':'Mark done';
+    var doneLabel=prog[i]?'Done ✓':'Start';
     list.insertAdjacentHTML('beforeend',
       "<div class='exrow"+done+"' data-i='"+i+"'>"+
         "<div class='exhead'><div class='exem'>"+dr.emoji+"</div>"+
@@ -3620,12 +3836,19 @@ function render(){
     });
     row.querySelector('.exdone').addEventListener('click',function(ev){
       ev.stopPropagation();
-      var p=loadProg(); p[i]=!p[i]; saveProg(p);
-      row.classList.toggle('done',!!p[i]);
-      if(p[i]&&window.thwapCategoryDone){ var _l=row.parentNode; if(_l&&_l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('stick'); }
-      if(p[i]&&window.thwapMarkDone)window.thwapMarkDone('stick');
-      if(window.thwapStampToday)window.thwapStampToday('stick',!!p[i]);
-      this.textContent=p[i]?'Done ✓':'Mark done';
+      var btn=this;
+      var markDone=function(){
+        var p=loadProg(); p[i]=true; saveProg(p);
+        row.classList.add('done');
+        var _l=row.parentNode;
+        if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('stick');
+        if(window.thwapMarkDone)window.thwapMarkDone('stick');
+        if(window.thwapStampToday)window.thwapStampToday('stick',true);
+        btn.textContent='Done ✓';
+      };
+      if(row.classList.contains('done')){ return; }
+      if(window.thwapDrillTimer){ window.thwapDrillTimer(picks[i].name, markDone); }
+      else { markDone(); }
     });
   });
 }
@@ -4168,7 +4391,7 @@ function render(){
   var shOpt=document.getElementById('shootOptional'); if(shOpt) shOpt.hidden=!(window.thwapIsWeekend&&window.thwapIsWeekend());
   SHOOT.forEach(function(dr,i){
     var done=prog[i]?' done':'';
-    var doneLabel=prog[i]?'Done ✓':'Mark done';
+    var doneLabel=prog[i]?'Done ✓':'Start';
     var steps=(dr.steps&&dr.steps.length)?"<ol>"+dr.steps.map(function(s){return "<li>"+esc(s)+"</li>";}).join('')+"</ol>":'';
     var cue=dr.cue?"<p><b>Coach cue:</b> "+esc(dr.cue)+"</p>":'';
     list.insertAdjacentHTML('beforeend',
@@ -4190,12 +4413,19 @@ function render(){
     });
     row.querySelector('.exdone').addEventListener('click',function(ev){
       ev.stopPropagation();
-      var p=loadProg(); p[i]=!p[i]; saveProg(p);
-      row.classList.toggle('done',!!p[i]);
-      if(p[i]&&window.thwapCategoryDone){ var _l=row.parentNode; if(_l&&_l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('shoot'); }
-      if(p[i]&&window.thwapMarkDone)window.thwapMarkDone('shoot');
-      if(window.thwapStampToday)window.thwapStampToday('shoot',!!p[i]);
-      this.textContent=p[i]?'Done ✓':'Mark done';
+      var btn=this;
+      var markDone=function(){
+        var p=loadProg(); p[i]=true; saveProg(p);
+        row.classList.add('done');
+        var _l=row.parentNode;
+        if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('shoot');
+        if(window.thwapMarkDone)window.thwapMarkDone('shoot');
+        if(window.thwapStampToday)window.thwapStampToday('shoot',true);
+        btn.textContent='Done ✓';
+      };
+      if(row.classList.contains('done')){ return; }
+      if(window.thwapDrillTimer){ window.thwapDrillTimer(SHOOT[i].name, markDone); }
+      else { markDone(); }
     });
   });
 }
