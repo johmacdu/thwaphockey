@@ -656,23 +656,23 @@ body.roster-editing #roster-grid .pcard:not(.pcard-add)::after{content:'\270E';p
 /* Drill picker (coach): inline X-close page. A category's full drill list from the
    same buildCatalog() the players use; tap a row to include it in the plan, tap the
    How-to to open the same video + steps panel players see. */
-.dpk-sub{margin:-4px 0 14px;color:var(--muted);font-size:14px}
-.dpk-list{display:flex;flex-direction:column;gap:10px;padding-bottom:120px}
-.dpk-row{border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden}
+.dpk-sub{margin:-4px 0 14px;color:var(--muted);font-size:15px}
+.dpk-list{display:flex;flex-direction:column;gap:12px;padding-bottom:120px}
+.dpk-row{border:1px solid var(--line);border-radius:16px;background:var(--card);overflow:hidden}
 .dpk-row.picked{border-color:var(--lime);box-shadow:0 0 0 1px var(--lime) inset}
-.dpk-main{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;background:none;border:0;font-family:inherit;text-align:left;color:inherit;cursor:pointer}
-.dpk-emoji{font-size:24px;flex:none}
-.dpk-nm{flex:1 1 auto;font-weight:800;font-size:15px;color:var(--text)}
-.dpk-check{flex:none;width:26px;height:26px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-weight:900;color:transparent}
+.dpk-main{display:flex;align-items:center;gap:14px;width:100%;min-height:64px;padding:16px;background:none;border:0;font-family:inherit;text-align:left;color:inherit;cursor:pointer}
+.dpk-emoji{font-size:30px;flex:none}
+.dpk-nm{flex:1 1 auto;font-weight:800;font-size:18px;line-height:1.25;color:var(--text)}
+.dpk-check{flex:none;width:32px;height:32px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-weight:900;font-size:16px;color:transparent}
 .dpk-row.picked .dpk-check{background:var(--lime);border-color:transparent;color:var(--ink)}
-.dpk-how{display:flex;align-items:center;gap:6px;padding:8px 14px 12px;background:none;border:0;border-top:1px solid var(--line);width:100%;font-family:inherit;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);cursor:pointer}
+.dpk-how{display:flex;align-items:center;gap:6px;min-height:44px;padding:10px 16px 14px;background:none;border:0;border-top:1px solid var(--line);width:100%;font-family:inherit;font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);cursor:pointer}
 .dpk-how-chev{transition:transform .15s ease}
 .dpk-row.how-open .dpk-how-chev{transform:rotate(90deg)}
-.dpk-body{display:none;padding:0 14px 16px}
+.dpk-body{display:none;padding:0 16px 18px}
 .dpk-row.how-open .dpk-body{display:block}
-.dpk-body p{margin:0 0 12px;font-size:14px;color:var(--muted);line-height:1.5}
-.dpk-body ol{margin:0;padding-left:22px;color:var(--text);font-size:14px;font-weight:600;line-height:1.6}
-.dpk-body ol li{margin-bottom:8px}
+.dpk-body p{margin:0 0 14px;font-size:16px;color:var(--text2);line-height:1.55}
+.dpk-body ol{margin:0;padding-left:24px;color:var(--text);font-size:17px;font-weight:600;line-height:1.7}
+.dpk-body ol li{margin-bottom:10px}
 /* Shared sticky action footer (same component as the game-day goals footer):
    fixed bar, centered inner container capped at 1068px so content never hugs the
    screen edge on wide viewports. Reused by the drill picker. */

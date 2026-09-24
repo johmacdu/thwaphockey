@@ -266,6 +266,14 @@ describe('Recommend-a-drill card expands and collapses', () => {
   });
 });
 
+describe('Drill picker cards are legible and accessible', () => {
+  it('.dpk-main has a >=44px tap target and larger name text', () => {
+    expect(html).toMatch(/\.dpk-main\{[^}]*min-height:64px/);
+    expect(html).toMatch(/\.dpk-nm\{[^}]*font-size:18px/);
+    expect(html).toMatch(/\.dpk-body ol\{[^}]*font-size:17px/);
+  });
+});
+
 describe('Menus start closed: [hidden] overrides display', () => {
   // Recurring Thwap bug: a popup with the hidden attribute still shows because a
   // CSS rule gives it display:flex, which beats the browser's implicit
