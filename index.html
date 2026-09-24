@@ -2355,10 +2355,19 @@ window.thwapActiveTeam=function(coach){
     var built=infoFor(cardEl.getAttribute('data-name'));
     var photo=null; try{ photo=localStorage.getItem('thwapCardPhoto:'+built.slug); }catch(e){}
     if(!photo && built.slug==='lewie'){ photo='cards/lewie_photo.png'; }  /* Lewie's photo ships; show it */
-    if(window.buildFront){
+    function paintCard(photoUrl){
+      if(!window.buildFront) return;
       cardEl.innerHTML="<div class='pcard-card' style='position:absolute;inset:0;overflow:hidden'>"+
         "<div style='position:absolute;top:0;left:0;width:"+BASE+"px;height:"+(BASE*7/5)+"px;transform-origin:top left' data-pcbase='1'>"+
-        window.buildFront(built.info, built.slug, photo, 'red')+"</div></div>";
+        window.buildFront(built.info, built.slug, photoUrl, 'red')+"</div></div>";
+      if(window.thwapRescaleRoster) window.thwapRescaleRoster();
+    }
+    paintCard(photo);
+    /* Cross-device: a photo added by a parent/admin lives on the server, not in
+       THIS viewer's localStorage. Resolve it so teammates and coaches see the
+       consented photo too. Async: upgrades the card once it resolves. */
+    if(window.thwapPhotoResolve && built.slug!=='lewie'){
+      window.thwapPhotoResolve(built.slug, function(url){ if(url && url!==photo){ paintCard(url); } });
     }
   });
   rescaleRoster();
