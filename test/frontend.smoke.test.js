@@ -158,3 +158,10 @@ describe('Team page: scaled roster card keeps the Jr Rangers / Vancouver WA bloc
     expect(html).toMatch(/\.cf2-foot\{position:absolute;left:0;right:0;bottom:0;z-index:4;padding:12px 16px 16px/);
   });
 });
+
+describe('Cross-tab identity guard', () => {
+  it('listens for storage changes on the identity keys and reloads', () => {
+    expect(html).toMatch(/addEventListener\('storage'/);
+    expect(html).toMatch(/IDENTITY_KEYS *= *\['bfPlayer', 'thwapAuth', 'thwapCoach'\]/);
+  });
+});

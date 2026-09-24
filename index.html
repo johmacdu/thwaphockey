@@ -3144,6 +3144,26 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#progress')
     location.reload();
   });
 })();</script>
+<script>(function(){
+/* Cross-tab identity guard. Player/coach identity lives in localStorage
+   (bfPlayer / thwapAuth / thwapCoach), which is SHARED across every tab on this
+   origin. Without this, signing out or signing in as a different player in one
+   tab left other tabs showing the OLD name while a tap read the NEW identity -
+   a split-brain where the screen and the data disagree. localStorage 'storage'
+   events fire in the OTHER tabs when a key changes, so when identity changes
+   elsewhere we reload this tab to re-render as the current player (or land on
+   the sign-in gate if it was a sign-out). Same-tab changes do not fire this. */
+  var IDENTITY_KEYS = ['bfPlayer', 'thwapAuth', 'thwapCoach'];
+  function snapshot(){ var s={}; try{ IDENTITY_KEYS.forEach(function(k){ s[k]=localStorage.getItem(k); }); }catch(e){} return s; }
+  var known = snapshot();
+  window.addEventListener('storage', function(e){
+    // e.key is null on a localStorage.clear(); otherwise only react to our keys.
+    if(e.key !== null && IDENTITY_KEYS.indexOf(e.key) < 0) return;
+    var now = snapshot();
+    var changed = IDENTITY_KEYS.some(function(k){ return now[k] !== known[k]; });
+    if(changed){ known = now; location.reload(); }
+  });
+})();</script>
 <div class='cardoverlay' id='cardOverlay' hidden>
   <button type='button' class='cardclose' id='cardClose' aria-label='Close card'>✕</button>
   <div class='cardscene' id='cardScene'>
