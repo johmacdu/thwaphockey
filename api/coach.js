@@ -234,6 +234,47 @@ async function updatePlayer(req, res) {
   return res.status(200).json({ ok: true, member: rec });
 }
 
+// GET (admin key) full roster across all teams, for the admin roster editor.
+async function adminRoster(req, res) {
+  if (!methodGuard(req, res, 'GET')) return;
+  if (!adminOk(req)) return res.status(401).json({ error: 'unauthorized' });
+  await ensureSeed();
+  const codes = await listAllTeamCodes();
+  const out = [];
+  for (const code of codes) {
+    const team = await getTeam(code);
+    const ids = await listMembers(code);
+    for (const pid of ids) {
+      const m = await getMember(pid);
+      if (m) out.push({ ...m, id: pid, name: [m.firstName, m.lastName].filter(Boolean).join(' ') || m.firstName || pid, teamCode: code, teamName: (team && team.name) || code });
+    }
+  }
+  out.sort((a, b) => String(a.teamName || '').localeCompare(String(b.teamName || '')) || Number(a.number || 0) - Number(b.number || 0));
+  res.setHeader('Cache-Control', 'no-store');
+  return res.status(200).json({ ok: true, players: out });
+}
+
+// POST (admin key) edit a player's roster fields. Same validation as the coach
+// update-player, but authorized by the admin key instead of a coach token.
+async function adminUpdatePlayer(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  if (!adminOk(req)) return res.status(401).json({ error: 'unauthorized' });
+  const { playerId, firstName, lastName, number, position, parentEmail, parentEmail2 } = parseBody(req);
+  if (!(await getMember(playerId))) return res.status(404).json({ error: 'unknown player' });
+  if (firstName !== undefined && !String(firstName || '').trim()) {
+    return res.status(400).json({ error: 'first name cannot be empty' });
+  }
+  if (parentEmail !== undefined && String(parentEmail || '').trim() && !EMAIL_RE.test(String(parentEmail).trim().toLowerCase())) {
+    return res.status(400).json({ error: 'parent email is invalid' });
+  }
+  if (parentEmail2 !== undefined && String(parentEmail2 || '').trim() && !EMAIL_RE.test(String(parentEmail2).trim().toLowerCase())) {
+    return res.status(400).json({ error: 'second parent email is invalid' });
+  }
+  const rec = await updateMember(playerId, { firstName, lastName, number, position, parentEmail, parentEmail2 });
+  if (!rec) return res.status(404).json({ error: 'unknown player' });
+  return res.status(200).json({ ok: true, member: rec });
+}
+
 // POST change the coach's own login password. Coach-only (must know the current one).
 async function setPassword(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
@@ -637,6 +678,8 @@ export default async function handler(req, res) {
     case 'add-player': return addPlayer(req, res);
     case 'remove-player': return removePlayer(req, res);
     case 'update-player': return updatePlayer(req, res);
+    case 'admin-roster': return adminRoster(req, res);
+    case 'admin-update-player': return adminUpdatePlayer(req, res);
     case 'set-password': return setPassword(req, res);
     case 'request-password': return requestPassword(req, res);
     case 'reset-password': return resetPassword(req, res);
@@ -670,6 +713,7 @@ export default async function handler(req, res) {
 export const _handlers = {
   coachLogin, createTeam, addPlayer, removePlayer, roster, playerRollup,
   updatePlayer, setPassword, requestPassword, resetPassword, requestCode,
+  adminRoster, adminUpdatePlayer,
   join, schedule, setIdp, idpGoal, logGoal, gameGoalLogRead,
   getPlan, setPlan,
   teamGoal, setTeamGoal: setTeamGoalHandler,

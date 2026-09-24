@@ -36,6 +36,30 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
 .acts button{font:inherit;font-size:13px;font-weight:800;border-radius:10px;padding:8px 14px;cursor:pointer;border:1px solid var(--line2);background:transparent;color:var(--text)}
 .acts .accept{background:var(--lime);color:var(--ink);border-color:transparent}
 .acts .dismiss{color:var(--alert-text)}
+/* roster editor */
+.pcard{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:14px;margin-bottom:12px}
+.pcard-top{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.pavatar{width:52px;height:52px;border-radius:50%;object-fit:cover;background:var(--soft);flex:none;border:1px solid var(--line)}
+.pavatar.empty{display:grid;place-items:center;color:var(--muted);font-weight:800;font-size:18px}
+.pname{font-weight:800;font-size:16px}
+.pteam{font-size:12px;color:var(--muted)}
+.pfields{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pfields label{display:flex;flex-direction:column;gap:3px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;color:var(--muted)}
+.pfields input,.pfields select{padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:14px;background:var(--panel);color:var(--text);text-transform:none;font-weight:500}
+.pfields .full{grid-column:1 / -1}
+.pbtns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.pbtns button{font:inherit;font-size:13px;font-weight:800;border-radius:10px;padding:8px 14px;cursor:pointer;border:1px solid var(--line2);background:transparent;color:var(--text)}
+.pbtns .save{background:var(--lime);color:var(--ink);border-color:transparent}
+.pbtns .addphoto{background:var(--soft);border-color:transparent}
+.psaved{font-size:12px;font-weight:800;color:var(--green);align-self:center}
+.consent{margin-top:10px;border-top:1px dashed var(--line);padding-top:10px;display:none}
+.consent.open{display:block}
+.consent .note{font-size:12px;color:var(--muted);margin:0 0 8px}
+.consent-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.consent-row .full{grid-column:1 / -1}
+.consent-row label{display:flex;flex-direction:column;gap:3px;font-size:11px;font-weight:800;text-transform:uppercase;color:var(--muted)}
+.consent-row input,.consent-row select{padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:14px;background:var(--panel);color:var(--text);font-weight:500}
+.consent .filepick{margin-top:8px;font-size:13px}
 </style>
 </head>
 <body>
@@ -46,6 +70,11 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
     <input id="key" type="password" placeholder="Admin key" autocomplete="off">
     <button id="load">Load</button>
   </div>
+  <div class="seg" id="viewnav" hidden>
+    <button data-v="drills" class="on">Drills</button>
+    <button data-v="roster">Roster</button>
+  </div>
+  <div id="viewDrills">
   <div class="seg" id="filter" hidden>
     <button data-f="new" class="on">New</button>
     <button data-f="accepted">Accepted</button>
@@ -54,6 +83,12 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
   </div>
   <div id="msg" class="msg">Enter the admin key and press Load.</div>
   <div id="list"></div>
+  </div>
+  <div id="viewRoster" hidden>
+    <p class="sub">Edit player details, and add a photo with recorded parent consent.</p>
+    <div id="rmsg" class="msg">Load with your admin key to see the roster.</div>
+    <div id="rlist"></div>
+  </div>
 </div>
 <script>
 (function(){
@@ -85,10 +120,12 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
   function load(){
     key=keyEl.value.trim(); if(!key){ msg.textContent='Enter the admin key.'; msg.className='msg err'; return; }
     msg.textContent='Loading...'; msg.className='msg';
+    document.getElementById('viewnav').hidden=false;
     fetch('/api/coach?action=review-suggestions&key='+encodeURIComponent(key))
       .then(function(r){ if(r.status===401){ throw new Error('Bad admin key.'); } return r.json(); })
       .then(function(j){ all=(j&&j.suggestions)||[]; seg.hidden=false; render(); })
       .catch(function(e){ msg.textContent=e.message||'Could not load.'; msg.className='msg err'; });
+    loadRoster();
   }
   function resolve(code,id,status){
     fetch('/api/coach?action=resolve-suggestion&key='+encodeURIComponent(key),
@@ -101,6 +138,124 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
   keyEl.addEventListener('keydown',function(e){ if(e.key==='Enter') load(); });
   seg.querySelectorAll('button').forEach(function(b){
     b.addEventListener('click',function(){ filter=b.getAttribute('data-f'); seg.querySelectorAll('button').forEach(function(x){ x.classList.toggle('on', x===b); }); render(); });
+  });
+
+  // ---- roster editor ----
+  var players=[];
+  var rmsg=document.getElementById('rmsg'), rlist=document.getElementById('rlist');
+  var POS=['','Forward','Defense','Goalie'];
+  var CONSENT=[['','How was consent given?'],['text','Text message'],['in_person','In person'],['written','Written / signed'],['email','Email']];
+  function loadRoster(){
+    rmsg.textContent='Loading roster...'; rmsg.className='msg';
+    fetch('/api/coach?action=admin-roster&key='+encodeURIComponent(key))
+      .then(function(r){ if(r.status===401){ throw new Error('Bad admin key.'); } return r.json(); })
+      .then(function(j){ players=(j&&j.players)||[]; renderRoster(); })
+      .catch(function(e){ rmsg.textContent=e.message||'Could not load roster.'; rmsg.className='msg err'; });
+  }
+  function initial(p){ return esc(((p.firstName||p.name||'?')[0]||'?').toUpperCase()); }
+  function renderRoster(){
+    if(!players.length){ rlist.innerHTML=''; rmsg.textContent='No players.'; rmsg.className='msg'; return; }
+    rmsg.textContent=''; rmsg.className='msg';
+    rlist.innerHTML=players.map(function(p,i){
+      var av=p.photo
+        ? "<img class='pavatar' src='"+esc(p.photo)+"' alt=''>"
+        : "<div class='pavatar empty'>"+initial(p)+"</div>";
+      var posOpts=POS.map(function(v){ return "<option value='"+v+"'"+((p.position||'')===v?" selected":"")+">"+(v||'Position')+"</option>"; }).join('');
+      var conOpts=CONSENT.map(function(c){ return "<option value='"+c[0]+"'>"+esc(c[1])+"</option>"; }).join('');
+      return "<div class='pcard' data-i='"+i+"' data-id='"+esc(p.id)+"'>"+
+        "<div class='pcard-top'>"+av+"<div><div class='pname'>"+esc(p.name||p.firstName||p.id)+"</div>"+
+          "<div class='pteam'>"+esc(p.teamName||p.teamCode||'')+"</div></div></div>"+
+        "<div class='pfields'>"+
+          "<label>First<input class='f-first' value='"+esc(p.firstName||'')+"'></label>"+
+          "<label>Last<input class='f-last' value='"+esc(p.lastName||'')+"'></label>"+
+          "<label>Number<input class='f-num' value='"+esc(p.number||'')+"'></label>"+
+          "<label>Position<select class='f-pos'>"+posOpts+"</select></label>"+
+          "<label class='full'>Parent email (dad)<input class='f-pe' value='"+esc(p.parentEmail||'')+"'></label>"+
+          "<label class='full'>Parent email (mom)<input class='f-pe2' value='"+esc(p.parentEmail2||'')+"'></label>"+
+        "</div>"+
+        "<div class='pbtns'>"+
+          "<button class='save'>Save details</button>"+
+          "<button class='addphoto'>Add photo</button>"+
+          "<span class='psaved' hidden>Saved</span>"+
+        "</div>"+
+        "<div class='consent'>"+
+          "<p class='note'>A photo of a child needs a parent's OK. Record how that parent gave permission. This is stored with the photo as an honest consent record.</p>"+
+          "<div class='consent-row'>"+
+            "<label>Consent method<select class='c-method'>"+conOpts+"</select></label>"+
+            "<label>Parent name<input class='c-by' placeholder='e.g. Josh Delatoree'></label>"+
+          "</div>"+
+          "<input type='file' accept='image/*' class='c-file filepick'>"+
+          "<div class='pbtns'><button class='c-upload save'>Upload photo</button></div>"+
+        "</div>"+
+      "</div>";
+    }).join('');
+    rlist.querySelectorAll('.pcard').forEach(function(card){
+      card.querySelector('.save').addEventListener('click',function(){ savePlayer(card); });
+      card.querySelector('.addphoto').addEventListener('click',function(){ card.querySelector('.consent').classList.toggle('open'); });
+      card.querySelector('.c-upload').addEventListener('click',function(){ uploadPhoto(card); });
+    });
+  }
+  function flash(card){ var s=card.querySelector('.psaved'); s.hidden=false; setTimeout(function(){ s.hidden=true; },1800); }
+  function savePlayer(card){
+    var id=card.getAttribute('data-id');
+    var body={ playerId:id,
+      firstName:card.querySelector('.f-first').value.trim(),
+      lastName:card.querySelector('.f-last').value.trim(),
+      number:card.querySelector('.f-num').value.trim(),
+      position:card.querySelector('.f-pos').value,
+      parentEmail:card.querySelector('.f-pe').value.trim(),
+      parentEmail2:card.querySelector('.f-pe2').value.trim() };
+    fetch('/api/coach?action=admin-update-player&key='+encodeURIComponent(key),
+      {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+      .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
+      .then(function(res){ if(!res.ok){ alert((res.j&&res.j.error)||'Save failed'); return; } flash(card); })
+      .catch(function(){ alert('Save failed'); });
+  }
+  // Downscale to <=512px longest edge, JPEG, return a data URL under the 400KB cap.
+  function fileToDataUrl(file, cb){
+    var img=new Image(), url=URL.createObjectURL(file);
+    img.onload=function(){
+      var max=512, w=img.width, h=img.height, sc=Math.min(1, max/Math.max(w,h));
+      var cv=document.createElement('canvas'); cv.width=Math.round(w*sc); cv.height=Math.round(h*sc);
+      cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+      URL.revokeObjectURL(url);
+      cb(cv.toDataURL('image/jpeg',0.85));
+    };
+    img.onerror=function(){ URL.revokeObjectURL(url); cb(null); };
+    img.src=url;
+  }
+  function uploadPhoto(card){
+    var id=card.getAttribute('data-id');
+    var method=card.querySelector('.c-method').value;
+    var by=card.querySelector('.c-by').value.trim();
+    var file=card.querySelector('.c-file').files[0];
+    if(!method){ alert('Choose how the parent gave consent.'); return; }
+    if(!by){ alert('Enter the parent\u2019s name who gave consent.'); return; }
+    if(!file){ alert('Choose a photo file.'); return; }
+    var btn=card.querySelector('.c-upload'); btn.disabled=true; btn.textContent='Uploading...';
+    fileToDataUrl(file,function(dataUrl){
+      if(!dataUrl){ alert('Could not read that image.'); btn.disabled=false; btn.textContent='Upload photo'; return; }
+      fetch('/api/photo/admin-put?key='+encodeURIComponent(key),
+        {method:'POST',headers:{'Content-Type':'application/json'},
+         body:JSON.stringify({playerId:id,imageData:dataUrl,consent:{method:method,grantedBy:by}})})
+        .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
+        .then(function(res){
+          btn.disabled=false; btn.textContent='Upload photo';
+          if(!res.ok){ alert((res.j&&res.j.error)||'Upload failed'); return; }
+          var p=players[parseInt(card.getAttribute('data-i'),10)]; if(p){ p.photo=res.j.url; }
+          card.querySelector('.consent').classList.remove('open'); renderRoster();
+        })
+        .catch(function(){ btn.disabled=false; btn.textContent='Upload photo'; alert('Upload failed'); });
+    });
+  }
+  // view nav
+  document.getElementById('viewnav').querySelectorAll('button').forEach(function(b){
+    b.addEventListener('click',function(){
+      var v=b.getAttribute('data-v');
+      document.getElementById('viewnav').querySelectorAll('button').forEach(function(x){ x.classList.toggle('on', x===b); });
+      document.getElementById('viewDrills').hidden = v!=='drills';
+      document.getElementById('viewRoster').hidden = v!=='roster';
+    });
   });
 })();
 </script>

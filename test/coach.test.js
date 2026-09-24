@@ -597,3 +597,61 @@ describe('Thwap admin: drill-suggestion review', () => {
     expect(badStatus.statusCode).toBe(404);
   });
 });
+
+describe('Thwap admin: roster editor', () => {
+  const KEY = 'admin-test-token';
+
+  beforeEach(async () => {
+    await _seed.ensureSeed();
+  });
+
+  it('blocks admin-roster without the key', async () => {
+    const res = makeRes();
+    await _handlers.adminRoster(get({}), res);
+    expect(res.statusCode).toBe(401);
+  });
+
+  it('lists all players with the admin key', async () => {
+    const res = makeRes();
+    await _handlers.adminRoster(get({ key: KEY }), res);
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body.players)).toBe(true);
+    expect(res.body.players.length).toBeGreaterThan(0);
+    const lewie = res.body.players.find((p) => p.id === 'lewie');
+    expect(lewie).toBeTruthy();
+    expect(lewie.teamCode).toBe(_seed.SEED_TEAM_CODE);
+  });
+
+  it('blocks admin-update-player without the key', async () => {
+    const res = makeRes();
+    await _handlers.adminUpdatePlayer(post({ playerId: 'lewie', number: '99' }, {}), res);
+    expect(res.statusCode).toBe(401);
+  });
+
+  it('updates a player number and parent emails with the admin key', async () => {
+    const res = makeRes();
+    await _handlers.adminUpdatePlayer(post(
+      { playerId: 'lewie', number: '77', parentEmail: 'dad@x.com', parentEmail2: 'mom@x.com' },
+      { key: KEY },
+    ), res);
+    expect(res.statusCode).toBe(200);
+    expect(String(res.body.member.number)).toBe('77');
+    expect(res.body.member.parentEmail).toBe('dad@x.com');
+    expect(res.body.member.parentEmail2).toBe('mom@x.com');
+  });
+
+  it('rejects a blank first name and a bad email', async () => {
+    const blank = makeRes();
+    await _handlers.adminUpdatePlayer(post({ playerId: 'lewie', firstName: '' }, { key: KEY }), blank);
+    expect(blank.statusCode).toBe(400);
+    const bad = makeRes();
+    await _handlers.adminUpdatePlayer(post({ playerId: 'lewie', parentEmail: 'not-an-email' }, { key: KEY }), bad);
+    expect(bad.statusCode).toBe(400);
+  });
+
+  it('404s an unknown player', async () => {
+    const res = makeRes();
+    await _handlers.adminUpdatePlayer(post({ playerId: 'nobody', number: '5' }, { key: KEY }), res);
+    expect(res.statusCode).toBe(404);
+  });
+});
