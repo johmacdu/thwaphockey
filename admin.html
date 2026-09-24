@@ -62,6 +62,14 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
 .consent-row input,.consent-row select{padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:14px;background:var(--panel);color:var(--text);font-weight:500}
 .consent .filepick{margin-top:8px;font-size:13px}
 </style>
+<script type="module">
+  // In-browser background removal (ONNX/WASM). Runs entirely client-side, so a
+  // child's photo is never sent to a third party for processing. Pinned version.
+  import { removeBackground } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.8/+esm';
+  // Resolve a File -> transparent-PNG Blob. Rejects if the model cannot load.
+  window.thwapRemoveBg = function(file){ return removeBackground(file); };
+  window.thwapRemoveBgReady = true;
+</script>
 </head>
 <body>
 <div class="wrap">
@@ -230,6 +238,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
             "<label>Parent name<input class='c-by' placeholder='e.g. Josh Delatoree'></label>"+
           "</div>"+
           "<input type='file' accept='image/*' class='c-file filepick'>"+
+          "<label class='c-bgwrap' style='display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text);text-transform:none;margin-top:8px'><input type='checkbox' class='c-bg' checked> Remove background (cutout)</label>"+
           "<div class='pbtns'><button class='c-upload save'>Upload photo</button></div>"+
         "</div>"+
       "</div>";
@@ -256,41 +265,88 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
       .then(function(res){ if(!res.ok){ alert((res.j&&res.j.error)||'Save failed'); return; } flash(card); })
       .catch(function(){ alert('Save failed'); });
   }
-  // Downscale to <=512px longest edge, JPEG, return a data URL under the 400KB cap.
-  function fileToDataUrl(file, cb){
-    var img=new Image(), url=URL.createObjectURL(file);
-    img.onload=function(){
-      var max=512, w=img.width, h=img.height, sc=Math.min(1, max/Math.max(w,h));
-      var cv=document.createElement('canvas'); cv.width=Math.round(w*sc); cv.height=Math.round(h*sc);
-      cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
-      URL.revokeObjectURL(url);
-      cb(cv.toDataURL('image/jpeg',0.85));
-    };
-    img.onerror=function(){ URL.revokeObjectURL(url); cb(null); };
-    img.src=url;
+  // Draw a source (Image) onto a canvas at <=maxPx longest edge. Returns canvas.
+  function scaleToCanvas(img, maxPx){
+    var w=img.width, h=img.height, sc=Math.min(1, maxPx/Math.max(w,h));
+    var cv=document.createElement('canvas'); cv.width=Math.round(w*sc); cv.height=Math.round(h*sc);
+    cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
+    return cv;
+  }
+  // Load a Blob/File into an Image element.
+  function blobToImage(blob){
+    return new Promise(function(resolve,reject){
+      var img=new Image(), url=URL.createObjectURL(blob);
+      img.onload=function(){ URL.revokeObjectURL(url); resolve(img); };
+      img.onerror=function(){ URL.revokeObjectURL(url); reject(new Error('bad image')); };
+      img.src=url;
+    });
+  }
+  // Encode a canvas to a data URL under the 400KB admin-put cap. Transparent
+  // (bg-removed) images must be PNG; opaque ones use JPEG. Shrinks/recompresses
+  // until it fits.
+  function encodeUnderCap(img, transparent){
+    var CAP=380*1024; // stay comfortably under the 400KB endpoint cap
+    var sizes=transparent?[512,448,384,320,256]:[512,448,384];
+    for(var i=0;i<sizes.length;i++){
+      var cv=scaleToCanvas(img,sizes[i]);
+      if(transparent){
+        var png=cv.toDataURL('image/png');
+        if(png.length*0.75<=CAP) return png;
+      } else {
+        for(var q=0.85;q>=0.5;q-=0.15){
+          var jpg=cv.toDataURL('image/jpeg',q);
+          if(jpg.length*0.75<=CAP) return jpg;
+        }
+      }
+    }
+    // last resort: smallest attempt
+    var last=scaleToCanvas(img, transparent?256:384);
+    return transparent? last.toDataURL('image/png') : last.toDataURL('image/jpeg',0.5);
+  }
+  // Process a chosen file: optional background removal, then downscale+encode to
+  // a capped data URL. onStatus(text) updates the button; cb(dataUrl|null).
+  function processImage(file, removeBg, onStatus, cb){
+    function afterBlob(blob, transparent){
+      blobToImage(blob).then(function(img){
+        cb(encodeUnderCap(img, transparent));
+      }).catch(function(){ cb(null); });
+    }
+    if(removeBg){
+      if(!window.thwapRemoveBg){ alert('Background remover is still loading, try again in a moment.'); cb(null); return; }
+      onStatus('Removing background...');
+      window.thwapRemoveBg(file)
+        .then(function(blob){ onStatus('Uploading...'); afterBlob(blob, true); })
+        .catch(function(){ alert('Could not remove the background. Uploading the photo as-is.'); onStatus('Uploading...'); afterBlob(file, false); });
+    } else {
+      onStatus('Uploading...');
+      afterBlob(file, false);
+    }
   }
   function uploadPhoto(card){
     var id=card.getAttribute('data-id');
     var method=card.querySelector('.c-method').value;
     var by=card.querySelector('.c-by').value.trim();
     var file=card.querySelector('.c-file').files[0];
+    var removeBg=card.querySelector('.c-bg').checked;
     if(!method){ alert('Choose how the parent gave consent.'); return; }
     if(!by){ alert('Enter the parent\u2019s name who gave consent.'); return; }
     if(!file){ alert('Choose a photo file.'); return; }
-    var btn=card.querySelector('.c-upload'); btn.disabled=true; btn.textContent='Uploading...';
-    fileToDataUrl(file,function(dataUrl){
-      if(!dataUrl){ alert('Could not read that image.'); btn.disabled=false; btn.textContent='Upload photo'; return; }
+    var btn=card.querySelector('.c-upload'); btn.disabled=true;
+    function setStatus(t){ btn.textContent=t; }
+    function reset(){ btn.disabled=false; btn.textContent='Upload photo'; }
+    processImage(file, removeBg, setStatus, function(dataUrl){
+      if(!dataUrl){ reset(); return; }
       fetch('/api/photo/admin-put?'+tokenQS(),
         {method:'POST',headers:{'Content-Type':'application/json'},
          body:JSON.stringify({playerId:id,imageData:dataUrl,consent:{method:method,grantedBy:by}})})
         .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
         .then(function(res){
-          btn.disabled=false; btn.textContent='Upload photo';
+          reset();
           if(!res.ok){ alert((res.j&&res.j.error)||'Upload failed'); return; }
           var p=players[parseInt(card.getAttribute('data-i'),10)]; if(p){ p.photo=res.j.url; }
           card.querySelector('.consent').classList.remove('open'); renderRoster();
         })
-        .catch(function(){ btn.disabled=false; btn.textContent='Upload photo'; alert('Upload failed'); });
+        .catch(function(){ reset(); alert('Upload failed'); });
     });
   }
   // view nav
