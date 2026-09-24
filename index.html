@@ -2712,6 +2712,11 @@ function videoBlock(dr){
   }
   return "";
 }
+/* videoBlock/ytid are defined inside THIS (dryland) IIFE. The Stickhandling and
+   Shooting renderers are SEPARATE IIFEs and can't see them, so expose both on
+   window - otherwise a videoBlock(dr) call there throws ReferenceError and blanks
+   the whole drill list. */
+window.ytid=ytid; window.videoBlock=videoBlock;
 function todaysWorkout(){var s=window.thwapWeekdaySlot();return WORKOUTS[(s<0?0:s)%WORKOUTS.length];}
 
 /* Build a balanced ~15-min block: 1-2 exercises from each category present today,
@@ -3861,7 +3866,7 @@ function render(){
         "<div class='exhead'><div class='exem'>"+dr.emoji+"</div>"+
           "<div><h3>"+esc(dr.name)+"<span class='exbadge'>Done</span></h3><div class='exdose'>"+esc(dr.cat)+"</div></div>"+
           "<div class='exchev'>›</div></div>"+
-        "<div class='exbody'><p>"+esc(dr.cue)+"</p>"+videoBlock(dr)+steps+
+        "<div class='exbody'><p>"+esc(dr.cue)+"</p>"+window.videoBlock(dr)+steps+
           "<button type='button' class='exdone'>"+doneLabel+"</button></div>"+
       "</div>");
   });
@@ -4519,7 +4524,7 @@ function render(){
         "<div class='exhead'><div class='exem'>"+dr.emoji+"</div>"+
           "<div><h3>"+esc(dr.name)+"<span class='exbadge'>Done</span></h3><div class='exdose'>"+esc(dr.theme||'Shooting')+"</div></div>"+
           "<div class='exchev'>›</div></div>"+
-        "<div class='exbody'>"+cue+videoBlock(dr)+steps+
+        "<div class='exbody'>"+cue+window.videoBlock(dr)+steps+
           "<button type='button' class='exdone'>"+doneLabel+"</button></div>"+
       "</div>");
   });
