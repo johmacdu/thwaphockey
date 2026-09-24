@@ -55,3 +55,12 @@ describe('Next-game matchup is a tooltip, not a standing line', () => {
     expect(html).toMatch(/\.ng-tip:hover \.ng-tip-bubble,\.ng-tip:focus-visible \.ng-tip-bubble,\.ng-tip\.open \.ng-tip-bubble\{display:block\}/);
   });
 });
+
+describe('Game-day position persists + seeds from roster', () => {
+  it('setPos POSTs to set-game-position and load seeds from the player record', () => {
+    expect(html).toMatch(/action=set-game-position/);
+    expect(html).toMatch(/action=player&playerId=/);
+    // roster FD (Forward and Defense) maps to the game-day "B"
+    expect(html).toMatch(/rp==='FD'\|\|rp==='DF'\|\|rp\.indexOf\('\/'\)>=0\|\|rp==='B'/);
+  });
+});

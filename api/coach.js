@@ -739,6 +739,21 @@ async function setIdp(req, res) {
   return res.status(200).json({ ok: true, idpGoal: rec });
 }
 
+// POST ?action=set-game-position { playerId, gamePosition }  -> the player's own
+// game-day position ('F'|'D'|'B'). Player-owned (no coach token), and stored on a
+// SEPARATE field so it never overwrites the coach's roster `position`.
+async function setGamePosition(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  const { playerId, gamePosition } = parseBody(req);
+  const pid = String(playerId || '').toLowerCase();
+  if (!pid) return res.status(400).json({ error: 'playerId required' });
+  if (!['F', 'D', 'B'].includes(gamePosition)) return res.status(400).json({ error: 'bad position' });
+  const rec = await updateMember(pid, { gamePosition });
+  if (!rec) return res.status(404).json({ error: 'unknown player' });
+  res.setHeader('Cache-Control', 'no-store');
+  return res.status(200).json({ ok: true, gamePosition: rec.gamePosition });
+}
+
 async function idpGoal(req, res) {
   if (!methodGuard(req, res, 'GET')) return;
   const pid = String((req.query && req.query.playerId) || '').toLowerCase();
@@ -799,6 +814,7 @@ export default async function handler(req, res) {
     case 'invite-coach': return inviteCoach(req, res);
     case 'remove-coach': return removeCoach(req, res);
     case 'set-idp-goal': return setIdp(req, res);
+    case 'set-game-position': return setGamePosition(req, res);
     case 'idp-goal': return idpGoal(req, res);
     case 'log-game-goal': return logGoal(req, res);
     case 'game-goal-log': return gameGoalLogRead(req, res);
@@ -812,7 +828,7 @@ export const _handlers = {
   updatePlayer, setPassword, requestPassword, resetPassword, requestCode,
   adminRoster, adminUpdatePlayer,
   adminLogin, adminSetPassword, adminStatus,
-  join, schedule, setIdp, idpGoal, logGoal, gameGoalLogRead,
+  join, schedule, setIdp, idpGoal, logGoal, gameGoalLogRead, setGamePosition,
   getPlan, setPlan,
   teamGoal, setTeamGoal: setTeamGoalHandler,
   suggestDrill, drillSuggestions,

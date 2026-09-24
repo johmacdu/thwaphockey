@@ -1549,9 +1549,15 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
     posSheet.hidden = !open;
     posWord.setAttribute('aria-expanded', open ? 'true' : 'false');
   }
+  function gposPlayerId(){ try{ return (localStorage.getItem('bfPlayer')||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,''); }catch(e){ return ''; } }
   function setPos(pos){
     applyPos(pos);
-    try{ localStorage.setItem(PKEY, pos); }catch(e){}
+    try{ localStorage.setItem(PKEY, pos); }catch(e){}       /* fast local cache */
+    var pid=gposPlayerId();
+    if(pid){                                                 /* persist server-side so it follows the player across devices */
+      try{ fetch('/api/coach?action=set-game-position',{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',
+        body:JSON.stringify({playerId:pid, gamePosition:pos})}).catch(function(){}); }catch(e){}
+    }
     openSheet(false);
     // Switching position does NOT clear already-picked shared goals; just re-run UI.
     updateUI();
@@ -1562,6 +1568,27 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
   var startPos = 'F';
   try{ var sp = localStorage.getItem(PKEY); if(sp === 'F' || sp === 'D' || sp === 'B') startPos = sp; }catch(e){}
   applyPos(startPos);
+  /* Seed from the server: the player's saved game-day pick (gamePosition) wins;
+     otherwise fall back to their roster position (Forward and Defense -> B), so a
+     player like Lewie starts on the right position. Local cache showed instantly
+     above; this corrects/persists it once the record loads. */
+  (function(){
+    var pid=gposPlayerId(); if(!pid) return;
+    fetch('/api/coach?action=player&playerId='+encodeURIComponent(pid),{cache:'no-store'})
+      .then(function(r){ return r.json(); })
+      .then(function(j){
+        var m=j&&j.ok&&j.member; if(!m) return;
+        var pos=null;
+        if(m.gamePosition==='F'||m.gamePosition==='D'||m.gamePosition==='B'){ pos=m.gamePosition; }
+        else if(m.position){                                  /* map roster position to the game-day set */
+          var rp=String(m.position).toUpperCase();
+          if(rp==='D'||rp==='DEFENSE'){ pos='D'; }
+          else if(rp==='FD'||rp==='DF'||rp.indexOf('/')>=0||rp==='B'){ pos='B'; }
+          else { pos='F'; }
+        }
+        if(pos && pos!==startPos){ applyPos(pos); try{ localStorage.setItem(PKEY, pos); }catch(e){} if(window.updateUI) updateUI(); }
+      }).catch(function(){});
+  })();
 
   // Game-aware header: opponent + date from the team schedule (the coach's team
   // goal is shown separately by the pinned card below).
