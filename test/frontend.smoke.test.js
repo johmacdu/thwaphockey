@@ -188,3 +188,14 @@ describe('Drill videos on all three disciplines', () => {
     expect(startLabels).toBeGreaterThanOrEqual(3);
   });
 });
+
+describe('Sass logo easter egg: no mobile long-press image callout', () => {
+  it('#sassLogo suppresses the iOS long-press callout/selection/drag (CSS half of the fix)', () => {
+    // pairs with the existing JS contextmenu preventDefault; the CSS half was missing.
+    expect(html).toMatch(/#sassLogo\{[^}]*-webkit-touch-callout:none/);
+    expect(html).toMatch(/#sassLogo\{[^}]*user-select:none/);
+    expect(html).toMatch(/#sassLogo\{[^}]*-webkit-user-drag:none/);
+    // and the JS contextmenu guard is still present
+    expect(html).toMatch(/logo\.addEventListener\('contextmenu',function\(e\)\{ e\.preventDefault\(\); \}\)/);
+  });
+});

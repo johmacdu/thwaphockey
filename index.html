@@ -4412,6 +4412,10 @@ document.addEventListener('click',function(e){
 <style>
 /* Sass skate-across easter egg: the real header logo skates right and back, staying fully visible. Flat PNG, so skating is faked with a bob. */
 .brandlogo{cursor:pointer}
+/* #sassLogo is a tap/long-press easter egg (skate-across). Suppress the mobile
+   long-press callout so long-pressing ANIMATES instead of popping the browser's
+   save/copy-image menu - same fix used on the drill easter eggs (.eggstick/.eggnet). */
+#sassLogo{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;-webkit-user-drag:none;touch-action:manipulation}
 #sassLogo.skating{transform-origin:center bottom;animation:sassAcross 2.2s ease-in-out forwards, sassSkate .3s ease-in-out infinite}
 @keyframes sassAcross{
   0%{transform:translateX(0) translateY(-8px) scale(.86)}
