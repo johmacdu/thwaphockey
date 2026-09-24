@@ -225,6 +225,17 @@ describe('Remove-player confirm is a scrimmed modal', () => {
   });
 });
 
+describe('Weekly plan card matches the team-goal card', () => {
+  it('plancard shares the tgoal card shell and holds Save inside', () => {
+    // same lime-tinted gradient shell as .tgoal-wrap
+    expect(html).toMatch(/\.plancard\{[^}]*linear-gradient\(180deg,color-mix\(in srgb,var\(--lime\)/);
+    expect(html).toMatch(/\.plancard-h\{[^}]*Archivo Black/);
+    // Save plan button now lives inside the plancard
+    const card=html.slice(html.indexOf("class='plancard'"), html.indexOf("class='tgoal-wrap'"));
+    expect(card).toMatch(/id='planSave'/);
+  });
+});
+
 describe('Menus start closed: [hidden] overrides display', () => {
   // Recurring Thwap bug: a popup with the hidden attribute still shows because a
   // CSS rule gives it display:flex, which beats the browser's implicit
