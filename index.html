@@ -1473,16 +1473,24 @@ body.login-locked{overflow:hidden}
 <div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.svg' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><span class='nav-authed'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a></span><span class='nav-guest'><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#stickers'>Stickers</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a></span><span class='nav-guest'><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
 <div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>there</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><script>(function(){try{var authed=/(?:^|; )thwapAuth=/.test(document.cookie);var p=localStorage.getItem('bfPlayer');var b=document.getElementById('homePlayer');if(b){if(p&&authed){b.textContent=p.trim().split(/\s+/)[0];}else{b.classList.add('needpick');}}}catch(e){}
 /* Team plan: hide the category rows the coach turned OFF for today. On any failure
-   or unset plan, all three stay shown (the built-in rotation), so home is never empty. */
+   or unset plan, stick + shoot stay shown (the built-in rotation), and dryland
+   defaults to Tue/Wed/Thu only (10U load management) so home is never empty. A
+   coach plan for the day always wins over this default. */
 (function(){
   var rows={ stick:document.querySelector('.nav-stick'), shoot:document.querySelector('.nav-shoot'), dryland:document.querySelector('.nav-dryland') };
   if(!rows.stick&&!rows.shoot&&!rows.dryland) return;
   var wd=0; try{ wd=window.thwapWeekday?window.thwapWeekday():0; }catch(e){}
   var dayKey=['sun','mon','tue','wed','thu','fri','sat'][wd]||'mon';
+  /* Built-in default: dryland only Tue(2)/Wed(3)/Thu(4). */
+  if(rows.dryland && [2,3,4].indexOf(wd)<0){ rows.dryland.style.display='none'; }
   fetch('/api/coach?action=get-plan').then(function(r){ return r.json(); }).then(function(j){
     if(!j||!j.ok||!j.plan||!j.plan[dayKey]) return;
     var onCats=j.plan[dayKey];
-    Object.keys(rows).forEach(function(cat){ if(rows[cat] && onCats.indexOf(cat)<0){ rows[cat].style.display='none'; } });
+    /* A coach plan for the day is authoritative: show exactly its categories. */
+    Object.keys(rows).forEach(function(cat){
+      if(!rows[cat]) return;
+      rows[cat].style.display = (onCats.indexOf(cat)<0) ? 'none' : '';
+    });
   }).catch(function(){});
 })();})();</script><div class='forrow'><span class='forline'>3 things, about 30 min</span><button type='button' class='daytip daytip-chip' id='dayTip' aria-label='Show today’s date'>Today<span class='daydate' id='dayDate'>Sunday, September 13</span></button></div></div>
 <div class='cards'>
@@ -2057,7 +2065,7 @@ window.thwapActiveTeam=function(coach){
     plan={
       mon:{stick:first('stick',1)}, tue:{dryland:first('dryland',2)},
       wed:{stick:first('stick',2),shoot:first('shoot',2),dryland:first('dryland',2)},
-      thu:{shoot:first('shoot',1)}, fri:{stick:first('stick',1)}, sat:{}, sun:{}
+      thu:{shoot:first('shoot',1),dryland:first('dryland',2)}, fri:{stick:first('stick',1)}, sat:{}, sun:{}
     };
   }
   /* True if any day/category in the plan holds at least one real drill name. */
