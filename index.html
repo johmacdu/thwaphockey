@@ -123,6 +123,12 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 .pnextgame:hover{transform:translateY(-2px);box-shadow:0 10px 24px var(--shadow)}
 .pnextgame:active{transform:scale(.99)}
 .png-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.png-head{display:flex;align-items:center;gap:10px}
+.egg-ico-sm{width:40px}
+.png-goallight{flex:none;cursor:pointer;line-height:0;touch-action:manipulation}
+.png-goallight.egg-flash{animation:goalFlash .9s ease-out}
+@keyframes goalFlash{0%{transform:scale(1)}15%{transform:scale(1.25) rotate(-8deg);filter:drop-shadow(0 0 10px rgba(240,100,90,.9))}32%{transform:scale(1.1) rotate(7deg);filter:drop-shadow(0 0 16px rgba(240,100,90,1))}52%{transform:scale(1.18) rotate(-4deg);filter:drop-shadow(0 0 12px rgba(240,100,90,.9))}100%{transform:scale(1);filter:none}}
+@media (prefers-reduced-motion: reduce){.png-goallight.egg-flash{animation:none}}
 .png-top:empty{display:none}
 .png-gd{display:inline-block;background:var(--orange);color:#3a2200;font-family:'Archivo Black',system-ui,sans-serif;font-size:11px;padding:5px 11px;border-radius:999px;letter-spacing:.04em}
 .png-count{text-align:center;background:var(--lime);color:var(--ink);border-radius:12px;padding:5px 10px;font-family:'Archivo Black',system-ui,sans-serif;line-height:.85}
@@ -795,6 +801,8 @@ button.row:active{background:var(--soft)}
 .pl-ex:nth-child(2){animation-delay:.03s}.pl-ex:nth-child(3){animation-delay:.06s}.pl-ex:nth-child(4){animation-delay:.09s}.pl-ex:nth-child(5){animation-delay:.12s}.pl-ex:nth-child(6){animation-delay:.15s}
 @media (prefers-reduced-motion: reduce){.pl-ex{animation:none}}
 .plflame{display:inline-block;transform-origin:50% 90%;animation:plflick .55s ease-in-out infinite;filter:drop-shadow(0 0 4px rgba(255,140,40,.7));cursor:pointer}
+img.plflame{width:1.15em;height:auto;vertical-align:-.22em}
+.cb-fire{width:1em;height:auto;vertical-align:-.15em;display:inline-block}
 .plflame.flare{animation:plflare .5s ease-out}
 /* Streak milestone tiers: the flame grows and glows more at 3, 5, 7+ days. */
 .plflame.m3{font-size:1.05em}
@@ -893,6 +901,9 @@ button.row:active{background:var(--soft)}
 /* Easter eggs on the drill pages. Long-press the header emoji to fire, then it
    resets. Reduced motion disables both (see the JS guard + the media block). */
 .eggstick,.eggnet{cursor:pointer;-webkit-user-select:none;user-select:none;touch-action:manipulation;position:relative;display:inline-block}
+/* Illustrated header icons that replace the drill emojis (the tap easter eggs
+   animate this container, so the art rocks/zaps just like the emoji did). */
+.egg-ico{width:58px;height:auto;display:block;pointer-events:none}
 /* Stickhandling: the stick emoji rocks, and a puck dangles left-right beneath it.
    The puck is fixed-position (its own layer), so the stick's rotation never scales
    or skews it: it stays the same size the whole time. */
@@ -1193,17 +1204,17 @@ body.login-locked{overflow:hidden}
 
 <section id='dryland' class='page'>
 <a class='glassclose' href='.' aria-label='Close'>✕</a>
-<div class='heroCard'><div class='big eggbolt' id='eggBolt' role='img' aria-label='Lightning'>⚡</div><h1><button type='button' class='titletip' data-daytip>Today’s<span class='titletip-date' id='drylandDate'>Sunday, September 13</span></button> Dryland</h1><p>A little of everything: agility, power, strength and core. About 15 minutes.</p><div class='pills'><span class='pill' id='drylandTime'>15 min</span></div></div>
+<div class='heroCard'><div class='big eggbolt' id='eggBolt' role='img' aria-label='Lightning'><img class='egg-ico' src='login/icon-bolt.webp' alt=''></div><h1><button type='button' class='titletip' data-daytip>Today’s<span class='titletip-date' id='drylandDate'>Sunday, September 13</span></button> Dryland</h1><p>A little of everything: agility, power, strength and core. About 15 minutes.</p><div class='pills'><span class='pill' id='drylandTime'>15 min</span></div></div>
 <div id='drylandList'></div>
 </section>
 
 <section id='stick' class='page'>
-<a class='glassclose' href='.' aria-label='Close'>✕</a><div class='heroCard'><div class='big eggstick' id='eggStick' role='img' aria-label='Hockey stick'>🏒</div><h1><button type='button' class='titletip' data-daytip>Today’s<span class='titletip-date'>Sunday, September 13</span></button> Stickhandling</h1><p>Head up, soft hands and clean puck movement.</p><div class='pills'><span class='pill' id='stickTime'>about 10-15 min</span><span class='pill pill-optional' id='stickOptional' hidden>optional training</span></div></div>
+<a class='glassclose' href='.' aria-label='Close'>✕</a><div class='heroCard'><div class='big eggstick' id='eggStick' role='img' aria-label='Hockey stick'><img class='egg-ico' src='login/icon-stick.webp' alt=''></div><h1><button type='button' class='titletip' data-daytip>Today’s<span class='titletip-date'>Sunday, September 13</span></button> Stickhandling</h1><p>Head up, soft hands and clean puck movement.</p><div class='pills'><span class='pill' id='stickTime'>about 10-15 min</span><span class='pill pill-optional' id='stickOptional' hidden>optional training</span></div></div>
 <div id='stickList'></div>
 </section>
 
 <section id='shoot' class='page'>
-<a class='glassclose' href='.' aria-label='Close'>✕</a><div class='heroCard'><div class='big eggnet' id='eggNet' role='img' aria-label='Hockey net'>🥅</div><h1><button type='button' class='titletip' data-daytip>Today’s<span class='titletip-date'>Sunday, September 13</span></button> Shooting</h1><p>Purposeful shots, not just more shots.</p><div class='pills'><span class='pill' id='shootTime'>about 15 min</span><span class='pill pill-optional' id='shootOptional' hidden>optional training</span></div></div>
+<a class='glassclose' href='.' aria-label='Close'>✕</a><div class='heroCard'><div class='big eggnet' id='eggNet' role='img' aria-label='Hockey net'><img class='egg-ico' src='login/icon-net.webp' alt=''></div><h1><button type='button' class='titletip' data-daytip>Today’s<span class='titletip-date'>Sunday, September 13</span></button> Shooting</h1><p>Purposeful shots, not just more shots.</p><div class='pills'><span class='pill' id='shootTime'>about 15 min</span><span class='pill pill-optional' id='shootOptional' hidden>optional training</span></div></div>
 <div id='shootList'></div>
 </section>
 
@@ -1457,7 +1468,7 @@ body.login-locked{overflow:hidden}
 </div>
 
 <div class='lb-teamzone'>
-<div class='lb-streak' id='lbStreak' style='display:none'><span class='plflame'>🔥</span> <span id='lbStreakN'>0</span> day streak</div>
+<div class='lb-streak' id='lbStreak' style='display:none'><img class='plflame' src='login/flame.webp' alt=''> <span id='lbStreakN'>0</span> day streak</div>
 <div class='lb-goal'>
 <div class='lb-goal-lab' id='lbGoalLab'>Rangers vs 150
 <button type='button' class='lb-info' id='lbInfo' aria-label='How the bar works'>i<span class='lb-tip' id='lbTip'>Every drill anybody on the team does fills this bar 💪</span></button>
@@ -1571,7 +1582,10 @@ body.login-locked{overflow:hidden}
 <div class='cards'>
 <a class='pnextgame' id='pNextGame' href='hockey_game_goals.html'>
   <div class='png-top'>
-    <div class='png-opp' id='pngOpp'>Game Day Goals</div>
+    <div class='png-head'>
+      <span class='png-goallight' id='eggGoal' role='img' aria-label='Goal light'><img class='egg-ico egg-ico-sm' src='login/icon-goal.webp' alt=''></span>
+      <div class='png-opp' id='pngOpp'>Game Day Goals</div>
+    </div>
     <span class='png-count' id='pngCount' hidden><b id='pngDays'></b><span>days</span></span>
   </div>
   <div class='png-meta' id='pngMeta'>Pick your 3 goals for the next game</div>
@@ -3211,7 +3225,7 @@ function wirePhotoButton(slug){
 }
 function disc(icon,label,days,top){  return "<div class='cb-disc'>"+
     "<div class='cb-disc-top'><span class='cb-disc-name'>"+icon+" "+label+"</span>"+
-    "<span class='cb-disc-days'>🔥 "+days+" days</span></div>"+
+    "<span class='cb-disc-days'><img class='cb-fire' src='login/flame.webp' alt=''> "+days+" days</span></div>"+
     "<div class='cb-disc-most'>Most: "+top+"</div></div>";
 }
 function stickerStrip(){
@@ -3880,7 +3894,7 @@ function build(){
   var nm=document.getElementById('plName'); if(nm)nm.textContent=first;
   var ps=document.getElementById('plPos'); if(ps)ps.textContent='#'+info.num+'  '+(POSNAME[info.pos]||'');
   if(window.thwapRenderIdp) window.thwapRenderIdp(slug);
-  var streak=document.getElementById('plStreak'); if(streak){var _sk=demoStreak(first,tf); if(window.thwapStreakMilestone && slug===(window.thwapPlayerId?window.thwapPlayerId():'')) window.thwapStreakMilestone(_sk); if(_sk>=3){var _tier=_sk>=7?'m7':(_sk>=5?'m5':'m3');var _lab=_sk>=7?" <span class='plfire-lab'>On fire!</span>":"";streak.style.display='';streak.innerHTML="<span class='plflame "+_tier+"'>🔥</span> "+_sk+" day streak"+_lab;}else{streak.style.display='none';streak.innerHTML='';}}
+  var streak=document.getElementById('plStreak'); if(streak){var _sk=demoStreak(first,tf); if(window.thwapStreakMilestone && slug===(window.thwapPlayerId?window.thwapPlayerId():'')) window.thwapStreakMilestone(_sk); if(_sk>=3){var _tier=_sk>=7?'m7':(_sk>=5?'m5':'m3');var _lab=_sk>=7?" <span class='plfire-lab'>On fire!</span>":"";streak.style.display='';streak.innerHTML="<img class='plflame "+_tier+"' src='login/flame.webp' alt=''> "+_sk+" day streak"+_lab;}else{streak.style.display='none';streak.innerHTML='';}}
   var wrap=document.getElementById('plDisc'); if(!wrap)return;
   var DCOL={Stickhandling:'#8fd65e',Shooting:'#75B8FF',Dryland:'#FF9D4D'};
   var DEMO={Stickhandling:'🏒',Shooting:'🥅',Dryland:'⚡'};
@@ -4306,6 +4320,8 @@ if(closeBtn) closeBtn.addEventListener('click',function(){ var el=document.getEl
 .cf-puck{width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#3a3a3a,#0a0a0a 70%);border:1.5px solid rgba(255,255,255,.8);box-shadow:0 2px 6px rgba(0,0,0,.5)}
 .cf-conf{width:9px;height:14px;border-radius:2px;opacity:.95}
 .cf-puck.drop,.cf-conf.fall{animation:cfDrop linear forwards}
+.cf-puckimg{position:fixed;top:-8vh;z-index:132;pointer-events:none;width:26px;height:auto}
+.cf-puckimg.drop{animation:cfDrop linear forwards}
 @keyframes cfDrop{0%{transform:translateY(-10vh) rotate(0)}100%{transform:translateY(116vh) rotate(var(--r,540deg))}}
 .cf-ring{position:fixed;left:50%;top:43%;width:44px;height:44px;border-radius:50%;border:5px solid var(--cf-c,#FF9D4D);transform:translate(-50%,-50%) scale(.2);z-index:132;opacity:0;pointer-events:none}
 .cf-ring.go{animation:cfRing .95s ease-out forwards}
@@ -4338,7 +4354,7 @@ if(closeBtn) closeBtn.addEventListener('click',function(){ var el=document.getEl
 @media (prefers-reduced-motion: reduce){
   .catfx-badge.go{animation:cfBadgeStatic 1.6s ease forwards}
   @keyframes cfBadgeStatic{0%,100%{opacity:0}12%,80%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
-  .cf-stamp.go,.cf-sweep.go,.cf-bit.go,.cf-emo.go,.cf-puck.drop,.cf-conf.fall,.cf-ring.go,.cf-bolt.go,.cf-sauce.go,.cf-deke.go,.cf-slap.go,.cf-sass.go,.cf-cameo.go,.cf-shake{animation:none}
+  .cf-stamp.go,.cf-sweep.go,.cf-bit.go,.cf-emo.go,.cf-puck.drop,.cf-puckimg.drop,.cf-conf.fall,.cf-ring.go,.cf-bolt.go,.cf-sauce.go,.cf-deke.go,.cf-slap.go,.cf-sass.go,.cf-cameo.go,.cf-shake{animation:none}
 }
 </style>
 <script>(function(){
@@ -4348,7 +4364,7 @@ if(closeBtn) closeBtn.addEventListener('click',function(){ var el=document.getEl
 var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 var DC={stick:'#8FD65E',shoot:'#75B8FF',dryland:'#FF9D4D'};
 var WORDS={stick:'DANGLES!',shoot:'SNIPE!',dryland:'POWER!'};
-var SASS_SRC='login/sass-slapshot.webp';   /* Sass winds up + shoots on the screen-crack effect; null falls back to plain-puck */
+var SASS_SHOTS=['login/sass-slapshot.webp','login/sass-snipe.webp'];   /* screen-crack picks one at random for variety; empty = plain-puck fallback */
 var CRACK_PATHS='<path d="M50 45 L36 30 L20 8"/><path d="M50 45 L49 24 L48 2"/><path d="M50 45 L66 28 L82 10"/><path d="M50 45 L74 44 L96 40"/><path d="M50 45 L70 64 L90 88"/><path d="M50 45 L51 72 L52 100"/><path d="M50 45 L33 66 L12 92"/><path d="M50 45 L28 50 L2 54"/><path d="M41 33 L30 38 L18 30"/><path d="M61 36 L70 30 L78 36"/><path d="M60 58 L72 60 L80 74"/><path d="M40 60 L30 66 L22 78"/><path d="M43 39 L52 41 L57 37 L54 49 L46 52 Z"/>';
 var CRACK_SVG='<svg viewBox="0 0 100 100" preserveAspectRatio="none"><g fill="none" stroke="rgba(15,20,15,.5)" stroke-width="1.2" stroke-linejoin="round">'+CRACK_PATHS+'</g><g fill="none" stroke="rgba(255,255,255,.92)" stroke-width="0.5" stroke-linejoin="round">'+CRACK_PATHS+'</g><circle cx="50" cy="45" r="3" fill="rgba(255,255,255,.85)"/></svg>';
 function rand(a,b){ return a+Math.random()*(b-a); }
@@ -4372,7 +4388,7 @@ function badge(word,color){ var b=document.createElement('div'); b.className='ca
 function stamp(word,color){ var s=document.createElement('div'); s.className='cf-stamp'; s.textContent=word; s.style.setProperty('--cf-c',color); document.body.appendChild(s); go(s); setTimeout(function(){ rm(s); },1450); }
 function sweep(color){ var s=document.createElement('div'); s.className='cf-sweep'; s.style.setProperty('--cf-c',color); document.body.appendChild(s); go(s); setTimeout(function(){ rm(s); },950); }
 function burst(color,n,emoji){ for(var i=0;i<n;i++){ var ang=(i/n)*Math.PI*2+rand(-0.25,0.25); var dist=rand(80,190); var e=document.createElement('span'); if(emoji){ e.className='cf-emo'; e.textContent=emoji; } else { e.className='cf-bit'; e.style.setProperty('--cf-c',color); } e.style.setProperty('--dx',Math.round(Math.cos(ang)*dist)+'px'); e.style.setProperty('--dy',Math.round(Math.sin(ang)*dist-30)+'px'); document.body.appendChild(e); go(e); (function(el){ setTimeout(function(){ rm(el); },1050); })(e); } }
-function rainPucks(n){ for(var i=0;i<n;i++){ var p=document.createElement('span'); p.className='cf-puck'; p.style.left=rand(2,96)+'vw'; p.style.animationDuration=rand(0.9,1.5)+'s'; p.style.animationDelay=rand(0,0.4)+'s'; p.style.setProperty('--r',Math.round(rand(360,900))+'deg'); document.body.appendChild(p); p.classList.add('drop'); (function(el){ setTimeout(function(){ rm(el); },2200); })(p); } }
+function rainPucks(n){ for(var i=0;i<n;i++){ var p=document.createElement('img'); p.className='cf-puckimg'; p.src='login/puck.webp'; p.alt=''; p.style.left=rand(2,96)+'vw'; p.style.width=Math.round(rand(20,30))+'px'; p.style.animationDuration=rand(0.9,1.5)+'s'; p.style.animationDelay=rand(0,0.4)+'s'; p.style.setProperty('--r',Math.round(rand(360,900))+'deg'); document.body.appendChild(p); p.classList.add('drop'); (function(el){ setTimeout(function(){ rm(el); },2200); })(p); } }
 function rings(color,n){ for(var i=0;i<n;i++){ var r=document.createElement('span'); r.className='cf-ring'; r.style.setProperty('--cf-c',color); r.style.animationDelay=(i*150)+'ms'; document.body.appendChild(r); go(r); (function(el){ setTimeout(function(){ rm(el); },1200+i*160); })(r); } }
 function bolt(){ var b=document.createElement('div'); b.className='cf-bolt'; document.body.appendChild(b); go(b); setTimeout(function(){ rm(b); },780); }
 function sauce(){ var s=document.createElement('span'); s.className='cf-sauce'; document.body.appendChild(s); go(s); setTimeout(function(){ rm(s); },1200); }
@@ -4382,7 +4398,7 @@ function screenCrack(color,withSass){
   var crack=document.createElement('div'); crack.className='cf-crack'; crack.innerHTML=CRACK_SVG; document.body.appendChild(crack);
   var slap=document.createElement('span'); slap.className='cf-slap'; document.body.appendChild(slap);
   var sass=null;
-  if(withSass && SASS_SRC){ sass=document.createElement('img'); sass.className='cf-sass'; sass.src=SASS_SRC; sass.alt=''; document.body.appendChild(sass); go(sass); }
+  if(withSass && SASS_SHOTS.length){ sass=document.createElement('img'); sass.className='cf-sass'; sass.src=SASS_SHOTS[Math.floor(Math.random()*SASS_SHOTS.length)]; sass.alt=''; document.body.appendChild(sass); go(sass); }
   go(slap);
   var app=document.querySelector('.app');
   setTimeout(function(){ crack.classList.add('go'); if(app){ app.classList.add('cf-shake'); setTimeout(function(){ app.classList.remove('cf-shake'); },520); } },470);
@@ -4422,7 +4438,8 @@ var POOLS={
     function(c){ screenCrack(c,false); },
     function(c){ sweep(c); stamp('CORNERS!',c); },
     function(c){ burst(c,14); },
-    function(c){ confetti(['#75B8FF','#3E7DC4','#B9F06B','#ffffff']); }
+    function(c){ confetti(['#75B8FF','#3E7DC4','#B9F06B','#ffffff']); },
+    function(c){ sassCameo('login/sass-celly.webp','GOAL!','#75B8FF'); }
   ],
   dryland:[
     function(c){ bolt(); stamp('POWER!',c); },
@@ -4473,6 +4490,8 @@ window.thwapStreakMilestone=function(days){
   try{ localStorage.setItem(key,String(t)); }catch(e){}
   if(up && t>=3 && !reduce){ sassCameo('login/sass-fire.webp', (t>=7?'ON FIRE!':t+' DAY STREAK!'), '#FF7A1A'); }
 };
+/* Game Day Goals easter egg: a quick GOAL cheer (red stamp + puck burst). */
+window.thwapGoalCheer=function(){ if(reduce){ badge('GOAL!','#F0645A'); return; } stamp('GOAL!','#F0645A'); burst('#F0645A',12); };
 })();</script>
 <script>(function(){
 /* ---- Sticker DECORATE system (Pillar 3) -------------------------------------
@@ -4971,6 +4990,19 @@ tapEgg(document.getElementById('eggBolt'),function(done){
     done();
   },1120);
 });
+/* Game Day Goals card: tapping the goal light flashes it and fires a GOAL cheer,
+   without following the card's link (preventDefault + stopPropagation). */
+(function(){
+  var g=document.getElementById('eggGoal');
+  if(!g) return;
+  g.addEventListener('click',function(e){
+    e.preventDefault(); e.stopPropagation();
+    if(g.classList.contains('egg-flash')) return;
+    g.classList.add('egg-flash');
+    setTimeout(function(){ g.classList.remove('egg-flash'); },900);
+    if(window.thwapGoalCheer) window.thwapGoalCheer();
+  });
+})();
 })();</script>
 <script>(function(){
 /* ---- Break the Ice: login gate (Pass 1 foundation) ----
