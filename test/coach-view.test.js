@@ -384,3 +384,22 @@ describe('Menus start closed: [hidden] overrides display', () => {
     expect(html).toMatch(/body\.is-coach \.roster-coachonly\{display:block\}/);
   });
 });
+
+describe('Coach-home: hero name is tappable + Top-this-week row layout', () => {
+  it('the hero coach-name button (#chProfileName) is wired to open the coach profile', () => {
+    const btn = doc.getElementById('chProfileName');
+    expect(btn).toBeTruthy();
+    expect(btn.tagName).toBe('BUTTON');
+    // a click handler binds it to the coach profile editor (it was styled but dead before)
+    expect(html).toMatch(/nameBtn\.addEventListener\('click',function\(\)\{ if\(window\.thwapOpenCoachProfile\) window\.thwapOpenCoachProfile\(\); \}\)/);
+  });
+  it('Top-this-week rows flex the bar instead of pinning it far-right, and use the ramp', () => {
+    // name hugs the medal, bar flexes (1fr), score hugs right
+    expect(html).toMatch(/\.ch-topfive \.row\{grid-template-columns:auto auto 1fr auto/);
+    // readable, ramp-based type (not the tiny default)
+    expect(html).toMatch(/\.ch-topfive \.row strong\{font-size:var\(--fs-body\)/);
+    expect(html).toMatch(/\.ch-topfive \.row \.score\{font-size:var\(--fs-cardtitle\)/);
+    // a taller bar with a floor so a single-player row still reads as a bar
+    expect(html).toMatch(/\.ch-topfive \.row \.bar\{height:10px;min-width:60px\}/);
+  });
+});
