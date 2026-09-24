@@ -206,6 +206,14 @@ describe('Bug 2: a coach can never get stranded on the hidden #home', () => {
   });
 });
 
+describe('Coach staff chip: tapping the coach name opens the profile editor', () => {
+  it('the coach own chip is made tappable (whole pill, not just the pencil)', () => {
+    expect(html).toMatch(/pill\.classList\.add\('bcoach-tappable'\)/);
+    expect(html).toMatch(/pill\.addEventListener\('click',function\(\)\{ if\(window\.thwapOpenCoachProfile\)/);
+    expect(html).toMatch(/\.bcoach-tappable\{cursor:pointer/);
+  });
+});
+
 describe('Menus start closed: [hidden] overrides display', () => {
   // Recurring Thwap bug: a popup with the hidden attribute still shows because a
   // CSS rule gives it display:flex, which beats the browser's implicit
