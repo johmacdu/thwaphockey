@@ -4302,8 +4302,8 @@ document.addEventListener('click',function(e){
 @media (prefers-reduced-motion: reduce){#sassLogo.skating{animation:sassAcross 2.2s ease-in-out forwards}}
 /* Long-press the Sass logo: a slapshot puck flies into the wordmark, shattering
    it into pieces, then it reassembles. */
-#sassLogo.wm-windup{animation:wmWindup .5s ease}
-@keyframes wmWindup{0%{transform:rotate(0)}30%{transform:rotate(-18deg) translateX(-3px)}55%{transform:rotate(13deg) translateX(4px)}100%{transform:rotate(0)}}
+#sassLogo.wm-slap{transform-origin:62% 82%;animation:wmSlap .62s ease}
+@keyframes wmSlap{0%{transform:rotate(0)}22%{transform:rotate(-12deg) scale(1.05)}48%{transform:rotate(9deg)}72%{transform:rotate(-3deg)}100%{transform:rotate(0)}}
 .wm-puck{position:fixed;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#3a3a3a,#0a0a0a 70%);border:1.5px solid rgba(255,255,255,.85);box-shadow:0 2px 6px rgba(0,0,0,.5);z-index:141;pointer-events:none;transform:translate(-50%,-50%)}
 .wm-puck.fly{animation:wmPuck .26s linear forwards}
 @keyframes wmPuck{0%{transform:translate(-50%,-50%)}100%{transform:translate(-50%,-50%) translate(var(--tx),var(--ty))}}
@@ -4313,7 +4313,7 @@ document.addEventListener('click',function(e){
 @keyframes wmShard{0%{transform:translate(0,0) rotate(0);opacity:1}100%{transform:translate(var(--dx),var(--dy)) rotate(var(--rot));opacity:0}}
 #brandMark.wm-reassemble{animation:wmReassemble .42s cubic-bezier(.2,1.1,.3,1)}
 @keyframes wmReassemble{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
-@media (prefers-reduced-motion: reduce){#sassLogo.wm-windup,.wm-puck.fly,.wm-shatter.go .wm-shard,#brandMark.wm-reassemble{animation:none}}
+@media (prefers-reduced-motion: reduce){#sassLogo.wm-slap,.wm-puck.fly,.wm-shatter.go .wm-shard,#brandMark.wm-reassemble{animation:none}}
 </style>
 <script>(function(){
   var logo=document.getElementById('sassLogo'); if(!logo)return;
@@ -4376,20 +4376,29 @@ function shatterWordmark(){
     wm.classList.add('wm-reassemble'); setTimeout(function(){ wm.classList.remove('wm-reassemble'); },440);
   },650);
 }
+var LOGO_REST='sass-logo.svg', LOGO_SHOT='sass-logo-nopuck.webp';
+(function(){ var pl=new Image(); pl.src=LOGO_SHOT; })();   /* preload the puckless frame so the swap is instant */
 function logoSlapshot(){
   if(reduceM()) return;
   var wm=document.getElementById('brandMark'); if(!wm) return;
-  if(document.querySelector('.wm-shatter')) return;   /* one at a time */
-  logo.classList.add('wm-windup'); setTimeout(function(){ logo.classList.remove('wm-windup'); },500);
+  if(document.querySelector('.wm-shatter') || logo.classList.contains('wm-slap')) return;   /* one at a time */
   var lr=logo.getBoundingClientRect(), wr=wm.getBoundingClientRect();
-  var startX=lr.right-6, startY=lr.top+lr.height*0.5;
+  var bladeX=lr.left+lr.width*0.82, bladeY=lr.top+lr.height*0.86;   /* the puck sitting on his blade */
   var endX=wr.left+wr.width*0.42, endY=wr.top+wr.height*0.5;
-  var puck=document.createElement('span'); puck.className='wm-puck';
-  puck.style.left=startX+'px'; puck.style.top=startY+'px';
-  puck.style.setProperty('--tx',Math.round(endX-startX)+'px'); puck.style.setProperty('--ty',Math.round(endY-startY)+'px');
-  document.body.appendChild(puck);
-  requestAnimationFrame(function(){ puck.classList.add('fly'); });
-  setTimeout(function(){ shatterWordmark(); if(puck.parentNode)puck.parentNode.removeChild(puck); },255);
+  logo.classList.add('wm-slap');
+  /* swing-through moment (~48% of .62s): the puck leaves his blade (icon goes
+     puckless) and that same puck flies into the wordmark. */
+  setTimeout(function(){
+    logo.src=LOGO_SHOT;
+    var puck=document.createElement('span'); puck.className='wm-puck';
+    puck.style.left=bladeX+'px'; puck.style.top=bladeY+'px';
+    puck.style.setProperty('--tx',Math.round(endX-bladeX)+'px'); puck.style.setProperty('--ty',Math.round(endY-bladeY)+'px');
+    document.body.appendChild(puck);
+    requestAnimationFrame(function(){ puck.classList.add('fly'); });
+    setTimeout(function(){ shatterWordmark(); if(puck.parentNode)puck.parentNode.removeChild(puck); },255);
+  },300);
+  setTimeout(function(){ logo.classList.remove('wm-slap'); },640);
+  setTimeout(function(){ logo.src=LOGO_REST; },1000);   /* puck settles back on the blade */
 }
 var timer=null, longFired=false, sx=0, sy=0;
 logo.addEventListener('pointerdown',function(e){ longFired=false; sx=e.clientX; sy=e.clientY; timer=setTimeout(function(){ longFired=true; logoSlapshot(); },500); });
