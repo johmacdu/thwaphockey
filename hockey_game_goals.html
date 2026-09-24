@@ -29,12 +29,13 @@ body{margin:0;min-height:100vh;min-height:100dvh;background:linear-gradient(180d
 @media (prefers-reduced-motion: reduce){.gd-target.hit{animation:none}}
 h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70px);line-height:.95;letter-spacing:.005em;margin:8px 0 12px}
 .header p{max-width:700px;color:var(--muted);font-size:16px;line-height:1.5;margin:0}
-.section{margin-top:34px}
+.section{margin-top:16px;border:1px solid var(--line);border-radius:18px;background:var(--panel2);overflow:hidden}
+.section.open{border-color:var(--line2)}
 /* First goal section clears the position picker. */
 .section.pos-shared:first-of-type{margin-top:26px}
 /* Collapsible categories: header is a button; grid collapses. No divider lines;
    generous spacing separates the accordions instead. */
-.section-head{display:flex;align-items:center;gap:13px;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:12px 12px;margin:0;width:100%;text-align:left;background:none;border:0;border-radius:16px;font-family:inherit;color:inherit;transition:background .12s ease}
+.section-head{display:flex;align-items:center;gap:13px;cursor:pointer;-webkit-tap-highlight-color:transparent;padding:16px 16px;margin:0;width:100%;text-align:left;background:none;border:0;border-radius:0;font-family:inherit;color:inherit;transition:background .12s ease}
 .section-head:hover{background:var(--card2)}
 .sh-ico{flex:none;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-size:22px;background:var(--soft)}
 .section-head .sh-txt{flex:1 1 auto;min-width:0}
@@ -45,7 +46,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(42px,7vw,70p
 .sh-chev{flex:none;font-size:22px;color:var(--muted);transition:transform .18s ease;margin-left:2px}
 .section.open .sh-chev{transform:rotate(90deg)}
 .section .grid{max-height:0;overflow:hidden;opacity:0;transition:max-height .25s ease,opacity .2s ease,margin .25s ease;margin-top:0}
-.section.open .grid{max-height:4000px;opacity:1;margin-top:14px;padding-bottom:22px;border-bottom:1px solid var(--line)}
+.section.open .grid{max-height:4000px;opacity:1;margin-top:0;padding:0 16px 18px;border-bottom:0}
 @media (prefers-reduced-motion: reduce){.section .grid,.sh-chev{transition:none}}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .goal{display:grid;grid-template-columns:48px 1fr;gap:14px;min-height:176px;padding:18px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,var(--panel),var(--panel2));cursor:pointer;position:relative;transition:.15s ease}
@@ -581,7 +582,7 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
     </header>
 
     <div class="pospick">
-      <p class="madlib">Today I&rsquo;m playing <button type="button" class="pos-word" id="posWord" aria-haspopup="true" aria-expanded="false">forward</button>.</p>
+      <p class="madlib">Next game I&rsquo;m playing <button type="button" class="pos-word" id="posWord" aria-haspopup="true" aria-expanded="false">forward</button>.</p>
       <p id="helper">Pick 3 goals for the game.</p>
       <div class="pos-sheet" id="posSheet" role="menu" hidden>
         <button type="button" class="pos-opt" data-pos="F" role="menuitemradio"><span class="pos-dot" style="background:var(--orange)"></span>Forward</button>
