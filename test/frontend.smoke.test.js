@@ -168,10 +168,12 @@ describe('Cross-tab identity guard', () => {
 
 describe('Drill videos on all three disciplines', () => {
   it('stick, shoot AND dryland renderers all insert the Watch-how video (videoBlock)', () => {
-    // Count the three real render call sites (in a tile string: "+...videoBlock(dr)+steps").
+    // Count the three real render call sites (in a tile string: "+...videoBlock(dr)+...steps").
     // videoBlock/ytid live in the dryland IIFE, so stick+shoot call window.videoBlock;
     // dryland calls it in-scope. The window export is what makes the cross-IIFE calls work.
-    const callSites = (html.match(/\+(?:window\.)?videoBlock\(dr\)\+steps/g) || []).length;
+    // The audio-narration feature inserts an optional +(window.)audioBlock(dr) between
+    // videoBlock and steps, so allow it here without weakening the videoBlock check.
+    const callSites = (html.match(/\+(?:window\.)?videoBlock\(dr\)(?:\+(?:window\.)?audioBlock\(dr\))?\+steps/g) || []).length;
     expect(callSites).toBe(3);
     expect(html).toMatch(/window\.ytid=ytid; window\.videoBlock=videoBlock;/);
     // the drill data carries real YouTube URLs for all disciplines

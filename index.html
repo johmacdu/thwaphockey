@@ -191,6 +191,15 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .exvid-link{display:inline-flex;align-items:center;gap:7px;background:none;border:0;padding:6px 0;font-family:inherit;font-size:15px;font-weight:800;color:var(--green2);cursor:pointer;-webkit-tap-highlight-color:transparent}
 .exvid-tri{font-size:11px;transition:transform .18s ease;display:inline-block}
 .exvid-link.open .exvid-tri{transform:rotate(90deg)}
+.exaud-link{display:inline-flex;align-items:center;gap:7px;background:none;border:0;padding:6px 0;font-family:inherit;font-size:15px;font-weight:800;color:var(--green2);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.exaud-ic{font-size:15px;display:inline-block}
+.exaud-link.playing{color:var(--green2)}
+/* Kid-friendly voice picker: a pill/chip row, not a card. */
+.voicepick{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}
+.voicepick-lbl{font-size:13px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-right:2px}
+.voicechip{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--soft);color:var(--green2);font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.voicechip.on{background:var(--green2);color:#fff;border-color:var(--green2)}
+.voicechip.locked{opacity:.5;cursor:default;font-weight:700}
 .exbody ol{margin:0 0 18px;padding-left:26px;color:var(--text);font-size:18px;font-weight:600;line-height:1.75}
 .exbody ol li{margin-bottom:14px;padding-left:4px}
 .exbody ol li::marker{font-weight:700;color:var(--text)}
@@ -2586,44 +2595,44 @@ window.addEventListener('hashchange',function(){
 /* How-to steps + cue + emoji per movement, defined once. Real reps (dose) are passed per workout. */
 var MOVE={
   will:{emoji:'🔢', cue:'Quick, light hops through the square. Head up. 20 seconds each.',
-    video:'https://www.youtube.com/watch?v=TiUZ2JfD0do',
+    video:'https://www.youtube.com/watch?v=TiUZ2JfD0do', audio:'dry_01',
     steps:['Set up: Mark a square on the floor. Number the corners 1, 2, 3, 4. Stay low.','Both feet: Hop 1-2, then 1-3, then 1-4. Do each for 20 seconds.','Right foot only: Same patterns. Hop 1-2, 1-3, 1-4. 20 seconds each.','Left foot only: Same thing. Hop 1-2, 1-3, 1-4. 20 seconds each.','Both feet, long patterns: 1-2-3, 1-4-2, 1-2-4-3 and more. 20 seconds each. Push hard, land light, head up.']},
-  skater:{emoji:'⛸️', cue:'Jump sideways, stick the landing.', video:'https://www.youtube.com/watch?v=_FuKfMEM0HQ',
+  skater:{emoji:'⛸️', cue:'Jump sideways, stick the landing.', video:'https://www.youtube.com/watch?v=_FuKfMEM0HQ', audio:'dry_02',
     steps:['Start: One leg, knee bent, like a skater push-off.','Jump: Jump sideways and land soft on the other leg.','Stick it: Bend the knee. Hold your balance for one second.','Back: Jump back the other way. Control matters more than distance.']},
-  broad:{emoji:'🐸', cue:'Jump forward as far as you can. Land soft.', video:'https://www.youtube.com/watch?v=CwJjpm9bLqA',
+  broad:{emoji:'🐸', cue:'Jump forward as far as you can. Land soft.', video:'https://www.youtube.com/watch?v=CwJjpm9bLqA', audio:'dry_03',
     steps:['Stand tall: Feet about hip-width apart.','Load up: Swing your arms back and bend your knees.','Explode: Swing your arms up. Jump as far as you can.','Land soft: Both feet, knees bent. Hold the landing before the next jump.']},
-  box:{emoji:'⬆️', cue:'Jump up onto a low box. Land quiet.', video:'https://www.youtube.com/watch?v=L3w73JlNLhY',
+  box:{emoji:'⬆️', cue:'Jump up onto a low box. Land quiet.', video:'https://www.youtube.com/watch?v=L3w73JlNLhY', audio:'dry_04',
     steps:['Face it: Stand facing a sturdy low box or step.','Load: Bend your knees and swing your arms back.','Jump: Jump up and land soft on top with both feet, knees bent.','Step down: Stand up tall. Step (don\'t jump) back down. Reset and repeat.']},
-  lunge:{emoji:'🚶', cue:'Step back, drop down, drive up.', video:'https://www.youtube.com/watch?v=xJh9TACU70s',
+  lunge:{emoji:'🚶', cue:'Step back, drop down, drive up.', video:'https://www.youtube.com/watch?v=xJh9TACU70s', audio:'dry_05',
     steps:['Stand tall: Hands on hips or out for balance.','Step back: Step one foot straight back. Lower until both knees are an L shape.','Stay tall: Keep your chest up and front knee over your ankle, not past your toes.','Drive up: Push through the front heel to stand back up. Switch legs each rep.']},
-  rdl:{emoji:'⚖️', cue:'Balance on one leg. Tip forward like a seesaw.', video:'https://www.youtube.com/watch?v=75fr-5DtU5k',
+  rdl:{emoji:'⚖️', cue:'Balance on one leg. Tip forward like a seesaw.', video:'https://www.youtube.com/watch?v=75fr-5DtU5k', audio:'dry_06',
     steps:['Balance: Stand on one leg with a soft bend in that knee.','Tip: Bend at the hips. Reach toward the floor as your back leg lifts behind you.','Stay level: Keep your back flat and hips level, like a seesaw tipping.','Stand up: Squeeze the standing leg to stand back up tall. Do all reps, then switch legs.']},
-  wallsit:{emoji:'🪑', cue:'Sit against the wall. No chair allowed.', video:'https://www.youtube.com/watch?v=M5MKJ4T4e2k',
+  wallsit:{emoji:'🪑', cue:'Sit against the wall. No chair allowed.', video:'https://www.youtube.com/watch?v=M5MKJ4T4e2k', audio:'dry_07',
     steps:['Back flat: Put your back flat against a wall and walk your feet out.','Slide down: Slide down until your knees make an L shape, like sitting in a chair.','Hold: Keep your back flat on the wall. Weight in your heels.','Breathe: Hold for the time. Breathe steady. Then stand up and shake it out.']},
-  situps:{emoji:'🤸', cue:'Curl up with your belly, not your neck.', video:'https://www.youtube.com/watch?v=sYszIZLOrDc',
+  situps:{emoji:'🤸', cue:'Curl up with your belly, not your neck.', video:'https://www.youtube.com/watch?v=sYszIZLOrDc', audio:'dry_08',
     steps:['Down: Lie on your back, knees bent, feet flat on the floor.','Arms: Cross your arms or reach your hands toward your knees.','Curl: Curl up slowly using your belly, not your neck.','Lower: Lower back down with control. Breathe out on the way up.']},
-  plank:{emoji:'🪵', cue:'Hold a strong plank. Tap the opposite shoulder. Don\'t rock.', video:'https://www.youtube.com/watch?v=3aLPIhE4AiY',
+  plank:{emoji:'🪵', cue:'Hold a strong plank. Tap the opposite shoulder. Don\'t rock.', video:'https://www.youtube.com/watch?v=3aLPIhE4AiY', audio:'dry_09',
     steps:['Set up: Get on your hands and toes, arms straight, body in one straight line.','Stay strong: Squeeze your belly so your hips don\'t sag or twist.','Tap across: Lift one hand and tap the opposite shoulder. Put it back down.','Switch hands: Tap the other way. Keep going, slow and steady. Try not to rock your hips.']},
-  stairs:{emoji:'🏃', cue:'Run up the stairs fast. Walk back down slow.', video:'https://www.youtube.com/watch?v=RoANiVsltEs',
+  stairs:{emoji:'🏃', cue:'Run up the stairs fast. Walk back down slow.', video:'https://www.youtube.com/watch?v=RoANiVsltEs', audio:'dry_10',
     steps:['Start: Find a safe set of stairs and start at the bottom.','Sprint: Run up quick and light, one or two steps at a time. Pump your arms.','Eyes up: Keep your eyes up and steps smooth.','Recover: Walk back down slowly to recover. Then go again.']},
-  sprint:{emoji:'🏁', cue:'Explode into your first few steps as fast as you can.', video:'https://www.youtube.com/watch?v=Bt2IK8j5SM0',
+  sprint:{emoji:'🏁', cue:'Explode into your first few steps as fast as you can.', video:'https://www.youtube.com/watch?v=Bt2IK8j5SM0', audio:'dry_11',
     steps:['Stance: Ready position, one foot slightly back, knees bent, leaning forward.','Go: On "go," drive your back leg and pump your arms hard.','Explode: Burst into a few fast, powerful steps.','Reset: Slow down safely, walk back, and reset before the next start.']},
-  reaction:{emoji:'👀', cue:'Your partner drops a ball. Catch it before the second bounce.', video:'https://www.youtube.com/watch?v=6dAqdNBrW_M',
+  reaction:{emoji:'👀', cue:'Your partner drops a ball. Catch it before the second bounce.', video:'https://www.youtube.com/watch?v=6dAqdNBrW_M', audio:'dry_12',
     steps:['Face up: Face a partner a few steps away. They hold a ball out.','Ready: Stay in a ready position, eyes on the ball, ready to move.','Go: When they drop it, sprint and try to catch it before the second bounce.','Again: Reset and go again. React to the drop, don\'t guess.']},
-  splitsquat:{emoji:'🦵', cue:'Drop into a lunge and hold it. Don\'t come up.', video:'https://www.youtube.com/watch?v=ZeLJm2Aw-GM',
+  splitsquat:{emoji:'🦵', cue:'Drop into a lunge and hold it. Don\'t come up.', video:'https://www.youtube.com/watch?v=ZeLJm2Aw-GM', audio:'dry_13',
     steps:['Lunge: Step into a lunge, one foot forward, one back.','Drop: Lower straight down until both knees are an L shape.','Hold: Keep your chest tall and weight balanced between both legs.','Switch: Hold still for the time, then switch legs.']},
-  calf:{emoji:'🩰', cue:'Push up tall on your toes. Come down slow.', video:'https://www.youtube.com/watch?v=L4DjEq33n6g',
+  calf:{emoji:'🩰', cue:'Push up tall on your toes. Come down slow.', video:'https://www.youtube.com/watch?v=L4DjEq33n6g', audio:'dry_14',
     steps:['Stand tall: Feet about hip-width apart. Use a wall for balance.','Up: Push up onto the balls of your feet as high as you can.','Pause: Pause at the top for a second.','Down: Lower slowly back down with control. Repeat.']},
-  deadbug:{emoji:'🐞', cue:'Opposite arm and opposite leg go down. Slow and smooth.', video:'https://www.youtube.com/watch?v=ivKimjEpO-4',
+  deadbug:{emoji:'🐞', cue:'Opposite arm and opposite leg go down. Slow and smooth.', video:'https://www.youtube.com/watch?v=ivKimjEpO-4', audio:'dry_15',
     steps:['Start: Lie on your back, arms reaching up, knees bent up over your hips.','Press: Press your low back into the floor. Keep it there.','Lower: Slowly lower one arm overhead and the opposite leg toward the floor.','Switch: Bring them back and switch sides. Keep it slow.']},
   mcdavid:{emoji:'🏒', cue:'Feet moving. Hands working. Eyes up, call the numbers.',
-    video:'https://www.youtube.com/watch?v=GQK1RBm8Vx4&t=17',
+    video:'https://www.youtube.com/watch?v=GQK1RBm8Vx4&t=17', audio:'dry_16',
     steps:['Stance: Get low in a hockey stance. Keep your feet moving fast. Shuffle or crossover over a line.','Stickhandle: Stickhandle a ball or puck right in front of you. Soft, fast touches.','Eyes up: Keep your eyes on your partner. Call out every number they flash.','All at once: Chest forward. Let your hands and feet work. Eyes just read the numbers.']}
 };
 /* Category per movement, used to build a balanced daily block. */
 var CAT={will:'Agility', skater:'Power',broad:'Power',box:'Power', stairs:'Speed',sprint:'Speed',reaction:'Speed', lunge:'Strength',rdl:'Strength',wallsit:'Strength',splitsquat:'Strength',calf:'Strength', situps:'Core',plank:'Core',deadbug:'Core',mcdavid:'Core'};
 /* d(key, dose) builds a drill from the shared MOVE library plus this workout's reps. */
-function d(k,dose,nameOverride){var m=MOVE[k];return {key:k, cat:CAT[k]||'', emoji:m.emoji, name:nameOverride||({will:"Will's Squares (4-sq Drill)",skater:'Skater Jumps',broad:'Broad Jumps',box:'Box Jumps',lunge:'Reverse Lunges',rdl:'Single-Leg RDL',wallsit:'Wall Sit',situps:'Sit-ups',plank:'Plank with Shoulder Taps',stairs:'Stair Sprints',sprint:'Sprint Starts',reaction:'Reaction Start',splitsquat:'Split Squat Hold',calf:'Calf Raises',deadbug:'Dead Bugs',mcdavid:"McDavid's"}[k]), dose:dose, cue:m.cue, video:m.video||'', steps:m.steps};}
+function d(k,dose,nameOverride){var m=MOVE[k];return {key:k, cat:CAT[k]||'', emoji:m.emoji, name:nameOverride||({will:"Will's Squares (4-sq Drill)",skater:'Skater Jumps',broad:'Broad Jumps',box:'Box Jumps',lunge:'Reverse Lunges',rdl:'Single-Leg RDL',wallsit:'Wall Sit',situps:'Sit-ups',plank:'Plank with Shoulder Taps',stairs:'Stair Sprints',sprint:'Sprint Starts',reaction:'Reaction Start',splitsquat:'Split Squat Hold',calf:'Calf Raises',deadbug:'Dead Bugs',mcdavid:"McDavid's"}[k]), dose:dose, cue:m.cue, video:m.video||'', audio:m.audio||'', steps:m.steps};}
 
 var WORKOUTS=window.WORKOUTS=[
   /* Week 1 */
@@ -2717,6 +2726,92 @@ function videoBlock(dr){
    window - otherwise a videoBlock(dr) call there throws ReferenceError and blanks
    the whole drill list. */
 window.ytid=ytid; window.videoBlock=videoBlock;
+
+/* ---- Drill audio narration (mirrors the video wiring above) ----
+   Files live at audio/<voiceCode>/<slug>.mp3. The slug is on each drill's
+   audio: field; the voice code comes from the picker below. One shared <audio>
+   element plays them, and one document-level click handler serves every render
+   site (like __thwapVidDelegated). Voices unlock by completed-drill count so more
+   can be added later just by appending to THWAP_VOICES with a higher unlockAt. */
+var THWAP_VOICES=window.THWAP_VOICES=[
+  {code:'can', label:'Canadian', emoji:'🇨🇦', unlockAt:0}
+  /* Append more voices here, e.g. {code:'pirate', label:'Pirate', emoji:'🏴\u200d☠️', unlockAt:25} */
+];
+function thwapVoice(){ try{ return localStorage.getItem('thwapVoice')||'can'; }catch(e){ return 'can'; } }
+function thwapSetVoice(code){ try{ localStorage.setItem('thwapVoice',code); }catch(e){} }
+/* How many drills the player has finished, used for unlockAt thresholds. The board
+   API exposes per-slug week counts and all-time streaks, not a single lifetime drill
+   total, so there is no clean sum to read yet - return 0 so only unlockAt:0 voices
+   show unlocked for now. */
+function thwapCompletedCount(){
+  return 0; /* TODO: wire real completed-drill count when the board exposes a lifetime total */
+}
+function thwapVoiceUnlocked(v){ if(!v) return false; if(!v.unlockAt) return true; return thwapCompletedCount()>=v.unlockAt; }
+window.thwapVoice=thwapVoice; window.thwapSetVoice=thwapSetVoice;
+window.thwapCompletedCount=thwapCompletedCount; window.thwapVoiceUnlocked=thwapVoiceUnlocked;
+
+function audioBlock(dr){
+  var slug=dr&&dr.audio;
+  if(slug){
+    return "<button type=\"button\" class=\"exaud-link\" data-aud=\""+slug+"\"><span class=\"exaud-ic\">\uD83D\uDD0A</span> Listen</button>";
+  }
+  return "";
+}
+window.audioBlock=audioBlock;
+
+/* One shared <audio> element for the whole app - no autoplay, only on tap. */
+function thwapAudioEl(){
+  var a=document.getElementById('thwapAudio');
+  if(!a){ a=document.createElement('audio'); a.id='thwapAudio'; a.preload='none'; document.body.appendChild(a); }
+  return a;
+}
+function thwapResetAudBtn(btn){ if(!btn)return; btn.classList.remove('playing'); btn.innerHTML="<span class='exaud-ic'>\uD83D\uDD0A</span> Listen"; }
+/* Delegated Listen handler: plays audio/<voice>/<slug>.mp3 on tap, toggles play/pause,
+   fails gracefully on a 404 (voice not generated yet). One listener survives re-renders. */
+if(!window.__thwapAudDelegated){window.__thwapAudDelegated=true;document.addEventListener('click',function(ev){
+  var btn=ev.target.closest&&ev.target.closest('.exaud-link'); if(!btn)return;
+  ev.preventDefault();
+  var slug=btn.getAttribute('data-aud')||''; if(!slug)return;
+  var a=thwapAudioEl();
+  var src='audio/'+thwapVoice()+'/'+slug+'.mp3';
+  /* Tapping the button that is already playing pauses it. */
+  if(btn.classList.contains('playing')){ a.pause(); thwapResetAudBtn(btn); return; }
+  /* Reset any other button that was mid-play. */
+  var open=document.querySelector('.exaud-link.playing'); if(open) thwapResetAudBtn(open);
+  a.onended=function(){ thwapResetAudBtn(btn); };
+  a.onerror=function(){ console.warn('Thwap: audio not available yet -',src); thwapResetAudBtn(btn); };
+  if(a.getAttribute('src')!==src){ a.setAttribute('src',src); a.load(); }
+  var p=a.play();
+  if(p&&p.catch){ p.then(function(){ btn.classList.add('playing'); btn.innerHTML="<span class='exaud-ic'>\u23F8</span> Playing"; }).catch(function(){ console.warn('Thwap: audio not available yet -',src); thwapResetAudBtn(btn); }); }
+  else { btn.classList.add('playing'); btn.innerHTML="<span class='exaud-ic'>\u23F8</span> Playing"; }
+});}
+
+/* Voice picker: a kid-friendly chip row (NOT a card). Unlocked voices are
+   selectable; locked ones show dimmed as 'Unlock at N drills'. One delegated
+   handler swaps the stored voice and re-marks the selected chip in place. */
+function voicePickerHTML(){
+  var cur=thwapVoice();
+  var chips=THWAP_VOICES.map(function(v){
+    if(thwapVoiceUnlocked(v)){
+      return "<button type=\"button\" class=\"voicechip"+(v.code===cur?' on':'')+"\" data-voice=\""+v.code+"\">"+(v.emoji?v.emoji+' ':'')+esc(v.label)+"</button>";
+    }
+    return "<span class=\"voicechip locked\">\uD83D\uDD12 "+esc(v.label)+" \u00B7 Unlock at "+v.unlockAt+" drills</span>";
+  }).join('');
+  return "<div class='voicepick'><span class='voicepick-lbl'>Sass's voice</span>"+chips+"</div>";
+}
+window.voicePickerHTML=voicePickerHTML;
+if(!window.__thwapVoiceDelegated){window.__thwapVoiceDelegated=true;document.addEventListener('click',function(ev){
+  var chip=ev.target.closest&&ev.target.closest('.voicechip[data-voice]'); if(!chip)return;
+  var code=chip.getAttribute('data-voice')||''; if(!code)return;
+  thwapSetVoice(code);
+  /* Stop any playing narration so the next tap uses the new voice. */
+  var a=document.getElementById('thwapAudio'); if(a)a.pause();
+  var open=document.querySelector('.exaud-link.playing'); if(open) thwapResetAudBtn(open);
+  /* Re-mark chips across every picker on the page. */
+  document.querySelectorAll('.voicechip[data-voice]').forEach(function(c){
+    c.classList.toggle('on', c.getAttribute('data-voice')===code);
+  });
+});}
 function todaysWorkout(){var s=window.thwapWeekdaySlot();return WORKOUTS[(s<0?0:s)%WORKOUTS.length];}
 
 /* Build a balanced ~15-min block: 1-2 exercises from each category present today,
@@ -2754,6 +2849,7 @@ function render(){
     list.innerHTML="<p style='color:var(--muted);font-size:16px;padding:14px 2px'>Exercises for this workout are on the way.</p>";
     return;
   }
+  list.insertAdjacentHTML('beforeend', voicePickerHTML());
   drills.forEach(function(dr,i){
     var done=prog[i]?' done':'';
     var dose=dr.dose?"<div class='exdose'>"+esc(dr.dose)+"</div>":'';
@@ -2764,7 +2860,7 @@ function render(){
         "<div class='exhead'><div class='exem'>"+dr.emoji+"</div>"+
           "<div><h3>"+esc(dr.name)+"<span class='exbadge'>Done</span></h3>"+dose+"</div>"+
           "<div class='exchev'>›</div></div>"+
-        "<div class='exbody'><p>"+esc(dr.cue)+"</p>"+videoBlock(dr)+steps+
+        "<div class='exbody'><p>"+esc(dr.cue)+"</p>"+videoBlock(dr)+audioBlock(dr)+steps+
           "<button type='button' class='exdone'>"+doneLabel+"</button></div>"+
       "</div>");
   });
@@ -3804,43 +3900,43 @@ function saveProg(p){try{localStorage.setItem(progKey(),JSON.stringify(p));}catc
 
 /* Real content (Woody-provided). cat groups; steps are short bold-label cues. */
 var DRILLS=window.DRILLS=[
-  {cat:'Fundamental Rhythm', emoji:'↔️', name:'Stationary Side-to-Side', cue:'Move the puck side to side across your body. Quick and smooth.', video:'https://www.youtube.com/watch?v=9YnPKTBpm3I',
+  {cat:'Fundamental Rhythm', emoji:'↔️', name:'Stationary Side-to-Side', cue:'Move the puck side to side across your body. Quick and smooth.', video:'https://www.youtube.com/watch?v=9YnPKTBpm3I', audio:'stick_01',
    steps:['Stance: Ready position, knees bent, hands out front.','Move it: Slide the puck side to side across your body.','Stay quick: Small, fast touches. Head up.']},
-  {cat:'Fundamental Rhythm', emoji:'🔁', name:'Front-to-Back', cue:'Push the puck out in front, then pull it back to your toes.', video:'https://www.youtube.com/watch?v=pgPp6lDVMaw',
+  {cat:'Fundamental Rhythm', emoji:'🔁', name:'Front-to-Back', cue:'Push the puck out in front, then pull it back to your toes.', video:'https://www.youtube.com/watch?v=pgPp6lDVMaw', audio:'stick_02',
    steps:['Push out: Reach the puck straight out in front.','Pull back: Draw it back to your toes.','Keep rhythm: Smooth push-pull, soft hands.']},
-  {cat:'Fundamental Rhythm', emoji:'📐', name:'The "L" Shape', cue:'Push forward, drag back, then push wide to one side.', video:'https://www.youtube.com/watch?v=Icy5KTq8Amg',
+  {cat:'Fundamental Rhythm', emoji:'📐', name:'The "L" Shape', cue:'Push forward, drag back, then push wide to one side.', video:'https://www.youtube.com/watch?v=Icy5KTq8Amg', audio:'stick_03',
    steps:['Forward: Push the puck out in front.','Back: Drag it back to you.','Wide: Push it out to one side to make an L.']},
-  {cat:'Fundamental Rhythm', emoji:'🙌', name:'Wide Extensions', cue:'Reach as far to each side as you can, forehand and backhand.', video:'https://www.youtube.com/watch?v=BIRR2Kb0aEA',
+  {cat:'Fundamental Rhythm', emoji:'🙌', name:'Wide Extensions', cue:'Reach as far to each side as you can, forehand and backhand.', video:'https://www.youtube.com/watch?v=BIRR2Kb0aEA', audio:'stick_04',
    steps:['Forehand: Reach the puck out wide on your strong side.','Backhand: Reach it out wide the other way.','Shift weight: Lean into each reach. Stay balanced.']},
-  {cat:'Fundamental Rhythm', emoji:'💨', name:'Narrow-to-Wide', cue:'Three tiny stickhandles, then push the puck out wide.', video:'https://www.youtube.com/watch?v=5daeyw6mRzA',
+  {cat:'Fundamental Rhythm', emoji:'💨', name:'Narrow-to-Wide', cue:'Three tiny stickhandles, then push the puck out wide.', video:'https://www.youtube.com/watch?v=5daeyw6mRzA', audio:'stick_05',
    steps:['Narrow: 3 quick, tiny touches in tight.','Wide: Push the puck out wide right away.','Repeat: Tiny-tiny-tiny, then explode wide.']},
-  {cat:'Multi-Directional', emoji:'♾️', name:'Figure-8 Around Cones', cue:'Guide the puck in a figure-8 around two cones. Keep it flowing.', video:'https://www.youtube.com/watch?v=kdm4LXlkZzE',
+  {cat:'Multi-Directional', emoji:'♾️', name:'Figure-8 Around Cones', cue:'Guide the puck in a figure-8 around two cones. Keep it flowing.', video:'https://www.youtube.com/watch?v=kdm4LXlkZzE', audio:'stick_06',
    steps:['Set up: Two cones about a stick-length apart.','Weave: Guide the puck in a figure-8 around them.','Smooth: Keep it flowing. No stops.']},
-  {cat:'Multi-Directional', emoji:'🔺', name:'The Triangle Drill', cue:'Move the puck in a big triangle around your feet.', video:'https://www.youtube.com/watch?v=nLWR4flibTs',
+  {cat:'Multi-Directional', emoji:'🔺', name:'The Triangle Drill', cue:'Move the puck in a big triangle around your feet.', video:'https://www.youtube.com/watch?v=nLWR4flibTs', audio:'stick_07',
    steps:['Shape: Picture a big triangle around your feet.','Trace it: Move the puck from point to point.','Control: Go slow and clean before you try fast.']},
-  {cat:'Multi-Directional', emoji:'💎', name:'The Diamond Matrix', cue:'Four cones in a diamond, weave the puck around each point.', video:'https://www.youtube.com/watch?v=PJ68MZcHbD8',
+  {cat:'Multi-Directional', emoji:'💎', name:'The Diamond Matrix', cue:'Four cones in a diamond, weave the puck around each point.', video:'https://www.youtube.com/watch?v=PJ68MZcHbD8', audio:'stick_08',
    steps:['Set up: 4 cones in a diamond shape.','Weave: Take the puck around each point.','Head up: Glance up between points.']},
-  {cat:'Multi-Directional', emoji:'⚡', name:'Z-Pattern Slalom', cue:'Move the puck in a zig-zag, forward-left, then forward-right.', video:'https://www.youtube.com/watch?v=HGDPIu_E-GU',
+  {cat:'Multi-Directional', emoji:'⚡', name:'Z-Pattern Slalom', cue:'Move the puck in a zig-zag, forward-left, then forward-right.', video:'https://www.youtube.com/watch?v=HGDPIu_E-GU', audio:'stick_09',
    steps:['Zig: Push the puck forward-left, then forward-right.','Zig-zag: Keep the Z going down the floor.','Quick feet: Move with the puck.']},
-  {cat:'Multi-Directional', emoji:'⬛', name:'The Square Box', cue:'Trace a square with the puck, front, side, back, side.', video:'https://www.youtube.com/watch?v=qxzMas4lAp8',
+  {cat:'Multi-Directional', emoji:'⬛', name:'The Square Box', cue:'Trace a square with the puck, front, side, back, side.', video:'https://www.youtube.com/watch?v=qxzMas4lAp8', audio:'stick_10',
    steps:['Front: Push the puck forward.','Side: Move it out to the side.','Back then side: Pull it back, then across. Trace the whole box.']},
-  {cat:'Strength & Coordination', emoji:'☝️', name:'Top-Hand Only', cue:'Control the puck with only your top hand on the stick.', video:'https://www.youtube.com/watch?v=bF0t9F2OpAU',
+  {cat:'Strength & Coordination', emoji:'☝️', name:'Top-Hand Only', cue:'Control the puck with only your top hand on the stick.', video:'https://www.youtube.com/watch?v=bF0t9F2OpAU', audio:'stick_11',
    steps:['One hand: Top hand only on the stick.','Control: Small, smooth moves.','Build strength: Feel your forearm work.']},
-  {cat:'Strength & Coordination', emoji:'👇', name:'Bottom-Hand Only', cue:'Control the puck with only your bottom hand on the stick.', video:'https://www.youtube.com/watch?v=gzfPlIE8EJ8',
+  {cat:'Strength & Coordination', emoji:'👇', name:'Bottom-Hand Only', cue:'Control the puck with only your bottom hand on the stick.', video:'https://www.youtube.com/watch?v=gzfPlIE8EJ8', audio:'stick_12',
    steps:['One hand: Bottom hand only.','Guide it: Steer the puck around.','Soft touch: Light grip, not stiff.']},
-  {cat:'Strength & Coordination', emoji:'🪝', name:'Toe Drag & Rescue', cue:'Push the puck wide, then hook it back with the toe of your blade.', video:'https://www.youtube.com/watch?v=UlkAnet3d-A',
+  {cat:'Strength & Coordination', emoji:'🪝', name:'Toe Drag & Rescue', cue:'Push the puck wide, then hook it back with the toe of your blade.', video:'https://www.youtube.com/watch?v=UlkAnet3d-A', audio:'stick_13',
    steps:['Push wide: Send the puck out to the side.','Toe hook: Use the toe of the blade to pull it back.','Rescue it: Reel it back under control.']},
-  {cat:'Strength & Coordination', emoji:'🔃', name:'Heel-to-Toe Flips', cue:'Roll the puck from heel to toe and pop it up.', video:'https://www.youtube.com/watch?v=GbSaXtdiGpk',
+  {cat:'Strength & Coordination', emoji:'🔃', name:'Heel-to-Toe Flips', cue:'Roll the puck from heel to toe and pop it up.', video:'https://www.youtube.com/watch?v=GbSaXtdiGpk', audio:'stick_14',
    steps:['Heel: Start the puck at the heel of the blade.','Roll: Roll it out toward the toe.','Lift: Give it a small pop as it reaches the toe.']},
-  {cat:'Strength & Coordination', emoji:'🆙', name:'Flip Over Objects', cue:'Chip the puck or ball over a stick or low barrier.', video:'https://www.youtube.com/watch?v=h4GCR69cabQ',
+  {cat:'Strength & Coordination', emoji:'🆙', name:'Flip Over Objects', cue:'Chip the puck or ball over a stick or low barrier.', video:'https://www.youtube.com/watch?v=h4GCR69cabQ', audio:'stick_15',
    steps:['Barrier: Lay a stick flat on the floor.','Chip: Gently lift the puck over it.','Catch it: Settle it on the other side.']},
-  {cat:'Reaction & Game', emoji:'👀', name:'Eyes-Up Glancing', cue:'Stickhandle without looking at the puck. Eyes on a target.', video:'https://www.youtube.com/watch?v=bYFiH1BF_HA',
+  {cat:'Reaction & Game', emoji:'👀', name:'Eyes-Up Glancing', cue:'Stickhandle without looking at the puck. Eyes on a target.', video:'https://www.youtube.com/watch?v=bYFiH1BF_HA', audio:'stick_16',
    steps:['Eyes up: Look at a target, a parent, the wall, anything. Not the puck.','Feel it: Trust your hands to find the puck.','Hold it: Keep your head up the whole time.']},
-  {cat:'Reaction & Game', emoji:'🧱', name:'The Wall Bounce', cue:'Pass a ball against a wall and catch the rebound soft.', video:'https://www.youtube.com/watch?v=DHitlrzSHuI',
+  {cat:'Reaction & Game', emoji:'🧱', name:'The Wall Bounce', cue:'Pass a ball against a wall and catch the rebound soft.', video:'https://www.youtube.com/watch?v=DHitlrzSHuI', audio:'stick_17',
    steps:['Pass: Send the ball into the wall.','Catch it soft: Catch the rebound soft.','Repeat: Quick, smooth, and steady.']},
-  {cat:'Reaction & Game', emoji:'🚧', name:'Cone Weave Course', cue:'Line up 5 cones and weave the puck through them.', video:'https://www.youtube.com/watch?v=ONAG3fYkrNs',
+  {cat:'Reaction & Game', emoji:'🚧', name:'Cone Weave Course', cue:'Line up 5 cones and weave the puck through them.', video:'https://www.youtube.com/watch?v=ONAG3fYkrNs', audio:'stick_18',
    steps:['Set up: 5 cones in a straight line.','Weave: Take the puck through each one.','Speed up: Go faster once it feels clean.']},
-  {cat:'Reaction & Game', emoji:'🌀', name:'Chaos Dribbling', cue:'Drop 10 random things on the floor and weave through them.', video:'https://www.youtube.com/watch?v=P5dO2zNmxhc',
+  {cat:'Reaction & Game', emoji:'🌀', name:'Chaos Dribbling', cue:'Drop 10 random things on the floor and weave through them.', video:'https://www.youtube.com/watch?v=P5dO2zNmxhc', audio:'stick_19',
    steps:['Scatter: Drop about 10 items on the floor.','Weave: Move through them any way you can.','React: No set path. Read and go.']}
 ];
 
@@ -3857,6 +3953,7 @@ function render(){
   var picks=twoForToday(); var prog=loadProg();
   list.innerHTML='';
   var stOpt=document.getElementById('stickOptional'); if(stOpt) stOpt.hidden=!(window.thwapIsWeekend&&window.thwapIsWeekend());
+  list.insertAdjacentHTML('beforeend', window.voicePickerHTML());
   picks.forEach(function(dr,i){
     var done=prog[i]?' done':'';
     var steps="<ol>"+dr.steps.map(function(s){var ci=s.indexOf(':');if(ci>0&&ci<28){return "<li><b>"+esc(s.slice(0,ci))+"</b>"+esc(s.slice(ci))+"</li>";}return "<li>"+esc(s)+"</li>";}).join('')+"</ol>";
@@ -3866,7 +3963,7 @@ function render(){
         "<div class='exhead'><div class='exem'>"+dr.emoji+"</div>"+
           "<div><h3>"+esc(dr.name)+"<span class='exbadge'>Done</span></h3><div class='exdose'>"+esc(dr.cat)+"</div></div>"+
           "<div class='exchev'>›</div></div>"+
-        "<div class='exbody'><p>"+esc(dr.cue)+"</p>"+window.videoBlock(dr)+steps+
+        "<div class='exbody'><p>"+esc(dr.cue)+"</p>"+window.videoBlock(dr)+window.audioBlock(dr)+steps+
           "<button type='button' class='exdone'>"+doneLabel+"</button></div>"+
       "</div>");
   });
@@ -4447,59 +4544,59 @@ function dayIndex(){var ov=window.thwapDateOverride&&window.thwapDateOverride();
    shoot while moving, use the backhand, finish in tight, handle game-like pucks. */
 var SHOOT_DAYS=window.SHOOT_DAYS=[
   /* Day 1: Shooting While Moving */
-  [ {emoji:'🏃', name:'Moving Warm-Up', theme:'Feet moving', cue:'Get comfortable shooting without stopping your feet.', video:'https://www.youtube.com/watch?v=ntdPFTKDRt8',
+  [ {emoji:'🏃', name:'Moving Warm-Up', theme:'Feet moving', cue:'Get comfortable shooting without stopping your feet.', video:'https://www.youtube.com/watch?v=ntdPFTKDRt8', audio:'shoot_01',
      steps:['Start: 15-20 feet from the net with a puck.','Move: Stickhandle toward the net. Keep your feet moving the whole time.','Pick a corner: Don\'t stop. Shoot with your feet still going.','Reset: Grab another puck and go again from a different angle.']},
-    {emoji:'📐', name:'Change the Angle', theme:'Create space', cue:'Move the puck around something and shoot right away from the new angle.', video:'https://www.youtube.com/watch?v=niIQ_SlFJm8',
+    {emoji:'📐', name:'Change the Angle', theme:'Create space', cue:'Move the puck around something and shoot right away from the new angle.', video:'https://www.youtube.com/watch?v=niIQ_SlFJm8', audio:'shoot_02',
      steps:['Set up: Put a cone between you and the net.','Come in: Carry the puck toward the cone with your feet moving.','Move it: Pull or push the puck around it to one side.','Shoot: As soon as the puck clears it, shoot.','Switch sides: Do it the other way.']},
-    {emoji:'🎯', name:'Random Target', theme:'Read and react', cue:'Start moving before you know where you\'re shooting.', video:'https://www.youtube.com/watch?v=EWB-NMNI9fM',
+    {emoji:'🎯', name:'Random Target', theme:'Read and react', cue:'Start moving before you know where you\'re shooting.', video:'https://www.youtube.com/watch?v=EWB-NMNI9fM', audio:'shoot_03',
      steps:['Set up: Create four target areas on the net.','Move: Start with the puck. Keep your head up.','Listen: Have Thwap, a parent, or a partner call out a target.','Find it: Look at the target with your eyes.','Shoot: Don\'t stop. Reset and get a new target.']},
-    {emoji:'⏱️', name:'Under Two Seconds', theme:'Quick release', cue:'Get the puck off your stick fast. No overthinking.', video:'https://www.youtube.com/watch?v=xlSZAM0oxR0',
+    {emoji:'⏱️', name:'Under Two Seconds', theme:'Quick release', cue:'Get the puck off your stick fast. No overthinking.', video:'https://www.youtube.com/watch?v=xlSZAM0oxR0', audio:'shoot_04',
      steps:['Ready: Start with your stick on the ice in a ready position.','Get: Have someone pass you the puck (or use a rebounder).','Control it: Catch it, find your target.','Fire: Release the shot in under two seconds.','Reset: Move to a different spot and do it again.']},
-    {emoji:'🔁', name:'Ten Different Goals', theme:'Change release', cue:'Score 10 goals without using the same release twice in a row.', video:'https://www.youtube.com/watch?v=DmtTLZC__y8',
+    {emoji:'🔁', name:'Ten Different Goals', theme:'Change release', cue:'Score 10 goals without using the same release twice in a row.', video:'https://www.youtube.com/watch?v=DmtTLZC__y8', audio:'shoot_05',
      steps:['Start: Grab a puck. Move before you shoot.','Score: Pick a way to attack and score a goal.','Change it: On the next one, change something: angle, release point, forehand, backhand, pull, or push.','Keep going: Score 10 different goals. If you repeat yourself, it doesn\'t count!']} ],
   /* Day 2: Backhand */
-  [ {emoji:'🔄', name:'Backhand Basics', theme:'Feel blade', cue:'Learn to load the puck on your backhand and release it cleanly.', video:'https://www.youtube.com/watch?v=nVQNjWsNSG4',
+  [ {emoji:'🔄', name:'Backhand Basics', theme:'Feel blade', cue:'Learn to load the puck on your backhand and release it cleanly.', video:'https://www.youtube.com/watch?v=nVQNjWsNSG4', audio:'shoot_06',
      steps:['Set up: Stand 8-10 feet from the net. Put the puck on your backhand.','Cup it: Cup the puck with the blade. Hands slightly away from your body.','Weight: Shift your weight toward the net.','Sweep: Sweep through the puck.','Finish: End with the blade pointing at your target.']},
-    {emoji:'🥅', name:'Backhand Accuracy', theme:'Pick corners', cue:'Use your backhand to hit different spots on the net on purpose.', video:'https://www.youtube.com/watch?v=mNaXHeY_mFY',
+    {emoji:'🥅', name:'Backhand Accuracy', theme:'Pick corners', cue:'Use your backhand to hit different spots on the net on purpose.', video:'https://www.youtube.com/watch?v=mNaXHeY_mFY', audio:'shoot_07',
      steps:['Start close: Get near the net. Puck on your backhand.','Look first: Look at your target before you shoot.','Shoot: Aim for one corner.','Reset: Pick a different target.','All four: Work your way around all four corners.']},
-    {emoji:'🏃', name:'Moving Backhand', theme:'Backhand moving', cue:'Shoot a backhand while your feet are still going.', video:'https://www.youtube.com/watch?v=4tB1VWYJUOg',
+    {emoji:'🏃', name:'Moving Backhand', theme:'Backhand moving', cue:'Shoot a backhand while your feet are still going.', video:'https://www.youtube.com/watch?v=4tB1VWYJUOg', audio:'shoot_08',
      steps:['Carry it: Start 15 feet from the net. Move the puck toward it.','Keep moving: Don\'t stop your feet.','Backhand: Move the puck to your backhand. Hands away from your body.','Shoot: Shoot without stopping.','Repeat: Try coming in from different angles.']},
-    {emoji:'↔️', name:'Forehand to Backhand', theme:'Change sides', cue:'Show your forehand first, then switch to your backhand and shoot.', video:'https://www.youtube.com/watch?v=GG_ckEPfwQo',
+    {emoji:'↔️', name:'Forehand to Backhand', theme:'Change sides', cue:'Show your forehand first, then switch to your backhand and shoot.', video:'https://www.youtube.com/watch?v=GG_ckEPfwQo', audio:'shoot_09',
      steps:['Come in: Come in with the puck on your forehand.','Pull across: Pull the puck across your body onto your backhand.','Don\'t wait: No extra stickhandle, shoot right away.','Mix it up: Try it from straight on and from an angle.']},
-    {emoji:'🔂', name:'Backhand Only', theme:'Finish backhand', cue:'The only way to score is with a backhand. Nothing else counts.', video:'https://www.youtube.com/watch?v=u1--ABaQNMw',
+    {emoji:'🔂', name:'Backhand Only', theme:'Finish backhand', cue:'The only way to score is with a backhand. Nothing else counts.', video:'https://www.youtube.com/watch?v=u1--ABaQNMw', audio:'shoot_10',
      steps:['Start anywhere: Puck on either side. Move toward the net.','Create space: Stickhandle however you want to find an opening.','Backhand: Move the puck to your backhand.','Finish: It only counts if the final shot is a backhand.','Goal: Try to score 10 backhand goals.']} ],
   /* Day 3: In Close */
-  [ {emoji:'⚡', name:'Quick Hands', theme:'Tight space', cue:'Control the puck close to the net without needing lots of room.', video:'https://www.youtube.com/watch?v=XsYW-ZhEBHk',
+  [ {emoji:'⚡', name:'Quick Hands', theme:'Tight space', cue:'Control the puck close to the net without needing lots of room.', video:'https://www.youtube.com/watch?v=XsYW-ZhEBHk', audio:'shoot_11',
      steps:['Start close: A few feet from the net. Keep the puck near your body.','Quick moves: Two or three quick stickhandles.','Outside: Move the puck outside your feet.','Shoot: Shoot right away.','Switch: Reset on the other side and do it again.']},
-    {emoji:'🧤', name:'Catch and Release', theme:'One touch', cue:'Get a pass near the net and release it before the goalie can reset.', video:'https://www.youtube.com/watch?v=PCgQecgPwq0',
+    {emoji:'🧤', name:'Catch and Release', theme:'One touch', cue:'Get a pass near the net and release it before the goalie can reset.', video:'https://www.youtube.com/watch?v=PCgQecgPwq0', audio:'shoot_12',
      steps:['Ready: Start near the net with your stick ready.','Get: Get a pass from the side. Catch it soft on your blade.','No extras: Don\'t add extra stickhandles.','Fire: Shoot right away.','Mix it up: Change where the passes come from each time.']},
-    {emoji:'↔️', name:'Pull Across', theme:'Move goalie', cue:'Pull the puck across your body before finishing from the new angle.', video:'https://www.youtube.com/watch?v=4dZ70sKTZoI',
+    {emoji:'↔️', name:'Pull Across', theme:'Move goalie', cue:'Pull the puck across your body before finishing from the new angle.', video:'https://www.youtube.com/watch?v=4dZ70sKTZoI', audio:'shoot_13',
      steps:['Come in: Start a few feet from the net with the puck on one side.','Sell it: Fake the shot from that side.','Pull: Pull the puck across your body. Keep your hands away from your feet.','Shoot: Shoot as soon as you create the new angle.','Switch: Switch directions each time.']},
-    {emoji:'🔀', name:'Forehand / Backhand Finish', theme:'Two options', cue:'Go to the net and decide at the last second which side you\'ll use.', video:'https://www.youtube.com/watch?v=M6K50VmUoic',
+    {emoji:'🔀', name:'Forehand / Backhand Finish', theme:'Two options', cue:'Go to the net and decide at the last second which side you\'ll use.', video:'https://www.youtube.com/watch?v=M6K50VmUoic', audio:'shoot_14',
      steps:['Move in: Start with the puck in front of you. Head toward the net.','Head up: Keep your eyes up.','Decide late: At the last moment, pick forehand or backhand.','Finish: Move the puck to that side and finish quick.','Mix it up: Don\'t always pick your favorite side.']},
-    {emoji:'🔁', name:'Rebound Finish', theme:'Second chance', cue:'Stay near the net after your first shot and finish the rebound.', video:'https://www.youtube.com/watch?v=L4KpjbHB9bw',
+    {emoji:'🔁', name:'Rebound Finish', theme:'Second chance', cue:'Stay near the net after your first shot and finish the rebound.', video:'https://www.youtube.com/watch?v=L4KpjbHB9bw', audio:'shoot_15',
      steps:['Shoot low: Shoot low to create a rebound. Don\'t watch your shot.','Move in: Get toward the net right away.','Find it: Find the rebound. Get your stick on it.','Finish: Use whichever side is open.','Reset: Only reset after the second try.']} ],
   /* Day 4: Puck Skills + Shooting */
-  [ {emoji:'🔗', name:'Carry / Pass / Shoot', theme:'Pass and move', cue:'Connect carrying, passing, and shooting into one play.', video:'https://www.youtube.com/watch?v=ptXnlWG0AsQ',
+  [ {emoji:'🔗', name:'Carry / Pass / Shoot', theme:'Pass and move', cue:'Connect carrying, passing, and shooting into one play.', video:'https://www.youtube.com/watch?v=ptXnlWG0AsQ', audio:'shoot_16',
      steps:['Carry: Start away from the net. Move the puck forward with your feet going.','Pass: Pass to a parent, partner, wall, or rebounder.','Move: Move right after you pass. Get your stick ready for the return.','Get and shoot: Get the puck back and shoot quickly.']},
-    {emoji:'🌀', name:'Bad Puck Challenge', theme:'Solve chaos', cue:'Learn to shoot pucks that aren\'t sitting perfectly on your blade.', video:'https://www.youtube.com/watch?v=XXugXgjQvl4',
+    {emoji:'🌀', name:'Bad Puck Challenge', theme:'Solve chaos', cue:'Learn to shoot pucks that aren\'t sitting perfectly on your blade.', video:'https://www.youtube.com/watch?v=XXugXgjQvl4', audio:'shoot_17',
      steps:['Messy pass: Have someone send you a messy puck. It can bounce, roll, or land in your feet.','Find it: Get your blade on the puck.','Quick control: Control it as fast as you can.','Shoot: Shoot without trying to make everything perfect.','Again: Get a different kind of bad puck each time.']},
-    {emoji:'📐', name:'Angle Attack', theme:'Escape obstacle', cue:'Carry the puck toward a cone, move around it, and shoot from the new lane.', video:'https://www.youtube.com/watch?v=yFuA30qWzf4',
+    {emoji:'📐', name:'Angle Attack', theme:'Escape obstacle', cue:'Carry the puck toward a cone, move around it, and shoot from the new lane.', video:'https://www.youtube.com/watch?v=yFuA30qWzf4', audio:'shoot_18',
      steps:['Set up: Place a cone between you and the net.','Attack: Carry the puck toward it. Wait until you\'re close.','Escape: Move the puck quickly to one side. Move your body with it.','Shoot: Shoot from the new lane.','Switch: Switch sides each time.']},
-    {emoji:'🎯', name:'Random Target', theme:'React fast', cue:'Let Thwap decide where your shot goes after the play has already started.', video:'https://www.youtube.com/watch?v=EWB-NMNI9fM',
+    {emoji:'🎯', name:'Random Target', theme:'React fast', cue:'Let Thwap decide where your shot goes after the play has already started.', video:'https://www.youtube.com/watch?v=EWB-NMNI9fM', audio:'shoot_03',
      steps:['Go: Start with a puck. Move toward the net.','Target: Thwap randomly shows a target.','Find it: Look at the target with your eyes.','Shoot: Adjust the puck if you need to and shoot quickly.','Keep moving: Don\'t stop your feet just to hit the target.']},
-    {emoji:'⏱️', name:'Quick Release Challenge', theme:'Beat clock', cue:'See how fast you can turn a pass into a quality shot.', video:'https://www.youtube.com/watch?v=9ERlW5wBz-s',
+    {emoji:'⏱️', name:'Quick Release Challenge', theme:'Beat clock', cue:'See how fast you can turn a pass into a quality shot.', video:'https://www.youtube.com/watch?v=9ERlW5wBz-s', audio:'shoot_19',
      steps:['Start empty: No puck on your blade.','Get: Get a pass. Control it. Find the net.','Fire: Shoot in under two seconds.','Quality: It only counts if it\'s smooth and on target.','Streak: Try to string together 5 good quick releases in a row.']} ],
   /* Day 5: Mixed Review (pulls one proven drill from each earlier day) */
-  [ {emoji:'🏃', name:'Moving Warm-Up', theme:'Feet moving', cue:'Get comfortable shooting without stopping your feet.', video:'https://www.youtube.com/watch?v=ntdPFTKDRt8',
+  [ {emoji:'🏃', name:'Moving Warm-Up', theme:'Feet moving', cue:'Get comfortable shooting without stopping your feet.', video:'https://www.youtube.com/watch?v=ntdPFTKDRt8', audio:'shoot_01',
      steps:['Start: 15-20 feet from the net with a puck.','Move: Stickhandle toward the net. Keep your feet moving the whole time.','Pick a corner: Don\'t stop. Shoot with your feet still going.','Reset: Grab another puck and go again from a different angle.']},
-    {emoji:'🥅', name:'Backhand Accuracy', theme:'Pick corners', cue:'Use your backhand to hit different spots on the net on purpose.', video:'https://www.youtube.com/watch?v=mNaXHeY_mFY',
+    {emoji:'🥅', name:'Backhand Accuracy', theme:'Pick corners', cue:'Use your backhand to hit different spots on the net on purpose.', video:'https://www.youtube.com/watch?v=mNaXHeY_mFY', audio:'shoot_07',
      steps:['Start close: Get near the net. Puck on your backhand.','Look first: Look at your target before you shoot.','Shoot: Aim for one corner.','Reset: Pick a different target.','All four: Work your way around all four corners.']},
-    {emoji:'🧤', name:'Catch and Release', theme:'One touch', cue:'Get a pass near the net and release it before the goalie can reset.', video:'https://www.youtube.com/watch?v=PCgQecgPwq0',
+    {emoji:'🧤', name:'Catch and Release', theme:'One touch', cue:'Get a pass near the net and release it before the goalie can reset.', video:'https://www.youtube.com/watch?v=PCgQecgPwq0', audio:'shoot_12',
      steps:['Ready: Start near the net with your stick ready.','Get: Get a pass from the side. Catch it soft on your blade.','No extras: Don\'t add extra stickhandles.','Fire: Shoot right away.','Mix it up: Change where the passes come from each time.']},
-    {emoji:'🔗', name:'Carry / Pass / Shoot', theme:'Pass and move', cue:'Connect carrying, passing, and shooting into one play.', video:'https://www.youtube.com/watch?v=ptXnlWG0AsQ',
+    {emoji:'🔗', name:'Carry / Pass / Shoot', theme:'Pass and move', cue:'Connect carrying, passing, and shooting into one play.', video:'https://www.youtube.com/watch?v=ptXnlWG0AsQ', audio:'shoot_16',
      steps:['Carry: Start away from the net. Move the puck forward with your feet going.','Pass: Pass to a parent, partner, wall, or rebounder.','Move: Move right after you pass. Get your stick ready for the return.','Get and shoot: Get the puck back and shoot quickly.']},
-    {emoji:'🔁', name:'Ten Different Goals', theme:'Change release', cue:'Score 10 goals without using the same release twice in a row.', video:'https://www.youtube.com/watch?v=DmtTLZC__y8',
+    {emoji:'🔁', name:'Ten Different Goals', theme:'Change release', cue:'Score 10 goals without using the same release twice in a row.', video:'https://www.youtube.com/watch?v=DmtTLZC__y8', audio:'shoot_05',
      steps:['Start: Grab a puck. Move before you shoot.','Score: Pick a way to attack and score a goal.','Change it: On the next one, change something: angle, release point, forehand, backhand, pull, or push.','Keep going: Score 10 different goals. If you repeat yourself, it doesn\'t count!']} ]
 ];
 function shootDayI(){ var s=window.thwapWeekdaySlot(); if(s<0) s=0; return s%SHOOT_DAYS.length; }
@@ -4514,6 +4611,7 @@ function render(){
   var prog=loadProg();
   list.innerHTML='';
   var shOpt=document.getElementById('shootOptional'); if(shOpt) shOpt.hidden=!(window.thwapIsWeekend&&window.thwapIsWeekend());
+  list.insertAdjacentHTML('beforeend', window.voicePickerHTML());
   SHOOT.forEach(function(dr,i){
     var done=prog[i]?' done':'';
     var doneLabel=prog[i]?'Done ✓':'Start';
@@ -4524,7 +4622,7 @@ function render(){
         "<div class='exhead'><div class='exem'>"+dr.emoji+"</div>"+
           "<div><h3>"+esc(dr.name)+"<span class='exbadge'>Done</span></h3><div class='exdose'>"+esc(dr.theme||'Shooting')+"</div></div>"+
           "<div class='exchev'>›</div></div>"+
-        "<div class='exbody'>"+cue+window.videoBlock(dr)+steps+
+        "<div class='exbody'>"+cue+window.videoBlock(dr)+window.audioBlock(dr)+steps+
           "<button type='button' class='exdone'>"+doneLabel+"</button></div>"+
       "</div>");
   });
