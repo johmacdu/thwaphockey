@@ -329,9 +329,10 @@ describe('Game Day card: lines below the title align under the title', () => {
   it('meta, focus, and cta are indented to clear the 40px goal-light + 10px gap', () => {
     // title (.png-opp) sits after a 40px icon + 10px gap inside .png-head, so the
     // lines below get a matching 50px left offset to align under the 'G'.
-    expect(html).toMatch(/\.png-meta\{[^}]*padding-left:50px/);
-    expect(html).toMatch(/\.png-cta\{[^}]*padding-left:50px/);
-    expect(html).toMatch(/\.png-focus\{[^}]*margin-left:50px/);
+    expect(html).toMatch(/\.png-meta\{[^}]*padding-left:64px/);
+    expect(html).toMatch(/\.png-cta\{[^}]*padding-left:64px/);
+    expect(html).toMatch(/\.png-focus\{[^}]*margin-left:64px/);
+    expect(html).toMatch(/id='pngCta'>Set your game goals<\/div>/); // no chevron
     expect(html).toMatch(/\.egg-ico-sm\{width:40px\}/); // the offset assumption
   });
 });
