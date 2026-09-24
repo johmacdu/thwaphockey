@@ -720,3 +720,21 @@ describe('Thwap admin: email + password login', () => {
     expect(bad.statusCode).toBe(401);
   });
 });
+
+describe('Thwap admin: roster index backfill', () => {
+  const KEY = 'admin-test-token';
+
+  it('lists players even when teams:index was empty (pre-index team)', async () => {
+    // Seed, then simulate a pre-index team by wiping teams:index but keeping the
+    // team record + members (the production shape that showed "No players").
+    await _seed.ensureSeed();
+    fake.map.set('teams:index', []);
+
+    // adminRoster calls ensureSeed, which backfills the index via ensureTeamIndexed.
+    const res = makeRes();
+    await _handlers.adminRoster(get({ key: KEY }), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.players.length).toBeGreaterThan(0);
+    expect(res.body.players.find((p) => p.id === 'lewie')).toBeTruthy();
+  });
+});

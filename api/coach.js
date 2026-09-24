@@ -36,7 +36,7 @@ import {
   getTeamGoal, setTeamGoal,
   addDrillSuggestion, listDrillSuggestions, setSuggestionStatus, listAllTeamCodes,
   updateMember, createResetToken, consumeResetToken,
-  getAdmin, setAdmin,
+  getAdmin, setAdmin, ensureTeamIndexed,
   listTeamCoaches, ensureHeadCoach, addAssistantCoach, removeAssistantCoach, MAX_ASSISTANTS,
 } from '../lib/teams_store.js';
 import { ensureSchedule, getSchedule, addEvent as addScheduleEvent, nextEvent } from '../lib/schedule_store.js';
@@ -90,6 +90,9 @@ async function ensureSeed() {
     }
   }
   const allCodes = DEMO_TEAMS.map((t) => t.code);
+  // Backfill the team index for teams that predate the index (created before
+  // teams:index existed), so admin views that scan the index still see them.
+  for (const code of allCodes) { await ensureTeamIndexed(code); }
   const existing = await getCoach(SEED_COACH_EMAIL);
   if (existing) {
     // Pin the seed coach to exactly the canonical team set (currently the one 10U
