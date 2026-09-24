@@ -216,6 +216,15 @@ describe('Coach staff chip: tapping the coach name opens the profile editor', ()
   });
 });
 
+describe('Remove-player confirm is a scrimmed modal', () => {
+  it('.pe-confirm is a full-screen overlay with a scrim and [hidden] override', () => {
+    expect(html).toMatch(/\.pe-confirm\{position:fixed;inset:0/);
+    expect(html).toMatch(/\.pe-confirm\[hidden\]\{display:none\}/);
+    expect(doc.getElementById('peConfirmScrim')).toBeTruthy();
+    expect(doc.getElementById('peConfirmSub')).toBeTruthy();
+  });
+});
+
 describe('Menus start closed: [hidden] overrides display', () => {
   // Recurring Thwap bug: a popup with the hidden attribute still shows because a
   // CSS rule gives it display:flex, which beats the browser's implicit

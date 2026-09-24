@@ -598,11 +598,16 @@ body.roster-editing #roster-grid .pcard:not(.pcard-add)::after{content:'\270E';p
 .sheet-pin{display:flex;flex-direction:column;gap:2px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:var(--fs-support);font-weight:800;color:var(--muted)}
 .sheet-pin-val{font-family:'Archivo Black',system-ui,sans-serif;font-size:22px;color:var(--text);letter-spacing:.02em}
 .sheet-pin-hint{font-size:var(--fs-meta);font-weight:700;color:var(--muted)}
-.pe-confirm{background:var(--card);border:1px solid var(--alert-text);border-radius:12px;padding:14px}
-.pe-confirm-q{margin:0 0 10px;font-size:var(--fs-support);font-weight:800;color:var(--text)}
-.pe-confirm-row{display:flex;gap:8px}
-.pe-confirm-cancel{flex:1;font-family:inherit;font-weight:800;font-size:14px;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px;cursor:pointer;color:var(--text)}
-.pe-confirm-go{flex:1;font-family:inherit;font-weight:800;font-size:14px;background:var(--alert-text);color:#fff;border:0;border-radius:10px;padding:10px;cursor:pointer}
+.pe-confirm{position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;padding:20px}
+.pe-confirm[hidden]{display:none}
+.pe-confirm-scrim{position:absolute;inset:0;background:rgba(9,15,11,.72);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.pe-confirm-box{position:relative;z-index:1;width:100%;max-width:360px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 20px 50px rgba(0,0,0,.5);text-align:center}
+.pe-confirm-ico{font-size:34px;line-height:1;margin-bottom:8px;color:var(--alert-text)}
+.pe-confirm-q{margin:0 0 8px;font-family:'Archivo Black',system-ui,sans-serif;font-size:19px;color:var(--text);line-height:1.2}
+.pe-confirm-sub{margin:0 0 18px;font-size:14px;font-weight:600;color:var(--muted);line-height:1.45}
+.pe-confirm-row{display:flex;gap:10px}
+.pe-confirm-cancel{flex:1;min-height:44px;font-family:inherit;font-weight:800;font-size:15px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px;cursor:pointer;color:var(--text)}
+.pe-confirm-go{flex:1;min-height:44px;font-family:inherit;font-weight:800;font-size:15px;background:var(--alert-text);color:#fff;border:0;border-radius:12px;padding:10px;cursor:pointer}
 .pe-remove{margin-top:4px;font-family:inherit;font-size:14px;font-weight:800;background:transparent;color:var(--alert-text);border:1px solid var(--line2);border-radius:12px;padding:10px 16px;cursor:pointer}
 .pe-remove:hover{background:var(--soft)}
 /* Coach profile: password section. */
@@ -1248,10 +1253,15 @@ body.login-locked{overflow:hidden}
     <button type='submit' class='pgate-go' id='peSave'>Save</button>
     <button type='button' class='pe-remove' id='peRemove'>Remove from roster</button>
     <div class='pe-confirm' id='peConfirm' hidden>
-      <p class='pe-confirm-q' id='peConfirmQ'>Remove this player from the roster?</p>
-      <div class='pe-confirm-row'>
-        <button type='button' class='pe-confirm-cancel' id='peConfirmCancel'>Cancel</button>
-        <button type='button' class='pe-confirm-go' id='peConfirmGo'>Remove</button>
+      <div class='pe-confirm-scrim' id='peConfirmScrim'></div>
+      <div class='pe-confirm-box' role='alertdialog' aria-modal='true' aria-labelledby='peConfirmQ'>
+        <div class='pe-confirm-ico' aria-hidden='true'>&#9888;</div>
+        <p class='pe-confirm-q' id='peConfirmQ'>Remove this player from the roster?</p>
+        <p class='pe-confirm-sub' id='peConfirmSub'>They will be taken off the team. Their training history and stats stop counting toward the team, and their sign-in code stops working. This cannot be undone.</p>
+        <div class='pe-confirm-row'>
+          <button type='button' class='pe-confirm-cancel' id='peConfirmCancel'>Cancel</button>
+          <button type='button' class='pe-confirm-go' id='peConfirmGo'>Remove</button>
+        </div>
       </div>
     </div>
     <p class='pgate-msg' id='peMsg' aria-live='polite'></p>
@@ -1947,16 +1957,18 @@ window.thwapActiveTeam=function(coach){
         .then(function(res){ if(res.ok&&res.j.ok){ peSheetShow(false); location.reload(); } else if(peMsg){ peMsg.textContent=(res.j&&res.j.error)||'Could not save.'; } })
         .catch(function(){ if(peMsg) peMsg.textContent='Could not reach the server.'; });
     });
-    /* Remove is destructive: reveal an inline confirm, only the confirm button fires the delete. */
+    /* Remove is destructive: a full-screen scrimmed modal; only the confirm button fires the delete. */
     var peConfirm=document.getElementById('peConfirm'),
         peConfirmQ=document.getElementById('peConfirmQ'),
         peConfirmCancel=document.getElementById('peConfirmCancel'),
-        peConfirmGo=document.getElementById('peConfirmGo');
+        peConfirmGo=document.getElementById('peConfirmGo'),
+        peConfirmScrim=document.getElementById('peConfirmScrim');
     if(peRemove) peRemove.addEventListener('click',function(){
-      if(peConfirmQ) peConfirmQ.textContent='Remove '+(peFirst&&peFirst.value||'this player')+' from the roster? This cannot be undone.';
+      if(peConfirmQ) peConfirmQ.textContent='Remove '+(peFirst&&peFirst.value||'this player')+' from the roster?';
       if(peConfirm) peConfirm.hidden=false;
     });
     if(peConfirmCancel) peConfirmCancel.addEventListener('click',function(){ if(peConfirm) peConfirm.hidden=true; });
+    if(peConfirmScrim) peConfirmScrim.addEventListener('click',function(){ if(peConfirm) peConfirm.hidden=true; });
     if(peConfirmGo) peConfirmGo.addEventListener('click',function(){
       if(peMsg) peMsg.textContent='Removing...';
       fetch('/api/coach?action=remove-player',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code,coachToken:coach.token,playerId:pePid})})
