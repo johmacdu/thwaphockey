@@ -70,3 +70,12 @@ describe('Game-day position persists + seeds from roster', () => {
     expect(html).toMatch(/rp==='FD'\|\|rp==='DF'\|\|rp\.indexOf\('\/'\)>=0\|\|rp==='B'/);
   });
 });
+
+describe('Game-day dart easter egg is correctly sized', () => {
+  it('the width is on .gd-dart itself (the img IS .gd-dart, so .gd-dart img never matched)', () => {
+    // the element is created as <img class="gd-dart">, so the size must be on .gd-dart
+    expect(html).toMatch(/\.gd-dart\{[^}]*width:clamp\(56px,12vw,90px\)/);
+    // and it's still created as a bare img with that class
+    expect(html).toMatch(/createElement\('img'\); dart\.className='gd-dart'/);
+  });
+});
