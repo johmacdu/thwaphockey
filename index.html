@@ -2257,7 +2257,7 @@ window.thwapActiveTeam=function(coach){
      each category, so per-drill time = DAY_MIN / DAY_COUNT[cat] (the player's day
      set is ~DAY_MIN total). Coach stays under DAY_MIN for the day/category. */
   var DAY_MIN=15;
-  var DAY_COUNT={stick:2, shoot:5, dryland:6};
+  var DAY_COUNT={stick:3, shoot:5, dryland:6};
   function perDrillMin(cat){ var n=DAY_COUNT[cat]||6; return DAY_MIN/n; }
   function estMin(cat,count){ return Math.round(count*perDrillMin(cat)); }
   var pkStaged=[]; /* staged drill names for the open day/category (committed on Save) */
@@ -4048,12 +4048,20 @@ var DRILLS=window.DRILLS=[
    steps:['Scatter: Drop about 10 items on the floor.','Weave: Move through them any way you can.','React: No set path. Read and go.']}
 ];
 
+/* Show STICK_PER_DAY distinct stickhandling drills, rotating by weekday slot so
+   the set changes day to day and wraps cleanly. 3 keeps the daily load sensible
+   for 10U now that each drill is a full guided run (bump to 4 if wanted). */
+var STICK_PER_DAY=3;
 function twoForToday(){
   var s=window.thwapWeekdaySlot(); if(s<0) s=0;
   var n=DRILLS.length;
-  var a=(s*2)%n, b=(s*2+1)%n;
-  if(b===a) b=(a+1)%n;
-  return [DRILLS[a], DRILLS[b]];
+  var out=[], seen={};
+  for(var k=0;k<STICK_PER_DAY && out.length<n;k++){
+    var idx=(s*STICK_PER_DAY+k)%n;
+    while(seen[idx]) idx=(idx+1)%n;   /* skip a wrap collision so all picks are distinct */
+    seen[idx]=1; out.push(DRILLS[idx]);
+  }
+  return out;
 }
 
 function render(){
