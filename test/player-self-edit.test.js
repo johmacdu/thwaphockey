@@ -100,4 +100,21 @@ describe('CSS gates: player-only pencil + own-card-only edit', () => {
   it('self-edit mode makes only the own card editable', () => {
     expect(html).toContain('body.roster-selfediting #roster-grid .pcard:not(.pcard-you-card){opacity:.4;pointer-events:none}');
   });
+  it('coach pencil is hidden for a signed-in player, and self-edit shows Cancel + Done', () => {
+    const w = bootPlayer();
+    return new Promise((r) => setTimeout(r, 200)).then(() => {
+      const d = w.document;
+      d.body.classList.remove('login-locked'); d.body.classList.add('is-authed');
+      const g = (el) => (el ? w.getComputedStyle(el).display : 'none');
+      // the middle (coach) pencil must NOT show for a player
+      expect(g(d.getElementById('rosterEdit'))).toBe('none');
+      // the player pencil shows
+      expect(g(d.getElementById('rosterEditSelf'))).not.toBe('none');
+      // entering self-edit reveals BOTH Cancel and Done (the bug: only Done showed)
+      d.getElementById('rosterEditSelf').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+      expect(g(d.getElementById('rosterEditSelfActions'))).toBe('flex');
+      expect(g(d.getElementById('rosterEditSelfCancel'))).not.toBe('none');
+      expect(g(d.getElementById('rosterEditSelfDone'))).not.toBe('none');
+    });
+  });
 });
