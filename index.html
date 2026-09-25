@@ -2848,7 +2848,8 @@ function todaysWorkout(){var s=window.thwapWeekdaySlot();return WORKOUTS[(s<0?0:
    capped at 6, in a sensible order. Which ones (when a category has several) rotates by day. */
 var CAT_ORDER=['Agility','Power','Speed','Strength','Core'];
 function trimDrills(dr){
-  if(dr.length<=6) return dr;
+  var CAP=4;   /* dryland shows up to 4 drills/day (reduced from 6 so it's less intense) */
+  if(dr.length<=CAP) return dr;
   var di=dayIndex();
   var byCat={};
   dr.forEach(function(x){ (byCat[x.cat]=byCat[x.cat]||[]).push(x); });
@@ -2856,11 +2857,13 @@ function trimDrills(dr){
   var pick=[];
   /* first pass: one per category (rotating which one by day) */
   cats.forEach(function(c){ var g=byCat[c]; pick.push(g[di%g.length]); });
-  /* second pass: add a 2nd from categories that have more, until we hit 6 */
-  for(var r=0; r<cats.length && pick.length<6; r++){
+  /* second pass: add a 2nd from categories that have more, until we hit the cap */
+  for(var r=0; r<cats.length && pick.length<CAP; r++){
     var g=byCat[cats[r]];
     if(g.length>1){ var second=g[(di+1)%g.length]; if(pick.indexOf(second)<0) pick.push(second); }
   }
+  /* the first pass can already exceed the cap when there are many categories; trim */
+  pick=pick.slice(0,CAP);
   /* keep the original workout order so it still reads sensibly */
   return dr.filter(function(x){return pick.indexOf(x)>=0;});
 }
@@ -4710,6 +4713,8 @@ function saveProg(p){try{localStorage.setItem(shootKey(),JSON.stringify(p));}cat
 function render(){
   var list=document.getElementById('shootList'); if(!list)return;
   SHOOT=SHOOT_DAYS[shootDayI()];   /* re-pick today's set on each render */
+  /* Show 2 fewer drills per day so the session is less intense (keep at least 1). */
+  SHOOT=SHOOT.slice(0, Math.max(1, SHOOT.length-2));
   var prog=loadProg();
   list.innerHTML='';
   var shOpt=document.getElementById('shootOptional'); if(shOpt) shOpt.hidden=!(window.thwapIsWeekend&&window.thwapIsWeekend());

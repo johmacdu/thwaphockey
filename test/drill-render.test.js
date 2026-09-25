@@ -54,3 +54,23 @@ describe('Drill lists actually render (no cross-IIFE ReferenceError)', () => {
     expect(list.querySelectorAll('.exrow').length).toBeGreaterThan(0);
   });
 });
+
+describe('Drill intensity reduced (shooting -2, dryland cap 4)', () => {
+  it('dryland caps at 4 drills and shooting renders 2 fewer than the day list', () => {
+    // dryland cap
+    expect(html).toMatch(/var CAP=4;/);
+    // shooting render-time slice
+    expect(html).toMatch(/SHOOT=SHOOT\.slice\(0, Math\.max\(1, SHOOT\.length-2\)\)/);
+  });
+  it('renders the reduced counts (dryland <= 4; shooting = day length - 2)', () => {
+    // uses the win from the earlier beforeAll in this file
+    const dryland = win.document.getElementById('drylandList').querySelectorAll('.exrow').length;
+    const shoot = win.document.getElementById('shootList').querySelectorAll('.exrow').length;
+    expect(dryland).toBeLessThanOrEqual(4);
+    expect(dryland).toBeGreaterThan(0);
+    const dayLens = (win.SHOOT_DAYS || []).map((d) => d.length);
+    const maxDay = Math.max(...dayLens);
+    // shooting shows 2 fewer than a full day (days are all 5 -> 3), min 1
+    expect(shoot).toBe(Math.max(1, maxDay - 2));
+  });
+});
