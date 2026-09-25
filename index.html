@@ -81,7 +81,8 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 .deck-3d.dragging{transition:none;cursor:grabbing}
 .deck-face{position:absolute;inset:0;border-radius:18px;overflow:hidden;background:#0f1712;box-shadow:0 14px 40px rgba(0,0,0,.45);backface-visibility:hidden;-webkit-backface-visibility:hidden}
 .deck-face.dragover{outline:3px dashed var(--lime);outline-offset:-3px}
-.deck-back{transform:rotateY(180deg)}
+.deck-front{transform:translateZ(1px);-webkit-transform:translateZ(1px)}
+.deck-back{transform:rotateY(180deg) translateZ(1px);-webkit-transform:rotateY(180deg) translateZ(1px)}
 .deck-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;-webkit-user-drag:none}
 @keyframes stickSlap{0%{transform:scale(1.8) rotate(-14deg);opacity:0}60%{transform:scale(.9) rotate(4deg);opacity:1}100%{transform:scale(1) rotate(var(--slap-rot,-5deg))}}
 .slapped{animation:stickSlap .6s cubic-bezier(.2,.8,.2,1)}
@@ -4063,11 +4064,26 @@ fetch('stickers/stickers.json').then(function(r){return r.json();}).then(functio
      so the theme, plate and photo are identical to the home card. */
   var pInfo=(window.thwapCurrentPlayer&&window.thwapCurrentPlayer())||null;
   var slug=pInfo?String(pInfo.name||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,''):playerId().replace(/[^a-z]/g,'');
+  /* If currentPlayer() has not resolved yet, synthesize a minimal pInfo from the
+     slug + saved name so the BACK still renders the coded stats card. Without this
+     it fell through to an empty/static back, and with the front rotated 180 that
+     reads as a mirrored copy of the front (the home-card bug). */
+  if(!pInfo && slug){
+    var savedNm=''; try{ savedNm=(localStorage.getItem('bfPlayer')||'').trim(); }catch(e){}
+    var first=(savedNm.split(/\s+/)[0])||(slug.charAt(0).toUpperCase()+slug.slice(1));
+    var ri=(window.thwapDemoInfo&&window.thwapDemoInfo(savedNm))||null;
+    pInfo={ name:savedNm||first, display:first, first:first.toUpperCase(), num:(ri&&ri.num)||'', pos:(ri&&ri.pos)||'F', photo:'' };
+  }
   var myPhoto=null; try{ myPhoto=localStorage.getItem('thwapCardPhoto:'+slug); }catch(e){}
   if(deckFront && window.buildFront && pInfo){ deckFront.innerHTML=window.buildFront(pInfo,slug,myPhoto); }
   else if(artFront){ artFront.src=myPhoto||(slug==='lewie'?'cards/lewie_photo.png':''); }
   if(deckBack && window.buildBack && pInfo){ deckBack.innerHTML=window.buildBack(pInfo,slug); }
   else if(artBack){ artBack.src=slug==='lewie'?'cards/lewie_back.png':''; }
+  /* When live stats land later, rebuild the coded back so its numbers are real. */
+  if(deckBack && window.buildBack && pInfo){
+    window.thwapDeckBackRefresh=function(){ try{ deckBack.innerHTML=window.buildBack(pInfo,slug); }catch(e){} };
+    if(window.thwapEnsureBoard) window.thwapEnsureBoard();
+  }
 
   var drx=0, dry=0;
   function deckPaint(){
@@ -4388,6 +4404,7 @@ function statsFetch(){
         window.thwapBoard[which]=m; window.thwapBoard.ready=true;
         if(window.thwapStatsRefresh) window.thwapStatsRefresh();
         if(window.thwapCardBackRefresh) window.thwapCardBackRefresh();
+        if(window.thwapDeckBackRefresh) window.thwapDeckBackRefresh();
       }
     }).catch(function(){}); }catch(e){}
   });
