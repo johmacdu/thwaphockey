@@ -35,17 +35,17 @@ describe('Drill lists actually render (no cross-IIFE ReferenceError)', () => {
   it('exposes videoBlock/ytid globally so stick + shoot IIFEs can call them', () => {
     expect(typeof win.videoBlock).toBe('function');
     expect(typeof win.ytid).toBe('function');
+    // Watch-how videos were removed (clips not accurate); videoBlock is now a no-op.
     const out = win.videoBlock({ video: 'https://www.youtube.com/watch?v=5daeyw6mRzA' });
-    expect(out).toContain('exvid-link');
-    expect(out).toContain('5daeyw6mRzA');
+    expect(out).toBe('');
   });
 
   it('the Stickhandling list renders drill tiles (not empty)', () => {
     const list = win.document.getElementById('stickList');
     expect(list).toBeTruthy();
     expect(list.querySelectorAll('.exrow').length).toBeGreaterThan(0);
-    // and the Watch-how link is present in the rendered tile
-    expect(list.querySelector('.exvid-link')).toBeTruthy();
+    // the Watch-how link was removed from all drills
+    expect(list.querySelector('.exvid-link')).toBeFalsy();
   });
 
   it('the Shooting list renders drill tiles (not empty)', () => {
