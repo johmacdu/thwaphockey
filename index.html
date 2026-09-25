@@ -3393,17 +3393,24 @@ function stashBoard(which, list){
    opened, then repaint any card already on screen. Guarded to run at most once. */
 var _allBoardReq=false;
 window.thwapEnsureAllBoard=function(){
-  try{ if(window.thwapBoard && window.thwapBoard.all && Object.keys(window.thwapBoard.all).length) return; }catch(e){}
   if(_allBoardReq) return; _allBoardReq=true;
-  try{
-    fetch('/api/board',{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(j){
-      if(j&&j.players&&j.players.length){
-        stashBoard('all', j.players);
-        if(window.thwapRebuildCard) window.thwapRebuildCard();
-        if(window.thwapRepaintRoster) window.thwapRepaintRoster();
-      }
-    }).catch(function(){});
-  }catch(e){}
+  /* Fetch BOTH timeframes: the card back prefers all-time but falls back to weekly
+     when the all-time counters are empty, so we need both populated. */
+  function pull(url, which){
+    try{
+      fetch(url,{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(j){
+        if(j&&j.players&&j.players.length){
+          stashBoard(which, j.players);
+          if(window.thwapRebuildCard) window.thwapRebuildCard();
+          if(window.thwapRepaintRoster) window.thwapRepaintRoster();
+          if(window.thwapCardBackRefresh) window.thwapCardBackRefresh();
+          if(window.thwapDeckBackRefresh) window.thwapDeckBackRefresh();
+        }
+      }).catch(function(){});
+    }catch(e){}
+  }
+  pull('/api/board','all');
+  pull('/api/board?tf=week','week');
 };
 function rowsFor(){
   return LIVE[tf] || DATA[tf];     /* real data for this timeframe, else demo fallback */
@@ -3658,8 +3665,23 @@ function cb2Theme(slug){ /* stored per-player choice, else a stable pick among u
 function cb2SetTheme(slug,theme){ try{ localStorage.setItem('thwapCardTheme:'+slug, theme); }catch(e){} }
 function cb2Plate(face,slug){ var t=cb2Theme(slug); if(!(CB2_HAVE[face]&&CB2_HAVE[face][t])) t='red'; return 'cards/plate_'+face+'_'+t+'.svg'; }
 function cb2PosLabel(pos){ return pos==='G'?'Goalie':pos==='D'?'Defense':pos==='FD'?'Forward & Defense':pos==='DF'?'Defense & Forward':'Forward'; }
-function cb2Stat(slug,disc){ try{ var b=window.thwapBoard; if(b&&b.all&&b.all[slug]) return b.all[slug][disc]||0; }catch(e){} return 0; }
-function cb2Streak(slug){ try{ var b=window.thwapBoard; if(b&&b.all&&b.all[slug]) return b.all[slug].streak||0; }catch(e){} return 0; }
+/* Card-back stats. Prefer the all-time board, but the all-time cumulative
+   counters can be empty (the backend aggregates completions into the weekly
+   buckets; the all-time counter is not always populated). When a player's
+   all-time row is missing OR sums to zero, fall back to the weekly board so the
+   back always shows the real stats it has, never a wall of zeros. */
+function cb2Row(slug){
+  try{
+    var b=window.thwapBoard; if(!b) return null;
+    var a=b.all&&b.all[slug];
+    if(a && ((a.stick||0)+(a.shoot||0)+(a.dryland||0)+(a.streak||0))>0) return a;
+    var wk=b.week&&b.week[slug];
+    if(wk && ((wk.stick||0)+(wk.shoot||0)+(wk.dryland||0))>0) return wk;
+    return a||wk||null;
+  }catch(e){ return null; }
+}
+function cb2Stat(slug,disc){ var r=cb2Row(slug); return r?(r[disc]||0):0; }
+function cb2Streak(slug){ var r=cb2Row(slug); return r?(r.streak||0):0; }
 var CB2_ICONS={
   stick:"<svg viewBox='0 0 40 40' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M11 6 L26 27 L33 33'/><path d='M26 27 L18 31'/></svg>",
   shoot:"<svg viewBox='0 0 40 40' fill='none' stroke='currentColor' stroke-width='2.4'><rect x='7' y='9' width='26' height='22' rx='1.5'/><path d='M7 15h26M7 21h26M13 9v22M20 9v22M27 9v22' stroke-width='1.4'/></svg>",
