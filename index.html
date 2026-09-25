@@ -5873,9 +5873,9 @@ if(form){
       if(dres&&dres.error){ errEl.textContent=dres.error; pwEl.focus(); pwEl.select(); return; }
       if(dres&&dres.role==='player'){
         window.THWAP_DEMO.activate();
-        try{ sessionStorage.setItem('thwapDemoPick','1'); }catch(_){}
-        /* set the auth cookie marker so the gate opens; player is chosen in the picker */
-        var drec={pid:'demo',name:'',email:email,year:SEASON_YEAR,ts:Date.now()};
+        /* Demo player signs straight in as Mario Lemieux (no picker). */
+        try{ localStorage.setItem('bfPlayer','Mario Lemieux'); }catch(_){}
+        var drec={pid:'demo',name:'Mario Lemieux',email:email,year:SEASON_YEAR,ts:Date.now()};
         try{ cookieSet(AUTH_KEY, JSON.stringify(drec), keepEl.checked?180:0); }catch(_){}
         hide(); location.hash='#home'; location.reload(); return;
       }

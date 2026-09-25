@@ -8,7 +8,7 @@
  *     the stats page, and the card back read demo numbers instead of /api/board),
  *   - rewrites the player home greeting, next-game card (vs USSR All-Time Team),
  *     and the "Rangers 10U" kickers to the Demo Team,
- *   - renders a demo player picker so 'player' code sign-in can choose any NHLer,
+ *   - signs the 'player' code straight in as Mario Lemieux (no picker),
  *   - shows the demo roster on the Team page.
  *
  * It NEVER runs its overrides when demo mode is off, so the real Jr Rangers path
@@ -57,43 +57,9 @@
     });
   }
 
-  // --- Player picker: choose any NHLer after 'player' sign-in -----------------
-  // Reuses bfPlayer as the active player (stored full name), exactly like the real
-  // app. We store the DEMO id -> name so the app's first-name id resolves to it.
-  function showPicker() {
-    if (document.getElementById('demoPicker')) return;
-    var wrap = document.createElement('div');
-    wrap.id = 'demoPicker';
-    wrap.setAttribute('role', 'dialog');
-    wrap.setAttribute('aria-modal', 'true');
-    wrap.setAttribute('aria-label', 'Choose a demo player');
-    wrap.style.cssText = 'position:fixed;inset:0;z-index:9999;background:var(--bg,#0e1712);color:var(--text,#f4f7f5);overflow:auto;padding:24px 16px 40px';
-    var grid = D.roster.map(function (p) {
-      var pos = D.posLabel(p.pos, p.role);
-      return "<button type='button' class='demopick' data-name='" + esc(p.name) + "' " +
-        "style='display:flex;flex-direction:column;align-items:center;gap:8px;background:var(--card2,#182420);color:var(--text,#f4f7f5);border:1px solid var(--line,#2b3a34);border-radius:16px;padding:14px 10px;cursor:pointer;font:inherit'>" +
-        "<img src='" + p.photo + "' alt='' style='width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:12px;background:var(--soft,#22302b)'>" +
-        "<span style='font-weight:800'>" + esc(p.first) + " " + esc(p.last) + "</span>" +
-        "<span style='font-size:13px;color:var(--muted,#9fb0a8)'>#" + p.num + " " + esc(pos) + "</span>" +
-        "</button>";
-    }).join('');
-    wrap.innerHTML =
-      "<div style='max-width:1100px;margin:0 auto'>" +
-      "<h1 style='font-size:26px;margin:6px 0 4px'>Demo Team</h1>" +
-      "<p style='color:var(--muted,#9fb0a8);margin:0 0 20px'>Pick a player to explore.</p>" +
-      "<div style='display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px'>" + grid + "</div>" +
-      "</div>";
-    document.body.appendChild(wrap);
-    wrap.addEventListener('click', function (e) {
-      var b = e.target.closest && e.target.closest('.demopick');
-      if (!b) return;
-      var name = b.getAttribute('data-name') || '';
-      try { localStorage.setItem('bfPlayer', name); } catch (err) {}
-      wrap.parentNode && wrap.parentNode.removeChild(wrap);
-      location.hash = '#home';
-      location.reload();
-    });
-  }
+  // --- Player: 'player' sign-in goes straight to Mario Lemieux ----------------
+  // The login handler sets bfPlayer to 'Mario Lemieux' directly, so there is no
+  // picker. Kept minimal on purpose: a demo shows one strong player, not a chooser.
 
   // --- helpers ----------------------------------------------------------------
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -116,16 +82,10 @@
     seedBoard();
     rewriteKickers();
     rewriteNextGame();
-    // If a demo login just asked for the picker, show it.
-    if (sessionStorage.getItem('thwapDemoPick') === '1') {
-      sessionStorage.removeItem('thwapDemoPick');
-      showPicker();
-    }
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
 
-  // Expose the picker so the login handler can trigger it directly.
-  D.showPicker = showPicker;
+  // Expose seedBoard for the login handler.
   D.seedBoard = seedBoard;
 })();
