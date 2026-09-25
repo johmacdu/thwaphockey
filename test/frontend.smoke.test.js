@@ -214,3 +214,28 @@ describe('Splash THWAP! impact sound', () => {
     expect(readFileSync(p).length).toBeGreaterThan(1000);
   });
 });
+
+describe('Accent menu polish + kebab order', () => {
+  it('accent sheet caps ~3.5 items and scrolls', () => {
+    expect(html).toMatch(/\.vsheet\{[^}]*max-height:252px;overflow-y:auto/);
+  });
+  it('locked accents are blurred, generic "Locked accent", no unlock threshold shown', () => {
+    expect(html).toMatch(/\.vopt\.locked\{[^}]*filter:blur/);
+    expect(html).toContain('Locked accent');
+    expect(html).not.toContain('Unlock at ');
+  });
+  it('accent labels are Finn/Swede/Dane', () => {
+    expect(html).toMatch(/label:'Finn'/);
+    expect(html).toMatch(/label:'Swede'/);
+    expect(html).toMatch(/label:'Dane'/);
+    expect(html).not.toMatch(/label:'Finnish'|label:'Swedish'|label:'Danish'/);
+  });
+  it('footer kebab lists Sign out LAST', () => {
+    const menu = html.match(/<div class='footmenu'[^>]*>([\s\S]*?)<\/div>/)[1];
+    const iSignout = menu.indexOf('Sign out');
+    const iBug = menu.indexOf('Report a bug');
+    const iFeat = menu.indexOf('Request a feature');
+    expect(iSignout).toBeGreaterThan(iBug);
+    expect(iSignout).toBeGreaterThan(iFeat);
+  });
+});

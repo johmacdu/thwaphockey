@@ -59,7 +59,7 @@ describe('Drill narration voice picker (all three disciplines, no id collision)'
       .toEqual(['Canadian', 'Minnesotan']);
     expect(win.THWAP_VOICES.some((v) => v.label === 'American')).toBe(false);
     const labels = win.THWAP_VOICES.map((v) => v.label);
-    ['New Yorker', 'Chicagoan', 'Bostonian', 'French Canadian', 'Finnish', 'Swedish', 'Russian', 'Danish']
+    ['New Yorker', 'Chicagoan', 'Bostonian', 'French Canadian', 'Finn', 'Swede', 'Russian', 'Dane']
       .forEach((l) => expect(labels).toContain(l));
     // a picker shows the locked ones as locked chips
     const lockedChips = doc.querySelectorAll('.vpick .vopt.locked');
