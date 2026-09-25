@@ -2741,10 +2741,15 @@ window.ytid=ytid; window.videoBlock=videoBlock;
    can be added later just by appending to THWAP_VOICES with a higher unlockAt. */
 var THWAP_VOICES=window.THWAP_VOICES=[
   {code:'can', label:'Canadian', emoji:'🇨🇦', unlockAt:0},
-  {code:'mn',  label:'Minnesota', emoji:'🏒', unlockAt:0},
-  {code:'us',  label:'American', emoji:'🇺🇸', unlockAt:0},
-  {code:'bos', label:'Boston', emoji:'🦞', unlockAt:0}
-  /* Append more voices here with a higher unlockAt to gate them behind progress. */
+  {code:'mn',  label:'Minnesotan', emoji:'🏒', unlockAt:0},
+  /* Locked until the player has done a month of activities (~20 drills). */
+  {code:'ny',  label:'New Yorker', emoji:'🗽', unlockAt:20},
+  {code:'bos', label:'Bostonian', emoji:'🦞', unlockAt:20},
+  {code:'fca', label:'French Canadian', emoji:'⚜️', unlockAt:20},
+  {code:'fin', label:'Finnish', emoji:'🇫🇮', unlockAt:20},
+  {code:'swe', label:'Swedish', emoji:'🇸🇪', unlockAt:20},
+  {code:'rus', label:'Russian', emoji:'🇷🇺', unlockAt:20},
+  {code:'dan', label:'Danish', emoji:'🇩🇰', unlockAt:20}
 ];
 function thwapVoice(){ try{ return localStorage.getItem('thwapVoice')||'can'; }catch(e){ return 'can'; } }
 function thwapSetVoice(code){ try{ localStorage.setItem('thwapVoice',code); }catch(e){} }
@@ -2807,30 +2812,34 @@ function voicePickerHTML(){
     return "<span class=\"vopt locked\">\uD83D\uDD12 "+esc(v.label)+" \u00B7 Unlock at "+v.unlockAt+"</span>";
   }).join('');
   return "<div class='vpick'>"+
-    "<p class='vmadlib'>Want Sass to have <button type=\"button\" class=\"pos-word vword\" id=\"vWord\" aria-haspopup=\"true\" aria-expanded=\"false\">"+esc(curV.label)+"</button> accent?</p>"+
-    "<div class='pos-sheet vsheet' id='vSheet' role='menu' hidden>"+opts+"</div>"+
+    "<p class='vmadlib'>Want Sass to have <button type=\"button\" class=\"pos-word vword\" aria-haspopup=\"true\" aria-expanded=\"false\">"+esc(curV.label)+"</button> accent?</p>"+
+    "<div class='pos-sheet vsheet' role='menu' hidden>"+opts+"</div>"+
   "</div>";
 }
 window.voicePickerHTML=voicePickerHTML;
 if(!window.__thwapVoiceDelegated){window.__thwapVoiceDelegated=true;
-  function vSheetEl(){ return document.getElementById('vSheet'); }
-  function vWordEl(){ return document.getElementById('vWord'); }
-  function vOpenSheet(open){ var s=vSheetEl(), w=vWordEl(); if(!s||!w)return; s.hidden=!open; w.setAttribute('aria-expanded', open?'true':'false'); }
-  function vSetVoice(code){
+  /* IMPORTANT: dryland, stickhandling AND shooting each render a picker, so we
+     must NOT use shared ids (getElementById returns only the first, which is why
+     only dryland worked). Everything is scoped to the clicked picker's .vpick. */
+  function vOpenSheet(pick,open){ if(!pick)return; var s=pick.querySelector('.vsheet'), w=pick.querySelector('.vword'); if(!s||!w)return; s.hidden=!open; w.setAttribute('aria-expanded', open?'true':'false'); }
+  function vCloseAll(){ document.querySelectorAll('.vpick .vsheet').forEach(function(s){ s.hidden=true; }); document.querySelectorAll('.vpick .vword').forEach(function(w){ w.setAttribute('aria-expanded','false'); }); }
+  function vSetVoice(pick,code){
     var v=THWAP_VOICES.filter(function(x){return x.code===code;})[0]; if(!v||!thwapVoiceUnlocked(v))return;
     thwapSetVoice(code);
-    var w=vWordEl(); if(w) w.firstChild.nodeValue=v.label;
-    var s=vSheetEl(); if(s) s.querySelectorAll('.vopt[data-voice]').forEach(function(o){ o.classList.toggle('on', o.getAttribute('data-voice')===code); });
-    /* stop any playing narration so the next cue uses the new voice */
+    /* reflect the new voice in EVERY picker on the page, not just this one */
+    document.querySelectorAll('.vpick').forEach(function(p){
+      var w=p.querySelector('.vword'); if(w) w.firstChild.nodeValue=v.label;
+      p.querySelectorAll('.vopt[data-voice]').forEach(function(o){ o.classList.toggle('on', o.getAttribute('data-voice')===code); });
+    });
     var a=document.getElementById('thwapAudio'); if(a)a.pause();
-    vOpenSheet(false);
+    vCloseAll();
   }
   document.addEventListener('click',function(ev){
-    var w=ev.target.closest&&ev.target.closest('#vWord');
-    if(w){ ev.stopPropagation(); var s=vSheetEl(); vOpenSheet(s&&s.hidden); return; }
+    var w=ev.target.closest&&ev.target.closest('.vpick .vword');
+    if(w){ ev.stopPropagation(); var pick=w.closest('.vpick'); var s=pick&&pick.querySelector('.vsheet'); var wasOpen=s&&!s.hidden; vCloseAll(); if(!wasOpen) vOpenSheet(pick,true); return; }
     var opt=ev.target.closest&&ev.target.closest('.vopt[data-voice]');
-    if(opt){ vSetVoice(opt.getAttribute('data-voice')); return; }
-    var s=vSheetEl(); if(s&&!s.hidden){ vOpenSheet(false); }
+    if(opt){ vSetVoice(opt.closest('.vpick'), opt.getAttribute('data-voice')); return; }
+    vCloseAll();
   });
 }
 function todaysWorkout(){var s=window.thwapWeekdaySlot();return WORKOUTS[(s<0?0:s)%WORKOUTS.length];}
