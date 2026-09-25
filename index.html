@@ -1970,6 +1970,8 @@ window.thwapActiveTeam=function(coach){
       var msgEl=document.getElementById('coachProfileMsg');
       var dataUrl='';
       function open(){
+        /* Ignore an open within the post-navigation guard window (the Team-tap auto-open). */
+        if(Date.now()<(window.__thwapNavGuardUntil||0)) return;
         if(nameIn) nameIn.value=coach.name&&coach.name!=='Coach'?coach.name:'';
         dataUrl=coach.photo||'';
         if(dataUrl){ imgEl.src=dataUrl; imgEl.hidden=false; initEl.hidden=true; } else { imgEl.hidden=true; initEl.hidden=false; initEl.textContent='+'; }
@@ -2672,6 +2674,10 @@ window.addEventListener('hashchange',function(){
     location.hash='#coachhome';
   }
 });
+/* Coach profile guard: any navigation opens a brief window during which the coach
+   profile editor refuses to open. This kills the auto-open the coach saw when
+   tapping Team (a click landing as the page changes); a genuine later tap works. */
+window.addEventListener('hashchange',function(){ window.__thwapNavGuardUntil=Date.now()+450; });
 /* Close (x) on coach/shared pages (Team, Plan, Standings) must land on the viewer's
    real home: a coach's home is #coachhome (#home is hidden for coaches), a player's
    is #home. href='#home' is the no-JS fallback; this routes coaches correctly. */
