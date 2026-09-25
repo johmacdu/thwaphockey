@@ -634,7 +634,9 @@ body.is-coach .roster-coachonly{display:block}
 .roster-editcancel{background:var(--card2);border:1px solid var(--line);color:var(--text)}
 .roster-editdone{background:var(--lime);border:1px solid transparent;color:var(--ink)}
 /* Edit mode: cards show a subtle editable affordance. */
-body.roster-editing #roster-grid .pcard:not(.pcard-add){box-shadow:0 0 0 2px var(--lime) inset;position:relative}
+body.roster-editing #roster-grid .pcard:not(.pcard-add){box-shadow:0 0 0 3px var(--lime) inset;position:relative;transform:scale(.965);transition:transform .12s ease}
+body.roster-editing #roster-grid .pcard:not(.pcard-add)::after{content:'\270E';position:absolute;top:6px;right:6px;z-index:3;width:26px;height:26px;display:grid;place-items:center;border-radius:8px;background:var(--lime);color:var(--ink);font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,.28)}
+body.roster-editing #roster-grid .pcard.pcard-add{opacity:.4;pointer-events:none}
 
 /* Player-edit side sheet (X-close, slides from the right; no modal chrome). */
 .sheet{position:fixed;inset:0;z-index:60}
@@ -1447,14 +1449,14 @@ body.login-locked{overflow:hidden}
 <div class='planwrap' id='planWrap'>
   <div class='plancard'>
     <div class='plancard-h'>Weekly training plan</div>
-    <p class='plancard-p'>Pick what your team trains each day. Tap a discipline to add or remove it; the count shows how many drills are set. Save when you&rsquo;re done so your team sees it.</p>
+    <p class='plancard-p'>Tap a discipline to set what your team trains each day, then Save.</p>
     <div class='plangrid' id='planGrid'></div>
     <button type='button' class='plansave' id='planSave' disabled>Save plan</button>
     <p class='plan-done' id='planDone' hidden>Saved! Your team sees this plan.</p>
   </div>
   <div class='tgoal-wrap' id='tgoalBox'>
     <div class='tgoal-h'>Team goal for the game</div>
-    <p class='tgoal-p'>Set one focus for the whole team. It shows in every player&rsquo;s Game Day plan, alongside their own two goals. Leave it empty to give players all three picks.</p>
+    <p class='tgoal-p'>One team focus, shown in every player&rsquo;s Game Day plan. Leave it empty to give players all three picks.</p>
     <input class='tgoal-in' id='tgoalIn' type='text' maxlength='80' placeholder='e.g. Talk on the ice'>
     <button type='button' class='tgoal-save' id='tgoalSave'>Save team goal</button>
     <p class='tgoal-done' id='tgoalDone' hidden>Saved! Your team sees this.</p>
@@ -2023,7 +2025,7 @@ window.thwapActiveTeam=function(coach){
         var card=e.target.closest && e.target.closest('.pcard[data-name]');
         if(!card) return; /* let the +Player card through */
         e.preventDefault(); e.stopPropagation();
-        openPlayerEdit(card.getAttribute('data-name')||'');
+        openPlayerEdit(card.getAttribute('data-name')||'', card);
       }, true);
     })();
     /* Player-edit side sheet. */
@@ -2038,22 +2040,45 @@ window.thwapActiveTeam=function(coach){
     var SEASON_CODES=['2027','2026'];
     function pinFor(num){ var n=String(num==null?'':num).trim(); return n?(n+SEASON_CODES[0]):'\u2014'; }
     function peSheetShow(on){ if(sheet) sheet.hidden=!on; if(!on){ var c=document.getElementById('peConfirm'); if(c) c.hidden=true; } }
-    function openPlayerEdit(name){
-      var first=String(name||'').trim().split(/\s+/)[0]; pePid=first.toLowerCase();
+    function openPlayerEdit(name, cardEl){
+      var parts=String(name||'').trim().split(/\s+/);
+      var first=parts[0]||''; var last=parts.slice(1).join(' '); pePid=first.toLowerCase();
       if(peMsg) peMsg.textContent='';
       var c=document.getElementById('peConfirm'); if(c) c.hidden=true;
+      /* Open the sheet IMMEDIATELY with what we already know, so it never waits on
+         the network. The jersey comes straight off the tapped card's big-number
+         markup (always present); the fetch below then fills emails + canonical
+         fields in the background. */
+      var seed=(typeof infoFor==='function')?infoFor(name):null;
+      var cardNum=''; try{ var bn=cardEl&&cardEl.querySelector('.pcard-bn'); if(bn) cardNum=(bn.textContent||'').trim(); }catch(e){}
+      if(peFirst) peFirst.value=first;
+      if(peLast) peLast.value=last;
+      if(peNum) peNum.value=cardNum||(seed&&seed.info&&seed.info.num!=null?seed.info.num:'');
+      if(pePos) pePos.value=(seed&&seed.info&&seed.info.pos)||'F';
+      if(peEmail) peEmail.value='';
+      if(peEmail2) peEmail2.value='';
+      if(pePin) pePin.textContent=pinFor(cardNum||(seed&&seed.info&&seed.info.num));
+      peSheetShow(true);
+      /* Background: fetch the real record and fill emails + canonical fields. If a
+         cached roster is available (from the roster paint), use it without a round-trip. */
+      function fill(m){
+        if(!m) return;
+        if(peFirst && m.firstName) peFirst.value=m.firstName;
+        if(peLast && m.lastName!=null) peLast.value=m.lastName;
+        if(peNum && m.number!=null) peNum.value=m.number;
+        if(pePos && m.position) pePos.value=m.position;
+        if(peEmail) peEmail.value=m.parentEmail||'';
+        if(peEmail2) peEmail2.value=m.parentEmail2||'';
+        if(pePin) pePin.textContent=pinFor(m.number);
+      }
+      var cached=(window.__thwapRosterCache&&window.__thwapRosterCache.members)||null;
+      if(cached){ fill(cached.filter(function(x){ return (x.playerId||x.firstName||'').toLowerCase()===pePid; })[0]); }
       fetch('/api/coach?action=roster&code='+encodeURIComponent(code)+'&coachToken='+encodeURIComponent(coach.token))
         .then(function(r){ return r.json(); }).then(function(j){
-          var m=(j&&j.members||[]).filter(function(x){ return (x.playerId||x.firstName||'').toLowerCase()===pePid; })[0]||{};
-          if(peFirst) peFirst.value=m.firstName||first;
-          if(peLast) peLast.value=m.lastName||'';
-          if(peNum) peNum.value=(m.number!=null?m.number:'');
-          if(pePos) pePos.value=m.position||'F';
-          if(peEmail) peEmail.value=m.parentEmail||'';
-          if(peEmail2) peEmail2.value=m.parentEmail2||'';
-          if(pePin) pePin.textContent=pinFor(m.number);
-          peSheetShow(true);
-        }).catch(function(){ peSheetShow(true); });
+          if(j&&j.members){ window.__thwapRosterCache=j; }
+          var m=(j&&j.members||[]).filter(function(x){ return (x.playerId||x.firstName||'').toLowerCase()===pePid; })[0];
+          fill(m);
+        }).catch(function(){});
     }
     document.getElementById('peX') && document.getElementById('peX').addEventListener('click',function(){ peSheetShow(false); });
     document.getElementById('peScrim') && document.getElementById('peScrim').addEventListener('click',function(){ peSheetShow(false); });

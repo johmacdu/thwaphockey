@@ -295,8 +295,13 @@ describe('Roster edit mode: pencil toggles to Cancel/Done, cards drop the badge'
     expect(html).toMatch(/body\.is-coach \.roster-editactions\[hidden\]\{display:none\}/);
     expect(html).toMatch(/body\.is-coach \.roster-edit\[hidden\]\{display:none\}/);
   });
-  it('the per-card pencil badge (::after) is gone', () => {
-    expect(html).not.toMatch(/#roster-grid \.pcard:not\(\.pcard-add\)::after/);
+  it('no per-card pencil badge at rest, but a clear one in edit mode', () => {
+    // At rest (not editing) the cards carry no ::after edit badge...
+    expect(html).not.toMatch(/(?<!roster-editing )#roster-grid \.pcard:not\(\.pcard-add\)::after/);
+    // ...but edit mode adds a scoped badge + scale so it is visibly different
+    // from a normal (stat-page) tap.
+    expect(html).toMatch(/body\.roster-editing #roster-grid \.pcard:not\(\.pcard-add\)::after/);
+    expect(html).toContain('transform:scale(.965)');
   });
   it('the pencil enters edit mode and Cancel/Done exit it', () => {
     expect(html).toMatch(/editBtn\.addEventListener\('click',function\(\)\{ setEditing\(true\); \}\)/);
