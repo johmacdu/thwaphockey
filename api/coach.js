@@ -281,6 +281,42 @@ async function updatePlayer(req, res) {
   return res.status(200).json({ ok: true, member: rec });
 }
 
+// POST ?action=self-update-player { code (team), playerId, playerCode, firstName,
+//   lastName, number, parentEmail, parentEmail2 } -> a signed-in PLAYER edits their
+//   OWN record. Authorized by the player's own code (jersey + season year), which
+//   only they/their parent hold; a player can never edit another player. Position
+//   is NOT editable here (that is the coach's roster position; the player sets a
+//   game-day position separately via set-game-position).
+async function selfUpdatePlayer(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  const { code, playerId, playerCode, firstName, lastName, number, parentEmail, parentEmail2 } = parseBody(req);
+  res.setHeader('Cache-Control', 'no-store');
+  const pid = String(playerId || '').toLowerCase();
+  if (!pid) return res.status(400).json({ error: 'playerId required' });
+  if (code && !(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  const m = await getMember(pid);
+  if (!m) return res.status(404).json({ error: 'unknown player' });
+  // Authorize: the submitted code must match THIS player's current code
+  // (jersey number + season year). This is the same secret the player signs in with.
+  const cur = String(m.number == null ? '' : m.number).trim();
+  const entered = String(playerCode || '').trim();
+  if (!cur || (entered !== cur + '2027' && entered !== cur + '2026')) {
+    return res.status(403).json({ error: 'that code did not match your player code' });
+  }
+  if (firstName !== undefined && !String(firstName || '').trim()) {
+    return res.status(400).json({ error: 'first name cannot be empty' });
+  }
+  if (parentEmail !== undefined && String(parentEmail || '').trim() && !EMAIL_RE.test(String(parentEmail).trim().toLowerCase())) {
+    return res.status(400).json({ error: 'parent email is invalid' });
+  }
+  if (parentEmail2 !== undefined && String(parentEmail2 || '').trim() && !EMAIL_RE.test(String(parentEmail2).trim().toLowerCase())) {
+    return res.status(400).json({ error: 'second parent email is invalid' });
+  }
+  const rec = await updateMember(pid, { firstName, lastName, number, parentEmail, parentEmail2 });
+  if (!rec) return res.status(404).json({ error: 'unknown player' });
+  return res.status(200).json({ ok: true, member: rec });
+}
+
 // GET (admin key) full roster across all teams, for the admin roster editor.
 async function adminRoster(req, res) {
   if (!methodGuard(req, res, 'GET')) return;
@@ -796,6 +832,7 @@ export default async function handler(req, res) {
     case 'add-player': return addPlayer(req, res);
     case 'remove-player': return removePlayer(req, res);
     case 'update-player': return updatePlayer(req, res);
+    case 'self-update-player': return selfUpdatePlayer(req, res);
     case 'admin-roster': return adminRoster(req, res);
     case 'admin-update-player': return adminUpdatePlayer(req, res);
     case 'admin-login': return adminLogin(req, res);
