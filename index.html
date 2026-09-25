@@ -2604,6 +2604,12 @@ window.thwapActiveTeam=function(coach){
       var isCoach=document.body.classList.contains('is-coach');
       var name=cardEl.getAttribute('data-name');
       if(isCoach && window.openPlayerPage){ window.openPlayerPage(name,'team'); return; }
+      /* A player tapping their OWN card lands on the own-card view (front + theme
+         picker + "See my stats" -> stats page). Tapping a teammate opens the
+         read-only viewer. Match on first name vs the signed-in bfPlayer. */
+      var mine=''; try{ mine=(localStorage.getItem('bfPlayer')||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,''); }catch(e){}
+      var tapped=String(name||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,'');
+      if(mine && tapped===mine && window.thwapOpenMyCard){ window.thwapOpenMyCard(); return; }
       if(window.openTeammateCard){ window.openTeammateCard(name); return; }
     });
   });
@@ -3902,6 +3908,10 @@ overlay.addEventListener('click', function(e){ if(e.target===overlay) close(); }
 
 /* open the card already showing the back (used by the stats-page back button) */
 window.openPlayerCardToBack=function(){ open(); ry=180; flipped=true; rx=0; _lastBackShowing=null; paint(); };
+/* Open the SIGNED-IN player's OWN card (front, with theme picker + the
+   "See my stats" button). Distinct from the read-only teammate viewer: a player
+   tapping their own card on the Team page should land here, not in viewing-teammate. */
+window.thwapOpenMyCard=function(){ open(); };
 
 /* ---- Teammate card viewer (read-only): tap any player on the Team page to open
    their card and rotate it front/back. Shows their photo (parent-consented,
