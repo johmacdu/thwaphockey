@@ -446,12 +446,21 @@ async function requestCode(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (!(await getTeam(code))) return res.status(200).json({ ok: true });
   const m = await getMember(playerId);
-  if (m && m.parentEmail && m.number != null) {
+  if (m && m.number != null) {
     const name = m.firstName || 'your player';
-    await sendMail(m.parentEmail, 'Your Thwap Hockey player code',
+    const subject = 'Your Thwap Hockey player code';
+    const text =
       `The player code for ${name} is the jersey number followed by the season year.\n\n` +
       `For jersey #${m.number}: ${m.number}2026 or ${m.number}2027.\n\n` +
-      `Use it to sign in on Thwap Hockey. If you did not ask for this, you can ignore this email.`);
+      `Use it to sign in on Thwap Hockey. If you did not ask for this, you can ignore this email.`;
+    const seen = {};
+    [m.parentEmail, m.parentEmail2].forEach((e) => {
+      const clean = String(e || '').trim().toLowerCase();
+      if (clean && EMAIL_RE.test(clean) && !seen[clean]) { seen[clean] = 1; }
+    });
+    for (const clean of Object.keys(seen)) {
+      await sendMail(clean, subject, text);
+    }
   }
   return res.status(200).json({ ok: true });
 }
