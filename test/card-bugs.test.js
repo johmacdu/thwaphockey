@@ -130,3 +130,14 @@ describe('Coach page copy is tightened', () => {
     expect(html).toContain('One team focus, shown in every player');
   });
 });
+
+describe('Flip card faces are Z-separated (iOS mirrored-front fix)', () => {
+  // The card opened by tapping the home name / a Team-page card is the flip card
+  // (.card3d / .cardface / .cardback), NOT the sticker deck. It had the same iOS
+  // bleed-through risk (backface-visibility + overflow:hidden + border-radius with
+  // no Z-separation), so the back showed a mirrored copy of the front on iPhone.
+  it('.cardfront and .cardback each carry translateZ separation', () => {
+    expect(html).toMatch(/\.cardfront\{transform:translateZ\(1px\);-webkit-transform:translateZ\(1px\)\}/);
+    expect(html).toMatch(/\.cardback\{transform:rotateY\(180deg\) translateZ\(1px\);-webkit-transform:rotateY\(180deg\) translateZ\(1px\)\}/);
+  });
+});
