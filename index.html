@@ -2740,24 +2740,34 @@ window.ytid=ytid; window.videoBlock=videoBlock;
    site (like __thwapVidDelegated). Voices unlock by completed-drill count so more
    can be added later just by appending to THWAP_VOICES with a higher unlockAt. */
 var THWAP_VOICES=window.THWAP_VOICES=[
-  {code:'can', label:'Canadian', emoji:'🇨🇦', unlockAt:0},
-  {code:'mn',  label:'Minnesota', emoji:'🏒', unlockAt:0},
-  {code:'us',  label:'American', emoji:'🇺🇸', unlockAt:0},
-  {code:'bos', label:'Boston', emoji:'🦞', unlockAt:0}
-  /* Append more voices here with a higher unlockAt to gate them behind progress. */
+  {code:'can', label:'Canadian',   emoji:'🇨🇦', unlockAt:0},
+  {code:'mn',  label:'Minnesota',  emoji:'🏒', unlockAt:0},
+  {code:'us',  label:'American',   emoji:'🇺🇸', unlockAt:30},
+  {code:'bos', label:'Boston',     emoji:'🦞', unlockAt:60},
+  {code:'ny',  label:'New Yorker', emoji:'🗽', unlockAt:90},
+  {code:'rus', label:'Russian',    emoji:'🇷🇺', unlockAt:120},
+  {code:'swe', label:'Swedish',    emoji:'🇸🇪', unlockAt:150},
+  {code:'fin', label:'Finnish',    emoji:'🇫🇮', unlockAt:180}
+  /* unlockAt = days of training (one new accent ~ per month). */
 ];
 function thwapVoice(){ try{ return localStorage.getItem('thwapVoice')||'can'; }catch(e){ return 'can'; } }
 function thwapSetVoice(code){ try{ localStorage.setItem('thwapVoice',code); }catch(e){} }
-/* How many drills the player has finished, used for unlockAt thresholds. The board
-   API exposes per-slug week counts and all-time streaks, not a single lifetime drill
-   total, so there is no clean sum to read yet - return 0 so only unlockAt:0 voices
-   show unlocked for now. */
-function thwapCompletedCount(){
-  return 0; /* TODO: wire real completed-drill count when the board exposes a lifetime total */
+/* Voices unlock by DAYS OF TRAINING. The clock starts the first time the player
+   opens the app (thwapFirstDay, an epoch-day integer stored once). A voice's
+   `unlockAt` is the number of training days required (0 = available from day one).
+   The ladder is roughly one new accent per month. */
+function thwapTrainingDays(){
+  try{
+    var today=Math.floor(Date.now()/86400000);
+    var first=parseInt(localStorage.getItem('thwapFirstDay')||'',10);
+    if(!(first>0)){ first=today; localStorage.setItem('thwapFirstDay', String(first)); }
+    return Math.max(0, today-first);
+  }catch(e){ return 0; }
 }
-function thwapVoiceUnlocked(v){ if(!v) return false; if(!v.unlockAt) return true; return thwapCompletedCount()>=v.unlockAt; }
+function thwapVoiceUnlocked(v){ if(!v) return false; if(!v.unlockAt) return true; return thwapTrainingDays()>=v.unlockAt; }
+function thwapDaysToUnlock(v){ if(!v||!v.unlockAt) return 0; return Math.max(0, v.unlockAt-thwapTrainingDays()); }
 window.thwapVoice=thwapVoice; window.thwapSetVoice=thwapSetVoice;
-window.thwapCompletedCount=thwapCompletedCount; window.thwapVoiceUnlocked=thwapVoiceUnlocked;
+window.thwapTrainingDays=thwapTrainingDays; window.thwapVoiceUnlocked=thwapVoiceUnlocked;
 
 function audioBlock(dr){
   /* Narration now rides the drill timer (Start/Pause/Restart), so no standalone
@@ -2804,10 +2814,10 @@ function voicePickerHTML(){
     if(thwapVoiceUnlocked(v)){
       return "<button type=\"button\" class=\"vopt"+(v.code===curV.code?' on':'')+"\" data-voice=\""+v.code+"\" role=\"menuitemradio\">"+(v.emoji?"<span class=\"vopt-emoji\">"+v.emoji+"</span> ":'')+esc(v.label)+"</button>";
     }
-    return "<span class=\"vopt locked\">\uD83D\uDD12 "+esc(v.label)+" \u00B7 Unlock at "+v.unlockAt+"</span>";
+    return "<span class=\"vopt locked\">\uD83D\uDD12 "+esc(v.label)+" \u00B7 unlocks in "+thwapDaysToUnlock(v)+" days</span>";
   }).join('');
   return "<div class='vpick'>"+
-    "<p class='vmadlib'>Want Sass to have <button type=\"button\" class=\"pos-word vword\" id=\"vWord\" aria-haspopup=\"true\" aria-expanded=\"false\">"+esc(curV.label)+"</button> accent?</p>"+
+    "<p class='vmadlib'>Sass talks with a <button type=\"button\" class=\"pos-word vword\" id=\"vWord\" aria-haspopup=\"true\" aria-expanded=\"false\">"+esc(curV.label)+"</button> accent.</p>"+
     "<div class='pos-sheet vsheet' id='vSheet' role='menu' hidden>"+opts+"</div>"+
   "</div>";
 }

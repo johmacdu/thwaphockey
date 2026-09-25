@@ -26,6 +26,10 @@ const VOICES = {
   mn:  { id: 'MqdBjMcqClsTO77t1vGB', label: 'Minnesota hockey voice' },
   us:  { id: 'kpftzLQxRv90Nn6qoJRf', label: 'American hockey voice' },
   bos: { id: 'UZvBfqEdvCFLqsBOo9Zr', label: 'Boston hockey voice' },
+  ny:  { id: 'q3pCVYOxlOb5G3l2O13o', label: 'New Yorker hockey voice' },
+  rus: { id: 'u5UJ3o5MZq3cWrXIXi37', label: 'Russian hockey voice' },
+  swe: { id: 'TIMFVcMCO4bdy7J79GWF', label: 'Swedish hockey voice' },
+  fin: { id: 'KQem9e29QRWURqusQZoF', label: 'Finnish hockey voice' },
 };
 const MODEL_ID = 'eleven_multilingual_v2';
 const VOICE_SETTINGS = { stability: 0.5, similarity_boost: 0.8, style: 0.35, use_speaker_boost: true };
