@@ -195,11 +195,11 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .exaud-ic{font-size:15px;display:inline-block}
 .exaud-link.playing{color:var(--green2)}
 /* Kid-friendly voice picker: a pill/chip row, not a card. */
-.vpick{margin:2px 0 16px}
+.vpick{margin:2px 0 16px;position:relative}
 .vmadlib{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(17px,4.4vw,22px);line-height:1.3;margin:0;color:var(--text)}
 .pos-word.vword{color:var(--green2);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px;cursor:pointer;-webkit-tap-highlight-color:transparent;background:none;border:0;font:inherit;padding:0 2px}
 .pos-word.vword:hover{opacity:.82}
-.vsheet{position:relative;margin-top:10px;max-width:280px;max-height:252px;overflow-y:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:0 6px 20px var(--shadow)}
+.vsheet{position:absolute;top:100%;left:0;z-index:40;margin-top:6px;width:280px;max-width:min(280px,calc(100vw - 40px));max-height:252px;overflow-y:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:0 12px 32px var(--shadow)}
 .vopt{display:flex;width:100%;align-items:center;gap:12px;padding:14px 18px;min-height:44px;background:none;border:0;border-top:1px solid var(--line);font:inherit;font-size:16px;font-weight:800;color:var(--text);cursor:pointer;text-align:left}
 .vopt:first-child{border-top:0}
 .vopt .vopt-emoji{font-size:18px;line-height:1}
