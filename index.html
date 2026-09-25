@@ -2741,8 +2741,10 @@ window.ytid=ytid; window.videoBlock=videoBlock;
    can be added later just by appending to THWAP_VOICES with a higher unlockAt. */
 var THWAP_VOICES=window.THWAP_VOICES=[
   {code:'can', label:'Canadian', emoji:'🇨🇦', unlockAt:0},
-  {code:'mn',  label:'Minnesota', emoji:'🏒', unlockAt:0}
-  /* Append more voices here, e.g. {code:'bos', label:'Boston', emoji:'🦞', unlockAt:25} */
+  {code:'mn',  label:'Minnesota', emoji:'🏒', unlockAt:0},
+  {code:'us',  label:'American', emoji:'🇺🇸', unlockAt:0},
+  {code:'bos', label:'Boston', emoji:'🦞', unlockAt:0}
+  /* Append more voices here with a higher unlockAt to gate them behind progress. */
 ];
 function thwapVoice(){ try{ return localStorage.getItem('thwapVoice')||'can'; }catch(e){ return 'can'; } }
 function thwapSetVoice(code){ try{ localStorage.setItem('thwapVoice',code); }catch(e){} }
