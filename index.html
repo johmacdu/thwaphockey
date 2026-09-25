@@ -1159,6 +1159,7 @@ body.login-locked{overflow:hidden}
       <span class='login-selwrap'>
         <select class='login-in login-select' id='loginTeam'>
           <option value='vancouver-jr-rangers-10u' selected>Vancouver Jr. Rangers 10U</option>
+          <option value='demo-team'>Demo Team</option>
         </select>
         <span class='login-selchev' aria-hidden='true'>&#8250;</span>
       </span>
@@ -3366,6 +3367,7 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#progress')
     try{ localStorage.removeItem('thwapAuth'); sessionStorage.removeItem('thwapAuth'); }catch(_){}
     try{ document.cookie='thwapAuth=;path=/;max-age=0'; }catch(_){}
     try{ localStorage.removeItem('bfPlayer'); localStorage.removeItem('thwapRosterFilter'); }catch(_){}
+    try{ if(window.THWAP_DEMO) window.THWAP_DEMO.deactivate(); }catch(_){}
     location.hash='';
     location.reload();
   });
@@ -5863,6 +5865,27 @@ if(form){
     var email=String(emailEl.value||'').trim();
     var code=String(pwEl.value||'');
     if(!validEmail(email)){ errEl.textContent='Enter your email.'; emailEl.focus(); return; }
+    /* Demo team: fully client-side, no OTP and no backend. Chosen via the team
+       dropdown with hi@woodymacduffie.com + 'player' | 'coach'. */
+    var teamSel=document.getElementById('loginTeam');
+    if(window.THWAP_DEMO && teamSel && teamSel.value===window.THWAP_DEMO.TEAM_VALUE){
+      var dres=window.THWAP_DEMO.login(teamSel.value,email,code);
+      if(dres&&dres.error){ errEl.textContent=dres.error; pwEl.focus(); pwEl.select(); return; }
+      if(dres&&dres.role==='player'){
+        window.THWAP_DEMO.activate();
+        try{ sessionStorage.setItem('thwapDemoPick','1'); }catch(_){}
+        /* set the auth cookie marker so the gate opens; player is chosen in the picker */
+        var drec={pid:'demo',name:'',email:email,year:SEASON_YEAR,ts:Date.now()};
+        try{ cookieSet(AUTH_KEY, JSON.stringify(drec), keepEl.checked?180:0); }catch(_){}
+        hide(); location.hash='#home'; location.reload(); return;
+      }
+      if(dres&&dres.role==='coach'){
+        window.THWAP_DEMO.activate();
+        try{ localStorage.setItem('thwapCoach', JSON.stringify({ token:'demo', email:email, name:'Coach', teams:['DEMO'], teamList:[{code:'DEMO',name:window.THWAP_DEMO.TEAM_NAME,ageGroup:''}], childPlayerId:null, demo:true })); }catch(_){}
+        hide(); location.hash='#coachhome'; location.reload(); return;
+      }
+      errEl.textContent="Demo code is 'player' or 'coach'."; pwEl.focus(); pwEl.select(); return;
+    }
     errEl.textContent='Signing in...';
     /* 1) Try coach first. A 200 with a token = coach. */
     fetch('/api/coach?action=coach-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:code})})
@@ -5990,4 +6013,6 @@ wireHeaderNav('navWaitlistK', function(){ playToSheet(showWait); });
 window.addEventListener('hashchange',function(){ if(location.hash==='#login'){ show(); maybeSplash(); } });
 gate();
 })();</script>
+<script src='demo/demo-data.js'></script>
+<script src='demo/demo-mode.js'></script>
 </body></html>
