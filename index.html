@@ -639,9 +639,22 @@ body.is-authed:not(.is-coach) .roster-playeronly[hidden]{display:none}
 .roster-edit{margin-left:auto;flex:none;display:inline-grid;place-items:center;width:44px;height:44px;border-radius:50%;font-family:inherit;font-size:19px;color:var(--text);cursor:pointer;background:var(--card);border:1px solid var(--line);box-shadow:0 2px 8px var(--shadow)}
 .roster-edit:hover{border-color:var(--line2)}
 .roster-edit.on{background:var(--lime);color:var(--ink);border-color:transparent}
-.roster-edit[hidden],body.is-coach .roster-edit[hidden]{display:none}
+/* Role gating must OUTRANK the base .roster-edit / .roster-editactions display
+   rules (same 0,1,0 specificity, defined later, so they would otherwise win and
+   show BOTH pencils to everyone). Two-class selectors (0,2,0) settle it: hide by
+   default, reveal only for the matching role, and always obey [hidden]. */
+.roster-edit.roster-coachonly,.roster-editactions.roster-coachonly{display:none}
+body.is-coach .roster-edit.roster-coachonly{display:inline-grid}
+body.is-coach .roster-editactions.roster-coachonly{display:flex}
+.roster-edit.roster-playeronly,.roster-editactions.roster-playeronly{display:none}
+body.is-authed:not(.is-coach) .roster-edit.roster-playeronly{display:inline-grid}
+body.is-authed:not(.is-coach) .roster-editactions.roster-playeronly{display:flex}
+.roster-edit[hidden],.roster-editactions[hidden],
+body.is-coach .roster-edit.roster-coachonly[hidden],body.is-coach .roster-editactions.roster-coachonly[hidden],
+body.is-authed:not(.is-coach) .roster-edit.roster-playeronly[hidden],body.is-authed:not(.is-coach) .roster-editactions.roster-playeronly[hidden]{display:none}
+.roster-edit[hidden]{display:none}
+.roster-editactions[hidden]{display:none}
 .roster-editactions{margin-left:auto;flex:none;display:flex;gap:8px}
-.roster-editactions[hidden],body.is-coach .roster-editactions[hidden]{display:none}
 .roster-editcancel,.roster-editdone{min-height:44px;font-family:inherit;font-weight:800;font-size:14px;border-radius:12px;padding:8px 16px;cursor:pointer}
 .roster-editcancel{background:var(--card2);border:1px solid var(--line);color:var(--text)}
 .roster-editdone{background:var(--lime);border:1px solid transparent;color:var(--ink)}
