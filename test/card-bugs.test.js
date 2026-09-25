@@ -54,10 +54,22 @@ describe('Card color: closed grid card matches the open card (no hardcoded red)'
   });
 });
 
-describe('Card stats: ALL TIME, read from thwapBoard.all', () => {
-  it('cb2Stat reads the all-time board, not the weekly board', () => {
-    expect(html).toContain("if(b&&b.all&&b.all[slug]) return b.all[slug][disc]||0;");
-    expect(html).not.toContain("if(b&&b.week&&b.week[slug]) return b.week[slug][disc]||0;");
+describe('Card stats: prefer all-time, fall back to weekly when empty', () => {
+  it('cb2Stat prefers a non-zero all-time row but falls back to the weekly board', () => {
+    // The all-time backend counters can be all-zero; the card must then show the
+    // weekly numbers rather than a wall of zeros.
+    expect(html).toContain('function cb2Row(slug)');
+    expect(html).toMatch(/a\.stick\|\|0\)\+\(a\.shoot\|\|0\)\+\(a\.dryland\|\|0\)\+\(a\.streak\|\|0\)\)>0\) return a/);
+    expect(html).toMatch(/var wk=b\.week&&b\.week\[slug\]/);
+    expect(html).toContain('function cb2Stat(slug,disc){ var r=cb2Row(slug); return r?(r[disc]||0):0; }');
+  });
+  it('renders real stats when all-time is zero but weekly has data', () => {
+    win.thwapBoard = { all: { lewie: { stick: 0, shoot: 0, dryland: 0, streak: 0 } }, week: { lewie: { stick: 6, shoot: 6, dryland: 1, streak: 0 } } };
+    const back = win.buildBack({ first: 'Lewie', num: '72', pos: 'FD' }, 'lewie');
+    // weekly fallback: 6 stick, 6 shoot, 1 dryland, 13 total sessions
+    expect(back).toContain('>6<');
+    expect(back).toContain('>1<');
+    expect(back).toContain('>13<');
   });
   it('the back card is labelled All time, not This week', () => {
     const back = win.buildBack({ first: 'Lewie', num: '72', pos: 'FD' }, 'lewie');
