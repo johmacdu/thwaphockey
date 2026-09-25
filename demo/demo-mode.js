@@ -27,23 +27,45 @@
   /* Coach view: the coach home reads roster / schedule / team-coaches from
      /api/coach, which has no DEMO team. Intercept those GETs when demo is active
      and answer from THWAP_DEMO so the coach home shows the NHLers, the USSR next
-     game, and Jack Adams in the coaches strip. The real coach path is untouched
-     when demo is off. Only demo GET reads are shimmed; writes fall through. */
+     game, and Jack Adams in the coaches strip. We also handle the coach-profile
+     SAVE POST client-side so editing the demo coach's name/photo works (it would
+     otherwise hit the backend, which has no DEMO team, and fail). The real coach
+     path is untouched when demo is off. */
   (function installCoachFetchShim() {
     if (typeof window.fetch !== 'function') return;
     var realFetch = window.fetch.bind(window);
     function jsonResponse(obj) {
       return new Response(JSON.stringify(obj), { status: 200, headers: { 'Content-Type': 'application/json' } });
     }
+    // Local override the coach may set by editing their profile (name/photo).
+    var coachOverride = null;
+    function coachesList() {
+      var c = D.coachCoaches();
+      if (coachOverride) {
+        c.coaches = c.coaches.map(function (x) {
+          if (x.email === D.EMAIL) return { email: x.email, role: x.role, name: coachOverride.name || x.name, photo: coachOverride.photo || x.photo };
+          return x;
+        });
+      }
+      return c;
+    }
     window.fetch = function (input, init) {
       try {
         if (D.isActive()) {
           var url = (typeof input === 'string') ? input : (input && input.url) || '';
           var method = ((init && init.method) || (input && input.method) || 'GET').toUpperCase();
-          if (method === 'GET' && url.indexOf('/api/coach') !== -1) {
-            if (/action=roster/.test(url)) return Promise.resolve(jsonResponse(D.coachRoster()));
-            if (/action=schedule/.test(url)) return Promise.resolve(jsonResponse(D.coachSchedule()));
-            if (/action=team-coaches/.test(url)) return Promise.resolve(jsonResponse(D.coachCoaches()));
+          if (url.indexOf('/api/coach') !== -1) {
+            if (method === 'GET') {
+              if (/action=roster/.test(url)) return Promise.resolve(jsonResponse(D.coachRoster()));
+              if (/action=schedule/.test(url)) return Promise.resolve(jsonResponse(D.coachSchedule()));
+              if (/action=team-coaches/.test(url)) return Promise.resolve(jsonResponse(coachesList()));
+            }
+            if (method === 'POST' && /action=set-coach-profile/.test(url)) {
+              var body = {};
+              try { body = JSON.parse((init && init.body) || '{}'); } catch (e) {}
+              coachOverride = { name: body.name, photo: body.photo };
+              return Promise.resolve(jsonResponse({ ok: true, coaches: coachesList().coaches }));
+            }
           }
         }
       } catch (e) {}
@@ -112,24 +134,40 @@
     if (meta) meta.textContent = pretty + ' at Home';
   }
 
-  /* Team page: replace the roster grid with the 15 NHLers. Each card taps to open
-     that player's card (openTeammateCard), matching the real roster behavior. */
+  /* Team page: replace the roster grid with the 15 NHLers, each rendered as the
+     FULL coded card (plate + number + name + cut-out photo) scaled into the cell,
+     exactly like the real roster - not a bare cropped photo. Tapping opens that
+     player's card. */
+  var ROSTER_BASE = 380; // buildFront is authored at this width; we scale to the cell
   function renderRoster() {
     var grid = document.getElementById('roster-grid');
-    if (!grid) return;
+    if (!grid || !window.buildFront) return;
     grid.innerHTML = D.roster.map(function (p) {
-      return "<a href='#' class='pcard' data-name='" + esc(p.name) + "'>" +
-        "<img class='pcard-cardart' src='" + esc(p.photo) + "' alt='" + esc(p.first) + "'>" +
-        "</a>";
+      return "<a href='#' class='pcard' data-name='" + esc(p.name) + "'></a>";
     }).join('');
     grid.querySelectorAll('.pcard[data-name]').forEach(function (card) {
+      var nm = card.getAttribute('data-name');
+      var p = D.bySlug(D.slugOf(String(nm).split(/\s+/)[0]));
+      if (p) {
+        var info = { num: String(p.num), pos: p.pos, first: p.first };
+        card.innerHTML = "<div class='pcard-card' style='position:absolute;inset:0;overflow:hidden'>" +
+          "<div style='position:absolute;top:0;left:0;width:" + ROSTER_BASE + "px;height:" + (ROSTER_BASE * 7 / 5) + "px;transform-origin:top left' data-pcbase='1'>" +
+          window.buildFront(info, D.slugOf(p.first), p.photo, 'red') + "</div></div>";
+      }
       card.addEventListener('click', function (e) {
         e.preventDefault();
-        var nm = card.getAttribute('data-name');
         var isCoach = document.body.classList.contains('is-coach');
         if (isCoach && window.openPlayerPage) { window.openPlayerPage(nm, 'team'); return; }
         if (window.openTeammateCard) window.openTeammateCard(nm);
       });
+    });
+    rescaleRoster();
+  }
+  function rescaleRoster() {
+    document.querySelectorAll('#roster-grid .pcard [data-pcbase]').forEach(function (scaler) {
+      var cell = scaler.closest('.pcard'); if (!cell) return;
+      var w = cell.clientWidth; if (!w) return;
+      scaler.style.transform = 'scale(' + (w / ROSTER_BASE) + ')';
     });
   }
 
@@ -210,9 +248,10 @@
       var h = location.hash;
       seedBoard();
       applyTeamLabel();
-      if (h === '#roster') { renderRoster(); rewriteKickers(); }
+      if (h === '#roster') { renderRoster(); rewriteKickers(); setTimeout(rescaleRoster, 60); }
       if (h === '#progress') { setTimeout(renderStandings, 0); }
     });
+    window.addEventListener('resize', function () { if (D.isActive()) rescaleRoster(); });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();

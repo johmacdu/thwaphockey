@@ -1813,14 +1813,14 @@ window.thwapActiveTeam=function(coach){
     function initials(nm,em){ var s=(nm||em||'').trim(); if(!s) return '?'; var p=s.split(/\s+/); return (p[0].charAt(0)+(p[1]?p[1].charAt(0):'')).toUpperCase(); }
     function render(coaches){
       box.hidden=false;
-      var amHead=coaches.some(function(c){ return c.role==='head' && c.email===myEmail; });
+      var amHead=coaches.some(function(c){ return c.role==='head' && String(c.email||'').toLowerCase()===myEmail; });
       strip.innerHTML='';
       coaches.forEach(function(c){
         var nm=c.name||c.email;
         var pill=document.createElement('span'); pill.className='bcoach';
         var isHead=c.role==='head';
         var canRemove=amHead && c.role==='assistant';
-        var isMe=c.email===myEmail;
+        var isMe=String(c.email||'').toLowerCase()===myEmail;
         pill.innerHTML='<span class="bcoach-av"></span>'+
           '<span>'+(isMe?'<button type="button" class="bcoach-nmbtn"><span class="bcoach-nm"></span></button>':'<span class="bcoach-nm"></span>')+'<span class="bcoach-role" style="display:block">'+(isHead?'Head coach':'Assistant')+'</span></span>'+
           (isMe?'<button type="button" class="bcoach-btn" aria-label="Edit your profile">\u270E</button>':(canRemove?'<button type="button" class="bcoach-btn bcoach-remove" aria-label="Remove assistant">\u2715</button>':''));
@@ -3710,6 +3710,7 @@ function stickerStrip(){
 
 /* rotation state */
 var rx=0, ry=0, sheen=.5, flipped=false;
+var _lastBackShowing=null;
 function paint(){
   card.style.transform='rotateX('+rx+'deg) rotateY('+ry+'deg)';
   front.style.setProperty('--sheen', sheen);
@@ -3719,13 +3720,16 @@ function paint(){
      hide it explicitly rather than rely on backface-visibility. */
   var yy=((ry%360)+360)%360;
   var backShowing=(yy>90 && yy<270);
-  card.classList.toggle('showing-back', backShowing);
-  /* WebKit can bleed a backface-hidden face through the flip when it has a
-     positioned subtree, so hide the away-facing face explicitly. This is what
-     guarantees the BACK (stats) shows on the back and not a ghost of the front. */
-  front.style.visibility=backShowing?'hidden':'visible';
-  back.style.visibility=backShowing?'visible':'hidden';
-  var scene=document.getElementById('cardScene'); if(scene) scene.classList.toggle('on-back', backShowing);
+  /* Only touch the face visibility / classes when the facing actually FLIPS.
+     Writing these every pointermove frame forced style recalc + repaint on the
+     big card faces and made the drag stutter; caching makes the spin smooth. */
+  if(backShowing!==_lastBackShowing){
+    _lastBackShowing=backShowing;
+    card.classList.toggle('showing-back', backShowing);
+    front.style.visibility=backShowing?'hidden':'visible';
+    back.style.visibility=backShowing?'visible':'hidden';
+    var scene=document.getElementById('cardScene'); if(scene) scene.classList.toggle('on-back', backShowing);
+  }
   /* The stats button lives in a card-sized layer in the scene (so it stays
      clickable and the card drag cannot capture it). We rotate that layer in
      lockstep with the card, +180deg on Y, so the button reads as printed on the
@@ -3738,7 +3742,7 @@ function open(){
   var picked=''; try{ picked=localStorage.getItem('bfPlayer')||''; }catch(e){}
   if(!picked){ location.hash='#roster'; return; }
   window.thwapViewTarget=null; document.body.classList.remove('viewing-teammate');
-  buildFaces(); buildThemePicker(); rx=0; ry=0; flipped=false; paint();
+  buildFaces(); buildThemePicker(); rx=0; ry=0; flipped=false; _lastBackShowing=null; paint();
   overlay.hidden=false;
   requestAnimationFrame(function(){ overlay.classList.add('show'); if(!reduce)card.classList.add('intro'); });
   document.addEventListener('keydown', onKey);
@@ -3756,7 +3760,7 @@ closeBtn.addEventListener('click', close);
 overlay.addEventListener('click', function(e){ if(e.target===overlay) close(); });
 
 /* open the card already showing the back (used by the stats-page back button) */
-window.openPlayerCardToBack=function(){ open(); ry=180; flipped=true; rx=0; paint(); };
+window.openPlayerCardToBack=function(){ open(); ry=180; flipped=true; rx=0; _lastBackShowing=null; paint(); };
 
 /* ---- Teammate card viewer (read-only): tap any player on the Team page to open
    their card and rotate it front/back. Shows their photo (parent-consented,
@@ -3772,7 +3776,7 @@ window.openTeammateCard=function(name){
   var display=parts.length>1?parts[0]+' '+parts[parts.length-1].charAt(0)+'.':parts[0];
   window.thwapViewTarget={ name:String(name).trim(), display:display, first:(parts[0]||'').toUpperCase(), num:info.num, pos:info.pos, photo:'' };
   document.body.classList.add('viewing-teammate');
-  buildFaces(); rx=0; ry=0; flipped=false; paint();
+  buildFaces(); rx=0; ry=0; flipped=false; _lastBackShowing=null; paint();
   overlay.hidden=false;
   requestAnimationFrame(function(){ overlay.classList.add('show'); if(!reduce)card.classList.add('intro'); });
   document.addEventListener('keydown', onKey);
@@ -3793,6 +3797,7 @@ if(!reduce){
     vrx=0; vry=0;
     card.classList.add('dragging'); card.setPointerCapture(e.pointerId);
   });
+  var _moveRAF=null;
   card.addEventListener('pointermove', function(e){
     if(!dragging)return;
     var now=e.timeStamp||Date.now();
@@ -3806,7 +3811,9 @@ if(!reduce){
     /* track angular velocity (deg per frame ~16ms) */
     vry=ddy/dt*16; vrx=ddx/dt*16;
     sheen=Math.max(0,Math.min(1,(ry%360+360)%360/180));
-    paint();
+    /* Coalesce paints to one per frame: pointermove can fire many times per
+       frame and painting on each one is what made the drag feel choppy. */
+    if(!_moveRAF){ _moveRAF=requestAnimationFrame(function(){ _moveRAF=null; paint(); }); }
   });
   function coast(){
     /* apply velocity, friction slows it; gentle pull levels the X tilt for readability */
@@ -3830,21 +3837,45 @@ if(!reduce){
   }
   card.addEventListener('pointerup', endDrag);
   card.addEventListener('pointercancel', endDrag);
-  /* double-tap / double-click gives a playful flick spin toward the other face */
+  /* A clean single tap FLIPS the card to the other face (front <-> back). This is
+     the reliable way back to the front after rotating, and it works in the
+     teammate/read-only view too. A drag is ignored (moved>8). A double tap still
+     gives a playful flick spin. The flip animates via the .card3d CSS transition
+     (transitions are only off while .dragging), so we drop .dragging and settle
+     ry to the nearest opposite face. */
+  var _tapTimer=null;
+  function flipToOtherFace(){
+    stopMomentum();
+    card.classList.remove('dragging');   /* re-enable the CSS transition for a smooth flip */
+    var yy=((ry%360)+360)%360;
+    var backNow=(yy>90 && yy<270);
+    ry = backNow ? 0 : 180;              /* land squarely on the opposite face */
+    rx = 0; vry = 0; vrx = 0;
+    flipped = !backNow;
+    _lastBackShowing=null;
+    paint();
+  }
   card.addEventListener('click', function(e){
     if(moved>8)return; /* was a drag, not a tap */
     var now=Date.now();
     if(now-lastTap<300){
+      /* double tap: playful flick spin toward the other face */
+      if(_tapTimer){ clearTimeout(_tapTimer); _tapTimer=null; }
       stopMomentum();
       card.classList.add('dragging');
       vry=(flipped?-9:9); vrx=(Math.random()*4-2);
       momentum=requestAnimationFrame(coast);
       lastTap=0;
-    } else lastTap=now;
+    } else {
+      lastTap=now;
+      /* wait past the double-tap window, then treat as a single-tap flip */
+      if(_tapTimer) clearTimeout(_tapTimer);
+      _tapTimer=setTimeout(function(){ _tapTimer=null; flipToOtherFace(); }, 260);
+    }
   });
 } else {
   /* reduced motion: click toggles front/back, no spin */
-  card.addEventListener('click', function(){ ry=flipped?0:180; flipped=!flipped; rx=0; paint(); });
+  card.addEventListener('click', function(){ ry=flipped?0:180; flipped=!flipped; rx=0; _lastBackShowing=null; paint(); });
 }
 })();
 </script>
