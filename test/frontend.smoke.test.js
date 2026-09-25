@@ -199,3 +199,18 @@ describe('Sass logo easter egg: no mobile long-press image callout', () => {
     expect(html).toMatch(/logo\.addEventListener\('contextmenu',function\(e\)\{ e\.preventDefault\(\); \}\)/);
   });
 });
+
+describe('Splash THWAP! impact sound', () => {
+  it('plays the hit sound at the impact step, guarded by mute/reduced-motion', () => {
+    // wired right where the burst fires
+    expect(html).toMatch(/setStep\('impact'\);\s*thwapPlaySplashHit\(\);/);
+    // guards: reduced motion + mute + autoplay-block safe
+    expect(html).toMatch(/function thwapPlaySplashHit\(\)\{[\s\S]*reduceMotion\(\)/);
+    expect(html).toMatch(/new Audio\('login\/thwap-hit\.mp3'\)/);
+    expect(html).toMatch(/p\.catch\(function\(\)\{\}\)/);
+  });
+  it('ships the thwap-hit.mp3 asset', () => {
+    const p = resolve(__dirname, '../login/thwap-hit.mp3');
+    expect(readFileSync(p).length).toBeGreaterThan(1000);
+  });
+});
