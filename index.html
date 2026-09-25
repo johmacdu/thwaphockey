@@ -5701,9 +5701,22 @@ function runToEnd(endFn){
   setStep('run');
   splashTimers.push(setTimeout(function(){
     setStep('impact');
+    thwapPlaySplashHit();
     if(stageEl){ stageEl.classList.add('shake'); setTimeout(function(){ stageEl.classList.remove('shake'); },420); }
   },1500));
   splashTimers.push(setTimeout(function(){ end(); },2250));
+}
+/* THWAP! impact sound. One lazily-created <audio>, played at the burst. Silent if
+   autoplay is blocked, if the player muted narration, or under reduced motion. */
+var _thwapHit=null;
+function thwapPlaySplashHit(){
+  try{
+    if(reduceMotion()) return;
+    if(window.thwapMuted && window.thwapMuted()) return;
+    if(!_thwapHit){ _thwapHit=new Audio('login/thwap-hit.mp3'); _thwapHit.preload='auto'; }
+    _thwapHit.currentTime=0;
+    var p=_thwapHit.play(); if(p&&p.catch) p.catch(function(){});
+  }catch(e){}
 }
 /* run -> impact -> sign-in. Fired automatically after the welcome delay, or early
    when the player taps Sass (which bypasses the remaining delay). */
