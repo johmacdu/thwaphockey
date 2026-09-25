@@ -2938,7 +2938,8 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#dryland') 
 .gdr{--drill-stage:#0e1712;position:fixed;inset:0;z-index:130;display:flex;flex-direction:column;background:var(--drill-stage);padding:0}
 .gdr[hidden]{display:none}
 .gdr-top{display:flex;align-items:center;justify-content:space-between;padding:16px 18px}
-.gdr-audio{width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:rgba(255,255,255,.5);font-size:20px;display:grid;place-items:center;cursor:default}
+.gdr-audio{width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:rgba(255,255,255,.82);display:grid;place-items:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.gdr-audio .gdr-audio-ic{display:block}
 .gdr-audio[data-v1-disabled]{opacity:.4}
 .gdr-back{height:44px;padding:0 20px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.1);color:#fff;font-family:inherit;font-size:16px;font-weight:800;line-height:1;cursor:pointer;backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px)}
 .gdr-mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;padding:0 24px}
@@ -2953,7 +2954,7 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#dryland') 
 <div class='gdr' id='gdrOverlay' hidden>
   <div class='gdr-top'>
     <button type='button' class='gdr-back' id='gdrX' aria-label='Back'>Back</button>
-    <button type='button' class='gdr-audio' id='gdrAudio' aria-label='Mute narration' title='Mute'>🔊</button>
+    <button type='button' class='gdr-audio' id='gdrAudio' aria-label='Mute narration' title='Mute'><svg class='gdr-audio-ic' viewBox='0 0 24 24' width='22' height='22' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M4 9v6h4l5 4V5L8 9H4z'/><path d='M16.5 8.5a5 5 0 0 1 0 7'/><path d='M19 6a9 9 0 0 1 0 12'/></svg></button>
   </div>
   <div class='gdr-mid'>
     <p class='gdr-name' id='gdrName'></p>
@@ -3181,7 +3182,12 @@ elToggle.addEventListener('click',function(){
 });
 /* Mute toggle (top-right) - persists and applies live to narration + metronome. */
 var elAudio=document.getElementById('gdrAudio');
-function paintMute(){ if(!elAudio)return; var m=thwapMuted(); elAudio.textContent=m?'🔇':'🔊'; elAudio.setAttribute('aria-label', m?'Unmute narration':'Mute narration'); elAudio.title=m?'Unmute':'Mute'; }
+/* Classic iOS-style speaker icons (SVG, currentColor) - not emoji, which render
+   inconsistently and don't look native. Unmuted = speaker + waves; muted =
+   speaker + slash. */
+var ICO_SPK="<svg class='gdr-audio-ic' viewBox='0 0 24 24' width='22' height='22' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M4 9v6h4l5 4V5L8 9H4z'/><path d='M16.5 8.5a5 5 0 0 1 0 7'/><path d='M19 6a9 9 0 0 1 0 12'/></svg>";
+var ICO_MUTE="<svg class='gdr-audio-ic' viewBox='0 0 24 24' width='22' height='22' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M4 9v6h4l5 4V5L8 9H4z'/><line x1='17' y1='9' x2='22' y2='14'/><line x1='22' y1='9' x2='17' y2='14'/></svg>";
+function paintMute(){ if(!elAudio)return; var m=thwapMuted(); elAudio.innerHTML=m?ICO_MUTE:ICO_SPK; elAudio.setAttribute('aria-label', m?'Unmute narration':'Mute narration'); elAudio.title=m?'Unmute':'Mute'; }
 if(elAudio){ paintMute(); elAudio.addEventListener('click',function(){ thwapSetMuted(!thwapMuted()); paintMute(); }); }
 elReset.addEventListener('click',function(){
   if(!state) return;
