@@ -4573,22 +4573,30 @@ document.addEventListener('click',function(e){
     /* As Sass skates through the wordmark, explode it with a small THWAP! boom. */
     (function(){
       var wm=document.getElementById('brandMark'); if(!wm||reduce) return;
-      var wr=wm.getBoundingClientRect(); var enterX=wr.left+wr.width*0.22, boomX=wr.left+wr.width*0.5, boomY=wr.top+wr.height*0.5;
-      var boomed=false;
+      var wr=wm.getBoundingClientRect();
+      var enterX=wr.left+wr.width*0.22;      /* outbound: leading (right) edge reaches into the wordmark */
+      var returnX=wr.right-wr.width*0.22;    /* return: leading (left) edge re-enters from the right */
+      var boomX=wr.left+wr.width*0.5, boomY=wr.top+wr.height*0.5;
+      var thwap=function(){
+        if(window.thwapShatterWordmark) window.thwapShatterWordmark();
+        var boom=document.createElement('img'); boom.className='wm-thwap'; boom.src='login/thwap-burst.webp'; boom.alt='';
+        boom.style.left=boomX+'px'; boom.style.top=boomY+'px';
+        document.body.appendChild(boom);
+        requestAnimationFrame(function(){ boom.classList.add('go'); });
+        setTimeout(function(){ if(boom.parentNode)boom.parentNode.removeChild(boom); },680);
+      };
+      /* phase 0: skating out, 1: boomed on the way in, 2: turned around, 3: boomed on the way back */
+      var phase=0, maxRight=0;
       var watch=function(){
-        if(boomed || !logo.classList.contains('skating')) return;
+        if(phase>=3 || !logo.classList.contains('skating')) return;
         var lr=logo.getBoundingClientRect();
-        /* fire as Sass skates INTO the wordmark: his leading (right) edge reaches into it */
-        if(lr.right >= enterX){
-          boomed=true;
-          if(window.thwapShatterWordmark) window.thwapShatterWordmark();
-          var boom=document.createElement('img'); boom.className='wm-thwap'; boom.src='login/thwap-burst.webp'; boom.alt='';
-          boom.style.left=boomX+'px'; boom.style.top=boomY+'px';
-          document.body.appendChild(boom);
-          requestAnimationFrame(function(){ boom.classList.add('go'); });
-          setTimeout(function(){ if(boom.parentNode)boom.parentNode.removeChild(boom); },680);
-          return;
-        }
+        if(phase===0){
+          if(lr.right>maxRight) maxRight=lr.right;
+          if(lr.right>=enterX){ thwap(); phase=1; }               /* explode as he skates INTO it */
+        }else if(phase===1){
+          if(lr.right>maxRight) maxRight=lr.right;
+          if(lr.right < maxRight-8) phase=2;                      /* he has flipped and is skating back */
+        }else if(phase===2 && lr.left<=returnX){ thwap(); phase=3; return; }  /* explode again on the way back */
         requestAnimationFrame(watch);
       };
       requestAnimationFrame(watch);
