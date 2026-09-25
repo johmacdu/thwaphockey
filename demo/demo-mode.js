@@ -66,6 +66,11 @@
               coachOverride = { name: body.name, photo: body.photo };
               return Promise.resolve(jsonResponse({ ok: true, coaches: coachesList().coaches }));
             }
+            if (method === 'POST' && /action=self-update-player/.test(url)) {
+              /* Demo player self-edit: no backend team exists, so accept the save
+                 client-side and report ok (the demo is a showcase, not persisted). */
+              return Promise.resolve(jsonResponse({ ok: true }));
+            }
           }
         }
       } catch (e) {}
@@ -214,6 +219,24 @@
         if (window.openTeammateCard) window.openTeammateCard(nm);
       });
     });
+    /* Mark the signed-in demo player's OWN card so the player self-edit pencil
+       (which targets .pcard-you-card) has something to edit and stays visible.
+       The self-edit IIFE runs at load, before we replace the grid, so re-mark here
+       and re-show the pencil. */
+    try {
+      var mePid = '';
+      try { mePid = (localStorage.getItem('bfPlayer') || '').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g, ''); } catch (e) {}
+      var pencil = document.getElementById('rosterEditSelf');
+      var mine = false;
+      grid.querySelectorAll('.pcard[data-name]').forEach(function (card) {
+        var first = (card.getAttribute('data-name') || '').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g, '');
+        if (first === mePid) { card.classList.add('pcard-you-card'); mine = true; }
+        else { card.classList.remove('pcard-you-card'); }
+      });
+      if (pencil && mine && !document.body.classList.contains('is-coach')) {
+        pencil.hidden = false; pencil.style.display = '';
+      }
+    } catch (e) {}
     rescaleRoster();
   }
   function rescaleRoster() {
