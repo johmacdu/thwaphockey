@@ -286,7 +286,8 @@ body.login-locked .topbar{position:relative;z-index:120}
 .card3d.intro{animation:cardIn .5s cubic-bezier(.2,.9,.2,1)}
 @keyframes cardIn{from{opacity:0;transform:scale(.85) rotateY(-30deg)}to{opacity:1;transform:none}}
 .cardface{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:var(--r-player);overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.14)}
-.cardback{transform:rotateY(180deg)}
+.cardfront{transform:translateZ(1px);-webkit-transform:translateZ(1px)}
+.cardback{transform:rotateY(180deg) translateZ(1px);-webkit-transform:rotateY(180deg) translateZ(1px)}
 .cardart{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;-webkit-user-drag:none;user-select:none}
 /* Frame overlay drawn over a player's own uploaded photo so it still reads as a Thwap card. */
 .cf-frame{position:absolute;inset:0;pointer-events:none;border:3px solid var(--acc,#F0645A);border-radius:var(--r-player);box-shadow:inset 0 0 0 2px rgba(0,0,0,.35)}
