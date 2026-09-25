@@ -1126,7 +1126,7 @@ body.login-locked{overflow:hidden}
   .sp-sass,.sp-skater,.sp-frame,.sp-bubble-img,.sp-burst-img,.sp-shards,.sp-speed,.sp-speed i,.sp-ice,.sp-crack{transition:none!important;animation:none!important}
   #loginStage.shake,.login-modal{animation:none}
 }
-</style><script>try{if(localStorage.getItem('thwapTheme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script></head><body><div class='app'>
+</style><script>try{if(localStorage.getItem('thwapTheme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script></head><body><script src='demo/demo-data.js'></script><script src='demo/demo-mode.js'></script><div class='app'>
 <!-- Break the Ice login splash: two fixed layers over the real homepage.
      #loginBackdrop (frost + Sass/THWAP stage) sits BELOW the site header so its
      Sign In / Join Waitlist links stay visible and tappable; #loginOverlay (the
@@ -5879,15 +5879,16 @@ if(form){
       if(dres&&dres.error){ errEl.textContent=dres.error; pwEl.focus(); pwEl.select(); return; }
       if(dres&&dres.role==='player'){
         window.THWAP_DEMO.activate();
-        try{ sessionStorage.setItem('thwapDemoPick','1'); }catch(_){}
-        /* set the auth cookie marker so the gate opens; player is chosen in the picker */
-        var drec={pid:'demo',name:'',email:email,year:SEASON_YEAR,ts:Date.now()};
+        /* Demo player signs straight in as Mario Lemieux (no picker). */
+        var DEMO_PLAYER='Mario Lemieux';
+        try{ localStorage.setItem('bfPlayer', DEMO_PLAYER); }catch(_){}
+        var drec={pid:'demo',name:DEMO_PLAYER,email:email,year:SEASON_YEAR,ts:Date.now()};
         try{ cookieSet(AUTH_KEY, JSON.stringify(drec), keepEl.checked?180:0); }catch(_){}
         hide(); location.hash='#home'; location.reload(); return;
       }
       if(dres&&dres.role==='coach'){
         window.THWAP_DEMO.activate();
-        try{ localStorage.setItem('thwapCoach', JSON.stringify({ token:'demo', email:email, name:'Coach', teams:['DEMO'], teamList:[{code:'DEMO',name:window.THWAP_DEMO.TEAM_NAME,ageGroup:''}], childPlayerId:null, demo:true })); }catch(_){}
+        try{ localStorage.setItem('thwapCoach', JSON.stringify({ token:'demo', email:email, name:'Jack Adams', teams:['DEMO'], teamList:[{code:'DEMO',name:window.THWAP_DEMO.TEAM_NAME,ageGroup:''}], childPlayerId:null, demo:true })); }catch(_){}
         hide(); location.hash='#coachhome'; location.reload(); return;
       }
       errEl.textContent="Demo code is 'player' or 'coach'."; pwEl.focus(); pwEl.select(); return;
@@ -6019,6 +6020,4 @@ wireHeaderNav('navWaitlistK', function(){ playToSheet(showWait); });
 window.addEventListener('hashchange',function(){ if(location.hash==='#login'){ show(); maybeSplash(); } });
 gate();
 })();</script>
-<script src='demo/demo-data.js'></script>
-<script src='demo/demo-mode.js'></script>
 </body></html>

@@ -27,6 +27,8 @@
   var DEMO_TEAM_VALUE = 'demo-team';           // <option value> in the login select
   var DEMO_TEAM_NAME = 'Demo Team';
   var DEMO_NEXT_OPPONENT = 'USSR All-Time Team';
+  var DEMO_COACH_NAME = 'Jack Adams';
+  var DEMO_COACH_PHOTO = 'demo/players/coach_adams.png';
 
   // Tier totals, descending by rank. tier is for grouping only; stats drive standings.
   var TIER = {
@@ -138,6 +140,43 @@
     } catch (e) {}
   }
 
+  // ---- Coach-view responses --------------------------------------------------
+  // These mirror the shapes the coach home reads from /api/coach so demo-mode can
+  // answer those fetches client-side (no DEMO team exists in the backend).
+  function coachRoster() {
+    var members = ROSTER.map(function (p) {
+      return {
+        playerId: p.id,
+        firstName: p.first,
+        lastName: p.last,
+        num: p.num,
+        idpGoal: 'Compete every shift',
+        week: { stick: p.stick, shoot: p.shoot, dryland: p.dryland },
+      };
+    });
+    var trained = members.filter(function (m) {
+      var w = m.week || {}; return ((w.stick || 0) + (w.shoot || 0) + (w.dryland || 0)) > 0;
+    }).length;
+    return {
+      ok: true,
+      team: { code: 'DEMO', name: DEMO_TEAM_NAME },
+      participation: { trained: trained, total: members.length },
+      members: members,
+    };
+  }
+  function coachSchedule() {
+    var g = nextGame();
+    return { ok: true, next: { nextGame: g }, schedule: { events: [g] } };
+  }
+  function coachCoaches() {
+    return {
+      ok: true,
+      coaches: [
+        { email: DEMO_EMAIL, name: DEMO_COACH_NAME, role: 'head', photo: DEMO_COACH_PHOTO },
+      ],
+    };
+  }
+
   // Login result for the demo team, or null if the inputs are not the demo combo.
   // email must match, team must be the demo option, code is 'player' or 'coach'.
   function login(team, email, code) {
@@ -154,6 +193,8 @@
     TEAM_VALUE: DEMO_TEAM_VALUE,
     TEAM_NAME: DEMO_TEAM_NAME,
     OPPONENT: DEMO_NEXT_OPPONENT,
+    COACH_NAME: DEMO_COACH_NAME,
+    COACH_PHOTO: DEMO_COACH_PHOTO,
     roster: ROSTER,
     byId: byId,
     bySlug: bySlug,
@@ -163,6 +204,9 @@
     boardAll: boardAll,
     teamTotals: teamTotals,
     nextGame: nextGame,
+    coachRoster: coachRoster,
+    coachSchedule: coachSchedule,
+    coachCoaches: coachCoaches,
     posLabel: posLabel,
     isActive: isActive,
     activate: activate,

@@ -24,6 +24,33 @@
   var D = window.THWAP_DEMO;
   if (!D) return;
 
+  /* Coach view: the coach home reads roster / schedule / team-coaches from
+     /api/coach, which has no DEMO team. Intercept those GETs when demo is active
+     and answer from THWAP_DEMO so the coach home shows the NHLers, the USSR next
+     game, and Jack Adams in the coaches strip. The real coach path is untouched
+     when demo is off. Only demo GET reads are shimmed; writes fall through. */
+  (function installCoachFetchShim() {
+    if (typeof window.fetch !== 'function') return;
+    var realFetch = window.fetch.bind(window);
+    function jsonResponse(obj) {
+      return new Response(JSON.stringify(obj), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    window.fetch = function (input, init) {
+      try {
+        if (D.isActive()) {
+          var url = (typeof input === 'string') ? input : (input && input.url) || '';
+          var method = ((init && init.method) || (input && input.method) || 'GET').toUpperCase();
+          if (method === 'GET' && url.indexOf('/api/coach') !== -1) {
+            if (/action=roster/.test(url)) return Promise.resolve(jsonResponse(D.coachRoster()));
+            if (/action=schedule/.test(url)) return Promise.resolve(jsonResponse(D.coachSchedule()));
+            if (/action=team-coaches/.test(url)) return Promise.resolve(jsonResponse(D.coachCoaches()));
+          }
+        }
+      } catch (e) {}
+      return realFetch(input, init);
+    };
+  })();
+
   /* Resolve demo card facts for currentPlayer(). Read by index.html's
      currentPlayer via window.thwapDemoInfo (no-op off-demo). */
   window.thwapDemoInfo = function (name) {
