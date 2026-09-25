@@ -82,22 +82,24 @@
 
   /* Themes + accents for the demo: unlock EVERYTHING (no locked themes, all
      accents selectable) and give each demo player a random-but-stable theme.
-     Front and back both read cb2Theme(slug), so they always match. */
+     Front and back both read cb2Theme(slug), so they always match.
+     IMPORTANT: the inline index.html scripts DEFINE window.thwapThemeUnlocked and
+     window.thwapVoiceUnlocked, and they run AFTER this file, so wrapping them here
+     at parse time gets clobbered. installUnlocks() is called from boot() (on
+     DOMContentLoaded, after the inline scripts) so it wraps the FINAL definitions. */
   var ALL_THEMES = ['red', 'blue', 'gold', 'rainbow', 'grunge', 'amber', 'fire'];
-  (function unlockThemesAndAccents() {
-    // Unlock every card theme while demo is active (merged into cb2Unlocked()).
+  function installUnlocks() {
     var priorThemeUnlock = window.thwapThemeUnlocked;
     window.thwapThemeUnlocked = function () {
       if (D.isActive()) return ALL_THEMES.slice();
       return priorThemeUnlock ? priorThemeUnlock() : [];
     };
-    // Unlock every drill-narration accent while demo is active.
     var priorVoiceUnlocked = window.thwapVoiceUnlocked;
     window.thwapVoiceUnlocked = function (v) {
       if (D.isActive()) return true;
       return priorVoiceUnlocked ? priorVoiceUnlocked(v) : (!v || !v.unlockAt);
     };
-  })();
+  }
 
   /* Seed a random theme per demo player (once), stored the same way a real
      player's choice is (thwapCardTheme:<slug>), so cb2Theme picks it up for BOTH
@@ -121,8 +123,8 @@
     var css =
       /* Sidney Crosby: +15% larger, shifted up 15% of card height */
       ".cf2-photo-sidney{transform:scale(1.15) translateY(-15%);transform-origin:bottom center}" +
-      /* Dominik Hasek: +25% larger, rotated 90deg, centered on the card */
-      ".cf2-photo-dominik{transform:translateY(-50%) rotate(90deg) scale(1.25);transform-origin:center center;top:50%;bottom:auto;object-position:center center}" +
+      /* Dominik Hasek: +25% larger, shifted left 25%, centered vertically (no rotation) */
+      ".cf2-photo-dominik{transform:translate(-25%,-50%) scale(1.25);transform-origin:center center;top:50%;bottom:auto;object-position:center center}" +
       /* Patrick Roy: +10% larger, shifted left 25% */
       ".cf2-photo-patrick{transform:scale(1.10) translateX(-25%);transform-origin:bottom center}";
     var st = document.createElement('style');
@@ -290,6 +292,7 @@
   function boot() {
     if (!D.isActive()) return;
     document.body.classList.add('is-demo');
+    installUnlocks();
     seedThemes();
     injectPhotoTweaks();
     seedPhotos();
