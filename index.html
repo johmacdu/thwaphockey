@@ -2249,7 +2249,7 @@ window.thwapActiveTeam=function(coach){
   }
   function ytEmbed(video,name){
     var m=String(video||'').match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([A-Za-z0-9_-]{11})/);
-    if(m) return "<button type=\"button\" class=\"exvid-link\" data-yt=\""+m[1]+"\"><span class=\"exvid-tri\">\u25B6</span> Watch how</button><div class=\"exvid-slot\"></div>";
+    return ""; /* Watch-how videos removed: clips not accurate to the drill */
     return "";
   }
   function esc(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
@@ -2721,10 +2721,9 @@ function ytid(url){ if(!url)return ''; var m=String(url).match(/(?:youtu\.be\/|v
 /* Delegated 'Watch how' expand/collapse: loads the YouTube iframe only on tap. One document-level listener serves every render site and survives re-renders. */
 if(!window.__thwapVidDelegated){window.__thwapVidDelegated=true;document.addEventListener('click',function(ev){var link=ev.target.closest&&ev.target.closest('.exvid-link');if(!link)return;ev.preventDefault();var slot=link.nextElementSibling;while(slot&&!(slot.classList&&slot.classList.contains('exvid-slot')))slot=slot.nextElementSibling;if(!slot)return;if(!link.classList.contains('open')){var id=link.getAttribute('data-yt')||'';slot.innerHTML="<div class='exvideo'><iframe src='https://www.youtube-nocookie.com/embed/"+id+"?autoplay=1' title='drill video' loading='lazy' allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture' allowfullscreen></iframe></div>";link.classList.add('open');link.innerHTML="<span class='exvid-tri'>\u25B6</span> Hide video";}else{slot.innerHTML='';link.classList.remove('open');link.innerHTML="<span class='exvid-tri'>\u25B6</span> Watch how";}});}
 function videoBlock(dr){
-  var id=ytid(dr.video);
-  if(id){
-    return "<button type=\"button\" class=\"exvid-link\" data-yt=\""+id+"\"><span class=\"exvid-tri\">\u25B6</span> Watch how</button><div class=\"exvid-slot\"></div>";
-  }
+  /* "Watch how" videos removed from all drills: the linked clips were not accurate
+     to the drill. No-op (drill video: data left intact) so render call sites and the
+     cross-IIFE export stay valid and a real video can be restored later. */
   return "";
 }
 /* videoBlock/ytid are defined inside THIS (dryland) IIFE. The Stickhandling and
