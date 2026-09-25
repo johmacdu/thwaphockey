@@ -195,11 +195,17 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .exaud-ic{font-size:15px;display:inline-block}
 .exaud-link.playing{color:var(--green2)}
 /* Kid-friendly voice picker: a pill/chip row, not a card. */
-.voicepick{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 14px}
-.voicepick-lbl{font-size:13px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-right:2px}
-.voicechip{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--soft);color:var(--green2);font-family:inherit;font-size:14px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.voicechip.on{background:var(--green2);color:#fff;border-color:var(--green2)}
-.voicechip.locked{opacity:.5;cursor:default;font-weight:700}
+.vpick{margin:2px 0 16px}
+.vmadlib{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(17px,4.4vw,22px);line-height:1.3;margin:0;color:var(--text)}
+.pos-word.vword{color:var(--green2);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px;cursor:pointer;-webkit-tap-highlight-color:transparent;background:none;border:0;font:inherit;padding:0 2px}
+.pos-word.vword:hover{opacity:.82}
+.vsheet{position:relative;margin-top:10px;max-width:280px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--card);box-shadow:0 6px 20px var(--shadow)}
+.vopt{display:flex;width:100%;align-items:center;gap:12px;padding:14px 18px;min-height:44px;background:none;border:0;border-top:1px solid var(--line);font:inherit;font-size:16px;font-weight:800;color:var(--text);cursor:pointer;text-align:left}
+.vopt:first-child{border-top:0}
+.vopt .vopt-emoji{font-size:18px;line-height:1}
+.vopt.on{background:color-mix(in srgb,var(--lime) 30%,var(--card));font-weight:900}
+.vopt.on:after{content:'\2713';margin-left:auto;color:var(--green);font-weight:900}
+.vopt.locked{opacity:.5;cursor:default;font-weight:700}
 .exbody ol{margin:0 0 18px;padding-left:26px;color:var(--text);font-size:18px;font-weight:600;line-height:1.75}
 .exbody ol li{margin-bottom:14px;padding-left:4px}
 .exbody ol li::marker{font-weight:700;color:var(--text)}
@@ -2734,8 +2740,9 @@ window.ytid=ytid; window.videoBlock=videoBlock;
    site (like __thwapVidDelegated). Voices unlock by completed-drill count so more
    can be added later just by appending to THWAP_VOICES with a higher unlockAt. */
 var THWAP_VOICES=window.THWAP_VOICES=[
-  {code:'can', label:'Canadian', emoji:'🇨🇦', unlockAt:0}
-  /* Append more voices here, e.g. {code:'pirate', label:'Pirate', emoji:'🏴\u200d☠️', unlockAt:25} */
+  {code:'can', label:'Canadian', emoji:'🇨🇦', unlockAt:0},
+  {code:'mn',  label:'Minnesota', emoji:'🏒', unlockAt:0}
+  /* Append more voices here, e.g. {code:'bos', label:'Boston', emoji:'🦞', unlockAt:25} */
 ];
 function thwapVoice(){ try{ return localStorage.getItem('thwapVoice')||'can'; }catch(e){ return 'can'; } }
 function thwapSetVoice(code){ try{ localStorage.setItem('thwapVoice',code); }catch(e){} }
@@ -2751,10 +2758,8 @@ window.thwapVoice=thwapVoice; window.thwapSetVoice=thwapSetVoice;
 window.thwapCompletedCount=thwapCompletedCount; window.thwapVoiceUnlocked=thwapVoiceUnlocked;
 
 function audioBlock(dr){
-  var slug=dr&&dr.audio;
-  if(slug){
-    return "<button type=\"button\" class=\"exaud-link\" data-aud=\""+slug+"\"><span class=\"exaud-ic\">\uD83D\uDD0A</span> Listen</button>";
-  }
+  /* Narration now rides the drill timer (Start/Pause/Restart), so no standalone
+     Listen control is rendered. Kept as a no-op so existing call sites are safe. */
   return "";
 }
 window.audioBlock=audioBlock;
@@ -2791,27 +2796,41 @@ if(!window.__thwapAudDelegated){window.__thwapAudDelegated=true;document.addEven
    handler swaps the stored voice and re-marks the selected chip in place. */
 function voicePickerHTML(){
   var cur=thwapVoice();
-  var chips=THWAP_VOICES.map(function(v){
+  var unlocked=THWAP_VOICES.filter(thwapVoiceUnlocked);
+  var curV=unlocked.filter(function(v){return v.code===cur;})[0]||unlocked[0]||THWAP_VOICES[0];
+  var opts=THWAP_VOICES.map(function(v){
     if(thwapVoiceUnlocked(v)){
-      return "<button type=\"button\" class=\"voicechip"+(v.code===cur?' on':'')+"\" data-voice=\""+v.code+"\">"+(v.emoji?v.emoji+' ':'')+esc(v.label)+"</button>";
+      return "<button type=\"button\" class=\"vopt"+(v.code===curV.code?' on':'')+"\" data-voice=\""+v.code+"\" role=\"menuitemradio\">"+(v.emoji?"<span class=\"vopt-emoji\">"+v.emoji+"</span> ":'')+esc(v.label)+"</button>";
     }
-    return "<span class=\"voicechip locked\">\uD83D\uDD12 "+esc(v.label)+" \u00B7 Unlock at "+v.unlockAt+" drills</span>";
+    return "<span class=\"vopt locked\">\uD83D\uDD12 "+esc(v.label)+" \u00B7 Unlock at "+v.unlockAt+"</span>";
   }).join('');
-  return "<div class='voicepick'><span class='voicepick-lbl'>Sass's voice</span>"+chips+"</div>";
+  return "<div class='vpick'>"+
+    "<p class='vmadlib'>Want Sass to have <button type=\"button\" class=\"pos-word vword\" id=\"vWord\" aria-haspopup=\"true\" aria-expanded=\"false\">"+esc(curV.label)+"</button> accent?</p>"+
+    "<div class='pos-sheet vsheet' id='vSheet' role='menu' hidden>"+opts+"</div>"+
+  "</div>";
 }
 window.voicePickerHTML=voicePickerHTML;
-if(!window.__thwapVoiceDelegated){window.__thwapVoiceDelegated=true;document.addEventListener('click',function(ev){
-  var chip=ev.target.closest&&ev.target.closest('.voicechip[data-voice]'); if(!chip)return;
-  var code=chip.getAttribute('data-voice')||''; if(!code)return;
-  thwapSetVoice(code);
-  /* Stop any playing narration so the next tap uses the new voice. */
-  var a=document.getElementById('thwapAudio'); if(a)a.pause();
-  var open=document.querySelector('.exaud-link.playing'); if(open) thwapResetAudBtn(open);
-  /* Re-mark chips across every picker on the page. */
-  document.querySelectorAll('.voicechip[data-voice]').forEach(function(c){
-    c.classList.toggle('on', c.getAttribute('data-voice')===code);
+if(!window.__thwapVoiceDelegated){window.__thwapVoiceDelegated=true;
+  function vSheetEl(){ return document.getElementById('vSheet'); }
+  function vWordEl(){ return document.getElementById('vWord'); }
+  function vOpenSheet(open){ var s=vSheetEl(), w=vWordEl(); if(!s||!w)return; s.hidden=!open; w.setAttribute('aria-expanded', open?'true':'false'); }
+  function vSetVoice(code){
+    var v=THWAP_VOICES.filter(function(x){return x.code===code;})[0]; if(!v||!thwapVoiceUnlocked(v))return;
+    thwapSetVoice(code);
+    var w=vWordEl(); if(w) w.firstChild.nodeValue=v.label;
+    var s=vSheetEl(); if(s) s.querySelectorAll('.vopt[data-voice]').forEach(function(o){ o.classList.toggle('on', o.getAttribute('data-voice')===code); });
+    /* stop any playing narration so the next cue uses the new voice */
+    var a=document.getElementById('thwapAudio'); if(a)a.pause();
+    vOpenSheet(false);
+  }
+  document.addEventListener('click',function(ev){
+    var w=ev.target.closest&&ev.target.closest('#vWord');
+    if(w){ ev.stopPropagation(); var s=vSheetEl(); vOpenSheet(s&&s.hidden); return; }
+    var opt=ev.target.closest&&ev.target.closest('.vopt[data-voice]');
+    if(opt){ vSetVoice(opt.getAttribute('data-voice')); return; }
+    var s=vSheetEl(); if(s&&!s.hidden){ vOpenSheet(false); }
   });
-});}
+}
 function todaysWorkout(){var s=window.thwapWeekdaySlot();return WORKOUTS[(s<0?0:s)%WORKOUTS.length];}
 
 /* Build a balanced ~15-min block: 1-2 exercises from each category present today,
@@ -2887,7 +2906,7 @@ function render(){
         btn.textContent='Done ✓';
       };
       if(row.classList.contains('done')){ return; }  /* already done: no-op */
-      if(window.thwapDrillTimer){ window.thwapDrillTimer(drills[i].name, markDone); }
+      if(window.thwapDrillTimer){ window.thwapDrillTimer(drills[i].name, markDone, drills[i].audio); }
       else { markDone(); }  /* engine missing: fall back to immediate done */
     });
   });
@@ -2919,7 +2938,7 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#dryland') 
 <div class='gdr' id='gdrOverlay' hidden>
   <div class='gdr-top'>
     <button type='button' class='gdr-back' id='gdrX' aria-label='Back'>Back</button>
-    <button type='button' class='gdr-audio' id='gdrAudio' data-v1-disabled aria-label='Audio (coming soon)' title='Audio coming soon'>🔈</button>
+    <button type='button' class='gdr-audio' id='gdrAudio' aria-label='Mute narration' title='Mute'>🔊</button>
   </div>
   <div class='gdr-mid'>
     <p class='gdr-name' id='gdrName'></p>
@@ -2928,7 +2947,7 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#dryland') 
     <p class='gdr-sub' id='gdrSub'></p>
   </div>
   <div class='gdr-bottom'>
-    <button type='button' class='gdr-btn' id='gdrToggle'>Start</button>
+    <button type='button' class='gdr-btn' id='gdrToggle'>Begin</button>
     <button type='button' class='gdr-reset' id='gdrReset'>Restart</button>
   </div>
 </div>
@@ -3016,36 +3035,92 @@ var elName=document.getElementById('gdrName'), elPhase=document.getElementById('
 if(!ov) return;
 var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-var state=null; /* {steps:[...], idx, timer, paused, onDone} */
+var state=null; /* {steps:[...], idx, timer, paused, onDone, audio} */
 
-/* Build the ordered step list for a script. Each step: {phase,big,sub,ms} */
-function buildSteps(sc){
+/* Timer-driven narration: reuses the app's one shared <audio> element and the
+   selected voice. The clip is timed to the drill length, so it rides the
+   transport rather than a separate Listen tap. Fails silently if the voice's
+   mp3 isn't generated yet (404). */
+function thwapTimerAudioEl(){
+  var fn=window.thwapAudioEl; if(fn) return fn();
+  var a=document.getElementById('thwapAudio');
+  if(!a){ a=document.createElement('audio'); a.id='thwapAudio'; a.preload='none'; document.body.appendChild(a); }
+  return a;
+}
+/* Mute: persisted, applies to narration + metronome. */
+function thwapMuted(){ try{ return localStorage.getItem('thwapMuted')==='1'; }catch(e){ return false; } }
+function thwapSetMuted(m){ try{ localStorage.setItem('thwapMuted', m?'1':'0'); }catch(e){} var a=document.getElementById('thwapAudio'); if(a)a.muted=m; if(m) thwapMetroStop(); }
+/* Metronome: a subtle Web Audio tick on each rep/second, synced to the timer,
+   carrying tempo under Sass. Silenced by mute. */
+var thwapAC=null, thwapMetroTimer=null;
+function thwapMetroCtx(){ if(!thwapAC){ try{ thwapAC=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ thwapAC=null; } } return thwapAC; }
+function thwapMetroTick(){
+  if(thwapMuted()) return;
+  var ac=thwapMetroCtx(); if(!ac) return;
+  var o=ac.createOscillator(), g=ac.createGain();
+  o.frequency.value=880; g.gain.value=0.0001;
+  o.connect(g); g.connect(ac.destination);
+  var t=ac.currentTime;
+  g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.12,t+0.005); g.gain.exponentialRampToValueAtTime(0.0001,t+0.06);
+  o.start(t); o.stop(t+0.07);
+}
+function thwapMetroStart(intervalMs){ thwapMetroStop(); if(thwapMuted())return; thwapMetroTimer=setInterval(thwapMetroTick, intervalMs||1000); }
+function thwapMetroStop(){ if(thwapMetroTimer){ clearInterval(thwapMetroTimer); thwapMetroTimer=null; } }
+function thwapTimerAudioPlay(){ /* segments are fired per-step by playCue(); nothing to start here */ }
+function thwapTimerAudioPause(){ var a=document.getElementById('thwapAudio'); if(a) a.pause(); thwapMetroStop(); }
+function thwapTimerAudioStop(){ var a=document.getElementById('thwapAudio'); if(a){ a.pause(); try{a.currentTime=0;}catch(e){} } thwapMetroStop(); }
+/* Play ONE short segment clip for the current step's cue key, in the selected voice.
+   Timer-driven: each clip is small and fired exactly when its phase is painted, so
+   audio can never drift from the on-screen number. 404s fail silently (voice not
+   generated yet). */
+function thwapPlayCue(au){
+  if(!au || thwapMuted()) return;
+  if(!state || !state.started || state.paused) return; /* only during active play */
+  var a=thwapTimerAudioEl();
+  var voice=(window.thwapVoice?window.thwapVoice():'can');
+  var src='audio/'+voice+'/seg/'+au+'.mp3';
+  a.onerror=function(){ /* segment missing - stay silent, timer continues */ };
+  try{ a.pause(); }catch(e){}
+  a.setAttribute('src',src); a.load(); a.currentTime=0; a.muted=thwapMuted();
+  var p=a.play(); if(p&&p.catch){ p.catch(function(){}); }
+}
+
+/* Build the ordered step list for a script. Each step: {phase,big,sub,ms,au}
+   `au` is the audio-segment cue key the timer fires when the step is painted.
+   Numbers use n<K>; shared cues (go, switch, done, side setup) reuse one clip set;
+   the per-drill setup line is the drill's own slug. */
+function buildSteps(sc, slug){
   var steps=[];
-  steps.push({phase:'Set up',big:'',sub:'Get the drill set up',ms:SETUP_SECS*1000});
+  steps.push({phase:'Set up',big:'',sub:'Get the drill set up',ms:SETUP_SECS*1000, au:slug?('drill/'+slug+'/setup'):''});
   var sides=sc.sides||1;
   var labels=sc.sideLabels||[];
   for(var s=0;s<sides;s++){
     var sideNote=sides>1?(labels[s]||('Set '+(s+1))):'';
+    // Dedicated switch step before sides 2+ so "Now switch" gets its own time
+    // and does not collide with the "5,4,3,2,1" countdown that follows.
+    if(s>0) steps.push({phase:'Switch',big:'\u21C4',sub:(labels[s]||'other way'),ms:3000, au:'cue/switch'});
     // countdown 5..1 GO
-    for(var c=COUNTDOWN;c>=1;c--) steps.push({phase:sideNote||'Ready',big:String(c),sub:'',ms:1000});
-    steps.push({phase:sideNote||'Go',big:'GO',sub:'',ms:800});
+    for(var c=COUNTDOWN;c>=1;c--){
+      steps.push({phase:sideNote||'Ready',big:String(c),sub:'',ms:1000, au:'n'+c});
+    }
+    steps.push({phase:sideNote||'Go',big:'GO',sub:'',ms:800, au:'cue/go'});
     if(sc.type==='reps'){
-      for(var r=1;r<=sc.reps;r++) steps.push({phase:sideNote||'Reps',big:String(r),sub:'of '+sc.reps,ms:Math.round((sc.perRep||1.5)*1000)});
+      for(var r=1;r<=sc.reps;r++) steps.push({phase:sideNote||'Reps',big:String(r),sub:'of '+sc.reps,ms:Math.round((sc.perRep||1.5)*1000), au:'n'+r, work:true});
     } else if(sc.type==='hold'){
-      for(var h=sc.seconds;h>=1;h--) steps.push({phase:sideNote||'Hold',big:String(h),sub:'seconds',ms:1000});
+      for(var h=sc.seconds;h>=1;h--) steps.push({phase:sideNote||'Hold',big:String(h),sub:'seconds',ms:1000, au:(h<=5?('n'+h):(h%10===0?'cue/keepgoing':'')), work:true});
     } else if(sc.type==='rounds'){
       for(var rd=1;rd<=sc.rounds;rd++){
-        steps.push({phase:(sc.workLabel||'Round')+' '+rd,big:String(rd),sub:'of '+sc.rounds,ms:3000});
-        if(rd<sc.rounds) for(var rest=(sc.restSeconds||10);rest>=1;rest--) steps.push({phase:'Rest',big:String(rest),sub:'catch your breath',ms:1000});
+        steps.push({phase:(sc.workLabel||'Round')+' '+rd,big:String(rd),sub:'of '+sc.rounds,ms:3000, au:'n'+rd, work:true});
+        if(rd<sc.rounds) for(var rest=(sc.restSeconds||10);rest>=1;rest--) steps.push({phase:'Rest',big:String(rest),sub:'catch your breath',ms:1000, au:(rest===(sc.restSeconds||10)?'cue/rest':'')});
       }
     } else if(sc.type==='callout'){
       for(var sh=0;sh<sc.shots;sh++){
         var spot=sc.spots[Math.floor(Math.random()*sc.spots.length)];
-        steps.push({phase:'Shot '+(sh+1)+' of '+sc.shots,big:spot,sub:'hit it',ms:Math.round((sc.everySeconds||4)*1000),small:true});
+        steps.push({phase:'Shot '+(sh+1)+' of '+sc.shots,big:spot,sub:'hit it',ms:Math.round((sc.everySeconds||4)*1000),small:true, au:'n'+(sh+1), work:true});
       }
     }
   }
-  steps.push({phase:'Done',big:'✓',sub:'Nice work!',ms:1400,last:true});
+  steps.push({phase:'Done',big:'✓',sub:'Nice work!',ms:3200,last:true, au:'cue/done'});
   return steps;
 }
 function paint(st){
@@ -3053,6 +3128,9 @@ function paint(st){
   elBig.style.fontSize=st.small?'52px':'';
   elPhase.textContent=st.phase||'';
   elSub.textContent=st.sub||'';
+  if(st.au) thwapPlayCue(st.au);
+  /* Metronome ticks ONLY on actual rep/work beats, not the whole drill. */
+  if(st.work && state && state.started && !state.paused && !thwapMuted()) thwapMetroTick();
 }
 function advance(){
   if(!state) return;
@@ -3069,6 +3147,7 @@ function finish(){
 }
 function close(){
   if(state&&state.timer) clearTimeout(state.timer);
+  thwapTimerAudioStop();
   state=null; ov.hidden=true;
   document.removeEventListener('keydown', onKey);
 }
@@ -3077,7 +3156,7 @@ function setPaused(p){
   if(!state) return;
   state.paused=p;
   elToggle.textContent=p?'Resume':'Pause';
-  if(p){ if(state.timer) clearTimeout(state.timer); }
+  if(p){ if(state.timer) clearTimeout(state.timer); thwapTimerAudioPause(); thwapMetroStop(); }
   else { advance(); }
 }
 elToggle.addEventListener('click',function(){
@@ -3085,25 +3164,33 @@ elToggle.addEventListener('click',function(){
   if(state.started){ setPaused(!state.paused); return; }
   state.started=true; elToggle.textContent='Pause'; advance();
 });
+/* Mute toggle (top-right) - persists and applies live to narration + metronome. */
+var elAudio=document.getElementById('gdrAudio');
+function paintMute(){ if(!elAudio)return; var m=thwapMuted(); elAudio.textContent=m?'🔇':'🔊'; elAudio.setAttribute('aria-label', m?'Unmute narration':'Mute narration'); elAudio.title=m?'Unmute':'Mute'; }
+if(elAudio){ paintMute(); elAudio.addEventListener('click',function(){ thwapSetMuted(!thwapMuted()); paintMute(); }); }
 elReset.addEventListener('click',function(){
   if(!state) return;
   if(state.timer) clearTimeout(state.timer);
   state.idx=0; state.started=false; state.paused=false;
-  elToggle.textContent='Start';
+  elToggle.textContent='Begin';
+  thwapTimerAudioStop();
   paint(state.steps[0]);
 });
 document.getElementById('gdrX').addEventListener('click', close);
 
-/* PUBLIC: run the guided timer for a drill by name; onDone fires once at the end. */
-window.thwapDrillTimer=function(name, onDone){
-  var sc=scriptFor(name);
-  state={ steps:buildSteps(sc), idx:0, timer:null, paused:false, started:false, onDone:onDone };
+/* PUBLIC: run the guided timer for a drill by name; onDone fires once at the end.
+   audioSlug (optional) plays Sass's narration in lock-step with the transport:
+   Start plays (or resumes), Pause pauses, Restart/Back stop and reset to the top. */
+window.thwapDrillTimer=function(name, onDone, audioSlug){
+  state={ steps:buildSteps(sc0(name), audioSlug||''), idx:0, timer:null, paused:false, started:false, onDone:onDone, audio:audioSlug||'' };
   document.getElementById('gdrName').textContent=name;
   paint(state.steps[0]);
-  elToggle.textContent='Start';
+  elToggle.textContent='Begin';
+  thwapTimerAudioStop();
   ov.hidden=false;
   document.addEventListener('keydown', onKey);
 };
+function sc0(name){ return scriptFor(name); }
 })();</script>
 <script>(function(){
 /* ---- Leaderboard fallback: all players zero. Real team scores come from /api/board; this is only shown before the API responds or if it is unreachable, so it must not fabricate numbers. ---- */
@@ -3988,7 +4075,7 @@ function render(){
         btn.textContent='Done ✓';
       };
       if(row.classList.contains('done')){ return; }
-      if(window.thwapDrillTimer){ window.thwapDrillTimer(picks[i].name, markDone); }
+      if(window.thwapDrillTimer){ window.thwapDrillTimer(picks[i].name, markDone, picks[i].audio); }
       else { markDone(); }
     });
   });
@@ -4651,7 +4738,7 @@ function render(){
         btn.textContent='Done ✓';
       };
       if(row.classList.contains('done')){ return; }
-      if(window.thwapDrillTimer){ window.thwapDrillTimer(SHOOT[i].name, markDone); }
+      if(window.thwapDrillTimer){ window.thwapDrillTimer(SHOOT[i].name, markDone, SHOOT[i].audio); }
       else { markDone(); }
     });
   });
