@@ -22,10 +22,11 @@ const fs = require('fs');
 const path = require('path');
 
 const VOICES = {
-  can: { id: 'dllHSct4GokGc1AH9JwT', label: 'Canadian hockey voice' },
+  can: { id: '5ZvI0fBo2w7CxuiM9ObF', label: 'Canadian hockey voice' },
   mn:  { id: 'MqdBjMcqClsTO77t1vGB', label: 'Minnesota hockey voice' },
   us:  { id: 'kpftzLQxRv90Nn6qoJRf', label: 'American hockey voice' },
   bos: { id: 'UZvBfqEdvCFLqsBOo9Zr', label: 'Boston hockey voice' },
+  chi: { id: 'erLaZvTFBCJD969knK8N', label: 'Chicagoan hockey voice' },
 };
 const MODEL_ID = 'eleven_multilingual_v2';
 const VOICE_SETTINGS = { stability: 0.5, similarity_boost: 0.8, style: 0.35, use_speaker_boost: true };

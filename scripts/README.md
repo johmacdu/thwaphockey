@@ -20,10 +20,18 @@ is a synced Web Audio tick (no audio file), muted with the narration.
 
 | code | label | ElevenLabs voice ID | unlockAt |
 |------|-------|---------------------|----------|
-| `can` | Canadian | `dllHSct4GokGc1AH9JwT` | 0 |
-| `mn`  | Minnesota | `MqdBjMcqClsTO77t1vGB` | 0 |
-| `us`  | American | `kpftzLQxRv90Nn6qoJRf` | 0 |
-| `bos` | Boston | `UZvBfqEdvCFLqsBOo9Zr` | 0 |
+| `can` | Canadian | `5ZvI0fBo2w7CxuiM9ObF` | 0 |
+| `mn`  | Minnesotan | `MqdBjMcqClsTO77t1vGB` | 0 |
+| `ny`  | New Yorker | _needs ElevenLabs voice ID_ | 20 |
+| `chi` | Chicagoan | `erLaZvTFBCJD969knK8N` | 20 |
+| `bos` | Bostonian | `UZvBfqEdvCFLqsBOo9Zr` | 20 |
+| `fca` | French Canadian | _needs ElevenLabs voice ID_ | 20 |
+| `fin` | Finnish | _needs ElevenLabs voice ID_ | 20 |
+| `swe` | Swedish | _needs ElevenLabs voice ID_ | 20 |
+| `rus` | Russian | _needs ElevenLabs voice ID_ | 20 |
+| `dan` | Danish | _needs ElevenLabs voice ID_ | 20 |
+
+(`us`/American was removed from the app list; its clips can stay or be deleted.)
 
 Add a voice: (1) pick/create it in ElevenLabs, (2) add a row to `VOICES` in
 `scripts/generate-segments.cjs` and to `THWAP_VOICES` in `index.html`, (3) run the
