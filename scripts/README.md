@@ -1,42 +1,45 @@
-# Drill narration audio
+# Drill narration audio (timer-driven segments)
 
-Pre-generated, drill-length voice narration for the 54 drills (19 stickhandling,
-19 shooting, 16 dryland). Each clip is timed to run the length of the drill so
-"And done!" lands as the timer hits zero. Clips are static MP3s served from
-`audio/<voiceCode>/<slug>.mp3` and played by the drill page's "Listen" control.
+Sass narrates every drill in step with the on-screen timer. Audio is split into
+small **segments** that the drill runner fires at each phase transition, so the
+narration can never drift from the on-screen count:
 
-Voices are **unlockable** — the player picks one from the voice chips; more voices
-unlock as the player completes more drills (framework in `index.html`,
-`THWAP_VOICES`). Canadian is the starter voice, always unlocked.
+- **setup** — the drill's intro cue (per drill)
+- **countdown** — number segments `n5,n4,n3,n2,n1` then `cue/go`
+- **reps** — number segments `n1..nN` fired as each rep number appears
+- **switch** — `cue/switch` on a dedicated step between sides
+- **finish** — `cue/done`
+
+Segments live at `audio/<voiceCode>/seg/<key>.mp3`. Numbers (`n1`..`n20`) and the
+shared `cue/*` clips are reused across every drill; only `drill/<slug>/setup` is
+unique per drill. The app plays them via a timer-driven controller in `index.html`
+(`thwapPlayCue`), with a rep-scoped metronome tick and a Mute toggle. The metronome
+is a synced Web Audio tick (no audio file), muted with the narration.
 
 ## Voices
 
 | code | label | ElevenLabs voice ID | unlockAt |
 |------|-------|---------------------|----------|
-| `can` | Canadian | `dllHSct4GokGc1AH9JwT` | 0 (starter) |
+| `can` | Canadian | `dllHSct4GokGc1AH9JwT` | 0 |
+| `mn`  | Minnesota | `MqdBjMcqClsTO77t1vGB` | 0 |
+| `us`  | American | `kpftzLQxRv90Nn6qoJRf` | 0 |
+| `bos` | Boston | `UZvBfqEdvCFLqsBOo9Zr` | 0 |
 
-Add the next voice by (1) picking/creating it in your ElevenLabs account, (2) adding
-a row to `VOICES` in `scripts/generate-audio.js` and to `THWAP_VOICES` in
-`index.html` (with an `unlockAt` drill-count threshold), (3) running the generator
-for that voice code, (4) committing the new `audio/<code>/` MP3s.
+Add a voice: (1) pick/create it in ElevenLabs, (2) add a row to `VOICES` in
+`scripts/generate-segments.cjs` and to `THWAP_VOICES` in `index.html`, (3) run the
+generator for that voice code, (4) commit the new `audio/<code>/seg/` clips.
 
-## Generating the audio (run locally — needs the ElevenLabs key)
+## Generating (run locally — needs the ElevenLabs key)
 
-The generator reads `ELEVENLABS_API_KEY` from your environment or a local
-`.env.local` file. **The key is never committed** (`.env.local` is gitignored) and
-never printed. It is used only when you run the generator on your machine.
+Reads `ELEVENLABS_API_KEY` from env or a gitignored `.env.local` (never committed,
+never printed). Segment text is `scripts/segments.json`.
 
 ```bash
-# key must be available as env var OR in .env.local (ELEVENLABS_API_KEY=...)
-node scripts/generate-audio.js --voice can            # all 54 Canadian clips
-node scripts/generate-audio.js --voice can --only stick_01,dry_07   # a subset
-node scripts/generate-audio.js --voice can --force    # re-generate existing clips
+node scripts/generate-segments.cjs --voice can          # all segments, Canadian
+node scripts/generate-segments.cjs --voice mn           # Minnesota
+node scripts/generate-segments.cjs --voice can --only n1,cue/go,drill/stick_07/setup
+node scripts/generate-segments.cjs --voice can --force  # re-generate existing
 ```
 
-Output lands in `audio/can/`. Listen to a few (especially the countdowns and any
-hockey jargon), then commit the MP3s and deploy. Delivery settings (model, stability,
-similarity, style, speaker boost) come from the recording brief and are frozen in the
-script — keep them identical across all clips of a voice for consistency.
-
-Cost note: each run of a full voice is ~54 metered TTS calls on your ElevenLabs plan.
-Generating is a one-time batch per voice; playback afterward is free (static files).
+Existing clips are skipped unless `--force`. Cost: a full voice is ~82 short TTS
+calls, one-time; playback afterward is free static files.
