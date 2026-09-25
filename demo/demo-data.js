@@ -73,17 +73,43 @@
     return null;
   }
 
-  // Board maps keyed by demo player id, matching window.thwapBoard shape:
-  //   week: { <id>: {stick,shoot,dryland} }   all: { <id>: {stick,shoot,dryland,streak} }
+  // First-name slug the card/stats code keys on (e.g. 'Mario Lemieux' -> 'mario').
+  function slugOf(name) {
+    return String(name || '').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g, '');
+  }
+  function bySlug(slug) {
+    slug = slugOf(slug);
+    for (var i = 0; i < ROSTER.length; i++) if (slugOf(ROSTER[i].first) === slug) return ROSTER[i];
+    return null;
+  }
+
+  // Resolve a player's card facts (num/pos/photo) from a display name or slug.
+  // pos maps the granular role to the card's F | D | G | FD scheme.
+  function info(name) {
+    var p = bySlug(name);
+    if (!p) return null;
+    return { num: String(p.num), pos: p.pos, photo: p.photo, role: p.role, name: p.name, first: p.first };
+  }
+
+  // Board maps keyed by FIRST-NAME SLUG (what cb2Stat/cb2Streak and the stats page
+  // read), matching window.thwapBoard shape:
+  //   week: { <slug>: {stick,shoot,dryland} }   all: { <slug>: {stick,shoot,dryland,streak} }
   function boardWeek() {
     var m = {};
-    ROSTER.forEach(function (p) { m[p.id] = { stick: p.stick, shoot: p.shoot, dryland: p.dryland }; });
+    ROSTER.forEach(function (p) { m[slugOf(p.first)] = { stick: p.stick, shoot: p.shoot, dryland: p.dryland }; });
     return m;
   }
   function boardAll() {
     var m = {};
-    ROSTER.forEach(function (p) { m[p.id] = { stick: p.stick, shoot: p.shoot, dryland: p.dryland, streak: p.streak }; });
+    ROSTER.forEach(function (p) { m[slugOf(p.first)] = { stick: p.stick, shoot: p.shoot, dryland: p.dryland, streak: p.streak }; });
     return m;
+  }
+  // Team totals for the standings header (this-week == all-time for the demo).
+  function teamTotals() {
+    var t = { stick: 0, shoot: 0, dryland: 0 };
+    ROSTER.forEach(function (p) { t.stick += p.stick; t.shoot += p.shoot; t.dryland += p.dryland; });
+    t.all = t.stick + t.shoot + t.dryland;
+    return t;
   }
 
   // Next game vs the USSR All-Time Team (a couple of days out from "now").
@@ -104,7 +130,13 @@
     try { return localStorage.getItem('thwapDemo') === '1'; } catch (e) { return false; }
   }
   function activate() { try { localStorage.setItem('thwapDemo', '1'); } catch (e) {} }
-  function deactivate() { try { localStorage.removeItem('thwapDemo'); } catch (e) {} }
+  function deactivate() {
+    try {
+      localStorage.removeItem('thwapDemo');
+      // Remove the seeded NHLer card photos so a later real login is clean.
+      ROSTER.forEach(function (p) { localStorage.removeItem('thwapCardPhoto:' + slugOf(p.first)); });
+    } catch (e) {}
+  }
 
   // Login result for the demo team, or null if the inputs are not the demo combo.
   // email must match, team must be the demo option, code is 'player' or 'coach'.
@@ -124,8 +156,12 @@
     OPPONENT: DEMO_NEXT_OPPONENT,
     roster: ROSTER,
     byId: byId,
+    bySlug: bySlug,
+    slugOf: slugOf,
+    info: info,
     boardWeek: boardWeek,
     boardAll: boardAll,
+    teamTotals: teamTotals,
     nextGame: nextGame,
     posLabel: posLabel,
     isActive: isActive,

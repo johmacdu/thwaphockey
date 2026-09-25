@@ -3457,8 +3457,11 @@ function currentPlayer(){
   var parts=saved.trim().split(/\s+/);
   var key=parts[0].toLowerCase();
   var info=ROSTER_INFO[key]||{num:'',pos:'F'};
+  /* Demo Team: when the demo mode is active, resolve the demo roster's real
+     number/position/photo instead of the Jr Rangers ROSTER_INFO (no-op off-demo). */
+  if(window.thwapDemoInfo){ var di=window.thwapDemoInfo(saved); if(di) info=di; }
   var display=parts.length>1?parts[0]+' '+parts[parts.length-1].charAt(0)+'.':parts[0];
-  return {name:saved, display:display, first:parts[0].toUpperCase(), num:info.num, pos:info.pos, photo:''};
+  return {name:saved, display:display, first:parts[0].toUpperCase(), num:info.num, pos:info.pos, photo:info.photo||''};
 }
 /* Coded card faces: real text-free art PLATES per color theme, with live per-player
    fields (number/name/position/association) and live weekly stats overlaid in the
@@ -3528,6 +3531,7 @@ function buildFront(p,slug,photoUrl,themeOverride){
     : "";
   var th=themeOverride||cb2Theme(slug);
   var plate=themeOverride?('cards/plate_front_'+themeOverride+'.svg'):cb2Plate('front',slug);
+  var teamLabel=window.thwapTeamLabel||'Jr Rangers<br>Vancouver WA';
   return "<div class='cf2 cb2-th-"+th+"'>"+
       "<img class='cf2-plate' src='"+plate+"' alt=''>"+
       photo+
@@ -3537,7 +3541,7 @@ function buildFront(p,slug,photoUrl,themeOverride){
       "<div class='cf2-foot'>"+
         "<div><div class='cf2-nm'>"+p.first+"<i></i></div>"+
           "<div class='cf2-pos'>"+cb2PosLabel(p.pos)+"</div></div>"+
-        "<div class='cf2-team'>Jr Rangers<br>Vancouver WA</div>"+
+        "<div class='cf2-team'>"+teamLabel+"</div>"+
       "</div>"+
     "</div>";
 }
@@ -3763,6 +3767,8 @@ window.openTeammateCard=function(name){
   var parts=String(name||'').trim().split(/\s+/);
   var key=(parts[0]||'').toLowerCase().replace(/[^a-z]/g,'');
   var info=ROSTER_VIEW[key]||{num:'',pos:'F'};
+  /* Demo Team: resolve the demo roster's real number/position (no-op off-demo). */
+  if(window.thwapDemoInfo){ var dvi=window.thwapDemoInfo(name); if(dvi) info={num:dvi.num,pos:dvi.pos}; }
   var display=parts.length>1?parts[0]+' '+parts[parts.length-1].charAt(0)+'.':parts[0];
   window.thwapViewTarget={ name:String(name).trim(), display:display, first:(parts[0]||'').toUpperCase(), num:info.num, pos:info.pos, photo:'' };
   document.body.classList.add('viewing-teammate');
