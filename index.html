@@ -2905,10 +2905,13 @@ if(!window.__thwapAudDelegated){window.__thwapAudDelegated=true;document.addEven
    the selected chip in place. */
 function voicePickerHTML(){
   var cur=thwapVoice();
-  var unlocked=THWAP_VOICES.filter(thwapVoiceUnlocked);
+  /* Use the window-level unlock check so demo-mode's unlock-all wrapper applies
+     (demo-mode wraps window.thwapVoiceUnlocked; the bare local would bypass it). */
+  var isUnlocked=window.thwapVoiceUnlocked||thwapVoiceUnlocked;
+  var unlocked=THWAP_VOICES.filter(isUnlocked);
   var curV=unlocked.filter(function(v){return v.code===cur;})[0]||unlocked[0]||THWAP_VOICES[0];
   var opts=THWAP_VOICES.map(function(v){
-    if(thwapVoiceUnlocked(v)){
+    if(isUnlocked(v)){
       return "<button type=\"button\" class=\"vopt"+(v.code===curV.code?' on':'')+"\" data-voice=\""+v.code+"\" role=\"menuitemradio\">"+(v.emoji?"<span class=\"vopt-emoji\">"+v.emoji+"</span> ":'')+esc(v.label)+"</button>";
     }
     return "<span class=\"vopt locked\">\uD83D\uDD12 Locked accent</span>";

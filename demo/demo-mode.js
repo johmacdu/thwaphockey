@@ -104,6 +104,17 @@
       if (D.isActive()) return true;
       return priorVoiceUnlocked ? priorVoiceUnlocked(v) : (!v || !v.unlockAt);
     };
+    /* The drill lists (and their voice pickers) are rendered on load, BEFORE this
+       wrapper is installed, so they baked in the locked chips. In demo mode,
+       re-render every on-page picker now so all accents show unlocked. */
+    if (D.isActive() && typeof window.voicePickerHTML === 'function') {
+      document.querySelectorAll('.vpick').forEach(function (pick) {
+        var wrap = document.createElement('div');
+        wrap.innerHTML = window.voicePickerHTML();
+        var fresh = wrap.querySelector('.vpick');
+        if (fresh && pick.parentNode) pick.parentNode.replaceChild(fresh, pick);
+      });
+    }
   }
 
   /* Seed a random theme per demo player (once), stored the same way a real
