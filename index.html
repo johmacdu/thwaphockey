@@ -3597,7 +3597,7 @@ var CB2_CREST="<svg viewBox='0 0 70 82' fill='none'><path d='M6 4 H64 V50 Q64 68
 function buildFront(p,slug,photoUrl,themeOverride){
   if(!photoUrl && slug==='lewie'){ photoUrl='cards/lewie_photo.png'; }  /* Lewie's photo ships; show it everywhere his card renders */
   var photo = photoUrl
-    ? "<img class='cf2-photo"+(slug==='liam'?' cf2-photo-lg':'')+"' src='"+photoUrl+"' alt='"+p.first+" photo'><div class='cf2-photo-mask'></div>"
+    ? "<img class='cf2-photo"+(slug==='liam'?' cf2-photo-lg':'')+" cf2-photo-"+slug+"' src='"+photoUrl+"' alt='"+p.first+" photo'><div class='cf2-photo-mask'></div>"
     : "";
   var th=themeOverride||cb2Theme(slug);
   var plate=themeOverride?('cards/plate_front_'+themeOverride+'.svg'):cb2Plate('front',slug);
@@ -3650,6 +3650,9 @@ function buildFaces(){
   var slug=p.first.toLowerCase().replace(/[^a-z]/g,'');
   front.className='cardface cardfront '+posCls;
   back.className='cardface cardback '+posCls;
+  /* Clear any stale inline visibility (an earlier build forced it); the flip is
+     governed by backface-visibility, so both faces must stay visibility:visible. */
+  front.style.visibility=''; back.style.visibility='';
   /* Front: the player's own photo (local-only) if they added one, framed as a Thwap card;
      otherwise the stock designed card art. The photo is stored on THIS device only
      (localStorage), never uploaded and never shown on anyone else's card (COPPA-safe). */
@@ -3786,19 +3789,16 @@ function paint(){
   card.style.transform='rotateX('+rx+'deg) rotateY('+ry+'deg)';
   front.style.setProperty('--sheen', sheen);
   back.style.setProperty('--sheen', 1-sheen);
-  /* Hide the front photo button whenever the BACK is toward the viewer. Safari can
-     bleed a z-indexed child of a backface-hidden face through the flip, so we
-     hide it explicitly rather than rely on backface-visibility. */
+  /* Which face is toward the viewer. Used only to hide the front photo button and
+     to flag the scene; the FACES themselves show/hide via backface-visibility (the
+     same mechanism the sticker deck uses and which works reliably), NOT via forced
+     inline visibility - forcing visibility here was leaving the back hidden so the
+     card never appeared to flip in the viewer. */
   var yy=((ry%360)+360)%360;
   var backShowing=(yy>90 && yy<270);
-  /* Only touch the face visibility / classes when the facing actually FLIPS.
-     Writing these every pointermove frame forced style recalc + repaint on the
-     big card faces and made the drag stutter; caching makes the spin smooth. */
   if(backShowing!==_lastBackShowing){
     _lastBackShowing=backShowing;
     card.classList.toggle('showing-back', backShowing);
-    front.style.visibility=backShowing?'hidden':'visible';
-    back.style.visibility=backShowing?'visible':'hidden';
     var scene=document.getElementById('cardScene'); if(scene) scene.classList.toggle('on-back', backShowing);
   }
   /* The stats button lives in a card-sized layer in the scene (so it stays

@@ -80,6 +80,57 @@
     return D.info(name);
   };
 
+  /* Themes + accents for the demo: unlock EVERYTHING (no locked themes, all
+     accents selectable) and give each demo player a random-but-stable theme.
+     Front and back both read cb2Theme(slug), so they always match. */
+  var ALL_THEMES = ['red', 'blue', 'gold', 'rainbow', 'grunge', 'amber', 'fire'];
+  (function unlockThemesAndAccents() {
+    // Unlock every card theme while demo is active (merged into cb2Unlocked()).
+    var priorThemeUnlock = window.thwapThemeUnlocked;
+    window.thwapThemeUnlocked = function () {
+      if (D.isActive()) return ALL_THEMES.slice();
+      return priorThemeUnlock ? priorThemeUnlock() : [];
+    };
+    // Unlock every drill-narration accent while demo is active.
+    var priorVoiceUnlocked = window.thwapVoiceUnlocked;
+    window.thwapVoiceUnlocked = function (v) {
+      if (D.isActive()) return true;
+      return priorVoiceUnlocked ? priorVoiceUnlocked(v) : (!v || !v.unlockAt);
+    };
+  })();
+
+  /* Seed a random theme per demo player (once), stored the same way a real
+     player's choice is (thwapCardTheme:<slug>), so cb2Theme picks it up for BOTH
+     faces and the roster. Stable across reloads once seeded. */
+  function seedThemes() {
+    try {
+      D.roster.forEach(function (p) {
+        var key = 'thwapCardTheme:' + D.slugOf(p.first);
+        if (!localStorage.getItem(key)) {
+          localStorage.setItem(key, ALL_THEMES[Math.floor(Math.random() * ALL_THEMES.length)]);
+        }
+      });
+    } catch (e) {}
+  }
+
+  /* Per-player photo transforms on the card front (Woody's tuning). Injected once;
+     scoped to the per-slug photo class buildFront now emits (cf2-photo-<slug>).
+     transform-origin bottom center matches the base .cf2-photo. */
+  function injectPhotoTweaks() {
+    if (document.getElementById('demoPhotoTweaks')) return;
+    var css =
+      /* Sidney Crosby: +15% larger, shifted up 15% of card height */
+      ".cf2-photo-sidney{transform:scale(1.15) translateY(-15%);transform-origin:bottom center}" +
+      /* Dominik Hasek: +25% larger, rotated 90deg, centered on the card */
+      ".cf2-photo-dominik{transform:translateY(-50%) rotate(90deg) scale(1.25);transform-origin:center center;top:50%;bottom:auto;object-position:center center}" +
+      /* Patrick Roy: +10% larger, shifted left 25% */
+      ".cf2-photo-patrick{transform:scale(1.10) translateX(-25%);transform-origin:bottom center}";
+    var st = document.createElement('style');
+    st.id = 'demoPhotoTweaks';
+    st.textContent = css;
+    document.head.appendChild(st);
+  }
+
   /* Board: seed demo stats (keyed by first-name slug) so every board reader sees
      demo numbers. window.thwapBoard is the shared store the standings, stats page,
      and card back all read. */
@@ -152,7 +203,7 @@
         var info = { num: String(p.num), pos: p.pos, first: p.first };
         card.innerHTML = "<div class='pcard-card' style='position:absolute;inset:0;overflow:hidden'>" +
           "<div style='position:absolute;top:0;left:0;width:" + ROSTER_BASE + "px;height:" + (ROSTER_BASE * 7 / 5) + "px;transform-origin:top left' data-pcbase='1'>" +
-          window.buildFront(info, D.slugOf(p.first), p.photo, 'red') + "</div></div>";
+          window.buildFront(info, D.slugOf(p.first), p.photo) + "</div></div>";
       }
       card.addEventListener('click', function (e) {
         e.preventDefault();
@@ -239,6 +290,8 @@
   function boot() {
     if (!D.isActive()) return;
     document.body.classList.add('is-demo');
+    seedThemes();
+    injectPhotoTweaks();
     seedPhotos();
     applyTeamLabel();
     applyAll();
