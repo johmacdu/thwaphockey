@@ -599,6 +599,12 @@ body.is-coach .roster .pcard-remove{display:grid;place-items:center}
 .banner-coaches{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px}
 .bcoach{display:inline-flex;align-items:center;gap:9px;box-sizing:border-box;height:44px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:0 12px 0 5px;font-family:inherit;text-align:left}
 .bcoach[hidden]{display:none}
+.cinfo-head{display:flex;align-items:center;gap:14px;margin-top:8px}
+.cinfo-av{width:56px;height:56px;border-radius:14px;display:inline-grid;place-items:center;background:var(--card2);color:var(--muted);font-weight:900;font-size:20px;overflow:hidden;flex:none}
+.cinfo-av img{width:100%;height:100%;object-fit:cover}
+.cinfo-name{font-family:'Archivo Black',system-ui,sans-serif;font-size:19px;color:var(--text)}
+.cinfo-role{font-size:14px;font-weight:800;color:var(--muted);margin-top:2px}
+.cinfo-note{margin-top:14px;font-size:14px;color:var(--muted);line-height:1.5}
 .bcoach-nmbtn{background:none;border:0;padding:0;margin:0;font:inherit;color:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .bcoach-av{width:34px;height:34px;border-radius:50%;display:inline-grid;place-items:center;background:var(--card2);color:var(--muted);font-weight:900;font-size:13px;overflow:hidden;flex:none}
 .bcoach-av img{width:100%;height:100%;object-fit:cover}
@@ -623,6 +629,12 @@ body.is-coach .roster .pcard-remove{display:grid;place-items:center}
 .coachcoaches-add{margin-top:10px;font-family:inherit;font-size:13px;font-weight:800;background:transparent;color:var(--text);border:1px solid var(--line2);border-radius:10px;padding:9px 14px;cursor:pointer}
 .roster-coachonly{display:none}
 body.is-coach .roster-coachonly{display:block}
+/* Player self-edit pencil: only for a signed-in, non-coach player (the parent/
+   player edits their OWN details). Hidden for guests and for coaches (coaches use
+   the roster-coachonly pencil, which edits any player). */
+.roster-playeronly{display:none}
+body.is-authed:not(.is-coach) .roster-playeronly{display:block}
+body.is-authed:not(.is-coach) .roster-playeronly[hidden]{display:none}
 .roster-playershead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:var(--gap-section) 0 12px;padding-top:0;border-top:0}
 .roster-edit{margin-left:auto;flex:none;display:inline-grid;place-items:center;width:44px;height:44px;border-radius:50%;font-family:inherit;font-size:19px;color:var(--text);cursor:pointer;background:var(--card);border:1px solid var(--line);box-shadow:0 2px 8px var(--shadow)}
 .roster-edit:hover{border-color:var(--line2)}
@@ -637,6 +649,11 @@ body.is-coach .roster-coachonly{display:block}
 body.roster-editing #roster-grid .pcard:not(.pcard-add){box-shadow:0 0 0 3px var(--lime) inset;position:relative;transform:scale(.965);transition:transform .12s ease}
 body.roster-editing #roster-grid .pcard:not(.pcard-add)::after{content:'\270E';position:absolute;top:6px;right:6px;z-index:3;width:26px;height:26px;display:grid;place-items:center;border-radius:8px;background:var(--lime);color:var(--ink);font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,.28)}
 body.roster-editing #roster-grid .pcard.pcard-add{opacity:.4;pointer-events:none}
+/* Player self-edit mode: ONLY the player's own card is editable; everyone else is
+   dimmed and not tappable, so a player can only ever edit themselves. */
+body.roster-selfediting #roster-grid .pcard:not(.pcard-you-card){opacity:.4;pointer-events:none}
+body.roster-selfediting #roster-grid .pcard.pcard-you-card{box-shadow:0 0 0 3px var(--lime) inset;position:relative;transform:scale(.965);transition:transform .12s ease}
+body.roster-selfediting #roster-grid .pcard.pcard-you-card::after{content:'\270E';position:absolute;top:6px;right:6px;z-index:3;width:26px;height:26px;display:grid;place-items:center;border-radius:8px;background:var(--lime);color:var(--ink);font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,.28)}
 
 /* Player-edit side sheet (X-close, slides from the right; no modal chrome). */
 .sheet{position:fixed;inset:0;z-index:60}
@@ -1300,7 +1317,7 @@ body.login-locked{overflow:hidden}
   </div>
 </div>
 <div class='rfilter' id='rFilter' hidden><span id='rFilterLab'></span> <button type='button' class='rfilter-clear' id='rFilterClear'>Clear</button></div>
-<div class='roster-playershead'><div class='coachcoaches-h'>Players</div><button type='button' class='roster-edit roster-coachonly' id='rosterEdit' aria-label='Edit players'><span aria-hidden='true'>&#9998;</span></button><div class='roster-editactions roster-coachonly' id='rosterEditActions' hidden><button type='button' class='roster-editcancel' id='rosterEditCancel'>Cancel</button><button type='button' class='roster-editdone' id='rosterEditDone'>Done</button></div></div>
+<div class='roster-playershead'><div class='coachcoaches-h'>Players</div><button type='button' class='roster-edit roster-coachonly' id='rosterEdit' aria-label='Edit players'><span aria-hidden='true'>&#9998;</span></button><div class='roster-editactions roster-coachonly' id='rosterEditActions' hidden><button type='button' class='roster-editcancel' id='rosterEditCancel'>Cancel</button><button type='button' class='roster-editdone' id='rosterEditDone'>Done</button></div><button type='button' class='roster-edit roster-playeronly' id='rosterEditSelf' aria-label='Edit my details'><span aria-hidden='true'>&#9998;</span></button><div class='roster-editactions roster-playeronly' id='rosterEditSelfActions' hidden><button type='button' class='roster-editdone' id='rosterEditSelfDone'>Done</button></div></div>
 <div class='roster' id='roster-grid'><a href='#player' class='pcard' data-name='Alder Reese'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>71</span><span class='pcard-bnname'>Alder</span></div></a><a href='#player' class='pcard' data-name='Brooklyn Coughlan'><div class='pcard-bignum pos-def'><span class='pcard-bn'>92</span><span class='pcard-bnname'>Brooklyn</span></div></a><a href='#player' class='pcard' data-name='Dawson Huffman'><div class='pcard-bignum pos-def'><span class='pcard-bn'>19</span><span class='pcard-bnname'>Dawson</span></div></a><a href='#player' class='pcard' data-name='Dominic Cinque'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>98</span><span class='pcard-bnname'>Dominic</span></div></a><a href='#player' class='pcard' data-name='Eugene Kuhn'><div class='pcard-bignum pos-def'><span class='pcard-bn'>3</span><span class='pcard-bnname'>Eugene</span></div></a><a href='#player' class='pcard' data-name='Evan Ewing'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>13</span><span class='pcard-bnname'>Evan</span></div></a><a href='#player' class='pcard' data-name='Greyson Wertz'><div class='pcard-bignum pos-def'><span class='pcard-bn'>32</span><span class='pcard-bnname'>Greyson</span></div></a><a href='#player' class='pcard' data-name='Issac Moyer'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>53</span><span class='pcard-bnname'>Issac</span></div></a><a href='#player' class='pcard' data-name='Johnny Eraman'><div class='pcard-bignum pos-goalie'><span class='pcard-bn'>1</span><span class='pcard-bnname'>Johnny</span></div></a><a href='#player' class='pcard' data-name='Joziah Soto'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>59</span><span class='pcard-bnname'>Joziah</span></div></a><a href='#player' class='pcard pcard-you-card' data-name='Lewie'><img class='pcard-cardart' src='cards/lewie_photo.png' alt='Lewie'></a><a href='#player' class='pcard' data-name='Liam Delatorre'><div class='pcard-bignum pos-def'><span class='pcard-bn'>29</span><span class='pcard-bnname'>Liam</span></div></a><a href='#player' class='pcard' data-name='Maddux Jones'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>18</span><span class='pcard-bnname'>Maddux</span></div></a><a href='#player' class='pcard' data-name='Oliver Moyer'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>90</span><span class='pcard-bnname'>Oliver</span></div></a><a href='#player' class='pcard' data-name='Teddy Diss'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>11</span><span class='pcard-bnname'>Teddy</span></div></a><a href='#player' class='pcard' data-name='William Schnell'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>16</span><span class='pcard-bnname'>William</span></div></a></div>
 <div class='rsearch-empty' id='rsearchEmpty' hidden></div>
 <div class='pgate' id='switchGate' hidden>
@@ -1348,6 +1365,21 @@ body.login-locked{overflow:hidden}
     <p class='pgate-msg' id='peMsg' aria-live='polite'></p>
   </form>
 </div>
+<div class='sheet' id='playerSelfSheet' hidden>
+  <div class='sheet-scrim' id='psScrim'></div>
+  <form class='sheet-panel' id='playerSelfForm' novalidate>
+    <button type='button' class='pgate-x' id='psX' aria-label='Close'>&#215;</button>
+    <h2 class='pgate-h'>Edit my details</h2>
+    <label class='sheet-lab'>First name<input class='pgate-in' id='psFirst' type='text' autocomplete='off' required></label>
+    <label class='sheet-lab'>Last name<input class='pgate-in' id='psLast' type='text' autocomplete='off'></label>
+    <label class='sheet-lab'>Jersey number<input class='pgate-in' id='psNum' type='text' inputmode='numeric' autocomplete='off'></label>
+    <label class='sheet-lab'>Parent email (1)<input class='pgate-in' id='psEmail' type='email' inputmode='email' autocomplete='off' placeholder='parent@email.com'></label>
+    <label class='sheet-lab'>Parent email (2)<input class='pgate-in' id='psEmail2' type='email' inputmode='email' autocomplete='off' placeholder='second parent (optional)'></label>
+    <div class='sheet-pin'>Player code (PIN)<span class='sheet-pin-val' id='psPin'>&mdash;</span><span class='sheet-pin-hint'>Changing your jersey number changes this code.</span><button type='button' class='sheet-pin-btn' id='psReqCode'>Request new code</button></div>
+    <button type='submit' class='pgate-go' id='psSave'>Save</button>
+    <p class='pgate-msg' id='psMsg' aria-live='polite'></p>
+  </form>
+</div>
 <div class='sheet' id='asstSheet' hidden>
   <div class='sheet-scrim' id='asScrim'></div>
   <form class='sheet-panel' id='asstForm' novalidate>
@@ -1367,6 +1399,17 @@ body.login-locked{overflow:hidden}
     <button type='submit' class='pgate-go' id='asSave'>Add assistant</button>
     <p class='pgate-msg' id='asMsg' aria-live='polite'></p>
   </form>
+</div>
+<div class='sheet' id='coachInfoSheet' hidden>
+  <div class='sheet-scrim' id='coachInfoScrim'></div>
+  <div class='sheet-panel'>
+    <button type='button' class='pgate-x' id='coachInfoX' aria-label='Close'>&#215;</button>
+    <div class='cinfo-head'>
+      <span class='cinfo-av' id='coachInfoAv'></span>
+      <div><div class='cinfo-name' id='coachInfoName'>Coach</div><div class='cinfo-role' id='coachInfoRole'></div></div>
+    </div>
+    <p class='cinfo-note'>Your team&rsquo;s coach. Reach out through your team&rsquo;s usual channel.</p>
+  </div>
 </div>
 <div class='sheet' id='coachProfileGate' hidden>
   <div class='sheet-scrim' id='coachProfileScrim'></div>
@@ -1828,20 +1871,21 @@ window.thwapActiveTeam=function(coach){
         var canRemove=amHead && c.role==='assistant';
         var isMe=String(c.email||'').toLowerCase()===myEmail;
         pill.innerHTML='<span class="bcoach-av"></span>'+
-          '<span>'+(isMe?'<button type="button" class="bcoach-nmbtn"><span class="bcoach-nm"></span></button>':'<span class="bcoach-nm"></span>')+'<span class="bcoach-role" style="display:block">'+(isHead?'Head coach':'Assistant')+'</span></span>'+
+          '<span><button type="button" class="bcoach-nmbtn"><span class="bcoach-nm"></span></button><span class="bcoach-role" style="display:block">'+(isHead?'Head coach':'Assistant')+'</span></span>'+
           (isMe?'<button type="button" class="bcoach-btn" aria-label="Edit your profile">\u270E</button>':(canRemove?'<button type="button" class="bcoach-btn bcoach-remove" aria-label="Remove assistant">\u2715</button>':''));
         var av=pill.querySelector('.bcoach-av');
         if(c.photo){ var im=document.createElement('img'); im.src=c.photo; im.alt=nm; av.appendChild(im); } else { av.textContent=initials(c.name,c.email); }
         pill.querySelector('.bcoach-nm').textContent=nm;
         var pencil=pill.querySelector('.bcoach-btn:not(.bcoach-remove)');
+        var nmBtn=pill.querySelector('.bcoach-nmbtn');
         if(isMe){
-          /* Tapping the coach's own NAME (and the pencil) opens the profile editor.
-             Scoped to the name button, NOT the whole pill, so a stray tap on the
-             wide chip does not open it. */
-          var nmBtn=pill.querySelector('.bcoach-nmbtn');
+          /* The coach's own chip: name + pencil open the editable profile. */
           function openProfile(){ if(window.thwapOpenCoachProfile) window.thwapOpenCoachProfile(); }
           if(nmBtn) nmBtn.addEventListener('click',openProfile);
           if(pencil) pencil.addEventListener('click',openProfile);
+        } else {
+          /* Another coach's chip: open the read-only info sheet. */
+          if(nmBtn) nmBtn.addEventListener('click',(function(nm2,role2,photo2){ return function(){ if(window.thwapShowCoachInfo) window.thwapShowCoachInfo(nm2,role2,photo2); }; })(nm,isHead?'Head coach':'Assistant',c.photo||''));
         }
         var rm=pill.querySelector('.bcoach-remove');
         if(rm) rm.addEventListener('click',function(){
@@ -2469,11 +2513,15 @@ window.thwapActiveTeam=function(coach){
           var nm=c.name||'Coach';
           var isHead=c.role==='head';
           var pill=document.createElement('span'); pill.className='bcoach';
-          pill.innerHTML='<span class="bcoach-av"></span><span><span class="bcoach-nm"></span><span class="bcoach-role" style="display:block">'+(isHead?'Head coach':'Assistant')+'</span></span>';
+          pill.innerHTML='<span class="bcoach-av"></span><span><button type="button" class="bcoach-nmbtn"><span class="bcoach-nm"></span></button><span class="bcoach-role" style="display:block">'+(isHead?'Head coach':'Assistant')+'</span></span>';
           var av=pill.querySelector('.bcoach-av');
           if(c.photo){ var im=document.createElement('img'); im.src=c.photo; im.alt=nm; av.appendChild(im); }
           else { var s=nm.trim().split(/\s+/); av.textContent=((s[0]||'?').charAt(0)+(s[1]?s[1].charAt(0):'')).toUpperCase(); }
           pill.querySelector('.bcoach-nm').textContent=nm;
+          /* Player/parent view: tapping a coach chip opens a read-only info sheet
+             (a player cannot edit a coach). */
+          var nmBtn=pill.querySelector('.bcoach-nmbtn');
+          if(nmBtn) nmBtn.addEventListener('click',function(){ if(window.thwapShowCoachInfo) window.thwapShowCoachInfo(nm,isHead?'Head coach':'Assistant',c.photo||''); });
           strip.appendChild(pill);
         });
       }).catch(function(){});
@@ -6121,5 +6169,144 @@ wireHeaderNav('navWaitlist', function(){ playToSheet(showWait); });
 wireHeaderNav('navWaitlistK', function(){ playToSheet(showWait); });
 window.addEventListener('hashchange',function(){ if(location.hash==='#login'){ show(); maybeSplash(); } });
 gate();
+})();</script>
+<script>(function(){
+/* ---- Player self-edit (Team page) ----
+   A signed-in, non-coach player can edit their OWN details from the Team page:
+   tap the pencil to enter self-edit mode (only their own card is editable), tap
+   their card to open a sheet with name / jersey / parent emails + Request new
+   code. Saving posts to self-update-player, authorized by the player's own code
+   (jersey + season year) so a player can never edit anyone else. Coaches use the
+   coach pencil; guests see nothing (CSS gates the pencil on body.is-authed:not(.is-coach)). */
+var TEAM='RANGERS72';
+function myName(){ try{ return (localStorage.getItem('bfPlayer')||'').trim(); }catch(e){ return ''; } }
+function myFirst(){ return (myName().split(/\s+/)[0]||''); }
+function myPid(){ return myFirst().toLowerCase().replace(/[^a-z]/g,''); }
+function myCard(){
+  var pid=myPid(); if(!pid) return null;
+  var cards=document.querySelectorAll('#roster-grid .pcard[data-name]');
+  for(var i=0;i<cards.length;i++){
+    var nm=(cards[i].getAttribute('data-name')||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,'');
+    if(nm===pid) return cards[i];
+  }
+  return null;
+}
+function cardNum(card){ try{ var bn=card&&card.querySelector('.pcard-bn'); return bn?(bn.textContent||'').trim():''; }catch(e){ return ''; } }
+
+var pencil=document.getElementById('rosterEditSelf');
+var actions=document.getElementById('rosterEditSelfActions');
+var doneBtn=document.getElementById('rosterEditSelfDone');
+/* Point pcard-you-card at the ACTUAL signed-in player's card (the static markup
+   only marks one card). Also: if this signed-in player has no card on the roster,
+   hide the self-edit pencil entirely (nothing for them to edit). */
+(function(){
+  var pid=myPid();
+  var cards=document.querySelectorAll('#roster-grid .pcard[data-name]');
+  var found=false;
+  cards.forEach(function(el){
+    var nm=(el.getAttribute('data-name')||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,'');
+    if(nm===pid){ el.classList.add('pcard-you-card'); found=true; }
+    else { el.classList.remove('pcard-you-card'); }
+  });
+  if(!found && pencil){ pencil.hidden=true; pencil.style.display='none'; }
+})();
+var sheet=document.getElementById('playerSelfSheet');
+var form=document.getElementById('playerSelfForm');
+var psFirst=document.getElementById('psFirst'), psLast=document.getElementById('psLast'),
+    psNum=document.getElementById('psNum'), psEmail=document.getElementById('psEmail'),
+    psEmail2=document.getElementById('psEmail2'), psPin=document.getElementById('psPin'),
+    psMsg=document.getElementById('psMsg'), psReqCode=document.getElementById('psReqCode');
+var editing=false, currentCode='';
+function pinFor(num){ var n=String(num==null?'':num).trim(); return n?(n+'2027'):'\u2014'; }
+function setEditing(on){
+  editing=on;
+  document.body.classList.toggle('roster-selfediting', on);
+  if(pencil){ pencil.hidden=on; pencil.classList.toggle('on',on); }
+  if(actions) actions.hidden=!on;
+}
+if(pencil) pencil.addEventListener('click',function(){ setEditing(true); });
+if(doneBtn) doneBtn.addEventListener('click',function(){ setEditing(false); });
+function sheetShow(on){ if(sheet) sheet.hidden=!on; }
+function validEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v||'').trim()); }
+function openSelfEdit(){
+  var card=myCard(); if(!card) return;
+  var parts=myName().split(/\s+/); var first=parts[0]||''; var last=parts.slice(1).join(' ');
+  var num=cardNum(card);
+  currentCode=num?(num+'2027'):'';           /* proof-of-self for the server */
+  if(psMsg) psMsg.textContent='';
+  if(psFirst) psFirst.value=first;
+  if(psLast) psLast.value=last;
+  if(psNum) psNum.value=num;
+  if(psEmail) psEmail.value='';
+  if(psEmail2) psEmail2.value='';
+  if(psPin) psPin.textContent=pinFor(num);
+  sheetShow(true);
+  /* Fill emails + canonical fields from the roster in the background. */
+  fetch('/api/coach?action=roster&code='+encodeURIComponent(TEAM))
+    .then(function(r){ return r.json(); }).then(function(j){
+      var m=(j&&j.members||[]).filter(function(x){ return (x.playerId||x.firstName||'').toLowerCase()===myPid(); })[0];
+      if(!m) return;
+      if(psFirst && m.firstName) psFirst.value=m.firstName;
+      if(psLast && m.lastName!=null) psLast.value=m.lastName;
+      if(psNum && m.number!=null){ psNum.value=m.number; currentCode=String(m.number)+'2027'; if(psPin) psPin.textContent=pinFor(m.number); }
+      if(psEmail) psEmail.value=m.parentEmail||'';
+      if(psEmail2) psEmail2.value=m.parentEmail2||'';
+    }).catch(function(){});
+}
+/* In self-edit mode, tapping the player's OWN card opens the sheet. Capture phase
+   so it beats the card's normal navigation; other cards are pointer-events:none. */
+(function(){
+  var grid=document.getElementById('roster-grid'); if(!grid) return;
+  grid.addEventListener('click',function(e){
+    if(!editing) return;
+    var card=e.target.closest && e.target.closest('.pcard-you-card');
+    if(!card) return;
+    e.preventDefault(); e.stopPropagation();
+    openSelfEdit();
+  }, true);
+})();
+document.getElementById('psX') && document.getElementById('psX').addEventListener('click',function(){ sheetShow(false); });
+document.getElementById('psScrim') && document.getElementById('psScrim').addEventListener('click',function(){ sheetShow(false); });
+if(psNum) psNum.addEventListener('input',function(){ if(psPin) psPin.textContent=pinFor(psNum.value); });
+if(psReqCode) psReqCode.addEventListener('click',function(){
+  if(!validEmail(psEmail&&psEmail.value)){ if(psMsg) psMsg.textContent='Add a parent email above first, then Save.'; return; }
+  var lab=psReqCode.textContent; psReqCode.disabled=true; psReqCode.textContent='Sending...';
+  fetch('/api/coach?action=request-code',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:TEAM,playerId:myPid()})})
+    .then(function(r){ return r.json(); }).then(function(){
+      psReqCode.textContent='Code sent'; psReqCode.classList.add('done');
+      setTimeout(function(){ psReqCode.textContent=lab; psReqCode.classList.remove('done'); psReqCode.disabled=false; },2600);
+    }).catch(function(){ psReqCode.textContent=lab; psReqCode.disabled=false; if(psMsg) psMsg.textContent='Could not reach the server.'; });
+});
+if(form) form.addEventListener('submit',function(e){
+  e.preventDefault();
+  if(psEmail && psEmail.value && !validEmail(psEmail.value)){ if(psMsg) psMsg.textContent='Enter a valid parent email.'; return; }
+  if(psEmail2 && psEmail2.value && !validEmail(psEmail2.value)){ if(psMsg) psMsg.textContent='Second parent email is invalid.'; return; }
+  var body={code:TEAM,playerId:myPid(),playerCode:currentCode,
+    firstName:psFirst?psFirst.value:'',lastName:psLast?psLast.value:'',number:psNum?psNum.value:'',
+    parentEmail:psEmail?psEmail.value:'',parentEmail2:psEmail2?psEmail2.value:''};
+  if(psMsg) psMsg.textContent='Saving...';
+  fetch('/api/coach?action=self-update-player',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
+    .then(function(res){ if(res.ok&&res.j.ok){ sheetShow(false); location.reload(); } else if(psMsg){ psMsg.textContent=(res.j&&res.j.error)||'Could not save.'; } })
+    .catch(function(){ if(psMsg) psMsg.textContent='Could not reach the server.'; });
+});
+})();</script>
+<script>(function(){
+/* Read-only coach info sheet, opened by tapping a coach chip on the Team page
+   (player view, and non-self coach chips in the coach view). */
+var sheet=document.getElementById('coachInfoSheet');
+function show(on){ if(sheet) sheet.hidden=!on; }
+window.thwapShowCoachInfo=function(name, role, photo){
+  var nm=document.getElementById('coachInfoName'), rl=document.getElementById('coachInfoRole'), av=document.getElementById('coachInfoAv');
+  if(nm) nm.textContent=name||'Coach';
+  if(rl) rl.textContent=role||'';
+  if(av){ av.innerHTML='';
+    if(photo){ var im=document.createElement('img'); im.src=photo; im.alt=name||''; av.appendChild(im); }
+    else { var s=String(name||'').trim().split(/\s+/); av.textContent=((s[0]||'?').charAt(0)+(s[1]?s[1].charAt(0):'')).toUpperCase(); }
+  }
+  show(true);
+};
+document.getElementById('coachInfoX') && document.getElementById('coachInfoX').addEventListener('click',function(){ show(false); });
+document.getElementById('coachInfoScrim') && document.getElementById('coachInfoScrim').addEventListener('click',function(){ show(false); });
 })();</script>
 </body></html>
