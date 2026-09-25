@@ -65,4 +65,20 @@ describe('Drill narration voice picker (all three disciplines, no id collision)'
     const lockedChips = doc.querySelectorAll('.vpick .vopt.locked');
     expect(lockedChips.length).toBeGreaterThan(0);
   });
+
+  it('the sheet is an absolute overlay (floats on top, does not shift items down)', () => {
+    // .vsheet must be position:absolute so opening it overlays rather than pushing
+    // the drill rows down; .vpick is the positioning anchor.
+    expect(html).toMatch(/\.vsheet\{position:absolute;/);
+    expect(html).toMatch(/\.vpick\{[^}]*position:relative/);
+  });
+
+  it('renders ALL voice rows (scrollable), not a truncated list', () => {
+    // Same list for every team (demo included) - the picker emits one row per voice.
+    const out = win.voicePickerHTML();
+    const tmp = doc.createElement('div'); tmp.innerHTML = out;
+    expect(tmp.querySelectorAll('.vopt').length).toBe(win.THWAP_VOICES.length);
+    // the overlay caps visible height and scrolls, so every row stays reachable
+    expect(html).toMatch(/\.vsheet\{[^}]*max-height:252px[^}]*overflow-y:auto/);
+  });
 });
