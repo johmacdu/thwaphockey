@@ -18,12 +18,16 @@ is a synced Web Audio tick (no audio file), muted with the narration.
 
 ## Voices
 
-| code | label | ElevenLabs voice ID | unlockAt |
-|------|-------|---------------------|----------|
+| code | label | ElevenLabs voice ID | unlockAt (days) |
+|------|-------|---------------------|-----------------|
 | `can` | Canadian | `dllHSct4GokGc1AH9JwT` | 0 |
 | `mn`  | Minnesota | `MqdBjMcqClsTO77t1vGB` | 0 |
-| `us`  | American | `kpftzLQxRv90Nn6qoJRf` | 0 |
-| `bos` | Boston | `UZvBfqEdvCFLqsBOo9Zr` | 0 |
+| `us`  | American | `kpftzLQxRv90Nn6qoJRf` | 30 |
+| `bos` | Boston | `UZvBfqEdvCFLqsBOo9Zr` | 60 |
+| `ny`  | New Yorker | `q3pCVYOxlOb5G3l2O13o` | 90 |
+| `rus` | Russian | `u5UJ3o5MZq3cWrXIXi37` | 120 |
+| `swe` | Swedish | `TIMFVcMCO4bdy7J79GWF` | 150 |
+| `fin` | Finnish | `KQem9e29QRWURqusQZoF` | 180 |
 
 Add a voice: (1) pick/create it in ElevenLabs, (2) add a row to `VOICES` in
 `scripts/generate-segments.cjs` and to `THWAP_VOICES` in `index.html`, (3) run the
