@@ -21,7 +21,9 @@ is a synced Web Audio tick (no audio file), muted with the narration.
 | code | label | ElevenLabs voice ID | unlockAt |
 |------|-------|---------------------|----------|
 | `can` | Canadian | `dllHSct4GokGc1AH9JwT` | 0 |
-| `mn`  | Minnesota | `kpftzLQxRv90Nn6qoJRf` | 0 |
+| `mn`  | Minnesota | `MqdBjMcqClsTO77t1vGB` | 0 |
+| `us`  | American | `kpftzLQxRv90Nn6qoJRf` | 0 |
+| `bos` | Boston | `UZvBfqEdvCFLqsBOo9Zr` | 0 |
 
 Add a voice: (1) pick/create it in ElevenLabs, (2) add a row to `VOICES` in
 `scripts/generate-segments.cjs` and to `THWAP_VOICES` in `index.html`, (3) run the
