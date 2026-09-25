@@ -199,13 +199,13 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .vmadlib{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(17px,4.4vw,22px);line-height:1.3;margin:0;color:var(--text)}
 .pos-word.vword{color:var(--green2);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px;cursor:pointer;-webkit-tap-highlight-color:transparent;background:none;border:0;font:inherit;padding:0 2px}
 .pos-word.vword:hover{opacity:.82}
-.vsheet{position:relative;margin-top:10px;max-width:280px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--card);box-shadow:0 6px 20px var(--shadow)}
+.vsheet{position:relative;margin-top:10px;max-width:280px;max-height:252px;overflow-y:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:0 6px 20px var(--shadow)}
 .vopt{display:flex;width:100%;align-items:center;gap:12px;padding:14px 18px;min-height:44px;background:none;border:0;border-top:1px solid var(--line);font:inherit;font-size:16px;font-weight:800;color:var(--text);cursor:pointer;text-align:left}
 .vopt:first-child{border-top:0}
 .vopt .vopt-emoji{font-size:18px;line-height:1}
 .vopt.on{background:color-mix(in srgb,var(--lime) 30%,var(--card));font-weight:900}
 .vopt.on:after{content:'\2713';margin-left:auto;color:var(--green);font-weight:900}
-.vopt.locked{opacity:.5;cursor:default;font-weight:700}
+.vopt.locked{opacity:.5;cursor:default;font-weight:700;filter:blur(1.5px);color:var(--muted);user-select:none}
 .exbody ol{margin:0 0 18px;padding-left:26px;color:var(--text);font-size:18px;font-weight:600;line-height:1.75}
 .exbody ol li{margin-bottom:14px;padding-left:4px}
 .exbody ol li::marker{font-weight:700;color:var(--text)}
@@ -1622,7 +1622,7 @@ body.login-locked{overflow:hidden}
 <a class='nav nav-dryland' href='#dryland'><div class='ico'><img class='nav-ico' src='login/icon-bolt.webp' alt=''></div><div><h2>Dryland</h2><p>Speed + power + balance, about 15 min</p></div><div class='chev'>›</div></a>
 </div>
 </section>
-<div class='footer'><span class='slogan'>Compete. Improve. Have fun.</span><div class='footer-actions'><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button><div class='footmenu-wrap'><button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button><div class='footmenu' id='footMenu' hidden role='menu'><a class='footmenu-item' id='menuSignout' href='#' role='menuitem'>Sign out</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a></div></div></div></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div>
+<div class='footer'><span class='slogan'>Compete. Improve. Have fun.</span><div class='footer-actions'><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button><div class='footmenu-wrap'><button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button><div class='footmenu' id='footMenu' hidden role='menu'><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a><a class='footmenu-item' id='menuSignout' href='#' role='menuitem'>Sign out</a></div></div></div></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div>
 </div><script>(function(){
 /* Player gate: tapping a drill card asks who you are, then continues to the drill. */
 var PLAYER='bfPlayer';
@@ -2747,10 +2747,10 @@ var THWAP_VOICES=window.THWAP_VOICES=[
   {code:'chi', label:'Chicagoan', emoji:'🌭', unlockAt:20},
   {code:'bos', label:'Bostonian', emoji:'🦞', unlockAt:20},
   {code:'fca', label:'French Canadian', emoji:'⚜️', unlockAt:20},
-  {code:'fin', label:'Finnish', emoji:'🇫🇮', unlockAt:20},
-  {code:'swe', label:'Swedish', emoji:'🇸🇪', unlockAt:20},
+  {code:'fin', label:'Finn', emoji:'🇫🇮', unlockAt:20},
+  {code:'swe', label:'Swede', emoji:'🇸🇪', unlockAt:20},
   {code:'rus', label:'Russian', emoji:'🇷🇺', unlockAt:20},
-  {code:'dan', label:'Danish', emoji:'🇩🇰', unlockAt:20}
+  {code:'dan', label:'Dane', emoji:'🇩🇰', unlockAt:20}
 ];
 function thwapVoice(){ try{ return localStorage.getItem('thwapVoice')||'can'; }catch(e){ return 'can'; } }
 function thwapSetVoice(code){ try{ localStorage.setItem('thwapVoice',code); }catch(e){} }
@@ -2800,8 +2800,9 @@ if(!window.__thwapAudDelegated){window.__thwapAudDelegated=true;document.addEven
 });}
 
 /* Voice picker: a kid-friendly chip row (NOT a card). Unlocked voices are
-   selectable; locked ones show dimmed as 'Unlock at N drills'. One delegated
-   handler swaps the stored voice and re-marks the selected chip in place. */
+   selectable; locked ones show blurred as a generic 'Locked accent' (no name, no
+   threshold revealed). One delegated handler swaps the stored voice and re-marks
+   the selected chip in place. */
 function voicePickerHTML(){
   var cur=thwapVoice();
   var unlocked=THWAP_VOICES.filter(thwapVoiceUnlocked);
@@ -2810,7 +2811,7 @@ function voicePickerHTML(){
     if(thwapVoiceUnlocked(v)){
       return "<button type=\"button\" class=\"vopt"+(v.code===curV.code?' on':'')+"\" data-voice=\""+v.code+"\" role=\"menuitemradio\">"+(v.emoji?"<span class=\"vopt-emoji\">"+v.emoji+"</span> ":'')+esc(v.label)+"</button>";
     }
-    return "<span class=\"vopt locked\">\uD83D\uDD12 "+esc(v.label)+" \u00B7 Unlock at "+v.unlockAt+"</span>";
+    return "<span class=\"vopt locked\">\uD83D\uDD12 Locked accent</span>";
   }).join('');
   return "<div class='vpick'>"+
     "<p class='vmadlib'>Want Sass to have <button type=\"button\" class=\"pos-word vword\" aria-haspopup=\"true\" aria-expanded=\"false\">"+esc(curV.label)+"</button> accent?</p>"+
