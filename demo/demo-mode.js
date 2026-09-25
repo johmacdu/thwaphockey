@@ -66,6 +66,11 @@
               coachOverride = { name: body.name, photo: body.photo };
               return Promise.resolve(jsonResponse({ ok: true, coaches: coachesList().coaches }));
             }
+            if (method === 'POST' && /action=self-update-player/.test(url)) {
+              /* Demo player self-edit: no backend team exists, so accept the save
+                 client-side and report ok (the demo is a showcase, not persisted). */
+              return Promise.resolve(jsonResponse({ ok: true }));
+            }
           }
         }
       } catch (e) {}
