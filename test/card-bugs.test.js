@@ -90,3 +90,31 @@ describe('Backend: request-code emails BOTH parents', () => {
     expect(coachJs).toMatch(/for \(const clean of Object\.keys\(seen\)\)/);
   });
 });
+
+describe('Team edit mode: visually distinct + opens instantly', () => {
+  it('edit mode adds a pencil badge and scale so it differs from a normal tap', () => {
+    expect(html).toMatch(/roster-editing #roster-grid \.pcard:not\(\.pcard-add\)::after/);
+    expect(html).toContain('transform:scale(.965)');
+  });
+  it('the edit sheet shows before the roster fetch resolves (instant open)', () => {
+    // peSheetShow(true) is called synchronously, and the fetch only fills fields.
+    const src = html.slice(html.indexOf('function openPlayerEdit'));
+    const openIdx = src.indexOf('peSheetShow(true);');
+    const fetchIdx = src.indexOf("fetch('/api/coach?action=roster");
+    expect(openIdx).toBeGreaterThan(-1);
+    expect(fetchIdx).toBeGreaterThan(-1);
+    expect(openIdx).toBeLessThan(fetchIdx); // shown first, then fetched
+  });
+  it('seeds the jersey from the tapped card so it appears immediately', () => {
+    expect(html).toContain("cardEl.querySelector('.pcard-bn')");
+  });
+});
+
+describe('Coach page copy is tightened', () => {
+  it('weekly-plan and team-goal intros are the short versions', () => {
+    expect(html).not.toContain('Pick what your team trains each day. Tap a discipline to add or remove it');
+    expect(html).not.toContain('Set one focus for the whole team. It shows in every');
+    expect(html).toContain('Tap a discipline to set what your team trains each day, then Save.');
+    expect(html).toContain('One team focus, shown in every player');
+  });
+});
