@@ -953,15 +953,15 @@ img.plflame{width:1.15em;height:auto;vertical-align:-.22em}
 .eggnet .egghole{position:absolute;left:82%;top:52%;width:0;height:0;border-radius:50%;background:radial-gradient(circle,rgba(0,0,0,.85),rgba(0,0,0,.55) 60%,transparent 72%);transform:translate(-50%,-50%);pointer-events:none;opacity:0}
 .eggnet .egghole.punch{animation:eggHole 1.1s ease-out forwards}
 @keyframes eggHole{0%{width:0;height:0;opacity:0}18%{width:34px;height:34px;opacity:.95}100%{width:30px;height:30px;opacity:0}}
-/* Dryland charge-up zap: the bolt shakes as it charges, flashes bright, then
-   fires energy sparks outward. Reads as explosive effort. No puck, no net. */
+/* Dryland power surge: the bolt cocks back and SNAPS, punching out a single
+   bold shockwave ring with a bright flash. Reads as explosive power. */
 .eggbolt{cursor:pointer;-webkit-user-select:none;user-select:none;touch-action:manipulation;position:relative;display:inline-block}
-.eggbolt.egg-zap{animation:eggBoltZap 1s ease-out}
-@keyframes eggBoltZap{0%{transform:scale(1) rotate(0);filter:none}10%{transform:scale(1.05) rotate(-4deg)}20%{transform:scale(1.08) rotate(4deg)}30%{transform:scale(1.05) rotate(-4deg)}40%{transform:scale(1.12) rotate(3deg)}48%{transform:scale(1.35) rotate(0);filter:brightness(1.9) drop-shadow(0 0 12px #FFD54A)}60%{transform:scale(1.1);filter:brightness(1.3)}100%{transform:scale(1) rotate(0);filter:none}}
-.eggspark{position:fixed;top:0;left:0;width:4px;height:14px;border-radius:2px;background:linear-gradient(180deg,#FFE08A,#FF9D4D);box-shadow:0 0 6px #FFC24A;pointer-events:none;z-index:120;opacity:0;will-change:transform,opacity}
-.eggspark.fire{animation:eggSparkFly .6s ease-out forwards}
-@keyframes eggSparkFly{0%{transform:translate(var(--sx),var(--sy)) rotate(var(--sa)) scale(.5);opacity:0}15%{opacity:1}100%{transform:translate(calc(var(--sx) + var(--dx)),calc(var(--sy) + var(--dy))) rotate(var(--sa)) scale(1);opacity:0}}
-@media (prefers-reduced-motion: reduce){.eggstick.egg-go,.eggdangle.weave,.eggbolt.egg-zap,.eggspark.fire,.eggshot.fly,.eggnet.egg-hit,.eggnet .egghole.punch{animation:none}}</style>
+.eggbolt.egg-surge{animation:eggBoltSurge .82s cubic-bezier(.2,1.4,.35,1)}
+@keyframes eggBoltSurge{0%{transform:scale(1) rotate(0);filter:none}22%{transform:scale(.8) rotate(-9deg);filter:brightness(.85)}40%{transform:scale(1.32) rotate(4deg);filter:brightness(2) drop-shadow(0 0 15px #FFD54A)}58%{transform:scale(1.06);filter:brightness(1.25)}100%{transform:scale(1) rotate(0);filter:none}}
+.eggshock{position:fixed;top:0;left:0;width:26px;height:26px;border-radius:50%;border:3px solid #FFC24A;box-shadow:0 0 12px #FFD54A,inset 0 0 8px rgba(255,213,74,.55);transform:translate(-50%,-50%) scale(.2);opacity:0;pointer-events:none;z-index:120;will-change:transform,opacity}
+.eggshock.go{animation:eggShock .62s ease-out forwards}
+@keyframes eggShock{0%{transform:translate(-50%,-50%) scale(.2);opacity:0}14%{opacity:.95}100%{transform:translate(-50%,-50%) scale(6.2);opacity:0}}
+@media (prefers-reduced-motion: reduce){.eggstick.egg-go,.eggdangle.weave,.eggbolt.egg-surge,.eggshock.go,.eggshot.fly,.eggnet.egg-hit,.eggnet .egghole.punch{animation:none}}</style>
 <style id='login-splash-css'>
 /* ---- Break the Ice: login splash overlay (Pass 1 foundation) ----
    A full-screen frosted layer that sits OVER the real homepage. #home renders
@@ -5062,6 +5062,15 @@ window.thwapCategoryDone=function(disc){
 /* Public: preview a specific effect (no once-per-day guard). For QA and tuning. */
 window.thwapCatFx=function(disc,idx){ var c=DC[disc]||'#75B8FF'; if(reduce){ badge(WORDS[disc]||'NICE!',c); return; } var p=POOLS[disc]; if(!p) return; (p[idx]||p[0])(c); };
 window.thwapCatFxCount=function(disc){ return (POOLS[disc]||[]).length; };
+/* Public: the drill-page long-press payoffs. Holding a header icon fires the
+   big illustrated Sass cameo for that discipline (reused from the pools above).
+   Fire-and-forget; reduced motion falls back to a plain word badge. */
+window.thwapLongPress={
+  stick:function(){ if(reduce){ badge('FILTHY!','#8FD65E'); return; } sassCameo('login/sass-dangle.webp','FILTHY!','#8FD65E'); },
+  shoot:function(){ if(reduce){ badge('SNIPE!','#75B8FF'); return; } screenCrack('#75B8FF',true); stamp('SNIPE!','#75B8FF'); },
+  dryland:function(){ if(reduce){ badge('POWERED UP','#FF9D4D'); return; } sassCameo('login/sass-power.webp','POWERED UP','#FF9D4D'); },
+  goals:function(){ if(reduce){ badge("LET'S GO!",'#FFC24A'); return; } sassCameo('login/sass-celly.webp',"LET'S GO!",'#FFC24A'); }
+};
 /* Top tier: everything done today. A bigger, rotating finish (over the "today
    complete" card). Reduced motion shows nothing extra (the card is the fallback). */
 var FINALE=[
@@ -5496,26 +5505,34 @@ document.addEventListener('pointercancel',release,{passive:true});
 document.addEventListener('pointerleave',release,{passive:true,capture:true});
 })();</script>
 <script>(function(){
-/* Drill-page easter eggs. Long-press (500ms) the stick header to dangle a puck;
-   long-press the net header to fire a puck through the net and off the left edge.
-   Both reset themselves and are locked while playing so they cannot stack. */
+/* Drill-page easter eggs. Each header icon has two moves: a quick TAP runs the
+   in-icon flourish, and a LONG-PRESS (~450ms) fires that discipline's big
+   illustrated Sass cameo. Both lock while playing so they cannot stack. */
 var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-/* Tap to fire, on mobile and desktop. Long-press proved unreliable on mobile
-   (the browser grabs it for text-select and the context menu), so a plain tap
-   runs the egg. It stays locked while playing so a fast double-tap cannot stack.
-   Long-press is reserved for the future Sass slapshot. */
-function tapEgg(el,fire){
+/* Pointer-based so tap and hold both work on mobile and desktop. We suppress the
+   mobile long-press callout (contextmenu) and drag so the hold reads cleanly.
+   onTap uses the done-callback pattern; onHold is fire-and-forget and self-unlocks. */
+function holdEgg(el,onTap,onHold){
   if(!el) return;
-  var playing=false;
-  el.addEventListener('click',function(e){
-    if(playing) return;
-    playing=true; fire(function(){playing=false;});
+  var playing=false, timer=null, held=false;
+  el.style.webkitUserSelect='none'; el.style.userSelect='none'; el.style.touchAction='manipulation';
+  function tap(){ if(playing)return; playing=true; onTap(function(){playing=false;}); }
+  function hold(){ if(playing||!onHold)return; playing=true; held=true; onHold(); setTimeout(function(){playing=false;},1750); }
+  el.addEventListener('pointerdown',function(e){
+    if(playing||(e.button&&e.button!==0))return;
+    held=false;
+    if(onHold) timer=setTimeout(function(){ timer=null; hold(); },450);
   });
+  el.addEventListener('pointerup',function(){ if(timer){ clearTimeout(timer); timer=null; if(!held) tap(); } else if(!onHold && !held){ tap(); } });
+  el.addEventListener('pointercancel',function(){ if(timer){clearTimeout(timer);timer=null;} });
+  el.addEventListener('pointerleave',function(){ if(timer){clearTimeout(timer);timer=null;} });
+  el.addEventListener('contextmenu',function(e){ e.preventDefault(); });
+  el.addEventListener('dragstart',function(e){ e.preventDefault(); });
 }
 /* Stickhandling: the header icon swaps to the puckless stick and the SAME puck
    (a single moving puck) is stickhandled back and forth in front of the blade,
    so it never doubles up. The puck settles back on the blade at the end. */
-tapEgg(document.getElementById('eggStick'),function(done){
+holdEgg(document.getElementById('eggStick'),function(done){
   var el=document.getElementById('eggStick');
   if(reduce){ done(); return; }
   var img=document.getElementById('eggStickImg');
@@ -5534,9 +5551,9 @@ tapEgg(document.getElementById('eggStick'),function(done){
     if(p.parentNode)p.parentNode.removeChild(p);
     done();
   },1300);
-});
+},function(){ if(window.thwapLongPress) window.thwapLongPress.stick(); });
 /* Shooting: puck flies in from the right, punches the net, exits left. */
-tapEgg(document.getElementById('eggNet'),function(done){
+holdEgg(document.getElementById('eggNet'),function(done){
   var el=document.getElementById('eggNet');
   if(reduce){ done(); return; }
   var r=el.getBoundingClientRect();
@@ -5555,35 +5572,30 @@ tapEgg(document.getElementById('eggNet'),function(done){
     if(hole.parentNode)hole.parentNode.removeChild(hole);
     done();
   },1250);
-});
-/* Dryland: charge the bolt, then fire energy sparks outward at the flash moment. */
-tapEgg(document.getElementById('eggBolt'),function(done){
+},function(){ if(window.thwapLongPress) window.thwapLongPress.shoot(); });
+/* Dryland: the bolt cocks back and SNAPS, firing a single bold shockwave ring
+   (two staggered rings) with a bright flash. Reads as explosive power. */
+holdEgg(document.getElementById('eggBolt'),function(done){
   var el=document.getElementById('eggBolt');
   if(reduce){ done(); return; }
-  el.classList.add('egg-zap');
+  el.classList.add('egg-surge');
   var r=el.getBoundingClientRect();
-  var cx=Math.round(r.left+r.width/2-2), cy=Math.round(r.top+r.height/2-7);
-  var sparks=[];
-  setTimeout(function(){
-    var N=11;
-    for(var i=0;i<N;i++){
-      var ang=(-90 + (i/(N-1))*360 + (Math.random()*20-10))*Math.PI/180;
-      var dist=70+Math.random()*46;
-      var s=document.createElement('span'); s.className='eggspark';
-      s.style.setProperty('--sx',cx+'px'); s.style.setProperty('--sy',cy+'px');
-      s.style.setProperty('--sa',Math.round(ang*180/Math.PI+90)+'deg');
-      s.style.setProperty('--dx',Math.round(Math.cos(ang)*dist)+'px');
-      s.style.setProperty('--dy',Math.round(Math.sin(ang)*dist)+'px');
-      document.body.appendChild(s); sparks.push(s);
-      requestAnimationFrame(function(sp){return function(){sp.classList.add('fire');};}(s));
+  var cx=Math.round(r.left+r.width/2), cy=Math.round(r.top+r.height/2-4);
+  var rings=[];
+  setTimeout(function(){   /* launch at the SNAP moment (~40% of the .82s surge) */
+    for(var i=0;i<2;i++){
+      var s=document.createElement('span'); s.className='eggshock';
+      s.style.left=cx+'px'; s.style.top=cy+'px'; s.style.animationDelay=(i*110)+'ms';
+      document.body.appendChild(s); rings.push(s);
+      requestAnimationFrame(function(sp){return function(){sp.classList.add('go');};}(s));
     }
-  },470);
+  },300);
   setTimeout(function(){
-    el.classList.remove('egg-zap');
-    for(var j=0;j<sparks.length;j++){ if(sparks[j].parentNode)sparks[j].parentNode.removeChild(sparks[j]); }
+    el.classList.remove('egg-surge');
+    for(var j=0;j<rings.length;j++){ if(rings[j].parentNode)rings[j].parentNode.removeChild(rings[j]); }
     done();
-  },1120);
-});
+  },900);
+},function(){ if(window.thwapLongPress) window.thwapLongPress.dryland(); });
 })();</script>
 <script>(function(){
 /* ---- Break the Ice: login gate (Pass 1 foundation) ----
