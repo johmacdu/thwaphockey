@@ -305,9 +305,10 @@ describe('Roster edit mode: pencil toggles to Cancel/Done, cards drop the badge'
   });
 });
 
-describe('Player edit sheet: PIN hint explains how to reset', () => {
-  it('tells the coach to change the jersey number, without leaking the code format', () => {
-    expect(html).toMatch(/To reset it, change the jersey number/);
+describe('Player edit sheet: PIN hint', () => {
+  it('shows the recovery purpose without telling the user the jersey number changes the code', () => {
+    expect(html).toMatch(/In case the player or parent forgets it\./);
+    expect(html).not.toMatch(/To reset it, change the jersey number/);
     expect(html).not.toMatch(/jersey number followed by the season year/i);
   });
 });
