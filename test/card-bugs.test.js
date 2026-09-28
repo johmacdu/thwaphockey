@@ -95,11 +95,10 @@ describe('Coach edit sheet: Request new code button (no jersey-reset hint)', () 
   });
 });
 
-describe('Backend: request-code emails BOTH parents', () => {
-  it('requestCode sends to parentEmail and parentEmail2', () => {
-    expect(coachJs).toContain('[m.parentEmail, m.parentEmail2]');
-    // both addresses are collected then mailed in a loop
-    expect(coachJs).toMatch(/for \(const clean of Object\.keys\(seen\)\)/);
+describe('Backend: request-code emails ALL guardian emails on file', () => {
+  it('requestCode sends to every parent email via parentEmailList', () => {
+    // Now supports any number of guardian emails, not just two.
+    expect(coachJs).toMatch(/for \(const clean of parentEmailList\(m\)\)/);
   });
 });
 

@@ -89,7 +89,8 @@ describe('Backend: self-update-player is authorized by the player own code', () 
     expect(coachJs).toMatch(/entered !== cur \+ '2027' && entered !== cur \+ '2026'/);
     // position is NOT editable via self-update (coach owns roster position)
     const fn = coachJs.slice(coachJs.indexOf('async function selfUpdatePlayer'), coachJs.indexOf('async function adminRoster'));
-    expect(fn).toContain('updateMember(pid, { firstName, lastName, number, parentEmail, parentEmail2 })');
+    expect(fn).toContain('updateMember(pid, { firstName, lastName, number, ...emailFields.fields })');
+    expect(fn).not.toContain('position');
   });
 });
 
