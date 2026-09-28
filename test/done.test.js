@@ -133,3 +133,53 @@ describe('done handler: server-session gate', () => {
     expect(res.body.error).toBe('session required');
   });
 });
+
+// Position gate: a player may only log a discipline that applies to their
+// position. Goalie (johnny, #1) trains Net play as the third discipline; a
+// skater (lewie) trains Shooting. The server must refuse a mismatched write so a
+// real kid's work can never be misfiled in the wrong slot.
+describe('done handler: position gate', () => {
+  it('a GOALIE can log netplay (200) and it lands in the netplay slot', async () => {
+    const res = makeRes();
+    const token = mintSession('johnny', 'parent@example.com');
+    await handler(postAs({ player: 'johnny', discipline: 'netplay' }, token), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.player.netplay).toBe(1);
+    expect(fake.map.get('player:johnny').netplay).toBe(1);
+  });
+
+  it('a GOALIE cannot log shoot (400), no write', async () => {
+    const res = makeRes();
+    const token = mintSession('johnny', 'parent@example.com');
+    await handler(postAs({ player: 'johnny', discipline: 'shoot' }, token), res);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBe('discipline not for this position');
+    expect(fake.map.get('player:johnny')).toBeUndefined();
+  });
+
+  it('a SKATER cannot log netplay (400), no write', async () => {
+    const res = makeRes();
+    const token = mintSession('lewie', 'parent@example.com');
+    await handler(postAs({ player: 'lewie', discipline: 'netplay' }, token), res);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBe('discipline not for this position');
+    expect(fake.map.get('player:lewie')).toBeUndefined();
+  });
+
+  it('a SKATER can log shoot (200)', async () => {
+    const res = makeRes();
+    const token = mintSession('lewie', 'parent@example.com');
+    await handler(postAs({ player: 'lewie', discipline: 'shoot' }, token), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.player.shoot).toBe(1);
+  });
+
+  it('both positions can log the shared disciplines (stick, dryland)', async () => {
+    for (const [pid, disc] of [['johnny', 'stick'], ['johnny', 'dryland'], ['lewie', 'stick']]) {
+      const res = makeRes();
+      const token = mintSession(pid, 'p@e.com');
+      await handler(postAs({ player: pid, discipline: disc }, token), res);
+      expect(res.statusCode).toBe(200);
+    }
+  });
+});
