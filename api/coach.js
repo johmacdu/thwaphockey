@@ -809,10 +809,21 @@ async function setIdp(req, res) {
 // SEPARATE field so it never overwrites the coach's roster `position`.
 async function setGamePosition(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
-  const { playerId, gamePosition } = parseBody(req);
+  const { playerId, gamePosition, playerCode } = parseBody(req);
   const pid = String(playerId || '').toLowerCase();
   if (!pid) return res.status(400).json({ error: 'playerId required' });
   if (!['F', 'D', 'B'].includes(gamePosition)) return res.status(400).json({ error: 'bad position' });
+  const m = await getMember(pid);
+  if (!m) return res.status(404).json({ error: 'unknown player' });
+  // Authorize the same way self-update-player does: the submitted code must
+  // match THIS player's current code (jersey number + season year), the secret
+  // the player signs in with. Without this, any caller could set any player's
+  // game-day position -- a write to another kid's record with no auth.
+  const cur = String(m.number == null ? '' : m.number).trim();
+  const entered = String(playerCode || '').trim();
+  if (!cur || (entered !== cur + '2027' && entered !== cur + '2026')) {
+    return res.status(403).json({ error: 'that code did not match your player code' });
+  }
   const rec = await updateMember(pid, { gamePosition });
   if (!rec) return res.status(404).json({ error: 'unknown player' });
   res.setHeader('Cache-Control', 'no-store');
