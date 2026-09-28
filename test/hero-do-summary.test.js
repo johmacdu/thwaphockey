@@ -4,14 +4,18 @@ import { JSDOM } from 'jsdom';
 
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 
-function render(weekend, done) {
+function render(weekend, done, goalie) {
   const store = {};
   (done || []).forEach(k => { store['thwapDone|2026-9-28|' + k] = '1'; });
   const inject = "<script>window.__wk=" + weekend + ";window.__done=" + JSON.stringify(store) + ";" +
     "Object.defineProperty(window,'thwapIsWeekend',{configurable:true,value:function(){return window.__wk;}});" +
     "window.thwapToday=function(){return new Date(2026,8,28);};" +
     "var _g=Storage.prototype.getItem;Storage.prototype.getItem=function(k){if(k in window.__done)return window.__done[k];return _g.call(this,k);};<\/script>";
-  const doc = html.replace('<head>', '<head>' + inject);
+  let doc = html.replace('<head>', '<head>' + inject);
+  if (goalie) {
+    // Force the goalie flag AFTER the app defines its helpers (they live late in the file), then re-render the summary.
+    doc = doc.replace('</body>', "<script>window.thwapIsGoalie=function(){return true;};if(typeof window.thwapRefreshHero==='function')window.thwapRefreshHero();<\/script></body>");
+  }
   const dom = new JSDOM(doc, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'http://localhost/' });
   return dom.window.document;
 }
@@ -74,5 +78,20 @@ describe('Home hero do-summary', () => {
 
   it('the floating "Today" chip is gone (affordance is inline in the sentence)', () => {
     expect(html).not.toContain("class='daytip daytip-chip' id='dayTip'");
+  });
+});
+
+
+describe('Home hero do-summary — goalie', () => {
+  it('a gated goalie (Net play coming-soon) sees Hands and Dryland only, never Shooting or Net play', () => {
+    const d = render(false, [], true);
+    const lead = d.getElementById('doLead');
+    expect(lead).toBeTruthy();
+    const names = [...lead.querySelectorAll('.disc')].map(s => s.className.match(/disc-(\w+)/)[1]);
+    // gated: no third discipline for the goalie today
+    expect(lead.textContent).toContain('Hands');
+    expect(lead.textContent).toContain('Dryland');
+    expect(lead.textContent).not.toContain('Shooting');
+    expect(lead.textContent).not.toContain('Net play');
   });
 });
