@@ -4641,12 +4641,17 @@ function build(){
     /* all-time: glowing power triangle + big totals, bigger and numbered */
     var cx=150,cy=150,R=104;
     var val=discs.map(function(disc){return demoDone(first,disc,'all');});
-    var maxv=Math.max(1,val[0],val[1],val[2]);
+    /* Season targets = outer ring. 24-week season: Stickhandling & Shooting 5/wk (120),
+       Dryland 3/wk (72). Each spoke scales to its OWN target so the triangle grows toward
+       a full season and only touches the ring at 100% of that discipline's season goal,
+       never automatically. */
+    var SEASON_TGT=[120,120,72];
+    var frac=function(a){return Math.min(1,val[a]/SEASON_TGT[a]);};
     var grid='';
     for(var g=1;g<=3;g++){var rr=R*g/3,p=[];for(var a=0;a<3;a++){var ang=-Math.PI/2+a*2*Math.PI/3;p.push((cx+rr*Math.cos(ang)).toFixed(1)+','+(cy+rr*Math.sin(ang)).toFixed(1));}grid+="<polygon points='"+p.join(' ')+"' fill='none' stroke='var(--line)' stroke-width='1.5'/>";}
     /* spokes */
     for(var a=0;a<3;a++){var ang=-Math.PI/2+a*2*Math.PI/3;grid+="<line x1='"+cx+"' y1='"+cy+"' x2='"+(cx+R*Math.cos(ang)).toFixed(1)+"' y2='"+(cy+R*Math.sin(ang)).toFixed(1)+"' stroke='var(--line)' stroke-width='1'/>";}
-    var pts=[];for(var a=0;a<3;a++){var ang=-Math.PI/2+a*2*Math.PI/3;var vv=R*(val[a]/maxv);pts.push((cx+vv*Math.cos(ang)).toFixed(1)+','+(cy+vv*Math.sin(ang)).toFixed(1));}
+    var pts=[];for(var a=0;a<3;a++){var ang=-Math.PI/2+a*2*Math.PI/3;var vv=R*frac(a);pts.push((cx+vv*Math.cos(ang)).toFixed(1)+','+(cy+vv*Math.sin(ang)).toFixed(1));}
     var labs=discs.map(function(disc,i){
       var ang=-Math.PI/2+i*2*Math.PI/3;
       var ex=(cx+(R+26)*Math.cos(ang)).toFixed(1), ey=(cy+(R+26)*Math.sin(ang)).toFixed(1);
@@ -4659,7 +4664,7 @@ function build(){
     var spokeHi='';
     if(plFilter!=='all'){var si=discs.indexOf(plFilter);if(si>=0){var ang=-Math.PI/2+si*2*Math.PI/3;var sx=(cx+R*Math.cos(ang)).toFixed(1),sy=(cy+R*Math.sin(ang)).toFixed(1);spokeHi="<line class='pl-spoke' x1='"+cx+"' y1='"+cy+"' x2='"+sx+"' y2='"+sy+"' stroke='"+DCOL[plFilter]+"' stroke-width='4' stroke-linecap='round'/>";}}
     /* number dot at each data vertex */
-    var vdots='';for(var a=0;a<3;a++){var ang=-Math.PI/2+a*2*Math.PI/3;var vv=R*(val[a]/maxv);var dd=(plFilter!=='all'&&plFilter!==discs[a])?.28:1;vdots+="<circle cx='"+(cx+vv*Math.cos(ang)).toFixed(1)+"' cy='"+(cy+vv*Math.sin(ang)).toFixed(1)+"' r='5' fill='#7bbf3a' opacity='"+dd+"'/>";}
+    var vdots='';for(var a=0;a<3;a++){var ang=-Math.PI/2+a*2*Math.PI/3;var vv=R*frac(a);var dd=(plFilter!=='all'&&plFilter!==discs[a])?.28:1;vdots+="<circle cx='"+(cx+vv*Math.cos(ang)).toFixed(1)+"' cy='"+(cy+vv*Math.sin(ang)).toFixed(1)+"' r='5' fill='#7bbf3a' opacity='"+dd+"'/>";}
     var radar="<div class='pl-radar-wrap'><svg width='300' height='300' viewBox='0 0 300 300'>"+
       "<defs><linearGradient id='plShimmer' x1='0' y1='0' x2='1' y2='0'>"+
       "<stop offset='0%' stop-color='rgba(185,240,107,.45)'/>"+
