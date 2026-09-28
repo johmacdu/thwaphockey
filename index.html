@@ -260,6 +260,7 @@ body:not(.is-authed) .kebabmenu .nav-guest{display:flex}
 body.login-locked .topbar{position:relative;z-index:120}
 .forrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px}
 .forline{font-size:15px;color:var(--muted);font-weight:600}
+.fordur{display:block;font-size:15px;color:var(--muted);font-weight:600}
 .playername{font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;letter-spacing:.01em;font-size:34px;line-height:1.1;color:var(--ink);margin:2px 0 8px;display:block;background:none;border:0;padding:0;text-align:left;cursor:pointer;text-decoration:none;-webkit-tap-highlight-color:transparent}
 /* ---- Flippable player card overlay ---- */
 .cardoverlay{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:rgba(9,15,11,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;transition:opacity .2s ease;padding:20px}
@@ -1703,7 +1704,7 @@ body.login-locked{overflow:hidden}
       rows[cat].style.display = (onCats.indexOf(cat)<0) ? 'none' : '';
     });
   }).catch(function(){});
-})();})();</script><div class='forrow'><span class='forline'>Today, do stickhandling, shooting and dryland (about 30 mins).</span><button type='button' class='daytip daytip-chip' id='dayTip' aria-label='Show today’s date'>Today<span class='daydate' id='dayDate'>Sunday, September 13</span></button></div></div>
+})();})();</script><div class='forrow'><span class='forline'>Today, do stickhandling, shooting and dryland<span class='fordur'>(about 30 mins)</span></span><button type='button' class='daytip daytip-chip' id='dayTip' aria-label='Show today’s date'>Today<span class='daydate' id='dayDate'>Sunday, September 13</span></button></div></div>
 <div class='cards'>
 <a class='pnextgame' id='pNextGame' href='hockey_game_goals.html'>
   <div class='png-top'>
@@ -3423,7 +3424,7 @@ function countUp(el,target,fmt){
    weekly split at /api/board?tf=week and cumulative all-time at /api/board. */
 var LIVE={week:null, all:null};
 function mapPlayers(list){
-  return list.map(function(p){ return {n:(p.id.charAt(0).toUpperCase()+p.id.slice(1)), stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0}; });
+  return list.map(function(p){ return {n:(p.id.charAt(0).toUpperCase()+p.id.slice(1)), stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0, netplay:p.netplay||0}; });
 }
 /* Global real-data store so the stats page reads the SAME live numbers, not a
    name-hash demo. Keyed by lowercase first name. streak is the honest computed
@@ -3431,7 +3432,7 @@ function mapPlayers(list){
 window.thwapBoard=window.thwapBoard||{ week:{}, all:{}, ready:false };
 function stashBoard(which, list){
   var m={};
-  list.forEach(function(p){ m[String(p.id).toLowerCase()]={stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0, streak:p.streak||0}; });
+  list.forEach(function(p){ m[String(p.id).toLowerCase()]={stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0, netplay:p.netplay||0, streak:p.streak||0}; });
   window.thwapBoard[which]=m; window.thwapBoard.ready=true;
   if(window.thwapStatsRefresh) window.thwapStatsRefresh();
 }
@@ -4802,7 +4803,7 @@ function fill(){
   var dd=document.getElementById('dayDate'); if(dd)dd.textContent=full;
   var fl=document.querySelector('.forline');
   var weekend=(window.thwapIsWeekend&&window.thwapIsWeekend());
-  if(fl){ fl.textContent=weekend?'Weekend: bonus skills, no dryland':'Today, do stickhandling, shooting and dryland (about 30 mins).'; }
+  if(fl){ fl.innerHTML=weekend?'Weekend: bonus skills, no dryland':"Today, do stickhandling, shooting and dryland<span class='fordur'>(about 30 mins)</span>"; }
   /* Weekend: dryland (load) rests, so hide its card. Skills stay available. */
   var dl=document.querySelector('.nav-dryland'); if(dl) dl.style.display=weekend?'none':'';
   /* Home chip label stays "Today"; the weekday+date live only in the tap-reveal (#dayDate),
@@ -5124,8 +5125,14 @@ function render(){
         var p=loadProg(); p[i]=true; saveProg(p);
         row.classList.add('done');
         var _l=row.parentNode;
+        /* Category celebration keys its blue net-rip effect off 'shoot' (which
+           fits a goalie visually), but the SERVER count must land in the
+           position-correct slot: netplay for a goalie, never shoot (fairness rule).
+           The LOCAL done-slot stays 'shoot' -- it only marks "third discipline done
+           today" for the daily celebration/streak, and the goalie's third page IS
+           the shoot route. */
         if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('shoot');
-        if(window.thwapMarkDone)window.thwapMarkDone('shoot');
+        if(window.thwapMarkDone)window.thwapMarkDone(goalie?'netplay':'shoot');
         if(window.thwapStampToday)window.thwapStampToday('shoot',true);
         btn.textContent='Done ✓';
       };
