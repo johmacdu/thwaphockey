@@ -4513,7 +4513,7 @@ function statsFetch(){
     var url=(which==='week')?'/api/board?tf=week':'/api/board';
     try{ fetch(url,{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.players&&j.players.length){
-        var m={}; j.players.forEach(function(p){ m[String(p.id).toLowerCase()]={stick:p.stick||0,shoot:p.shoot||0,dryland:p.dryland||0,streak:p.streak||0}; });
+        var m={}; j.players.forEach(function(p){ m[String(p.id).toLowerCase()]={stick:p.stick||0,shoot:p.shoot||0,dryland:p.dryland||0,netplay:p.netplay||0,streak:p.streak||0}; });
         window.thwapBoard=window.thwapBoard||{week:{},all:{},ready:false};
         window.thwapBoard[which]=m; window.thwapBoard.ready=true;
         if(window.thwapStatsRefresh) window.thwapStatsRefresh();

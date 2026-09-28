@@ -138,3 +138,15 @@ describe('Standings folds a goalie Net play into the shared third slot (P1)', ()
     expect(src).toMatch(/thwapIsGoalie\(\)\)\?'Net play':'Shooting'/);
   });
 });
+
+describe('all three thwapBoard writers carry netplay (stats page count survives)', () => {
+  const fs3 = require('node:fs');
+  const path3 = require('node:path');
+  const s = fs3.readFileSync(path3.resolve(__dirname, '../index.html'), 'utf8');
+  it('every thwapBoard row builder includes netplay:p.netplay||0', () => {
+    // stashBoard, and statsFetch both build a row object into thwapBoard[which]
+    const rowBuilders = s.match(/\{stick:p\.stick\|\|0[^}]*streak:p\.streak\|\|0\}/g) || [];
+    expect(rowBuilders.length).toBeGreaterThanOrEqual(2);
+    rowBuilders.forEach(function(rb){ expect(rb).toMatch(/netplay:p\.netplay\|\|0/); });
+  });
+});
