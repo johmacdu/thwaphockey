@@ -3499,7 +3499,12 @@ function fetchBoard(){
     }).catch(function(){});
   }catch(e){}
 }
-function scoreOf(p){ return disc==='all' ? (p.stick+p.shoot+p.dryland) : p[disc]; }
+/* A player's third-discipline reps live in shoot (skaters) OR netplay (goalie);
+   both fold into the shared third slot on the team board, so a goalie's Net play
+   counts toward the 'all' total and the '🥅 Shoot' third-slot metric without a
+   separate team-wide Net play column (which would be 15 zeros). */
+function thirdOf(p){ return (p.shoot||0)+(p.netplay||0); }
+function scoreOf(p){ return disc==='all' ? (p.stick+thirdOf(p)+p.dryland) : (disc==='shoot' ? thirdOf(p) : p[disc]); }
 function render(){
   var rows=rowsFor().map(function(p){ return {n:p.n, s:scoreOf(p)}; });
   rows.sort(function(a,b){ return b.s-a.s || a.n.localeCompare(b.n); });
@@ -3516,7 +3521,7 @@ function render(){
     rw.addEventListener('click',function(){ if(window.openPlayerPage) window.openPlayerPage(rw.getAttribute('data-player')); });
   });
   var t={stick:0,shoot:0,dryland:0};
-  DATA[tf]; var _src=rowsFor(); _src.forEach(function(p){ t.stick+=p.stick; t.shoot+=p.shoot; t.dryland+=p.dryland; });
+  DATA[tf]; var _src=rowsFor(); _src.forEach(function(p){ t.stick+=p.stick; t.shoot+=thirdOf(p); t.dryland+=p.dryland; });
   t.all=t.stick+t.shoot+t.dryland;
   ['all','stick','shoot','dryland'].forEach(function(k){
     var el=document.querySelector(".metric-num[data-total='"+k+"']"); if(el)countUp(el,t[k]);
@@ -5230,9 +5235,10 @@ function saveP(p){try{localStorage.setItem(passKey(),JSON.stringify(p));}catch(e
 function render(){
   var list=document.getElementById('passList'); if(!list)return;
   if(!PASS_DAYS.length){
+    var third3=(window.thwapIsGoalie&&window.thwapIsGoalie())?'Net play':'Shooting';
     list.innerHTML="<div class='soon-empty'>"+
       "<h3>Passing lands "+esc(PASS_LAUNCH)+"</h3>"+
-      "<p>Tape-to-tape passing, give-and-go, and reading the ice. New drills drop right here soon. Until then, keep stacking days in Hands, Shooting and Dryland.</p>"+
+      "<p>Tape-to-tape passing, give-and-go, and reading the ice. New drills drop right here soon. Until then, keep stacking days in Hands, "+third3+" and Dryland.</p>"+
     "</div>";
     return;
   }

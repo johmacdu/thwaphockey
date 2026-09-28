@@ -110,3 +110,31 @@ describe('goalie Net play server slot + board plumbing (regression: fairness rul
     expect(html).toMatch(/cb2Stat\(slug, *isG\?'netplay':'shoot'\)/);
   });
 });
+
+describe('Standings folds a goalie Net play into the shared third slot (P1)', () => {
+  const fs2 = require('node:fs');
+  const path2 = require('node:path');
+  const src = fs2.readFileSync(path2.resolve(__dirname, '../index.html'), 'utf8');
+
+  it('thirdOf sums shoot + netplay so the third slot carries both', () => {
+    expect(src).toMatch(/function thirdOf\(p\)\{ return \(p\.shoot\|\|0\)\+\(p\.netplay\|\|0\); \}/);
+  });
+
+  it('scoreOf uses thirdOf for the all-total and the shoot metric', () => {
+    expect(src).toMatch(/disc==='all' \? \(p\.stick\+thirdOf\(p\)\+p\.dryland\)/);
+    expect(src).toMatch(/disc==='shoot' \? thirdOf\(p\)/);
+  });
+
+  it('the team total sum folds netplay into the third slot', () => {
+    expect(src).toMatch(/t\.shoot\+=thirdOf\(p\)/);
+  });
+
+  it('does NOT add a team-wide Net play metric button', () => {
+    // the shared metric row stays All / Hands / Shoot / Dryland (no netplay data-disc)
+    expect(src).not.toMatch(/data-disc='netplay'/);
+  });
+
+  it('Passing coming-soon copy names Net play for a goalie', () => {
+    expect(src).toMatch(/thwapIsGoalie\(\)\)\?'Net play':'Shooting'/);
+  });
+});
