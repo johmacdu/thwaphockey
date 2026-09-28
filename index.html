@@ -1021,9 +1021,14 @@ img.plflame{width:1.15em;height:auto;vertical-align:-.22em}
 .eggpass{cursor:pointer;-webkit-user-select:none;user-select:none;touch-action:manipulation;position:relative;display:inline-block}
 /* Tap: the puck ITSELF sauces a crisp pass (lift + forward + settle). No second
    puck, so it never doubles up on the puck icon. */
-.eggpass.egg-go{animation:eggPassSauce .72s cubic-bezier(.3,1,.4,1)}
-@keyframes eggPassSauce{0%{transform:translate(0,0) rotate(0)}22%{transform:translate(8px,-11px) rotate(9deg) scale(1.03)}50%{transform:translate(22px,-5px) rotate(17deg)}74%{transform:translate(6px,2px) rotate(6deg)}100%{transform:translate(0,0) rotate(0) scale(1)}}
-@media (prefers-reduced-motion: reduce){.eggstick.egg-go,.eggdangle.weave,.eggbolt.egg-surge,.eggshock.go,.eggshot.fly,.eggnet.egg-hit,.eggnet .egghole.punch,.eggpass.egg-go{animation:none}}</style>
+/* Tap: the puck leaves the header and sauces a pass back and forth across the
+   screen (arcing to each side), then returns. The header puck is hidden while it
+   is out, so there is never a second puck on screen. */
+.eggpass.egg-fly .egg-ico{opacity:0;transition:opacity .12s}
+.eggpassflight{position:fixed;top:0;left:0;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#3a3a3a,#0a0a0a 70%);border:1.5px solid rgba(255,255,255,.85);box-shadow:0 0 0 1px rgba(0,0,0,.4),0 3px 10px rgba(0,0,0,.5);pointer-events:none;z-index:130;will-change:transform;opacity:0}
+.eggpassflight.go{animation:eggPassSaucer 1.7s cubic-bezier(.45,.02,.5,1) forwards}
+@keyframes eggPassSaucer{0%{transform:translate(0,0) rotate(0);opacity:0}6%{opacity:1}18%{transform:translate(40vw,-58px) rotate(340deg)}33%{transform:translate(82vw,0) rotate(680deg)}48%{transform:translate(38vw,-58px) rotate(1020deg)}64%{transform:translate(-5vw,0) rotate(1360deg)}82%{transform:translate(0,-30px) rotate(1680deg)}95%{transform:translate(0,0) rotate(2000deg);opacity:1}100%{transform:translate(0,0) rotate(2000deg);opacity:0}}
+@media (prefers-reduced-motion: reduce){.eggstick.egg-go,.eggdangle.weave,.eggbolt.egg-surge,.eggshock.go,.eggshot.fly,.eggnet.egg-hit,.eggnet .egghole.punch,.eggpassflight.go{animation:none}}</style>
 <style id='login-splash-css'>
 /* ---- Break the Ice: login splash overlay (Pass 1 foundation) ----
    A full-screen frosted layer that sits OVER the real homepage. #home renders
@@ -6079,13 +6084,24 @@ holdEgg(document.getElementById('eggBolt'),function(done){
     done();
   },900);
 },function(){ if(window.thwapLongPress) window.thwapLongPress.dryland(); });
-/* Passing: TAP -> the puck icon itself sauces a crisp pass and settles back (no
-   second puck). LONG-PRESS -> the Sass passing cameo. */
+/* Passing: TAP -> the puck leaves the header and sauces a pass back and forth
+   across the screen (arcing to each side), then returns home. The header puck is
+   hidden while it is out, so there is never a second puck. LONG-PRESS -> cameo. */
 holdEgg(document.getElementById('eggPass'),function(done){
   var el=document.getElementById('eggPass');
   if(reduce){ done(); return; }
-  el.classList.add('egg-go');
-  setTimeout(function(){ el.classList.remove('egg-go'); done(); },760);
+  var r=el.getBoundingClientRect();
+  el.classList.add('egg-fly');   /* hide the header puck while it is out on the ice */
+  var puck=document.createElement('span'); puck.className='eggpassflight';
+  puck.style.left=Math.round(r.left+r.width/2-9)+'px';
+  puck.style.top=Math.round(r.top+r.height/2-9)+'px';
+  document.body.appendChild(puck);
+  requestAnimationFrame(function(){ puck.classList.add('go'); });
+  setTimeout(function(){
+    el.classList.remove('egg-fly');
+    if(puck.parentNode)puck.parentNode.removeChild(puck);
+    done();
+  },1750);
 },function(){ if(window.thwapLongPress&&window.thwapLongPress.pass) window.thwapLongPress.pass(); });
 })();</script>
 <script>(function(){
