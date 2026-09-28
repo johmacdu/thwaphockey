@@ -20,6 +20,9 @@ beforeAll(async () => {
   const dom = new JSDOM(html, {
     runScripts: 'dangerously',
     pretendToBeVisual: true,
+    // Pin to a WEEKDAY (?day=0 -> Thursday via dayIndex): dryland rests on
+    // weekends, so on a Sat/Sun run its list is a rest card with no drill rows.
+    url: 'https://thwaphockey.com/?day=0',
     beforeParse(window) {
       // stub network + storage the inline scripts touch so they run to completion
       window.fetch = () => Promise.resolve({ ok: true, json: () => Promise.resolve({ ok: false }) });
