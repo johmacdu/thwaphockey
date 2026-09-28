@@ -54,13 +54,16 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'unknown player' });
   }
 
-  // Phase 1 server sessions. If the caller carries a valid session cookie, the
-  // write must be for THEIR OWN player: a session can never log work as someone
-  // else. Callers with no session are still accepted for now (they are on the
-  // client-side login path), so no one who is already signed in breaks; that
-  // legacy allowance is removed once every active user has a server session.
+  // Phase 2 server sessions. A valid session is REQUIRED, and may only log its
+  // OWN player's work: no session -> 401, a session for a different player -> 403.
+  // The client mints a session on sign-in and on boot; if one is ever missing it
+  // transparently mints one and retries this write (window.thwapEnsureSession), so
+  // a signed-in player is never blocked.
   const claims = verifySession(readSessionCookie(req));
-  if (claims && claims.playerId !== entry.id) {
+  if (!claims) {
+    return res.status(401).json({ error: 'session required' });
+  }
+  if (claims.playerId !== entry.id) {
     return res.status(403).json({ error: 'not your account' });
   }
 

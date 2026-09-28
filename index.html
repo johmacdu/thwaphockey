@@ -1073,6 +1073,14 @@ html[data-theme='dark'] .login-frost{background:linear-gradient(180deg,rgba(120,
 .login-go:active{transform:scale(.98)}
 .login-err{min-height:18px;margin:10px 0 0;font-size:13px;font-weight:700;color:var(--alert);text-align:center}
 .login-alt{margin:15px 0 0;font-size:14px;color:var(--muted);text-align:center}
+.login-otp-toggle{display:block;width:100%;margin:10px 0 0;background:none;border:0;padding:4px;font-family:inherit;font-size:14px;font-weight:700;color:var(--green);text-decoration:underline;text-underline-offset:3px;cursor:pointer;text-align:center}
+.login-otp{margin-top:12px;padding:14px;border:1px solid var(--line2);border-radius:14px;background:var(--card2)}
+.login-otp .login-field{margin-bottom:10px}
+.login-go-outline{background:transparent;color:var(--green);border:1.5px solid var(--green);min-height:46px}
+.login-msg{min-height:16px;margin:10px 0 0;font-size:13px;font-weight:700;text-align:center;color:var(--muted)}
+.login-msg.err{color:var(--alert)}
+.login-msg.ok{color:var(--green)}
+#loginOtpStep2{margin-top:10px}
 .login-wordmark{height:56px;width:auto;vertical-align:-16px;display:inline-block}
 .login-alt a{color:var(--green2);font-weight:800;text-decoration:underline;text-underline-offset:3px}
 body.login-locked{overflow:hidden}
@@ -1224,6 +1232,22 @@ body.login-locked{overflow:hidden}
     </div>
     <button type='submit' class='login-go' id='loginGo' disabled>Sign In &#8594;</button>
     <p class='login-err' id='loginErr' aria-live='polite'></p>
+    <button type='button' class='login-otp-toggle' id='loginOtpToggle'>Forgot your code? Email me a sign-in code</button>
+    <div class='login-otp' id='loginOtp' hidden>
+      <label class='login-field'>
+        <span class='login-lab'>Player's first name</span>
+        <input class='login-in' id='loginOtpName' type='text' autocomplete='off' placeholder='e.g. Lewie'>
+      </label>
+      <button type='button' class='login-go login-go-outline' id='loginOtpSend'>Email me a code</button>
+      <div id='loginOtpStep2' hidden>
+        <label class='login-field'>
+          <span class='login-lab'>6-digit code from your email</span>
+          <input class='login-in' id='loginOtpCode' type='text' inputmode='numeric' autocomplete='one-time-code' maxlength='6' placeholder='&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;'>
+        </label>
+        <button type='button' class='login-go' id='loginOtpVerify'>Sign in with code</button>
+      </div>
+      <p class='login-msg' id='loginOtpMsg' aria-live='polite'></p>
+    </div>
     <p class='login-alt'>New to <img class='login-wordmark' id='loginMark' src='wordmark-tm-light.svg' alt='Thwap Hockey'>? <a href='#' id='loginWaitlist'>Join the waitlist.</a></p>
   </form>
   <div class='policy-page' id='policySheet' hidden>
@@ -5204,12 +5228,22 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#pass') ren
    reachable yet (e.g. before Vercel KV is provisioned), so the app keeps working. */
 var PLAYER=(function(){try{var s=localStorage.getItem('bfPlayer')||'Lewie';return s.trim().split(/\s+/)[0];}catch(e){return 'Lewie';}})();  /* the chosen player on this device */
 window.thwapMarkDone=function(discipline){
-  /* A logged-in player logs their own work - no secret-number prompt. */
-  try{
-    fetch('/api/done',{
+  /* A logged-in player logs their own work. /api/done now REQUIRES a server
+     session; if this browser somehow lacks one (e.g. first load after the change),
+     the 401 triggers a transparent session mint and a single retry, so the write
+     still lands and the player is never blocked. Silent on any failure. */
+  var send=function(){
+    return fetch('/api/done',{
       method:'POST', headers:{'Content-Type':'application/json'}, cache:'no-store',
       body:JSON.stringify({player:PLAYER.toLowerCase(), discipline:discipline})
-    }).catch(function(){});                        /* offline / no API yet: silent */
+    });
+  };
+  try{
+    send().then(function(r){
+      if(r && r.status===401 && window.thwapEnsureSession){
+        return window.thwapEnsureSession().then(function(){ return send(); });
+      }
+    }).catch(function(){});                         /* offline / no API yet: silent */
   }catch(e){}
 };
 })();</script>
@@ -6309,6 +6343,17 @@ if(form){
       });
   });
 }
+/* Exposed so write endpoints can self-heal: if a signed-in player somehow lacks a
+   server session, mint one from their own derivable code (jersey number + season
+   year), then the caller retries. Returns a promise; a no-op resolve for demo or
+   unknown players. Used by thwapMarkDone on a 401 from /api/done. */
+window.thwapEnsureSession=function(){
+  try{
+    var a=readAuth(); if(!a||!a.pid||a.pid==='demo') return Promise.resolve();
+    var num=NUMS[a.pid]; if(!num) return Promise.resolve();
+    return mintServerSession(a.pid, String(num)+String(a.year||SEASON_YEAR), a.email||'', true);
+  }catch(e){ return Promise.resolve(); }
+};
 /* Already-signed-in players (from before server sessions existed) silently get a
    server session on their next visit, by re-verifying their own derivable code
    (jersey number + season year). No typing, no prompt. Runs once per tab; demo
@@ -6322,6 +6367,70 @@ if(form){
     sessionStorage.setItem('thwapSessSync','1');
     mintServerSession(a.pid, String(num)+String(a.year||SEASON_YEAR), a.email||'', true);
   }catch(e){}
+})();
+/* Emailed sign-in code (OTP): request a 6-digit code to the parent email(s) ON
+   FILE for a player, then verify it to sign in. A stronger path alongside the
+   jersey-code sign-in above; the server never emails a typed address. */
+(function(){
+  var toggle=document.getElementById('loginOtpToggle'), panel=document.getElementById('loginOtp'),
+      nameEl=document.getElementById('loginOtpName'), sendBtn=document.getElementById('loginOtpSend'),
+      step2=document.getElementById('loginOtpStep2'), codeEl=document.getElementById('loginOtpCode'),
+      verifyBtn=document.getElementById('loginOtpVerify'), msg=document.getElementById('loginOtpMsg');
+  if(!toggle||!panel) return;
+  var pid='';
+  function firstName(n){ return String(n||'').trim().toLowerCase().split(/\s+/)[0]; }
+  toggle.addEventListener('click',function(){
+    var willOpen=panel.hidden; panel.hidden=!willOpen;
+    toggle.textContent=willOpen?'Use my player code instead':'Forgot your code? Email me a sign-in code';
+    if(willOpen && nameEl) nameEl.focus();
+  });
+  sendBtn.addEventListener('click',function(){
+    msg.className='login-msg'; msg.textContent='';
+    pid=firstName(nameEl.value);
+    if(!pid){ msg.className='login-msg err'; msg.textContent="Enter the player's first name."; nameEl.focus(); return; }
+    sendBtn.disabled=true; sendBtn.textContent='Sending...';
+    fetch('/api/login?action=request-code',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({playerId:pid})})
+      .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
+      .then(function(res){
+        sendBtn.disabled=false; sendBtn.textContent='Resend code';
+        if(res.ok && res.j && res.j.sent>0){
+          step2.hidden=false; msg.className='login-msg ok';
+          msg.textContent='A 6-digit code is on its way to the parent email on file. Enter it below.';
+          if(codeEl) codeEl.focus();
+        } else if(res.ok){
+          msg.className='login-msg';
+          msg.textContent="No parent email on file for that player yet. Use your player code above, or ask your coach to add one.";
+        } else {
+          msg.className='login-msg err'; msg.textContent=(res.j&&res.j.error)||'Could not send a code.';
+        }
+      })
+      .catch(function(){ sendBtn.disabled=false; sendBtn.textContent='Email me a code'; msg.className='login-msg err'; msg.textContent='Could not send a code. Check your connection.'; });
+  });
+  verifyBtn.addEventListener('click',function(){
+    msg.className='login-msg'; msg.textContent='';
+    if(consentEl&&!consentEl.checked){ msg.className='login-msg err'; msg.textContent='Please agree to the Terms and Privacy Policy above.'; return; }
+    var code=String(codeEl.value||'').trim();
+    if(!/^\d{6}$/.test(code)){ msg.className='login-msg err'; msg.textContent='Enter the 6-digit code.'; codeEl.focus(); return; }
+    verifyBtn.disabled=true; verifyBtn.textContent='Signing in...';
+    fetch('/api/login?action=verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({playerId:pid,code:code,keep:keepEl?keepEl.checked:true})})
+      .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
+      .then(function(res){
+        if(res.ok && res.j && res.j.player){
+          try{ localStorage.setItem('thwapTerms', JSON.stringify({at:new Date().toISOString(), version:POLICY_VERSION})); }catch(_){}
+          var p=res.j.player;
+          try{
+            cookieSet(AUTH_KEY, JSON.stringify({pid:p.id,name:p.name,email:'',year:SEASON_YEAR,ts:Date.now()}), (keepEl&&keepEl.checked)?180:0);
+            localStorage.removeItem(AUTH_KEY); sessionStorage.removeItem(AUTH_KEY); localStorage.setItem('bfPlayer',p.name);
+          }catch(_){}
+          hide(); if(location.hash==='#login'){ location.hash='#home'; } location.reload();
+        } else {
+          verifyBtn.disabled=false; verifyBtn.textContent='Sign in with code';
+          msg.className='login-msg err';
+          msg.textContent=(res.j&&res.j.error==='bad code')?'That code did not match. Try again or resend.':((res.j&&res.j.error)||'Sign in failed.');
+        }
+      })
+      .catch(function(){ verifyBtn.disabled=false; verifyBtn.textContent='Sign in with code'; msg.className='login-msg err'; msg.textContent='Sign in failed. Check your connection.'; });
+  });
 })();
 if(eyeEl&&pwEl){
   eyeEl.addEventListener('click',function(){

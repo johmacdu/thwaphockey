@@ -60,38 +60,64 @@ function tokenFromSetCookie(setCookie) {
   return m ? decodeURIComponent(m[1]) : '';
 }
 
-describe('login request-code', () => {
+// Put a team member with on-file guardian emails into the fake store, so the
+// OTP flow (which emails the parents ON FILE) has somewhere to send.
+function seedMember(pid, emails, number = 72) {
+  fake.map.set('teamMember:' + pid, {
+    parentEmails: emails, parentEmail: emails[0] || '', parentEmail2: emails[1] || '',
+    number, firstName: pid,
+  });
+}
+
+describe('login request-code (OTP to on-file parents)', () => {
   it('rejects wrong method', async () => {
     const res = makeRes();
     await requestCode({ method: 'GET' }, res);
     expect(res.statusCode).toBe(405);
   });
 
-  it('rejects a bad email', async () => {
+  it('unknown player -> ok with sent:0 (no roster probing)', async () => {
     const res = makeRes();
-    await requestCode(post({ email: 'nope', playerId: 'lewie' }), res);
-    expect(res.statusCode).toBe(400);
-  });
-
-  it('rejects an unknown player', async () => {
-    const res = makeRes();
-    await requestCode(post({ email: 'p@e.com', playerId: 'nobody' }), res);
-    expect(res.statusCode).toBe(400);
-  });
-
-  it('emails a code for a valid request', async () => {
-    const res = makeRes();
-    await requestCode(post({ email: 'p@e.com', playerId: 'lewie' }), res);
+    await requestCode(post({ playerId: 'nobody' }), res);
     expect(res.statusCode).toBe(200);
-    expect(res.body.ok).toBe(true);
+    expect(res.body).toEqual({ ok: true, sent: 0 });
+  });
+
+  it('player with no email on file -> ok with sent:0', async () => {
+    const res = makeRes();
+    await requestCode(post({ playerId: 'lewie' }), res); // not seeded
+    expect(res.statusCode).toBe(200);
+    expect(res.body.sent).toBe(0);
+  });
+
+  it('emails the code to EVERY on-file parent, keyed by player', async () => {
+    seedMember('lewie', ['dad@x.com', 'mom@x.com']);
+    const res = makeRes();
+    await requestCode(post({ playerId: 'lewie' }), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.sent).toBe(2);
+    const recipients = global.fetch.mock.calls.map((c) => JSON.parse(c[1].body).to[0]).sort();
+    expect(recipients).toEqual(['dad@x.com', 'mom@x.com']);
     expect(codeFromLastEmail()).toMatch(/^\d{6}$/);
+    // the OTP is stored keyed by the player, not by an email
+    expect(fake.map.get('otp:pid:lewie')).toBeTruthy();
+  });
+
+  it('never emails a caller-supplied address', async () => {
+    seedMember('lewie', ['dad@x.com']);
+    const res = makeRes();
+    await requestCode(post({ playerId: 'lewie', email: 'attacker@evil.com' }), res);
+    const recipients = global.fetch.mock.calls.map((c) => JSON.parse(c[1].body).to[0]);
+    expect(recipients).toEqual(['dad@x.com']);
+    expect(recipients).not.toContain('attacker@evil.com');
   });
 
   it('rate-limits after the cap', async () => {
+    seedMember('lewie', ['dad@x.com']);
     let last;
     for (let i = 0; i < 7; i += 1) {
       last = makeRes();
-      await requestCode(post({ email: 'rl@e.com', playerId: 'lewie' }), last);
+      await requestCode(post({ playerId: 'lewie' }), last);
     }
     expect(last.statusCode).toBe(429);
   });
@@ -99,29 +125,30 @@ describe('login request-code', () => {
   it('503 when email is not configured', async () => {
     delete process.env.RESEND_API_KEY;
     const res = makeRes();
-    await requestCode(post({ email: 'p@e.com', playerId: 'lewie' }), res);
+    await requestCode(post({ playerId: 'lewie' }), res);
     expect(res.statusCode).toBe(503);
   });
 });
 
-describe('login verify', () => {
-  async function getCode(email = 'p@e.com', playerId = 'lewie') {
+describe('login verify (player-keyed OTP -> session)', () => {
+  async function getCode(pid = 'lewie', emails = ['parent@e.com']) {
+    seedMember(pid, emails);
     const r = makeRes();
-    await requestCode(post({ email, playerId }), r);
+    await requestCode(post({ playerId: pid }), r);
     return codeFromLastEmail();
   }
 
   it('rejects a wrong code', async () => {
     await getCode();
     const res = makeRes();
-    await verify(post({ email: 'p@e.com', playerId: 'lewie', code: '000000' }), res);
+    await verify(post({ playerId: 'lewie', code: '000000' }), res);
     expect(res.statusCode).toBe(401);
   });
 
   it('sets an HTTP-only session cookie on a correct code', async () => {
     const code = await getCode();
     const res = makeRes();
-    await verify(post({ email: 'p@e.com', playerId: 'lewie', code, keep: true }), res);
+    await verify(post({ playerId: 'lewie', code, keep: true }), res);
     expect(res.statusCode).toBe(200);
     expect(res.body.player.id).toBe('lewie');
     const sc = res.headers['Set-Cookie'];
@@ -134,18 +161,17 @@ describe('login verify', () => {
   it('keep=false yields a session cookie (no Max-Age)', async () => {
     const code = await getCode();
     const res = makeRes();
-    await verify(post({ email: 'p@e.com', playerId: 'lewie', code, keep: false }), res);
+    await verify(post({ playerId: 'lewie', code, keep: false }), res);
     expect(res.headers['Set-Cookie']).not.toMatch(/Max-Age=\d+/);
   });
 
-  it('records consent (hashed) for the player', async () => {
-    const code = await getCode('parent@e.com', 'lewie');
+  it('records consent (hashed) for the on-file parent', async () => {
+    const code = await getCode('lewie', ['parent@e.com']);
     const res = makeRes();
-    await verify(post({ email: 'parent@e.com', playerId: 'lewie', code }), res);
+    await verify(post({ playerId: 'lewie', code }), res);
     const consent = await fake.get('consent:lewie');
     expect(consent).toBeTruthy();
     expect(consent.emailHash).toBeTruthy();
-    // never the raw email
     expect(JSON.stringify(consent)).not.toContain('parent@e.com');
   });
 });

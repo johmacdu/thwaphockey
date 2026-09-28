@@ -70,9 +70,10 @@ describe('done handler', () => {
     expect(res.body.error).toBe('unknown player');
   });
 
-  it('200 and bumps the player with NO pin (logged-in player logs own work)', async () => {
+  it('200 and bumps the player with a valid session', async () => {
     const res = makeRes();
-    await handler(post({ player: 'lewie', discipline: 'stick' }), res);
+    const token = mintSession('lewie', 'parent@example.com');
+    await handler(postAs({ player: 'lewie', discipline: 'stick' }, token), res);
     expect(res.statusCode).toBe(200);
     expect(res.body.player.stick).toBe(1);
     // The bump persisted through the faked store.
@@ -81,22 +82,23 @@ describe('done handler', () => {
 
   it('accepts a raw JSON string body (Vercel unparsed case)', async () => {
     const res = makeRes();
-    await handler(post(JSON.stringify({ player: 'lewie', discipline: 'shoot' })), res);
+    const token = mintSession('lewie', 'p@e.com');
+    await handler(postAs(JSON.stringify({ player: 'lewie', discipline: 'shoot' }), token), res);
     expect(res.statusCode).toBe(200);
     expect(res.body.player.shoot).toBe(1);
   });
 
   it('is case-insensitive on the player id', async () => {
     const res = makeRes();
-    await handler(post({ player: 'Lewie', pin: '722027', discipline: 'dryland' }), res);
+    const token = mintSession('lewie', 'p@e.com');
+    await handler(postAs({ player: 'Lewie', discipline: 'dryland' }, token), res);
     expect(res.statusCode).toBe(200);
     expect(res.body.player.dryland).toBe(1);
   });
 });
 
-// Phase 1 server-session gate: a valid session may only log its OWN player's
-// work; a session for someone else is refused; no session still works (the
-// transitional client-side login path, so already-signed-in users are not broken).
+// Phase 2 server-session gate: a valid session is REQUIRED and may only log its
+// OWN player's work. No session -> 401; a session for a different player -> 403.
 describe('done handler: server-session gate', () => {
   it('a valid session logs its OWN work (200)', async () => {
     const res = makeRes();
@@ -116,17 +118,18 @@ describe('done handler: server-session gate', () => {
     expect(fake.map.get('player:william')).toBeUndefined();
   });
 
-  it('a tampered session is ignored, and the write still succeeds (legacy path)', async () => {
+  it('a tampered session is rejected (401), no write', async () => {
     const res = makeRes();
     await handler(postAs({ player: 'lewie', discipline: 'shoot' }, 'not.a.real.token'), res);
-    expect(res.statusCode).toBe(200);
-    expect(res.body.player.shoot).toBe(1);
+    expect(res.statusCode).toBe(401);
+    expect(res.body.error).toBe('session required');
+    expect(fake.map.get('player:lewie')).toBeUndefined();
   });
 
-  it('no session at all still works (transitional)', async () => {
+  it('no session at all is rejected (401)', async () => {
     const res = makeRes();
     await handler(post({ player: 'lewie', discipline: 'dryland' }), res);
-    expect(res.statusCode).toBe(200);
-    expect(res.body.player.dryland).toBe(1);
+    expect(res.statusCode).toBe(401);
+    expect(res.body.error).toBe('session required');
   });
 });
