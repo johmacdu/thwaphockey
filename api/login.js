@@ -6,6 +6,9 @@
 //
 //   POST /api/login?action=request-code  { email, playerId }        -> emails a 6-digit code
 //   POST /api/login?action=verify        { email, playerId, code, keep } -> sets HTTP-only cookie
+//   POST /api/login?action=code-signin   { playerId, code, email, keep } -> verifies the
+//                                          jersey+season code (the existing sign-in) and sets
+//                                          the HTTP-only cookie. Same UX as today, now server-checked.
 //   GET  /api/login?action=session                                   -> { authed, player }
 //   POST /api/login?action=logout                                    -> clears the cookie
 //
@@ -24,6 +27,9 @@ import {
 import { ROSTER } from '../lib/store.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// The player sign-in code is the jersey number followed by a season year. Both
+// the current (2026-27) and prior year are accepted, mirroring the client check.
+const CODE_SEASONS = ['2026', '2027'];
 
 function isSecure(req) {
   return String(req.headers['x-forwarded-proto'] || '').includes('https') || true;
@@ -75,6 +81,30 @@ async function verify(req, res) {
   return res.status(200).json({ ok: true, player: player ? { id: player.id, name: player.name, number: player.number } : { id: pid } });
 }
 
+// Phase 1 server sessions. The player types the SAME code they use today (jersey
+// number + season year, e.g. #72 in 2026-27 -> "722027"). We verify it on the
+// SERVER and issue the HTTP-only session cookie, so the session cannot be forged
+// and write endpoints can trust who the caller is. The player's UX is unchanged.
+async function codeSignin(req, res) {
+  if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).json({ error: 'method not allowed' }); }
+  res.setHeader('Cache-Control', 'no-store');
+  if (!sessionConfigured()) return res.status(503).json({ error: 'sessions not configured' });
+
+  const { playerId, code, email, keep } = parseBody(req);
+  const pid = String(playerId || '').toLowerCase();
+  const player = ROSTER.find((p) => p.id === pid);
+  if (!player) return res.status(400).json({ error: 'unknown player' });
+
+  const c = String(code || '').trim();
+  const ok = CODE_SEASONS.some((y) => c === `${player.number}${y}`);
+  if (!ok) return res.status(401).json({ error: 'bad code' });
+
+  const token = mintSession(pid, String(email || '').toLowerCase());
+  if (!token) return res.status(503).json({ error: 'sessions not configured' });
+  res.setHeader('Set-Cookie', sessionCookie(token, { keep: !!keep, secure: isSecure(req) }));
+  return res.status(200).json({ ok: true, player: { id: player.id, name: player.name, number: player.number } });
+}
+
 function session(req, res) {
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).json({ error: 'method not allowed' }); }
   res.setHeader('Cache-Control', 'no-store');
@@ -100,10 +130,11 @@ export default async function handler(req, res) {
   const action = String((req.query && req.query.action) || '').toLowerCase();
   if (action === 'request-code') return requestCode(req, res);
   if (action === 'verify') return verify(req, res);
+  if (action === 'code-signin') return codeSignin(req, res);
   if (action === 'session') return session(req, res);
   if (action === 'logout') return logout(req, res);
   return res.status(404).json({ error: 'unknown login action' });
 }
 
 // Exported for unit tests (call the sub-handlers directly with a query.action-free req).
-export const _handlers = { requestCode, verify, session, logout };
+export const _handlers = { requestCode, verify, codeSignin, session, logout };

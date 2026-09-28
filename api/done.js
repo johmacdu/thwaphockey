@@ -11,6 +11,7 @@
 // Non-POST -> 405
 
 import { ROSTER, DISCIPLINES, bumpPlayer } from '../lib/store.js';
+import { verifySession, readSessionCookie } from '../lib/session_store.js';
 
 // Look up a roster entry by player id (lowercase first name).
 function findPlayer(id) {
@@ -51,6 +52,16 @@ export default async function handler(req, res) {
   const entry = findPlayer(player);
   if (!entry) {
     return res.status(400).json({ error: 'unknown player' });
+  }
+
+  // Phase 1 server sessions. If the caller carries a valid session cookie, the
+  // write must be for THEIR OWN player: a session can never log work as someone
+  // else. Callers with no session are still accepted for now (they are on the
+  // client-side login path), so no one who is already signed in breaks; that
+  // legacy allowance is removed once every active user has a server session.
+  const claims = verifySession(readSessionCookie(req));
+  if (claims && claims.playerId !== entry.id) {
+    return res.status(403).json({ error: 'not your account' });
   }
 
   // No PIN gate: a logged-in player logs their own work. The player is already
