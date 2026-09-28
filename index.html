@@ -4398,17 +4398,19 @@ function buildCatalog(){
     });
     return out;
   }
-  var stick=[], shoot=[], dry=[];
+  var stick=[], shoot=[], dry=[], net=[];
   /* These arrays live in OTHER script-tag IIFEs, so they are only reachable via
      window (a bare reference would ReferenceError and fall back to the stub). */
-  var DR=window.DRILLS||[], SD=window.SHOOT_DAYS||[], WK=window.WORKOUTS||[];
+  var DR=window.DRILLS||[], SD=window.SHOOT_DAYS||[], WK=window.WORKOUTS||[], NP=window.NETPLAY_DAYS||[];
   try{ DR.forEach(function(d){ stick.push([d.name,d.emoji]); }); }catch(e){}
   try{ SD.forEach(function(day){ (day||[]).forEach(function(s){ shoot.push([s.name,s.emoji]); }); }); }catch(e){}
   try{ WK.forEach(function(w){ (w.drills||[]).forEach(function(ex){ dry.push([ex.name,ex.emoji]); }); }); }catch(e){}
-  var uStick=uniq(stick), uShoot=uniq(shoot), uDry=uniq(dry);
+  try{ NP.forEach(function(day){ (day||[]).forEach(function(s){ net.push([s.name,s.emoji]); }); }); }catch(e){}
+  var uStick=uniq(stick), uShoot=uniq(shoot), uDry=uniq(dry), uNet=uniq(net);
   _catalogCache={
     Stickhandling: uStick.length?uStick:CATALOG.Stickhandling,
     Shooting: uShoot.length?uShoot:CATALOG.Shooting,
+    'Net play': uNet.length?uNet:[],
     Dryland: uDry.length?uDry:CATALOG.Dryland
   };
   return _catalogCache;
@@ -4433,7 +4435,7 @@ window.thwapDrillCatalog=function(cat){
 /* Real per-player completion counts, read from the same live board the leaderboard
    uses (window.thwapBoard, populated below). disc is the display name; the board
    keys are stick/shoot/dryland. Everyone reads 0 until the API responds. */
-var DKEY={Stickhandling:'stick',Shooting:'shoot',Dryland:'dryland'};
+var DKEY={Stickhandling:'stick',Shooting:'shoot','Net play':'netplay',Dryland:'dryland'};
 function boardRow(name,tf){
   var b=window.thwapBoard; if(!b) return null;
   var m=(tf==='all')?b.all:b.week;
@@ -4632,9 +4634,11 @@ function build(){
   if(window.thwapRenderIdp) window.thwapRenderIdp(slug);
   var streak=document.getElementById('plStreak'); if(streak){var _sk=demoStreak(first,tf); if(window.thwapStreakMilestone && slug===(window.thwapPlayerId?window.thwapPlayerId():'')) window.thwapStreakMilestone(_sk); if(_sk>=3){var _tier=_sk>=7?'m7':(_sk>=5?'m5':'m3');var _lab=_sk>=7?" <span class='plfire-lab'>On fire!</span>":"";streak.style.display='';streak.innerHTML="<img class='plflame "+_tier+"' src='login/flame.webp' alt=''> "+_sk+" day streak"+_lab;}else{streak.style.display='none';streak.innerHTML='';}}
   var wrap=document.getElementById('plDisc'); if(!wrap)return;
-  var DCOL={Stickhandling:'#8fd65e',Shooting:'#75B8FF',Dryland:'#FF9D4D'};
-  var DEMO={Stickhandling:'🏒',Shooting:'🥅',Dryland:'⚡'};
-  var discs=['Stickhandling','Shooting','Dryland'];
+  var goalieView=(window.THWAP_GOALIE_NAMES&&window.THWAP_GOALIE_NAMES.indexOf(String(slug||'').toLowerCase().replace(/[^a-z]/g,''))>=0);
+  var thirdDisc=goalieView?'Net play':'Shooting';
+  var DCOL={Stickhandling:'#8fd65e',Shooting:'#75B8FF','Net play':'#75B8FF',Dryland:'#FF9D4D'};
+  var DEMO={Stickhandling:'🏒',Shooting:'🥅','Net play':'🥅',Dryland:'⚡'};
+  var discs=['Stickhandling',thirdDisc,'Dryland'];
 
   var visual='';
   if(tf==='week'){

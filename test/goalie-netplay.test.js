@@ -48,6 +48,14 @@ describe('goalie Net play wiring (source guards)', () => {
     expect(html).toMatch(/var thirdLabel=isG\?'Net play':'Shooting'/);
     expect(html).toMatch(/tile\('shoot',false,shoot,thirdLabel\)/);
   });
+
+  it('the player radar third spoke is Net play for a goalie, wired to netplay data', () => {
+    expect(html).toMatch(/var thirdDisc=goalieView\?'Net play':'Shooting'/);
+    expect(html).toMatch(/var discs=\['Stickhandling',thirdDisc,'Dryland'\]/);
+    // display name resolves to the netplay storage key + a catalog for the ring goal
+    expect(html).toMatch(/'Net play':'netplay'/);
+    expect(html).toMatch(/'Net play': uNet\.length\?uNet:\[\]/);
+  });
 });
 
 describe('goalie Net play renders (execution)', () => {
