@@ -1603,7 +1603,7 @@ body.login-locked{overflow:hidden}
       rows[cat].style.display = (onCats.indexOf(cat)<0) ? 'none' : '';
     });
   }).catch(function(){});
-})();})();</script><div class='forrow'><span class='forline'>3 things, about 30 min</span><button type='button' class='daytip daytip-chip' id='dayTip' aria-label='Show today’s date'>Today<span class='daydate' id='dayDate'>Sunday, September 13</span></button></div></div>
+})();})();</script><div class='forrow'><span class='forline'>Today, do stickhandling, shooting and dryland (about 30 mins).</span><button type='button' class='daytip daytip-chip' id='dayTip' aria-label='Show today’s date'>Today<span class='daydate' id='dayDate'>Sunday, September 13</span></button></div></div>
 <div class='cards'>
 <a class='pnextgame' id='pNextGame' href='hockey_game_goals.html'>
   <div class='png-top'>
@@ -4502,7 +4502,7 @@ function fill(){
   var dd=document.getElementById('dayDate'); if(dd)dd.textContent=full;
   var fl=document.querySelector('.forline');
   var weekend=(window.thwapIsWeekend&&window.thwapIsWeekend());
-  if(fl){ fl.textContent=weekend?'Weekend: bonus skills, no dryland':'3 things, about 30 min'; }
+  if(fl){ fl.textContent=weekend?'Weekend: bonus skills, no dryland':'Today, do stickhandling, shooting and dryland (about 30 mins).'; }
   /* Weekend: dryland (load) rests, so hide its card. Skills stay available. */
   var dl=document.querySelector('.nav-dryland'); if(dl) dl.style.display=weekend?'none':'';
   /* Home chip label stays "Today"; the weekday+date live only in the tap-reveal (#dayDate),
