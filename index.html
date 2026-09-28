@@ -4845,8 +4845,11 @@ function fill(){
       return "<span class='disc "+d.cls+done+"'><span class='demo'>"+d.emo+"</span> "+d.label+" <span class='chk'>✓</span></span>";
     }).join("");
   }
-  /* Build the lead line with an inline tappable "today" that reveals the date. */
-  var todayHTML="<button type='button' class='todayword' id='todayReveal'>today<span class='todaydate' id='dayDate'>"+full+"</span></button>";
+  /* Build the lead line. Open state uses a calm "Today's training:" label; once
+     started, the count carries ("N left"), then the celebration. The tappable
+     date reveal lives on "Today" (open) or "today" (in-progress). */
+  var todayCap="<button type='button' class='todayword' id='todayReveal'>Today<span class='todaydate' id='dayDate'>"+full+"</span></button>";
+  var todayLow="<button type='button' class='todayword' id='todayReveal'>today<span class='todaydate' id='dayDate'>"+full+"</span></button>";
   if(lead){
     if(weekend){
       lead.className='dolead';
@@ -4855,13 +4858,13 @@ function fill(){
       var left=defs.filter(function(d){return !isDone(d.k);});
       if(left.length===0){
         lead.className='dolead alldone';
-        lead.innerHTML="All 3 done "+todayHTML+" 🎉";
+        lead.innerHTML="All 3 done "+todayLow+" 🎉";
       } else if(left.length===defs.length){
         lead.className='dolead';
-        lead.innerHTML="Do all 3 "+todayHTML+" <span class='dodur'>(about 30 mins)</span>:";
+        lead.innerHTML=todayCap+"'s training <span class='dodur'>(about 30 mins)</span>:";
       } else {
         lead.className='dolead';
-        lead.innerHTML=left.length+" left "+todayHTML+": "+left.map(function(d){return d.label;}).join(' and ');
+        lead.innerHTML=left.length+" left "+todayLow+": "+left.map(function(d){return d.label;}).join(' and ');
       }
     }
     /* tap toggles the date tooltip (hover/focus already handle desktop) */
