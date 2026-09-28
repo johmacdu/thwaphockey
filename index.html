@@ -1283,6 +1283,11 @@ body.login-locked{overflow:hidden}
 <div id='shootList'></div>
 </section>
 
+<section id='pass' class='page'>
+<a class='glassclose' href='.' aria-label='Close'>✕</a><div class='heroCard'><div class='big eggpass' id='eggPass' role='img' aria-label='Passing'><img class='egg-ico' src='login/icon-pass.webp' alt=''></div><h1>Passing <span class='soon-tag soon-tag-lg'>Soon</span></h1><p>Tape-to-tape passing, give-and-go, and reading the ice.</p><div class='pills'><span class='pill' id='passTime'>about 15 min</span></div></div>
+<div id='passList'></div>
+</section>
+
 <section id='coachhome' class='page'>
 <div class='topbar'><div class='brand'><img class='brandlogo' src='sass-logo.svg' alt='Thwap Hockey' width='80' height='68'><img class='brandmark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span></nav><button type='button' class='kebab' id='kebabC' aria-label='Menu' aria-expanded='false'>⋮</button><div class='kebabmenu' id='kebabMenuC' hidden><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a><a href='#progress'>Standings</a></span></div></div>
 <div class='hero'><div class='kicker' id='chKicker'>Jr Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='chProfileName' aria-label='Edit your coach profile'>Coach</button> <span class='hero-wave' role='img' aria-label='Waving hand'>👋</span></h1><p>Here is where your team is at.</p></div>
@@ -1686,6 +1691,7 @@ body.login-locked{overflow:hidden}
 <a class='nav nav-stick' href='#stick'><div class='ico'><img class='nav-ico' src='login/icon-stick.webp' alt=''></div><div><h2>Stickhandling</h2><p>Hands + puck control, about 10-15 min</p></div><div class='chev'>›</div></a>
 <a class='nav nav-shoot' href='#shoot'><div class='ico'><img class='nav-ico' src='login/icon-net.webp' alt=''></div><div><h2>Shooting</h2><p>Accuracy + release, about 15 min</p></div><div class='chev'>›</div></a>
 <a class='nav nav-dryland' href='#dryland'><div class='ico'><img class='nav-ico' src='login/icon-bolt.webp' alt=''></div><div><h2>Dryland</h2><p>Speed + power + balance, about 15 min</p></div><div class='chev'>›</div></a>
+<a class='nav nav-pass' href='#pass'><div class='ico'><img class='nav-ico' src='login/icon-pass.webp' alt=''></div><div><h2>Passing <span class='soon-tag'>Soon</span></h2><p>Tape-to-tape + vision, coming early November</p></div><div class='chev'>›</div></a>
 </div>
 </section>
 <div class='footer'><span class='slogan'>Compete. Improve. Have fun.</span><div class='footer-actions'><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button><div class='footmenu-wrap'><button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button><div class='footmenu' id='footMenu' hidden role='menu'><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a><a class='footmenu-item' id='menuSignout' href='#' role='menuitem'>Sign out</a></div></div></div></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div>
@@ -5060,6 +5066,93 @@ function render(){
 }
 render();
 window.addEventListener('hashchange',function(){ if(location.hash==='#shoot') render(); });
+})();</script>
+
+<style id='pass-shell-css'>
+/* "Soon" tag on the Passing card + hero, and the coming-soon placeholder page. */
+.soon-tag{display:inline-block;margin-left:8px;vertical-align:middle;font-size:11px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:var(--onaccent);background:var(--green);border-radius:999px;padding:3px 9px;line-height:1.5}
+.soon-tag-lg{font-size:13px;padding:4px 12px}
+.soon-card{display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;padding:34px 22px 30px;border:1px dashed var(--line2);border-radius:20px;background:var(--card2);margin-top:4px}
+.soon-card .soon-emoji{width:76px;height:76px;display:grid;place-items:center;border-radius:20px;background:var(--soft)}
+.soon-card .soon-emoji img{width:52px;height:auto;display:block}
+.soon-card h3{margin:2px 0 0;font-size:20px;color:var(--text)}
+.soon-card p{margin:0;max-width:34ch;color:var(--text2);line-height:1.5}
+.soon-cta{margin-top:6px;font-weight:800;text-decoration:none;color:var(--onaccent);background:var(--green);border-radius:12px;padding:11px 18px}
+</style>
+<script>(function(){
+/* Passing discipline (shell). The machinery mirrors Shooting exactly: PASS_DAYS
+   has the SAME shape as SHOOT_DAYS -- an array of days, each an array of drill
+   objects { emoji, name, theme, cue, video, audio, steps[] }. It ships EMPTY in a
+   "Soon" state; drop real passing days into PASS_DAYS and the same checklist,
+   rotation, done-state and streak/sticker hookup light up with no rebuild.
+   Device note: tag device-dependent drills (e.g. add device:true) so a kid with
+   no passing device can be shown partner/wall alternatives when content lands.
+   Backend follow-up for launch: add 'pass' to DISCIPLINES in lib/store.js and a
+   'pass' pool in the celebration engine so done-marking counts on the board. */
+var PASS_DAYS=window.PASS_DAYS=[];
+var PASS_LAUNCH='early November';
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function passDayI(){ if(!PASS_DAYS.length) return 0; var s=window.thwapWeekdaySlot?window.thwapWeekdaySlot():0; if(s<0)s=0; return s%PASS_DAYS.length; }
+function passKey(){ return 'thwapPassProg|day'+passDayI(); }
+function loadP(){try{return JSON.parse(localStorage.getItem(passKey())||'{}');}catch(e){return {};}}
+function saveP(p){try{localStorage.setItem(passKey(),JSON.stringify(p));}catch(e){}}
+function render(){
+  var list=document.getElementById('passList'); if(!list)return;
+  if(!PASS_DAYS.length){
+    list.innerHTML="<div class='soon-card'>"+
+      "<div class='soon-emoji'><img src='login/icon-pass.webp' alt=''></div>"+
+      "<h3>Passing lands "+esc(PASS_LAUNCH)+"</h3>"+
+      "<p>Tape-to-tape passing, give-and-go, and reading the ice. New drills drop right here soon. Until then, keep stacking days in Stickhandling, Shooting and Dryland.</p>"+
+      "<a class='soon-cta' href='#shoot'>Work on Shooting</a>"+
+    "</div>";
+    return;
+  }
+  var today=PASS_DAYS[passDayI()];
+  var PASS=today.slice(0, Math.max(1, today.length-2));   /* mirror Shooting: 2 fewer per day */
+  var prog=loadP();
+  list.innerHTML='';
+  list.insertAdjacentHTML('beforeend', window.voicePickerHTML());
+  PASS.forEach(function(dr,i){
+    var done=prog[i]?' done':'';
+    var doneLabel=prog[i]?'Done ✓':'Start';
+    var steps=(dr.steps&&dr.steps.length)?"<ol>"+dr.steps.map(function(s){return "<li>"+esc(s)+"</li>";}).join('')+"</ol>":'';
+    var cue=dr.cue?"<p><b>Coach cue:</b> "+esc(dr.cue)+"</p>":'';
+    list.insertAdjacentHTML('beforeend',
+      "<div class='exrow"+done+"' data-i='"+i+"'>"+
+        "<div class='exhead'><div class='exem'>"+dr.emoji+"</div>"+
+          "<div><h3>"+esc(dr.name)+"<span class='exbadge'>Done</span></h3><div class='exdose'>"+esc(dr.theme||'Passing')+"</div></div>"+
+          "<div class='exchev'>›</div></div>"+
+        "<div class='exbody'>"+cue+window.videoBlock(dr)+window.audioBlock(dr)+steps+
+          "<button type='button' class='exdone'>"+doneLabel+"</button></div>"+
+      "</div>");
+  });
+  list.querySelectorAll('.exrow').forEach(function(row){
+    var i=+row.getAttribute('data-i');
+    row.querySelector('.exhead').addEventListener('click',function(){
+      var wasOpen=row.classList.contains('open');
+      row.parentNode.querySelectorAll('.exrow.open').forEach(function(other){ if(other!==row) other.classList.remove('open'); });
+      row.classList.toggle('open', !wasOpen);
+    });
+    row.querySelector('.exdone').addEventListener('click',function(ev){
+      ev.stopPropagation();
+      var btn=this;
+      var markDone=function(){
+        var p=loadP(); p[i]=true; saveP(p);
+        row.classList.add('done');
+        var _l=row.parentNode;
+        if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('pass');
+        if(window.thwapMarkDone)window.thwapMarkDone('pass');
+        if(window.thwapStampToday)window.thwapStampToday('pass',true);
+        btn.textContent='Done ✓';
+      };
+      if(row.classList.contains('done')){ return; }
+      if(window.thwapDrillTimer){ window.thwapDrillTimer(PASS[i].name, markDone, PASS[i].audio); }
+      else { markDone(); }
+    });
+  });
+}
+render();
+window.addEventListener('hashchange',function(){ if(location.hash==='#pass') render(); });
 })();</script>
 
 <script>(function(){
