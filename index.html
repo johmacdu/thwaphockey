@@ -1001,13 +1001,11 @@ img.plflame{width:1.15em;height:auto;vertical-align:-.22em}
 .eggshock.go{animation:eggShock .62s ease-out forwards}
 @keyframes eggShock{0%{transform:translate(-50%,-50%) scale(.2);opacity:0}14%{opacity:.95}100%{transform:translate(-50%,-50%) scale(6.2);opacity:0}}
 .eggpass{cursor:pointer;-webkit-user-select:none;user-select:none;touch-action:manipulation;position:relative;display:inline-block}
-.eggpass.egg-go{animation:eggPassNudge .9s ease-in-out}
-@keyframes eggPassNudge{0%,100%{transform:translateX(0)}30%{transform:translateX(-5px) rotate(-3deg)}70%{transform:translateX(4px) rotate(2deg)}}
-/* a puck slides out tape-to-tape and comes back: give-and-go */
-.eggpasspuck{position:fixed;top:0;left:0;width:15px;height:15px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#3a3a3a,#0a0a0a 70%);border:1.5px solid rgba(255,255,255,.85);box-shadow:0 0 0 1px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.55);pointer-events:none;z-index:120;will-change:transform;opacity:0}
-.eggpasspuck.go{animation:eggPassPuck 1s ease-in-out forwards}
-@keyframes eggPassPuck{0%{transform:translate(var(--px),var(--py)) rotate(0);opacity:0}12%{opacity:1}48%{transform:translate(calc(var(--px) + 42vw),var(--py)) rotate(360deg);opacity:1}52%{transform:translate(calc(var(--px) + 42vw),var(--py)) rotate(360deg);opacity:1}88%{opacity:1}100%{transform:translate(var(--px),var(--py)) rotate(720deg);opacity:0}}
-@media (prefers-reduced-motion: reduce){.eggstick.egg-go,.eggdangle.weave,.eggbolt.egg-surge,.eggshock.go,.eggshot.fly,.eggnet.egg-hit,.eggnet .egghole.punch,.eggpass.egg-go,.eggpasspuck.go{animation:none}}</style>
+/* Tap: the puck ITSELF sauces a crisp pass (lift + forward + settle). No second
+   puck, so it never doubles up on the puck icon. */
+.eggpass.egg-go{animation:eggPassSauce .72s cubic-bezier(.3,1,.4,1)}
+@keyframes eggPassSauce{0%{transform:translate(0,0) rotate(0)}22%{transform:translate(8px,-11px) rotate(9deg) scale(1.03)}50%{transform:translate(22px,-5px) rotate(17deg)}74%{transform:translate(6px,2px) rotate(6deg)}100%{transform:translate(0,0) rotate(0) scale(1)}}
+@media (prefers-reduced-motion: reduce){.eggstick.egg-go,.eggdangle.weave,.eggbolt.egg-surge,.eggshock.go,.eggshot.fly,.eggnet.egg-hit,.eggnet .egghole.punch,.eggpass.egg-go{animation:none}}</style>
 <style id='login-splash-css'>
 /* ---- Break the Ice: login splash overlay (Pass 1 foundation) ----
    A full-screen frosted layer that sits OVER the real homepage. #home renders
@@ -5495,7 +5493,8 @@ window.thwapLongPress={
   stick:function(){ if(reduce){ badge('FILTHY!','#8FD65E'); return; } sassCameo('login/sass-dangle.webp','FILTHY!','#8FD65E'); },
   shoot:function(){ if(reduce){ badge('SNIPE!','#75B8FF'); return; } screenCrack('#75B8FF',true); stamp('SNIPE!','#75B8FF'); },
   dryland:function(){ if(reduce){ badge('POWERED UP','#FF9D4D'); return; } sassCameo('login/sass-power.webp','POWERED UP','#FF9D4D'); },
-  goals:function(){ if(reduce){ badge("LET'S GO!",'#FFC24A'); return; } sassCameo('login/sass-celly.webp',"LET'S GO!",'#FFC24A'); }
+  goals:function(){ if(reduce){ badge("LET'S GO!",'#FFC24A'); return; } sassCameo('login/sass-celly.webp',"LET'S GO!",'#FFC24A'); },
+  pass:function(){ if(reduce){ badge('SAUCE!','#2E86FF'); return; } sassCameo('login/sass-onetimer.webp','SAUCE!','#2E86FF'); }
 };
 /* Top tier: everything done today. A bigger, rotating finish (over the "today
    complete" card). Reduced motion shows nothing extra (the card is the fallback). */
@@ -6022,23 +6021,13 @@ holdEgg(document.getElementById('eggBolt'),function(done){
     done();
   },900);
 },function(){ if(window.thwapLongPress) window.thwapLongPress.dryland(); });
-/* Passing: a puck slides out tape-to-tape and comes right back (give-and-go). */
+/* Passing: TAP -> the puck icon itself sauces a crisp pass and settles back (no
+   second puck). LONG-PRESS -> the Sass passing cameo. */
 holdEgg(document.getElementById('eggPass'),function(done){
   var el=document.getElementById('eggPass');
   if(reduce){ done(); return; }
   el.classList.add('egg-go');
-  var r=el.getBoundingClientRect();
-  var px=Math.round(r.left+r.width*0.5-7)+'px';
-  var py=Math.round(r.top+r.height*0.55-7)+'px';
-  var puck=document.createElement('span'); puck.className='eggpasspuck';
-  puck.style.setProperty('--px',px); puck.style.setProperty('--py',py);
-  document.body.appendChild(puck);
-  requestAnimationFrame(function(){ puck.classList.add('go'); });
-  setTimeout(function(){
-    el.classList.remove('egg-go');
-    if(puck.parentNode)puck.parentNode.removeChild(puck);
-    done();
-  },1050);
+  setTimeout(function(){ el.classList.remove('egg-go'); done(); },760);
 },function(){ if(window.thwapLongPress&&window.thwapLongPress.pass) window.thwapLongPress.pass(); });
 })();</script>
 <script>(function(){
