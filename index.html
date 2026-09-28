@@ -266,8 +266,8 @@ body.login-locked .topbar{position:relative;z-index:120}
 .dolead{font-size:16px;color:var(--text);font-weight:800;line-height:1.25}
 .dolead.alldone{color:var(--green2)}
 .dodur{font-weight:600;color:var(--muted)}
-.discline{margin-top:7px;font-size:15px;font-weight:800;line-height:1.4}
-.disc{display:inline;white-space:nowrap}
+.discline{margin-top:7px;font-size:15px;font-weight:800;line-height:1.4;display:flex;gap:16px;flex-wrap:wrap}
+.disc{white-space:nowrap}
 .disc .demo{font-weight:400}
 .disc .chk{display:none;font-weight:900}
 .disc.done{opacity:.5}
@@ -4843,7 +4843,7 @@ function fill(){
     line.innerHTML=defs.map(function(d){
       var done=isDone(d.k)?' done':'';
       return "<span class='disc "+d.cls+done+"'><span class='demo'>"+d.emo+"</span> "+d.label+" <span class='chk'>✓</span></span>";
-    }).join("<span class='dosep'>,</span>");
+    }).join("");
   }
   /* Build the lead line with an inline tappable "today" that reveals the date. */
   var todayHTML="<button type='button' class='todayword' id='todayReveal'>today<span class='todaydate' id='dayDate'>"+full+"</span></button>";
@@ -4858,7 +4858,7 @@ function fill(){
         lead.innerHTML="All 3 done "+todayHTML+" 🎉";
       } else if(left.length===defs.length){
         lead.className='dolead';
-        lead.innerHTML="Do all 3 "+todayHTML+" <span class='dodur'>(about 30 mins)</span>";
+        lead.innerHTML="Do all 3 "+todayHTML+" <span class='dodur'>(about 30 mins)</span>:";
       } else {
         lead.className='dolead';
         lead.innerHTML=left.length+" left "+todayHTML+": "+left.map(function(d){return d.label;}).join(' and ');
