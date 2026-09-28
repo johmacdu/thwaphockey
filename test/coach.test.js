@@ -770,9 +770,10 @@ describe('set-game-position (player-owned, separate from roster position)', () =
     await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, firstName: 'Gamer', number: 21, position: 'FD', parentEmail: 'p@example.com' }), addRes);
     expect(addRes.statusCode, JSON.stringify(addRes.body)).toBe(200);
 
-    // player sets their game-day position (no coach token needed)
+    // player sets their own game-day position, authorized by their player code
+    // (jersey number + season year; Gamer is #21 -> 212027). No coach token.
     const set = makeRes();
-    await _handlers.setGamePosition(post({ playerId: 'gamer', gamePosition: 'D' }), set);
+    await _handlers.setGamePosition(post({ playerId: 'gamer', gamePosition: 'D', playerCode: '212027' }), set);
     expect(set.statusCode).toBe(200);
     expect(set.body.gamePosition).toBe('D');
 
