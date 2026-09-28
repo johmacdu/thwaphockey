@@ -614,6 +614,24 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
 #g43:checked ~ .builder .goal-43 .tick { display:grid; }
 #g43:checked ~ .final-view .final-43 { display:grid; }
 
+#g44:checked ~ .builder .goal-44 {
+  border-color: var(--green);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
+  background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
+  transform: translateY(-1px);
+}
+#g44:checked ~ .builder .goal-44 .tick { display:grid; }
+#g44:checked ~ .final-view .final-44 { display:grid; }
+
+#g45:checked ~ .builder .goal-45 {
+  border-color: var(--green);
+  box-shadow: inset 0 0 0 2px var(--green), 0 4px 11px rgba(47,191,113,.16);
+  background: linear-gradient(180deg,color-mix(in srgb,var(--green) 14%,var(--card)),var(--card2));
+  transform: translateY(-1px);
+}
+#g45:checked ~ .builder .goal-45 .tick { display:grid; }
+#g45:checked ~ .final-view .final-45 { display:grid; }
+
 
 @media(max-width:760px){
   .grid{grid-template-columns:1fr}
@@ -634,7 +652,7 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
 <body class="pos-forward">
 <div class="app">
   <a class="glassclose" href="index.html" aria-label="Close" onclick="if(history.length>1){history.back();return false;}">✕</a>
-  <input type="checkbox" id="finalMode" class="final-mode"><input type="checkbox" id="g1" class="choice-input"><input type="checkbox" id="g2" class="choice-input"><input type="checkbox" id="g3" class="choice-input"><input type="checkbox" id="g4" class="choice-input"><input type="checkbox" id="g5" class="choice-input"><input type="checkbox" id="g6" class="choice-input"><input type="checkbox" id="g7" class="choice-input"><input type="checkbox" id="g8" class="choice-input"><input type="checkbox" id="g9" class="choice-input"><input type="checkbox" id="g10" class="choice-input"><input type="checkbox" id="g11" class="choice-input"><input type="checkbox" id="g12" class="choice-input"><input type="checkbox" id="g13" class="choice-input"><input type="checkbox" id="g14" class="choice-input"><input type="checkbox" id="g15" class="choice-input"><input type="checkbox" id="g16" class="choice-input"><input type="checkbox" id="g17" class="choice-input"><input type="checkbox" id="g18" class="choice-input"><input type="checkbox" id="g19" class="choice-input"><input type="checkbox" id="g20" class="choice-input"><input type="checkbox" id="g21" class="choice-input"><input type="checkbox" id="g22" class="choice-input"><input type="checkbox" id="g23" class="choice-input"><input type="checkbox" id="g24" class="choice-input"><input type="checkbox" id="g25" class="choice-input"><input type="checkbox" id="g26" class="choice-input"><input type="checkbox" id="g27" class="choice-input"><input type="checkbox" id="g28" class="choice-input"><input type="checkbox" id="g29" class="choice-input"><input type="checkbox" id="g30" class="choice-input"><input type="checkbox" id="g31" class="choice-input"><input type="checkbox" id="g32" class="choice-input"><input type="checkbox" id="g33" class="choice-input"><input type="checkbox" id="g34" class="choice-input"><input type="checkbox" id="g35" class="choice-input"><input type="checkbox" id="g36" class="choice-input"><input type="checkbox" id="g37" class="choice-input"><input type="checkbox" id="g38" class="choice-input"><input type="checkbox" id="g39" class="choice-input"><input type="checkbox" id="g40" class="choice-input"><input type="checkbox" id="g41" class="choice-input"><input type="checkbox" id="g42" class="choice-input"><input type="checkbox" id="g43" class="choice-input">
+  <input type="checkbox" id="finalMode" class="final-mode"><input type="checkbox" id="g1" class="choice-input"><input type="checkbox" id="g2" class="choice-input"><input type="checkbox" id="g3" class="choice-input"><input type="checkbox" id="g4" class="choice-input"><input type="checkbox" id="g5" class="choice-input"><input type="checkbox" id="g6" class="choice-input"><input type="checkbox" id="g7" class="choice-input"><input type="checkbox" id="g8" class="choice-input"><input type="checkbox" id="g9" class="choice-input"><input type="checkbox" id="g10" class="choice-input"><input type="checkbox" id="g11" class="choice-input"><input type="checkbox" id="g12" class="choice-input"><input type="checkbox" id="g13" class="choice-input"><input type="checkbox" id="g14" class="choice-input"><input type="checkbox" id="g15" class="choice-input"><input type="checkbox" id="g16" class="choice-input"><input type="checkbox" id="g17" class="choice-input"><input type="checkbox" id="g18" class="choice-input"><input type="checkbox" id="g19" class="choice-input"><input type="checkbox" id="g20" class="choice-input"><input type="checkbox" id="g21" class="choice-input"><input type="checkbox" id="g22" class="choice-input"><input type="checkbox" id="g23" class="choice-input"><input type="checkbox" id="g24" class="choice-input"><input type="checkbox" id="g25" class="choice-input"><input type="checkbox" id="g26" class="choice-input"><input type="checkbox" id="g27" class="choice-input"><input type="checkbox" id="g28" class="choice-input"><input type="checkbox" id="g29" class="choice-input"><input type="checkbox" id="g30" class="choice-input"><input type="checkbox" id="g31" class="choice-input"><input type="checkbox" id="g32" class="choice-input"><input type="checkbox" id="g33" class="choice-input"><input type="checkbox" id="g34" class="choice-input"><input type="checkbox" id="g35" class="choice-input"><input type="checkbox" id="g36" class="choice-input"><input type="checkbox" id="g37" class="choice-input"><input type="checkbox" id="g38" class="choice-input"><input type="checkbox" id="g39" class="choice-input"><input type="checkbox" id="g40" class="choice-input"><input type="checkbox" id="g41" class="choice-input"><input type="checkbox" id="g42" class="choice-input"><input type="checkbox" id="g43" class="choice-input"><input type="checkbox" id="g44" class="choice-input"><input type="checkbox" id="g45" class="choice-input">
 
   <label for="finalMode" class="glassback" aria-label="Back to picking goals">Back</label>
   <div class="builder">
@@ -678,6 +696,15 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
     <div class="top"><h3>First + Second Option</h3><span class="tag">Brain</span></div>
     <p>Find your best play and a backup before you receive the puck.</p>
     <div class="cue">Always have Plan B.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+<label class="goal goal-44" for="g44">
+  <div class="emoji">🙆</div>
+  <div class="copy">
+    <div class="top"><h3>Head Up on the Puck</h3><span class="tag">Brain</span></div>
+    <p>When you carry the puck, keep your eyes up and feel it on your blade instead of staring down at it. Look up, see the ice, then make your play.</p>
+    <div class="cue">Eyes up, feel the puck.</div>
   </div>
   <div class="tick">✓</div>
 </label>
@@ -884,6 +911,15 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
     <div class="top"><h3>Find the Weak Side</h3><span class="tag">Attack</span></div>
     <p>Look away from the puck and find the player or space everyone else has forgotten.</p>
     <div class="cue">See what others miss.</div>
+  </div>
+  <div class="tick">✓</div>
+</label>
+<label class="goal goal-45" for="g45">
+  <div class="emoji">🎯</div>
+  <div class="copy">
+    <div class="top"><h3>Five Clean Passes</h3><span class="tag">Attack</span></div>
+    <p>Make five crisp tape-to-tape passes that your teammate can handle right away. Count them in your head during the game.</p>
+    <div class="cue">Tape to tape, five times.</div>
   </div>
   <div class="tick">✓</div>
 </label>
@@ -1423,6 +1459,22 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
     <h2>Control, Don&#x27;t Chase</h2>
     <p>Use position, skating, and your stick to control the attacker&#x27;s choices instead of chasing the puck.</p>
     <div class="final-cue">Take away what he wants.</div>
+  </div>
+</article>
+<article class="final-card final-44">
+  <div class="final-icon">🙆</div>
+  <div>
+    <h2>Head Up on the Puck</h2>
+    <p>When you carry the puck, keep your eyes up and feel it on your blade instead of staring down at it.</p>
+    <div class="final-cue">Eyes up, feel the puck.</div>
+  </div>
+</article>
+<article class="final-card final-45">
+  <div class="final-icon">🎯</div>
+  <div>
+    <h2>Five Clean Passes</h2>
+    <p>Make five crisp tape-to-tape passes your teammate can handle right away. Count them during the game.</p>
+    <div class="final-cue">Tape to tape, five times.</div>
   </div>
 </article>
     </div>
