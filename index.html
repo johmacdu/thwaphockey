@@ -260,13 +260,15 @@ body:not(.is-authed) .kebabmenu .nav-guest{display:flex}
    Sign In / Join Waitlist links are always visible over the ice. */
 body.login-locked .topbar{position:relative;z-index:120}
 .forrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px}
+.dowrap{min-width:0;flex:1 1 100%}
 .forline{font-size:15px;color:var(--muted);font-weight:600}
 .fordur{display:block;font-size:15px;color:var(--muted);font-weight:600}
 /* Two-line "do" summary: lead sentence + flat colored discipline names (NOT tappable-looking). */
 .dolead{font-size:16px;color:var(--text);font-weight:800;line-height:1.25}
 .dolead.alldone{color:var(--green2)}
-.discline{margin-top:7px;font-size:15px;font-weight:800;line-height:1.4;display:flex;gap:16px;flex-wrap:wrap}
-.disc{white-space:nowrap}
+.discline{margin-top:7px;font-size:15px;font-weight:800;line-height:1.6}
+.disc{white-space:nowrap;display:inline;margin-right:12px}
+.disc:last-child{margin-right:0}
 .disc .demo{font-weight:400}
 .disc .chk{display:none;font-weight:900}
 .disc.done{opacity:.5}
@@ -4875,7 +4877,7 @@ function fill(){
     line.innerHTML=defs.map(function(d){
       var done=isDone(d.k)?' done':'';
       return "<span class='disc "+d.cls+done+"'><span class='demo'>"+d.emo+"</span> "+d.label+" <span class='chk'>✓</span></span>";
-    }).join("");
+    }).join(" ");
   }
   /* Build the lead line. Open state uses a calm "Today's training:" label; once
      started, the count carries ("N left"), then the celebration. The tappable
