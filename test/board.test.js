@@ -71,6 +71,6 @@ describe('board handler', () => {
     const res = makeRes();
     await handler({ method: 'GET', query: { tf: 'week' } }, res);
     const lewie = res.body.players.find((p) => p.id === 'lewie');
-    expect(lewie).toEqual({ id: 'lewie', stick: 1, shoot: 0, dryland: 1 });
+    expect(lewie).toEqual({ id: 'lewie', stick: 1, shoot: 0, dryland: 1, netplay: 0 });
   });
 });

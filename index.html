@@ -3734,7 +3734,9 @@ function buildFront(p,slug,photoUrl,themeOverride){
     "</div>";
 }
 function buildBack(p,slug){
-  var stick=cb2Stat(slug,'stick'), shoot=cb2Stat(slug,'shoot'), dry=cb2Stat(slug,'dryland');
+  var isG=(window.THWAP_GOALIE_NAMES&&window.THWAP_GOALIE_NAMES.indexOf(String(slug||'').toLowerCase().replace(/[^a-z]/g,''))>=0);
+  var stick=cb2Stat(slug,'stick'), shoot=cb2Stat(slug, isG?'netplay':'shoot'), dry=cb2Stat(slug,'dryland');
+  var thirdLabel=isG?'Net play':'Shooting';
   var streak=cb2Streak(slug), sessions=stick+shoot+dry;
   var tile=function(icoKey,mut,n,label){
     return "<div class='cb2-tile'><span class='cb2-ico"+(mut?' mut':'')+"'>"+CB2_ICONS[icoKey]+"</span>"+
@@ -3749,7 +3751,7 @@ function buildBack(p,slug){
       "<div class='cb2-panel'><div class='cb2-eyebrow'>All time</div>"+
         "<div class='cb2-grid'>"+
           tile('stick',false,stick,'Stickhandling')+
-          tile('shoot',false,shoot,'Shooting')+
+          tile('shoot',false,shoot,thirdLabel)+
           tile('dryland',true,dry,'Dryland')+
           tile('streak',false,streak,'Day Streak')+
           "<div class='cb2-tile cb2-wide'><span class='cb2-ico'>"+CB2_ICONS.bars+"</span>"+
@@ -4366,6 +4368,18 @@ function esc(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp
 /* position + card slug for the header */
 var INFO={Alder:{num:'71',pos:'F'},Brooklyn:{num:'92',pos:'D'},Dawson:{num:'19',pos:'D'},Dominic:{num:'98',pos:'F'},Eugene:{num:'3',pos:'D'},Evan:{num:'13',pos:'F'},Greyson:{num:'32',pos:'D'},Johnny:{num:'1',pos:'G'},Joziah:{num:'59',pos:'F'},Lewie:{num:'72',pos:'FD'},Liam:{num:'29',pos:'D'},Maddux:{num:'18',pos:'F'},Oliver:{num:'90',pos:'F'},Teddy:{num:'11',pos:'F'},William:{num:'16',pos:'F'},Issac:{num:'53',pos:'F'}};
 var POSNAME={F:'Forward',D:'Defense',G:'Goalie',FD:'Forward/Defense'};
+/* Position-aware discipline label triads (mirrors lib/store.js disciplinesFor).
+   The third slot is Net play for a goalie, Shooting for everyone else. `slug` is
+   a player id (lowercase first name). Used by the radar, IDP tiles, and card back
+   so a goalie's third discipline reads/pulls Net play, a skater's reads Shooting.
+   Pass want='plain' for bare labels, 'emoji' for the emoji-prefixed labels. */
+window.THWAP_GOALIE_NAMES = window.THWAP_GOALIE_NAMES || ['johnny'];
+window.thwapDiscsFor = function(slug, want){
+  var g = window.THWAP_GOALIE_NAMES.indexOf(String(slug||'').toLowerCase().replace(/[^a-z]/g,''))>=0;
+  var third = g ? ['netplay', want==='emoji'?'🥅 Net play':'Net play'] : ['shoot', want==='emoji'?'🥅 Shoot':'Shoot'];
+  if(want==='emoji') return [['stick','🏒 Hands'], third, ['dryland','⚡ Dryland']];
+  return [['stick','Hands'], third, ['dryland','Dryland']];
+};
 /* Exercise catalogs per discipline. The stub below is a FALLBACK only; the stats
    page uses buildCatalog() to show EVERY real activity per category. */
 var CATALOG={
@@ -4390,17 +4404,19 @@ function buildCatalog(){
     });
     return out;
   }
-  var stick=[], shoot=[], dry=[];
+  var stick=[], shoot=[], dry=[], net=[];
   /* These arrays live in OTHER script-tag IIFEs, so they are only reachable via
      window (a bare reference would ReferenceError and fall back to the stub). */
-  var DR=window.DRILLS||[], SD=window.SHOOT_DAYS||[], WK=window.WORKOUTS||[];
+  var DR=window.DRILLS||[], SD=window.SHOOT_DAYS||[], WK=window.WORKOUTS||[], NP=window.NETPLAY_DAYS||[];
   try{ DR.forEach(function(d){ stick.push([d.name,d.emoji]); }); }catch(e){}
   try{ SD.forEach(function(day){ (day||[]).forEach(function(s){ shoot.push([s.name,s.emoji]); }); }); }catch(e){}
   try{ WK.forEach(function(w){ (w.drills||[]).forEach(function(ex){ dry.push([ex.name,ex.emoji]); }); }); }catch(e){}
-  var uStick=uniq(stick), uShoot=uniq(shoot), uDry=uniq(dry);
+  try{ NP.forEach(function(day){ (day||[]).forEach(function(s){ net.push([s.name,s.emoji]); }); }); }catch(e){}
+  var uStick=uniq(stick), uShoot=uniq(shoot), uDry=uniq(dry), uNet=uniq(net);
   _catalogCache={
     Stickhandling: uStick.length?uStick:CATALOG.Stickhandling,
     Shooting: uShoot.length?uShoot:CATALOG.Shooting,
+    'Net play': uNet.length?uNet:[],
     Dryland: uDry.length?uDry:CATALOG.Dryland
   };
   return _catalogCache;
@@ -4425,7 +4441,7 @@ window.thwapDrillCatalog=function(cat){
 /* Real per-player completion counts, read from the same live board the leaderboard
    uses (window.thwapBoard, populated below). disc is the display name; the board
    keys are stick/shoot/dryland. Everyone reads 0 until the API responds. */
-var DKEY={Stickhandling:'stick',Shooting:'shoot',Dryland:'dryland'};
+var DKEY={Stickhandling:'stick',Shooting:'shoot','Net play':'netplay',Dryland:'dryland'};
 function boardRow(name,tf){
   var b=window.thwapBoard; if(!b) return null;
   var m=(tf==='all')?b.all:b.week;
@@ -4514,11 +4530,11 @@ window.thwapStatsRefresh=function(){ if(current && location.hash==='#player') bu
           dev.hidden=false;
           /* Per-discipline volume: this week (baseThisWeek) + this month (summed trend). */
           var volEl=document.getElementById('idpDevVol');
-          var wkv=j.baseThisWeek||{stick:0,shoot:0,dryland:0};
-          var mo={stick:0,shoot:0,dryland:0};
-          (j.monthTrend||[]).forEach(function(w){ mo.stick+=w.stick||0; mo.shoot+=w.shoot||0; mo.dryland+=w.dryland||0; });
+          var wkv=j.baseThisWeek||{stick:0,shoot:0,dryland:0,netplay:0};
+          var mo={stick:0,shoot:0,dryland:0,netplay:0};
+          (j.monthTrend||[]).forEach(function(w){ mo.stick+=w.stick||0; mo.shoot+=w.shoot||0; mo.dryland+=w.dryland||0; mo.netplay+=w.netplay||0; });
           if(volEl){
-            var CATS=[['stick','🏒 Hands'],['shoot','🥅 Shoot'],['dryland','⚡ Dryland']];
+            var CATS=(window.thwapDiscsFor?window.thwapDiscsFor(slug,'emoji'):[['stick','🏒 Hands'],['shoot','🥅 Shoot'],['dryland','⚡ Dryland']]);
             volEl.innerHTML=CATS.map(function(c){
               return "<div class='idpdev-vol-cell'><div class='idpdev-vol-lab'>"+c[1]+"</div>"+
                 "<div class='idpdev-vol-n'>"+(wkv[c[0]]||0)+"</div>"+
@@ -4624,9 +4640,11 @@ function build(){
   if(window.thwapRenderIdp) window.thwapRenderIdp(slug);
   var streak=document.getElementById('plStreak'); if(streak){var _sk=demoStreak(first,tf); if(window.thwapStreakMilestone && slug===(window.thwapPlayerId?window.thwapPlayerId():'')) window.thwapStreakMilestone(_sk); if(_sk>=3){var _tier=_sk>=7?'m7':(_sk>=5?'m5':'m3');var _lab=_sk>=7?" <span class='plfire-lab'>On fire!</span>":"";streak.style.display='';streak.innerHTML="<img class='plflame "+_tier+"' src='login/flame.webp' alt=''> "+_sk+" day streak"+_lab;}else{streak.style.display='none';streak.innerHTML='';}}
   var wrap=document.getElementById('plDisc'); if(!wrap)return;
-  var DCOL={Stickhandling:'#8fd65e',Shooting:'#75B8FF',Dryland:'#FF9D4D'};
-  var DEMO={Stickhandling:'🏒',Shooting:'🥅',Dryland:'⚡'};
-  var discs=['Stickhandling','Shooting','Dryland'];
+  var goalieView=(window.THWAP_GOALIE_NAMES&&window.THWAP_GOALIE_NAMES.indexOf(String(slug||'').toLowerCase().replace(/[^a-z]/g,''))>=0);
+  var thirdDisc=goalieView?'Net play':'Shooting';
+  var DCOL={Stickhandling:'#8fd65e',Shooting:'#75B8FF','Net play':'#75B8FF',Dryland:'#FF9D4D'};
+  var DEMO={Stickhandling:'🏒',Shooting:'🥅','Net play':'🥅',Dryland:'⚡'};
+  var discs=['Stickhandling',thirdDisc,'Dryland'];
 
   var visual='';
   if(tf==='week'){
@@ -5009,17 +5027,41 @@ var SHOOT_DAYS=window.SHOOT_DAYS=[
     {emoji:'🔁', name:'Ten Different Goals', theme:'Change release', cue:'Score 10 goals without using the same release twice in a row.', video:'https://www.youtube.com/watch?v=DmtTLZC__y8', audio:'shoot_05',
      steps:['Start: Grab a puck. Move before you shoot.','Score: Pick a way to attack and score a goal.','Change it: On the next one, change something: angle, release point, forehand, backhand, pull, or push.','Keep going: Score 10 different goals. If you repeat yourself, it doesn\'t count!']} ]
 ];
+window.NETPLAY_DAYS=[[{"emoji":"🧎","name":"Ready Stance","theme":"Set your base","cue":"Get into a strong, comfortable stance you can hold and move from.","steps":["Feet: A little wider than your shoulders.","Knees: Bend them so you feel ready to spring.","Stick: Flat on the ice, out in front of your toes.","Hands: Glove and blocker out where you can see them.","Hold it: Stay set for 10 seconds, then relax. Do it 10 times."]},{"emoji":"⬆️","name":"Up and Down","theme":"Butterfly reps","cue":"Drop into the butterfly and get back up, smooth and balanced.","steps":["Start set: Begin in your ready stance.","Drop: Go down into the butterfly. Pads flat, stick covering the five-hole.","Stay square: Keep your chest up and facing forward.","Recover: Push back up to your stance.","Reps: 10 clean up-and-downs. Quality over speed."]},{"emoji":"👀","name":"Eyes on the Puck","theme":"Track it","cue":"Follow the puck with your eyes the whole way in.","steps":["Watch: Have someone slowly carry or roll a puck toward you.","Track: Keep your eyes locked on it, do not look away.","Head still: Move your eyes, not your whole head.","Set: Stay in your stance as it comes in.","Repeat: Track 10 pucks from different angles."]}],[{"emoji":"↔️","name":"Shuffle","theme":"Move square","cue":"Slide side to side while staying square and set.","steps":["Set: Start in your stance in the middle of the net.","Push: Push off one leg and shuffle to the side.","Stay square: Keep your shoulders facing forward the whole time.","Stop set: Arrive already in your stance, not sliding past.","Reps: 10 shuffles each way."]},{"emoji":"📐","name":"T-Push","theme":"Cover the post","cue":"Push across the crease to get to the far side fast.","steps":["Set: Start on one post in your stance.","Open: Point your lead skate where you want to go (make a T).","Push: Drive off your back leg across the crease.","Arrive square: Stop set on the other post, facing the puck.","Reps: 5 pushes each direction."]},{"emoji":"🎯","name":"Post Integration","theme":"Seal the post","cue":"Get tight to the post so there is no gap for a wraparound.","steps":["Skate to the post: Move to one post and set.","Seal it: Put your pad and skate against the post, no space.","Look across: Keep your eyes on where the puck could come from.","Push off: Move to the middle when the puck moves out.","Both sides: Practice sealing each post 5 times."]},{"emoji":"🔄","name":"Recover to Feet","theme":"Get back up","cue":"After you go down, get square and back on your feet quickly.","steps":["Drop: Start in the butterfly.","Find the puck: Eyes up, know where the next shot could come from.","Recover: Get one skate under you, then the other.","Set: Finish in your ready stance facing the puck.","Reps: 10 quick recoveries."]}],[{"emoji":"📍","name":"Center the Puck","theme":"Line it up","cue":"Line your body up between the puck and the middle of the net.","steps":["Watch: Have someone hold the puck out in front.","Line up: Move so you are right between the puck and the net.","Check: Your nose, the puck, and the middle of the net make a line.","Move with it: When the puck moves side to side, adjust with it.","Reps: Follow the puck to 10 different spots."]},{"emoji":"↕️","name":"Depth Control","theme":"Out and in","cue":"Come out to cut down the angle, then back in as the puck gets close.","steps":["Start deep: Begin near your goal line.","Come out: Skate out a bit to take away more net.","Stay set: Keep your stance as you move.","Back in: As the puck comes closer, glide back so you do not get beat wide.","Reps: 8 out-and-in reps."]},{"emoji":"📐","name":"Angle from the Wing","theme":"Take the side away","cue":"When the shot comes from the wing, cover the near post first.","steps":["Set on the post: Start square to a shooter on the side.","Near post: Make sure the near side is sealed.","Show the far side: The far side is a harder shot, let them try it.","Track: Follow the puck if it moves to the middle.","Both wings: Practice from each side 5 times."]},{"emoji":"🚦","name":"Read and React","theme":"Decide","cue":"Watch the shooter and decide: stay set, or move with the puck.","steps":["Set: Start in your stance facing a shooter.","Watch: Keep your eyes on the puck and their stick.","Decide: If they move the puck, move with it. If they shoot, stay big.","Stay square: Always keep your shoulders facing the puck.","Reps: React to 10 different plays."]}],[{"emoji":"🧤","name":"Glove Saves","theme":"Catch high","cue":"Catch high shots on your glove side and hold on to them.","steps":["Set: Ready stance, glove out where you can see it.","Watch it in: Track the puck all the way to your glove.","Catch: Close your glove around it, do not swat.","Hold: Keep the puck, then cover or set it down for the whistle.","Reps: Catch 10 shots to the glove."]},{"emoji":"🛡️","name":"Blocker Saves","theme":"Steer wide","cue":"Use your blocker to send the puck to the corner, not back out front.","steps":["Set: Ready stance, blocker beside your body.","Angle it: Turn the blocker so the puck goes to the corner.","Firm: Meet the puck, do not let it push your arm back.","Track: Watch it hit the blocker.","Reps: Steer 10 shots to the corner."]},{"emoji":"🦵","name":"Pad Saves","theme":"Seal the ice","cue":"On low shots, drop into the butterfly and seal the ice with your pads.","steps":["Set: Start in your stance.","Drop: Go into the butterfly as the low shot comes.","Seal: Pads flat and together so nothing sneaks under.","Stick down: Keep your stick covering the five-hole.","Reps: 10 low shots, seal every time."]},{"emoji":"🔁","name":"Rebound Control","theme":"No second chance","cue":"Steer rebounds to the corner or smother them, never leave one out front.","steps":["Make the save: Stop the first shot.","Direct it: Send the rebound to the corner or into your body.","Cover: If it is close, cover it for the whistle.","Recover: If it stays loose, get set again fast.","Reps: Control 10 rebounds."]},{"emoji":"🎯","name":"Track Through Traffic","theme":"Find the puck","cue":"Move your head to find the puck when someone is in front of you.","steps":["Set: Start in your stance with a screen (a cone or person) in front.","Look around: Move your head to see the puck past the screen.","Stay square: Keep facing the puck once you find it.","Save: Make the save on what you can see.","Reps: 10 pucks through a screen."]}],[{"emoji":"🧎","name":"Stance Warm-Up","theme":"Get set","cue":"Start with a few clean up-and-downs to warm up your base.","steps":["Set: Ready stance.","Drop and recover: 5 smooth butterflies up and down.","Balance: Chest up, square, in control the whole time."]},{"emoji":"↔️","name":"Shuffle and Set","theme":"Move square","cue":"Shuffle post to post and arrive already set each time.","steps":["Start on a post: Set square.","Shuffle: Move to the other post staying square.","Arrive set: Stop in your stance, not sliding.","Reps: 6 post to post."]},{"emoji":"📍","name":"Center the Puck","theme":"Line it up","cue":"Follow the puck and keep your body lined up with the net.","steps":["Watch: Follow a puck moving side to side.","Line up: Stay between the puck and the middle of the net.","Check the line: Nose, puck, middle of net.","Reps: Track to 8 spots."]},{"emoji":"🦵","name":"Butterfly Saves","theme":"Seal low","cue":"Drop and seal the ice on low shots, stick covering the five-hole.","steps":["Set: Ready stance.","Drop: Butterfly on the low shot.","Seal: Pads together, stick down.","Reps: 8 low shots."]},{"emoji":"🔁","name":"Rebound Finish","theme":"Control it","cue":"Make the save and put the rebound where nobody can score.","steps":["Save: Stop the shot.","Direct: Rebound to the corner or cover it.","Recover: Get set again if it stays loose.","Reps: Control 8 rebounds."]}]];
 function shootDayI(){ var s=window.thwapWeekdaySlot(); if(s<0) s=0; return s%SHOOT_DAYS.length; }
 var SHOOT=SHOOT_DAYS[shootDayI()];
 /* Progress keyed by which rotation day it is, so finishing today does not mark another day. */
 function shootKey(){ return 'thwapShootProg|day'+shootDayI(); }
 function loadProg(){try{return JSON.parse(localStorage.getItem(shootKey())||'{}');}catch(e){return {};}}
 function saveProg(p){try{localStorage.setItem(shootKey(),JSON.stringify(p));}catch(e){}}
+/* A goalie (Johnny) trains Net play instead of Shooting. Same page, same
+   plumbing; only the drill source and labels change. The signed-in player is
+   bfPlayer (first name). GOALIE_NAMES mirrors lib/store.js GOALIE_IDS. */
+window.THWAP_GOALIE_NAMES = window.THWAP_GOALIE_NAMES || ['johnny'];
+window.thwapIsGoalie = function(){
+  try{ var p=(localStorage.getItem('bfPlayer')||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,''); return window.THWAP_GOALIE_NAMES.indexOf(p)>=0; }catch(e){ return false; }
+};
+/* The active third-discipline day-set for the signed-in player: NETPLAY_DAYS for
+   a goalie (when present), else SHOOT_DAYS. */
+function thirdDays(){ return (window.thwapIsGoalie() && Array.isArray(window.NETPLAY_DAYS)) ? window.NETPLAY_DAYS : SHOOT_DAYS; }
 function render(){
   var list=document.getElementById('shootList'); if(!list)return;
-  SHOOT=SHOOT_DAYS[shootDayI()];   /* re-pick today's set on each render */
+  var DAYS=thirdDays();
+  var goalie=window.thwapIsGoalie() && Array.isArray(window.NETPLAY_DAYS);
+  SHOOT=DAYS[shootDayI()%DAYS.length];   /* re-pick today's set on each render */
   /* Show 2 fewer drills per day so the session is less intense (keep at least 1). */
   SHOOT=SHOOT.slice(0, Math.max(1, SHOOT.length-2));
+  /* Relabel the page for a goalie: hero title, blurb, nav row, and the default
+     dose fall back below use "Net play". */
+  if(goalie){
+    /* The #shoot h1 is "<button data-daytip>Today's</button> Shooting". Replace
+       only the trailing text node so the day-tip button is preserved. */
+    var h=document.querySelector('#shoot h1');
+    if(h){ for(var n=h.firstChild;n;n=n.nextSibling){ if(n.nodeType===3 && /\S/.test(n.nodeValue)){ n.nodeValue=' Net play'; break; } } }
+    var blurb=document.querySelector('#shoot p'); if(blurb) blurb.textContent='Stance, angles, and stopping pucks.';
+    var navH=document.querySelector('.nav-shoot h2'); if(navH) navH.textContent='Net play';
+    var navP=document.querySelector('.nav-shoot p'); if(navP) navP.textContent='Stance + saves, about 15 min';
+  }
   var prog=loadProg();
   list.innerHTML='';
   var shOpt=document.getElementById('shootOptional'); if(shOpt) shOpt.hidden=!(window.thwapIsWeekend&&window.thwapIsWeekend());
@@ -5032,7 +5074,7 @@ function render(){
     list.insertAdjacentHTML('beforeend',
       "<div class='exrow"+done+"' data-i='"+i+"'>"+
         "<div class='exhead'><div class='exem'>"+dr.emoji+"</div>"+
-          "<div><h3>"+esc(dr.name)+"<span class='exbadge'>Done</span></h3><div class='exdose'>"+esc(dr.theme||'Shooting')+"</div></div>"+
+          "<div><h3>"+esc(dr.name)+"<span class='exbadge'>Done</span></h3><div class='exdose'>"+esc(dr.theme||(goalie?'Net play':'Shooting'))+"</div></div>"+
           "<div class='exchev'>›</div></div>"+
         "<div class='exbody'>"+cue+window.videoBlock(dr)+window.audioBlock(dr)+steps+
           "<button type='button' class='exdone'>"+doneLabel+"</button></div>"+
