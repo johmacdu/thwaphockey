@@ -261,6 +261,23 @@ body.login-locked .topbar{position:relative;z-index:120}
 .forrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px}
 .forline{font-size:15px;color:var(--muted);font-weight:600}
 .fordur{display:block;font-size:15px;color:var(--muted);font-weight:600}
+/* Two-line "do" summary: lead sentence + flat colored discipline names (NOT tappable-looking). */
+.dolead{font-size:16px;color:var(--text);font-weight:800;line-height:1.25}
+.dolead.alldone{color:var(--green2)}
+.dodur{font-weight:600;color:var(--muted)}
+.discline{margin-top:7px;font-size:15px;font-weight:800;line-height:1.4}
+.disc{display:inline;white-space:nowrap}
+.disc .demo{font-weight:400}
+.disc .chk{display:none;font-weight:900}
+.disc.done{opacity:.5}
+.disc.done .chk{display:inline}
+.disc-stick{color:#4E9128}.disc-shoot{color:#3E88D8}.disc-dryland{color:#E07A1F}
+.dosep{color:var(--muted);font-weight:600;padding:0 3px}
+/* Inline tappable "today" -> reveals the date, part of the sentence (replaces the floating chip). */
+.todayword{position:relative;display:inline;color:inherit;font:inherit;font-weight:800;background:none;border:0;padding:0;margin:0;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;-webkit-tap-highlight-color:transparent}
+.todaydate{position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%) translateY(4px);white-space:nowrap;background:var(--ink);color:#fff;font-size:12px;font-weight:600;padding:6px 10px;border-radius:8px;opacity:0;visibility:hidden;transition:opacity .15s ease,transform .15s ease;pointer-events:none;z-index:5}
+.todaydate::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--ink)}
+.todayword:hover .todaydate,.todayword:focus-visible .todaydate,.todayword.show .todaydate{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
 .playername{font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;letter-spacing:.01em;font-size:34px;line-height:1.1;color:var(--ink);margin:2px 0 8px;display:block;background:none;border:0;padding:0;text-align:left;cursor:pointer;text-decoration:none;-webkit-tap-highlight-color:transparent}
 /* ---- Flippable player card overlay ---- */
 .cardoverlay{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:rgba(9,15,11,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;transition:opacity .2s ease;padding:20px}
@@ -1304,7 +1321,7 @@ body.login-locked{overflow:hidden}
 </section>
 
 <section id='stick' class='page'>
-<a class='glassclose' href='.' aria-label='Close'>✕</a><div class='heroCard'><div class='big eggstick' id='eggStick' role='img' aria-label='Hockey stick'><img class='egg-ico' id='eggStickImg' src='login/icon-stick.webp' alt=''></div><h1><button type='button' class='titletip' data-daytip>Today’s<span class='titletip-date'>Sunday, September 13</span></button> Stickhandling</h1><p>Head up, soft hands and clean puck movement.</p><div class='pills'><span class='pill' id='stickTime'>about 10-15 min</span><span class='pill pill-optional' id='stickOptional' hidden>optional training</span></div></div>
+<a class='glassclose' href='.' aria-label='Close'>✕</a><div class='heroCard'><div class='big eggstick' id='eggStick' role='img' aria-label='Hockey stick'><img class='egg-ico' id='eggStickImg' src='login/icon-stick.webp' alt=''></div><h1><button type='button' class='titletip' data-daytip>Today’s<span class='titletip-date'>Sunday, September 13</span></button> Hands</h1><p>Head up, soft hands and clean puck movement.</p><div class='pills'><span class='pill' id='stickTime'>about 10-15 min</span><span class='pill pill-optional' id='stickOptional' hidden>optional training</span></div></div>
 <div id='stickList'></div>
 </section>
 
@@ -1704,7 +1721,7 @@ body.login-locked{overflow:hidden}
       rows[cat].style.display = (onCats.indexOf(cat)<0) ? 'none' : '';
     });
   }).catch(function(){});
-})();})();</script><div class='forrow'><span class='forline'>Today, do stickhandling, shooting and dryland<span class='fordur'>(about 30 mins)</span></span><button type='button' class='daytip daytip-chip' id='dayTip' aria-label='Show today’s date'>Today<span class='daydate' id='dayDate'>Sunday, September 13</span></button></div></div>
+})();})();</script><div class='forrow'><div class='dowrap' id='doWrap'><div class='dolead' id='doLead'></div><div class='discline' id='discLine'></div></div></div>
 <div class='cards'>
 <a class='pnextgame' id='pNextGame' href='hockey_game_goals.html'>
   <div class='png-top'>
@@ -1718,7 +1735,7 @@ body.login-locked{overflow:hidden}
   <div class='png-focus' id='pngFocus' hidden><span class='png-focus-lab'>Coach wants everyone on</span><span class='png-focus-goal' id='pngFocusGoal'></span></div>
   <div class='png-cta' id='pngCta'>Set your game goals</div>
 </a>
-<a class='nav nav-stick' href='#stick'><div class='ico'><img class='nav-ico' src='login/icon-stick.webp' alt=''></div><div><h2>Stickhandling</h2><p>Hands + puck control, about 10-15 min</p></div><div class='chev'>›</div></a>
+<a class='nav nav-stick' href='#stick'><div class='ico'><img class='nav-ico' src='login/icon-stick.webp' alt=''></div><div><h2>Hands</h2><p>Stickhandling + puck control, about 10-15 min</p></div><div class='chev'>›</div></a>
 <a class='nav nav-shoot' href='#shoot'><div class='ico'><img class='nav-ico' src='login/icon-net.webp' alt=''></div><div><h2>Shooting</h2><p>Accuracy + release, about 15 min</p></div><div class='chev'>›</div></a>
 <a class='nav nav-dryland' href='#dryland'><div class='ico'><img class='nav-ico' src='login/icon-bolt.webp' alt=''></div><div><h2>Dryland</h2><p>Speed + power + balance, about 15 min</p></div><div class='chev'>›</div></a>
 <a class='nav nav-pass' href='#pass'><div class='ico'><img class='nav-ico' src='login/icon-pass.webp' alt=''></div><div><h2>Passing <span class='soon-tag'>Coming soon</span></h2><p>Tape-to-tape + vision, coming early November</p></div><div class='chev'>›</div></a>
@@ -3780,7 +3797,7 @@ function buildBack(p,slug){
         "<div class='cb2-tag'>Same waters.<br>Stronger<br>players.<i></i></div></div>"+
       "<div class='cb2-panel'><div class='cb2-eyebrow'>All time</div>"+
         "<div class='cb2-grid'>"+
-          tile('stick',false,stick,'Stickhandling')+
+          tile('stick',false,stick,'Hands')+
           tile('shoot',false,shoot,thirdLabel)+
           tile('dryland',true,dry,'Dryland')+
           tile('streak',false,streak,'Day Streak')+
@@ -4674,6 +4691,8 @@ function build(){
   var thirdDisc=goalieView?'Net play':'Shooting';
   var DCOL={Stickhandling:'#8fd65e',Shooting:'#75B8FF','Net play':'#75B8FF',Dryland:'#FF9D4D'};
   var DEMO={Stickhandling:'🏒',Shooting:'🥅','Net play':'🥅',Dryland:'⚡'};
+  var DNAME={Stickhandling:'Hands'};  /* display label; key stays 'Stickhandling' */
+  function dLabel(d){ return DNAME[d]||d; }
   var discs=['Stickhandling',thirdDisc,'Dryland'];
 
   var visual='';
@@ -4689,7 +4708,7 @@ function build(){
         "<circle cx='40' cy='40' r='"+r+"' fill='none' stroke='var(--soft)' stroke-width='9'/>"+
         "<circle class='pl-ringfill' cx='40' cy='40' r='"+r+"' fill='none' stroke='"+DCOL[disc]+"' stroke-width='9' stroke-linecap='round' stroke-dasharray='"+circ+"' stroke-dashoffset='"+circ+"' data-off='"+off+"' transform='rotate(-90 40 40)'/>"+
         "<text x='40' y='50' text-anchor='middle' font-size='24'>"+DEMO[disc]+"</text></svg>"+
-        "<div class='pl-ring-l'>"+disc+"</div><div class='pl-ring-n'>"+done+" / "+goal+"</div></button>";
+        "<div class='pl-ring-l'>"+dLabel(disc)+"</div><div class='pl-ring-n'>"+done+" / "+goal+"</div></button>";
     }).join('')+"</div>";
   } else {
     /* all-time: glowing power triangle + big totals, bigger and numbered */
@@ -4800,14 +4819,46 @@ function fill(){
   var wdOpt=(ov!==null&&ov!==undefined)?{weekday:'long',timeZone:'UTC'}:{weekday:'long'};
   var wd=d.toLocaleDateString(undefined,wdOpt);
   document.querySelectorAll('.titletip-date').forEach(function(el){ el.textContent=full; });
-  var dd=document.getElementById('dayDate'); if(dd)dd.textContent=full;
-  var fl=document.querySelector('.forline');
+  var lead=document.getElementById('doLead'), line=document.getElementById('discLine');
   var weekend=(window.thwapIsWeekend&&window.thwapIsWeekend());
-  if(fl){ fl.innerHTML=weekend?'Weekend: bonus skills, no dryland':"Today, do stickhandling, shooting and dryland<span class='fordur'>(about 30 mins)</span>"; }
+  /* Per-discipline "done today" from the unified signal (thwapDone|<today>|<disc>). */
+  function today2(){var t=(window.thwapToday?window.thwapToday():new Date());return t.getFullYear()+'-'+(t.getMonth()+1)+'-'+t.getDate();}
+  function isDone(disc){ try{ return localStorage.getItem('thwapDone|'+today2()+'|'+disc)==='1'; }catch(e){ return false; } }
+  var DEFS=[{k:'stick',label:'Hands',emo:'🏒',cls:'disc-stick'},{k:'shoot',label:'Shooting',emo:'🥅',cls:'disc-shoot'},{k:'dryland',label:'Dryland',emo:'⚡',cls:'disc-dryland'}];
+  var defs=weekend?DEFS.slice(0,2):DEFS;   /* dryland rests on weekends */
+  /* Build the flat, non-tappable discipline line. */
+  if(line){
+    line.innerHTML=defs.map(function(d){
+      var done=isDone(d.k)?' done':'';
+      return "<span class='disc "+d.cls+done+"'><span class='demo'>"+d.emo+"</span> "+d.label+" <span class='chk'>✓</span></span>";
+    }).join("<span class='dosep'>,</span>");
+  }
+  /* Build the lead line with an inline tappable "today" that reveals the date. */
+  var todayHTML="<button type='button' class='todayword' id='todayReveal'>today<span class='todaydate' id='dayDate'>"+full+"</span></button>";
+  if(lead){
+    if(weekend){
+      lead.className='dolead';
+      lead.innerHTML="Weekend: bonus skills, no dryland";
+    } else {
+      var left=defs.filter(function(d){return !isDone(d.k);});
+      if(left.length===0){
+        lead.className='dolead alldone';
+        lead.innerHTML="All 3 done "+todayHTML+" 🎉";
+      } else if(left.length===defs.length){
+        lead.className='dolead';
+        lead.innerHTML="Do all 3 "+todayHTML+" <span class='dodur'>(about 30 mins)</span>";
+      } else {
+        lead.className='dolead';
+        lead.innerHTML=left.length+" left "+todayHTML+": "+left.map(function(d){return d.label;}).join(' and ');
+      }
+    }
+    /* tap toggles the date tooltip (hover/focus already handle desktop) */
+    var tw=document.getElementById('todayReveal');
+    if(tw){ tw.addEventListener('click',function(e){ e.preventDefault(); tw.classList.toggle('show'); }); }
+  }
   /* Weekend: dryland (load) rests, so hide its card. Skills stay available. */
   var dl=document.querySelector('.nav-dryland'); if(dl) dl.style.display=weekend?'none':'';
-  /* Home chip label stays "Today"; the weekday+date live only in the tap-reveal (#dayDate),
-     so the weekday is never shown twice. */
+  /* The weekday+date live only in the inline "today" reveal, never shown twice. */
 }
 fill();
 })();
@@ -5176,7 +5227,7 @@ function render(){
   if(!PASS_DAYS.length){
     list.innerHTML="<div class='soon-empty'>"+
       "<h3>Passing lands "+esc(PASS_LAUNCH)+"</h3>"+
-      "<p>Tape-to-tape passing, give-and-go, and reading the ice. New drills drop right here soon. Until then, keep stacking days in Stickhandling, Shooting and Dryland.</p>"+
+      "<p>Tape-to-tape passing, give-and-go, and reading the ice. New drills drop right here soon. Until then, keep stacking days in Hands, Shooting and Dryland.</p>"+
     "</div>";
     return;
   }
