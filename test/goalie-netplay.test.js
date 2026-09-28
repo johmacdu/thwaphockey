@@ -87,3 +87,26 @@ describe('goalie Net play renders (execution)', () => {
     expect(win.thwapIsGoalie()).toBe(false);
   });
 });
+
+describe('goalie Net play server slot + board plumbing (regression: fairness rule)', () => {
+  // Regression for the launch bug where a goalie's Net play completions were
+  // posted to the `shoot` slot while the card-back/radar read from `netplay`,
+  // so the goalie's Net play tile was permanently 0 and his work was recorded
+  // as Shooting. The done-handler must post `netplay` for a goalie, and the
+  // board plumbing (mapPlayers/stashBoard) must carry `netplay` through.
+  it('the shoot-page done-handler posts netplay for a goalie, shoot otherwise', () => {
+    expect(html).toMatch(/window\.thwapMarkDone\(goalie\?'netplay':'shoot'\)/);
+  });
+
+  it('mapPlayers carries netplay through to the board', () => {
+    expect(html).toMatch(/mapPlayers[\s\S]{0,200}?netplay:p\.netplay\|\|0/);
+  });
+
+  it('stashBoard carries netplay into window.thwapBoard', () => {
+    expect(html).toMatch(/stashBoard[\s\S]{0,300}?netplay:p\.netplay\|\|0/);
+  });
+
+  it('the card back reads the goalie third-discipline count from the netplay slot', () => {
+    expect(html).toMatch(/cb2Stat\(slug, *isG\?'netplay':'shoot'\)/);
+  });
+});

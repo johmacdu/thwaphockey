@@ -3401,7 +3401,7 @@ function countUp(el,target,fmt){
    weekly split at /api/board?tf=week and cumulative all-time at /api/board. */
 var LIVE={week:null, all:null};
 function mapPlayers(list){
-  return list.map(function(p){ return {n:(p.id.charAt(0).toUpperCase()+p.id.slice(1)), stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0}; });
+  return list.map(function(p){ return {n:(p.id.charAt(0).toUpperCase()+p.id.slice(1)), stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0, netplay:p.netplay||0}; });
 }
 /* Global real-data store so the stats page reads the SAME live numbers, not a
    name-hash demo. Keyed by lowercase first name. streak is the honest computed
@@ -3409,7 +3409,7 @@ function mapPlayers(list){
 window.thwapBoard=window.thwapBoard||{ week:{}, all:{}, ready:false };
 function stashBoard(which, list){
   var m={};
-  list.forEach(function(p){ m[String(p.id).toLowerCase()]={stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0, streak:p.streak||0}; });
+  list.forEach(function(p){ m[String(p.id).toLowerCase()]={stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0, netplay:p.netplay||0, streak:p.streak||0}; });
   window.thwapBoard[which]=m; window.thwapBoard.ready=true;
   if(window.thwapStatsRefresh) window.thwapStatsRefresh();
 }
@@ -5102,8 +5102,14 @@ function render(){
         var p=loadProg(); p[i]=true; saveProg(p);
         row.classList.add('done');
         var _l=row.parentNode;
+        /* Category celebration keys its blue net-rip effect off 'shoot' (which
+           fits a goalie visually), but the SERVER count must land in the
+           position-correct slot: netplay for a goalie, never shoot (fairness rule).
+           The LOCAL done-slot stays 'shoot' -- it only marks "third discipline done
+           today" for the daily celebration/streak, and the goalie's third page IS
+           the shoot route. */
         if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('shoot');
-        if(window.thwapMarkDone)window.thwapMarkDone('shoot');
+        if(window.thwapMarkDone)window.thwapMarkDone(goalie?'netplay':'shoot');
         if(window.thwapStampToday)window.thwapStampToday('shoot',true);
         btn.textContent='Done ✓';
       };
