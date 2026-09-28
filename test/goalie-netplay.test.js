@@ -36,6 +36,18 @@ describe('goalie Net play wiring (source guards)', () => {
     expect(html).toMatch(/n\.nodeValue=' Net play'/);
     expect(html).toMatch(/navH\.textContent='Net play'/);
   });
+
+  it('exposes a position-aware label triad helper (radar/tiles/card back)', () => {
+    expect(html).toMatch(/window\.thwapDiscsFor *= *function/);
+    // goalie third slot is netplay + "Net play"; skater is shoot + "Shoot"
+    expect(html).toMatch(/\['netplay', want==='emoji'\?'🥅 Net play':'Net play'\]/);
+  });
+
+  it('the card back shows Net play for a goalie, pulling the netplay count', () => {
+    expect(html).toMatch(/cb2Stat\(slug, isG\?'netplay':'shoot'\)/);
+    expect(html).toMatch(/var thirdLabel=isG\?'Net play':'Shooting'/);
+    expect(html).toMatch(/tile\('shoot',false,shoot,thirdLabel\)/);
+  });
 });
 
 describe('goalie Net play renders (execution)', () => {

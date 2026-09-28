@@ -3728,7 +3728,9 @@ function buildFront(p,slug,photoUrl,themeOverride){
     "</div>";
 }
 function buildBack(p,slug){
-  var stick=cb2Stat(slug,'stick'), shoot=cb2Stat(slug,'shoot'), dry=cb2Stat(slug,'dryland');
+  var isG=(window.THWAP_GOALIE_NAMES&&window.THWAP_GOALIE_NAMES.indexOf(String(slug||'').toLowerCase().replace(/[^a-z]/g,''))>=0);
+  var stick=cb2Stat(slug,'stick'), shoot=cb2Stat(slug, isG?'netplay':'shoot'), dry=cb2Stat(slug,'dryland');
+  var thirdLabel=isG?'Net play':'Shooting';
   var streak=cb2Streak(slug), sessions=stick+shoot+dry;
   var tile=function(icoKey,mut,n,label){
     return "<div class='cb2-tile'><span class='cb2-ico"+(mut?' mut':'')+"'>"+CB2_ICONS[icoKey]+"</span>"+
@@ -3743,7 +3745,7 @@ function buildBack(p,slug){
       "<div class='cb2-panel'><div class='cb2-eyebrow'>All time</div>"+
         "<div class='cb2-grid'>"+
           tile('stick',false,stick,'Stickhandling')+
-          tile('shoot',false,shoot,'Shooting')+
+          tile('shoot',false,shoot,thirdLabel)+
           tile('dryland',true,dry,'Dryland')+
           tile('streak',false,streak,'Day Streak')+
           "<div class='cb2-tile cb2-wide'><span class='cb2-ico'>"+CB2_ICONS.bars+"</span>"+
@@ -4360,6 +4362,18 @@ function esc(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp
 /* position + card slug for the header */
 var INFO={Alder:{num:'71',pos:'F'},Brooklyn:{num:'92',pos:'D'},Dawson:{num:'19',pos:'D'},Dominic:{num:'98',pos:'F'},Eugene:{num:'3',pos:'D'},Evan:{num:'13',pos:'F'},Greyson:{num:'32',pos:'D'},Johnny:{num:'1',pos:'G'},Joziah:{num:'59',pos:'F'},Lewie:{num:'72',pos:'FD'},Liam:{num:'29',pos:'D'},Maddux:{num:'18',pos:'F'},Oliver:{num:'90',pos:'F'},Teddy:{num:'11',pos:'F'},William:{num:'16',pos:'F'},Issac:{num:'53',pos:'F'}};
 var POSNAME={F:'Forward',D:'Defense',G:'Goalie',FD:'Forward/Defense'};
+/* Position-aware discipline label triads (mirrors lib/store.js disciplinesFor).
+   The third slot is Net play for a goalie, Shooting for everyone else. `slug` is
+   a player id (lowercase first name). Used by the radar, IDP tiles, and card back
+   so a goalie's third discipline reads/pulls Net play, a skater's reads Shooting.
+   Pass want='plain' for bare labels, 'emoji' for the emoji-prefixed labels. */
+window.THWAP_GOALIE_NAMES = window.THWAP_GOALIE_NAMES || ['johnny'];
+window.thwapDiscsFor = function(slug, want){
+  var g = window.THWAP_GOALIE_NAMES.indexOf(String(slug||'').toLowerCase().replace(/[^a-z]/g,''))>=0;
+  var third = g ? ['netplay', want==='emoji'?'🥅 Net play':'Net play'] : ['shoot', want==='emoji'?'🥅 Shoot':'Shoot'];
+  if(want==='emoji') return [['stick','🏒 Hands'], third, ['dryland','⚡ Dryland']];
+  return [['stick','Hands'], third, ['dryland','Dryland']];
+};
 /* Exercise catalogs per discipline. The stub below is a FALLBACK only; the stats
    page uses buildCatalog() to show EVERY real activity per category. */
 var CATALOG={
@@ -4508,11 +4522,11 @@ window.thwapStatsRefresh=function(){ if(current && location.hash==='#player') bu
           dev.hidden=false;
           /* Per-discipline volume: this week (baseThisWeek) + this month (summed trend). */
           var volEl=document.getElementById('idpDevVol');
-          var wkv=j.baseThisWeek||{stick:0,shoot:0,dryland:0};
-          var mo={stick:0,shoot:0,dryland:0};
-          (j.monthTrend||[]).forEach(function(w){ mo.stick+=w.stick||0; mo.shoot+=w.shoot||0; mo.dryland+=w.dryland||0; });
+          var wkv=j.baseThisWeek||{stick:0,shoot:0,dryland:0,netplay:0};
+          var mo={stick:0,shoot:0,dryland:0,netplay:0};
+          (j.monthTrend||[]).forEach(function(w){ mo.stick+=w.stick||0; mo.shoot+=w.shoot||0; mo.dryland+=w.dryland||0; mo.netplay+=w.netplay||0; });
           if(volEl){
-            var CATS=[['stick','🏒 Hands'],['shoot','🥅 Shoot'],['dryland','⚡ Dryland']];
+            var CATS=(window.thwapDiscsFor?window.thwapDiscsFor(slug,'emoji'):[['stick','🏒 Hands'],['shoot','🥅 Shoot'],['dryland','⚡ Dryland']]);
             volEl.innerHTML=CATS.map(function(c){
               return "<div class='idpdev-vol-cell'><div class='idpdev-vol-lab'>"+c[1]+"</div>"+
                 "<div class='idpdev-vol-n'>"+(wkv[c[0]]||0)+"</div>"+
