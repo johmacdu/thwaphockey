@@ -10,7 +10,7 @@
 // Bad input-> 400 { error: ... }
 // Non-POST -> 405
 
-import { ROSTER, DISCIPLINES, bumpPlayer } from '../lib/store.js';
+import { ROSTER, DISCIPLINES, disciplinesFor, bumpPlayer } from '../lib/store.js';
 import { verifySession, readSessionCookie } from '../lib/session_store.js';
 
 // Look up a roster entry by player id (lowercase first name).
@@ -65,6 +65,16 @@ export default async function handler(req, res) {
   }
   if (claims.playerId !== entry.id) {
     return res.status(403).json({ error: 'not your account' });
+  }
+
+  // Position gate: a player may only log a discipline that applies to their
+  // position. A goalie's third discipline is Net play, a skater's is Shooting;
+  // disciplinesFor() is the single source of truth. Without this a goalie's
+  // session could bump 'shoot' (or a skater 'netplay') and misfile a real kid's
+  // work in the wrong slot -- the exact fairness bug the client routing prevents,
+  // enforced here on the server too.
+  if (!disciplinesFor(entry.id).includes(discipline)) {
+    return res.status(400).json({ error: 'discipline not for this position' });
   }
 
   // No PIN gate: a logged-in player logs their own work. The player is already
