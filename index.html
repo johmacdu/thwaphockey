@@ -6053,18 +6053,39 @@ function maybeSplash(){
   /* tap Sass during the welcome pause to start the skate right away */
   var welcomeGroup=document.querySelector('.sp-welcome'); if(welcomeGroup) welcomeGroup.addEventListener('click',function(){ if(overlay.classList.contains('is-playing')) playRun(); });
 })();
-function signIn(player,email,keep){
-  var rec={pid:player.pid,name:player.name,email:String(email||'').trim(),year:SEASON_YEAR,ts:Date.now()};
-  try{
-    var json=JSON.stringify(rec);
-    cookieSet(AUTH_KEY, json, keep?180:0);   /* client marker the gate + greeting read; the
-                                                server also set an HTTP-only thwapSession cookie */
-    localStorage.removeItem(AUTH_KEY); sessionStorage.removeItem(AUTH_KEY);
-    localStorage.setItem('bfPlayer',player.name);
-  }catch(e){}
-  hide();
-  if(location.hash==='#login'){ location.hash='#home'; }
-  location.reload();
+/* Mint the server session (HTTP-only thwapSession cookie) by re-verifying the
+   same code the player typed. Non-blocking and time-boxed: if the server is down
+   or unconfigured we still let the player in on the client-side path below, so no
+   one is ever locked out. Demo players (client-only, no backend) are skipped. */
+function mintServerSession(pid,code,email,keep){
+  if(!pid||pid==='demo'||!code) return Promise.resolve();
+  return new Promise(function(resolve){
+    var settled=false, fin=function(){ if(settled)return; settled=true; resolve(); };
+    var to=setTimeout(fin,3500);
+    try{
+      fetch('/api/login?action=code-signin',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({playerId:pid,code:String(code||''),email:String(email||''),keep:!!keep})})
+        .then(function(){ clearTimeout(to); fin(); },function(){ clearTimeout(to); fin(); });
+    }catch(e){ clearTimeout(to); fin(); }
+  });
+}
+function signIn(player,email,keep,code){
+  function finish(){
+    var rec={pid:player.pid,name:player.name,email:String(email||'').trim(),year:SEASON_YEAR,ts:Date.now()};
+    try{
+      var json=JSON.stringify(rec);
+      cookieSet(AUTH_KEY, json, keep?180:0);   /* client marker the gate + greeting read; the
+                                                  server also sets the HTTP-only thwapSession cookie */
+      localStorage.removeItem(AUTH_KEY); sessionStorage.removeItem(AUTH_KEY);
+      localStorage.setItem('bfPlayer',player.name);
+    }catch(e){}
+    hide();
+    if(location.hash==='#login'){ location.hash='#home'; }
+    location.reload();
+  }
+  /* establish the server session first (so the cookie is set before the reload),
+     then finish regardless of the outcome */
+  mintServerSession(player.pid, code, email, keep).then(finish, finish);
 }
 /* ---- Unified sign in --------------------------------------------------------
    ONE form, two kinds of user. On submit we try coach-login first (email +
@@ -6125,17 +6146,31 @@ if(form){
         errEl.textContent='';
         var player=playerForPassword(code);
         if(!player){ errEl.textContent='That code did not match.'; pwEl.focus(); pwEl.select(); return; }
-        signIn(player,email,keepEl.checked);
+        signIn(player,email,keepEl.checked,code);
       })
       .catch(function(){
         /* Network/API down: still allow player sign in (client-side check). */
         errEl.textContent='';
         var player=playerForPassword(code);
         if(!player){ errEl.textContent='That code did not match.'; pwEl.focus(); pwEl.select(); return; }
-        signIn(player,email,keepEl.checked);
+        signIn(player,email,keepEl.checked,code);
       });
   });
 }
+/* Already-signed-in players (from before server sessions existed) silently get a
+   server session on their next visit, by re-verifying their own derivable code
+   (jersey number + season year). No typing, no prompt. Runs once per tab; demo
+   players and anyone without a known jersey number are skipped. This lets writes
+   move onto the server-verified session without asking anyone to sign in again. */
+(function(){
+  try{
+    if(sessionStorage.getItem('thwapSessSync')==='1') return;
+    var a=readAuth(); if(!a||!a.pid||a.pid==='demo') return;
+    var num=NUMS[a.pid]; if(!num) return;
+    sessionStorage.setItem('thwapSessSync','1');
+    mintServerSession(a.pid, String(num)+String(a.year||SEASON_YEAR), a.email||'', true);
+  }catch(e){}
+})();
 if(eyeEl&&pwEl){
   eyeEl.addEventListener('click',function(){
     var showing=pwEl.type==='text';

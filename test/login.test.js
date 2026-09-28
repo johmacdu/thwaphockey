@@ -25,6 +25,7 @@ setEnv();
 const { _handlers } = await import('../api/login.js');
 const requestCode = _handlers.requestCode;
 const verify = _handlers.verify;
+const codeSignin = _handlers.codeSignin;
 const session = _handlers.session;
 const logout = _handlers.logout;
 const { mintSession, verifySession, SESSION_COOKIE, SESSION_TTL_MS } = await import('../lib/session_store.js');
@@ -189,5 +190,53 @@ describe('logout', () => {
     const sc = res.headers['Set-Cookie'];
     expect(sc).toContain('Max-Age=0');
     expect(tokenFromSetCookie(sc)).toBe('');
+  });
+});
+
+// Phase 1: server-verify the SAME jersey+year code the player types today, and
+// issue the HTTP-only session cookie. Lewie is #72 -> "722027" (or "722026").
+describe('login code-signin', () => {
+  it('rejects non-POST', async () => {
+    const res = makeRes();
+    await codeSignin(get(), res);
+    expect(res.statusCode).toBe(405);
+  });
+
+  it('rejects an unknown player', async () => {
+    const res = makeRes();
+    await codeSignin(post({ playerId: 'nobody', code: '722027' }), res);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBe('unknown player');
+  });
+
+  it('rejects a wrong code', async () => {
+    const res = makeRes();
+    await codeSignin(post({ playerId: 'lewie', code: '112027' }), res);
+    expect(res.statusCode).toBe(401);
+    expect(res.body.error).toBe('bad code');
+  });
+
+  it('sets an HTTP-only session cookie for the right code', async () => {
+    const res = makeRes();
+    await codeSignin(post({ playerId: 'lewie', code: '722027', email: 'p@example.com' }), res);
+    expect(res.statusCode).toBe(200);
+    const sc = res.headers['Set-Cookie'];
+    expect(sc).toContain('HttpOnly');
+    const claims = verifySession(tokenFromSetCookie(sc));
+    expect(claims && claims.playerId).toBe('lewie');
+  });
+
+  it('accepts the prior season year too', async () => {
+    const res = makeRes();
+    await codeSignin(post({ playerId: 'lewie', code: '722026' }), res);
+    expect(res.statusCode).toBe(200);
+  });
+
+  it('503 when sessions are not configured', async () => {
+    delete process.env.SESSION_TOKEN_SECRET;
+    delete process.env.PHOTO_TOKEN_SECRET;
+    const res = makeRes();
+    await codeSignin(post({ playerId: 'lewie', code: '722027' }), res);
+    expect(res.statusCode).toBe(503);
   });
 });
