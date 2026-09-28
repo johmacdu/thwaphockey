@@ -28,6 +28,7 @@ setEnv();
 const { default: waitlist } = await import('../api/waitlist.js');
 const { default: geo } = await import('../api/geo.js');
 const { default: seed } = await import('../api/seed.js');
+const { default: reset } = await import('../api/reset.js');
 
 function makeRes() {
   return {
@@ -182,6 +183,70 @@ describe('seed', () => {
   it('rejects non-POST', async () => {
     const res = makeRes();
     await seed({ method: 'GET', headers: {} }, res);
+    expect(res.statusCode).toBe(405);
+  });
+});
+
+describe('reset (per-player)', () => {
+  const key = { 'x-seed-key': 'seed-secret' };
+
+  it('fails closed (403) when SEED_KEY is not configured', async () => {
+    delete process.env.SEED_KEY;
+    const res = makeRes();
+    await reset(post({ player: 'lewie' }, {}), res);
+    expect(res.statusCode).toBe(403);
+  });
+
+  it('403s on a wrong key', async () => {
+    const res = makeRes();
+    await reset(post({ player: 'lewie' }, { 'x-seed-key': 'wrong' }), res);
+    expect(res.statusCode).toBe(403);
+  });
+
+  it('400s when no player is given', async () => {
+    const res = makeRes();
+    await reset(post({}, key), res);
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('400s on an unknown player', async () => {
+    const res = makeRes();
+    await reset(post({ player: 'nobody' }, key), res);
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('zeroes one player and clears their days/events, leaving others untouched', async () => {
+    // Seed Lewie with real data and another player to prove isolation.
+    fake._seed('player:lewie', { stick: 5, shoot: 3, dryland: 2, streak: 4, stickers: 6, updatedAt: '2026-01-14T00:00:00Z' });
+    fake._seed('days:lewie', ['2026-01-13', '2026-01-14']);
+    fake._seed('events:lewie', [{ date: '2026-01-14', disc: 'stick' }]);
+    fake._seed('player:johnny', { stick: 9, shoot: 0, dryland: 0, streak: 1, stickers: 0, updatedAt: null });
+
+    const res = makeRes();
+    await reset(post({ player: 'Lewie' }, key), res); // mixed case resolves via roster
+    expect(res.statusCode).toBe(200);
+    expect(res.body.reset).toBe('lewie');
+    expect(res.body.player).toMatchObject({ id: 'lewie', stick: 0, shoot: 0, dryland: 0, streak: 0, stickers: 0 });
+
+    // Lewie's aux keys are gone; his player key is zeroed but present.
+    expect(fake.map.has('days:lewie')).toBe(false);
+    expect(fake.map.has('events:lewie')).toBe(false);
+    expect(fake.map.get('player:lewie').stick).toBe(0);
+    // Johnny is untouched.
+    expect(fake.map.get('player:johnny').stick).toBe(9);
+  });
+
+  it('accepts the player via query string', async () => {
+    fake._seed('player:lewie', { stick: 2, shoot: 0, dryland: 0, streak: 0, stickers: 0, updatedAt: null });
+    const res = makeRes();
+    await reset(post(null, key, { player: 'lewie' }), res);
+    expect(res.statusCode).toBe(200);
+    expect(fake.map.get('player:lewie').stick).toBe(0);
+  });
+
+  it('rejects non-POST', async () => {
+    const res = makeRes();
+    await reset({ method: 'GET', headers: {} }, res);
     expect(res.statusCode).toBe(405);
   });
 });
