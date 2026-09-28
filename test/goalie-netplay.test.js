@@ -28,8 +28,8 @@ describe('goalie Net play wiring (source guards)', () => {
     expect(html).toMatch(/THWAP_GOALIE_NAMES/);
   });
 
-  it('render picks NETPLAY_DAYS for a goalie, SHOOT_DAYS otherwise', () => {
-    expect(html).toMatch(/function thirdDays\(\)\{ *return *\(window\.thwapIsGoalie\(\) *&& *Array\.isArray\(window\.NETPLAY_DAYS\)\) *\? *window\.NETPLAY_DAYS *: *SHOOT_DAYS/);
+  it('render picks NETPLAY_DAYS for a goalie only when Net play is live, else SHOOT_DAYS', () => {
+    expect(html).toMatch(/function thirdDays\(\)\{ return \(window\.thwapIsGoalie\(\) && netplayLive\(\)\) \? window\.NETPLAY_DAYS : SHOOT_DAYS; \}/);
   });
 
   it('relabels the page to Net play for a goalie (hero, nav, blurb)', () => {
@@ -111,31 +111,65 @@ describe('goalie Net play server slot + board plumbing (regression: fairness rul
   });
 });
 
-describe('Standings folds a goalie Net play into the shared third slot (P1)', () => {
+describe('Standings: Net play folds while gated, becomes its own tile when enabled (P1)', () => {
   const fs2 = require('node:fs');
   const path2 = require('node:path');
   const src = fs2.readFileSync(path2.resolve(__dirname, '../index.html'), 'utf8');
 
-  it('thirdOf sums shoot + netplay so the third slot carries both', () => {
-    expect(src).toMatch(/function thirdOf\(p\)\{ return \(p\.shoot\|\|0\)\+\(p\.netplay\|\|0\); \}/);
+  it('thirdOf folds netplay into shoot ONLY while Net play is gated', () => {
+    // flag-aware: enabled -> shoot alone (netplay is its own tile); gated -> shoot+netplay
+    expect(src).toMatch(/function thirdOf\(p\)\{ return netEnabled\(\) \? \(p\.shoot\|\|0\) : \(p\.shoot\|\|0\)\+\(p\.netplay\|\|0\); \}/);
   });
 
-  it('scoreOf uses thirdOf for the all-total and the shoot metric', () => {
-    expect(src).toMatch(/disc==='all' \? \(p\.stick\+thirdOf\(p\)\+p\.dryland\)/);
-    expect(src).toMatch(/disc==='shoot' \? thirdOf\(p\)/);
+  it('scoreOf all-total counts every discipline (stick+shoot+netplay+dryland+pass)', () => {
+    expect(src).toMatch(/\(p\.stick\|\|0\)\+\(p\.shoot\|\|0\)\+\(p\.netplay\|\|0\)\+\(p\.dryland\|\|0\)\+\(p\.pass\|\|0\)/);
   });
 
-  it('the team total sum folds netplay into the third slot', () => {
-    expect(src).toMatch(/t\.shoot\+=thirdOf\(p\)/);
+  it('the team all-total includes netplay only when Net play is enabled', () => {
+    expect(src).toMatch(/t\.all=t\.stick\+\(t\.shoot\)\+t\.dryland\+t\.pass\+\(netEnabled\(\)\?t\.netplay:0\)/);
   });
 
-  it('does NOT add a team-wide Net play metric button', () => {
-    // the shared metric row stays All / Hands / Shoot / Dryland (no netplay data-disc)
-    expect(src).not.toMatch(/data-disc='netplay'/);
+  it('a Net play metric tile EXISTS but ships hidden (revealed only when enabled)', () => {
+    // you decided Net play is its own tile on the team page; it must not show all-zeros before launch
+    expect(src).toMatch(/data-disc='netplay' id='metricNetplay' hidden/);
+    expect(src).toMatch(/\.metric\[hidden\]\{display:none\}/);
+    expect(src).toMatch(/if\(mn && window\.NETPLAY_ENABLED\) mn\.hidden=false/);
+  });
+
+  it('a Passing metric tile EXISTS but ships hidden (revealed when PASS_DAYS has content)', () => {
+    expect(src).toMatch(/data-disc='pass' id='metricPass' hidden/);
+    expect(src).toMatch(/if\(mp && Array\.isArray\(window\.PASS_DAYS\) && window\.PASS_DAYS\.length\) mp\.hidden=false/);
+  });
+
+  it('the metric grid is auto-fit (balanced rows, no orphan tiles at 5 or 6)', () => {
+    expect(src).toMatch(/\.metrics\{display:grid;grid-template-columns:repeat\(auto-fit,minmax\(96px,1fr\)\)/);
+  });
+
+  it('Net play uses a distinct glove emoji, not the net emoji Shoot uses', () => {
+    expect(src).toMatch(/🧤 Net play/);   // glove, distinct from 🥅 Shoot
   });
 
   it('Passing coming-soon copy names Net play for a goalie', () => {
     expect(src).toMatch(/thwapIsGoalie\(\)\)\?'Net play':'Shooting'/);
+  });
+});
+
+describe('Net play drills are gated coming-soon until real content lands (no invented content)', () => {
+  const fsG = require('node:fs');
+  const pathG = require('node:path');
+  const src = fsG.readFileSync(pathG.resolve(__dirname, '../index.html'), 'utf8');
+
+  it('NETPLAY_ENABLED ships false', () => {
+    expect(src).toMatch(/var NETPLAY_ENABLED=window\.NETPLAY_ENABLED=false/);
+  });
+
+  it('netplayLive() requires the flag AND real days', () => {
+    expect(src).toMatch(/function netplayLive\(\)\{ return window\.NETPLAY_ENABLED && Array\.isArray\(window\.NETPLAY_DAYS\) && window\.NETPLAY_DAYS\.length; \}/);
+  });
+
+  it('a goalie with Net play gated sees the coming-soon state, no markable drills', () => {
+    expect(src).toMatch(/if\(goalie && !netplayLive\(\)\)\{/);
+    expect(src).toMatch(/Net play drills are coming/);
   });
 });
 
