@@ -835,12 +835,26 @@ body.roster-selfediting #roster-grid .pcard.pcard-you-card::after{content:'\270E
 #plTf{margin-bottom:24px}
 .segbtn{font:inherit;font-size:14px;font-weight:700;color:var(--muted);background:none;border:0;padding:14px 20px;min-height:48px;border-radius:999px;cursor:pointer}
 .segbtn.on{background:var(--lime);color:var(--ink);box-shadow:0 1px 2px var(--shadow)}
-.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0 16px}
-.metric{display:flex;flex-direction:column;align-items:center;gap:4px;padding:16px 6px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,var(--cardgrad1),var(--cardgrad2));cursor:pointer;min-height:56px;transition:border-color .12s ease,transform .08s ease}
+/* Auto-fit grid: fits as many >=96px equal-width tiles per row as the width allows,
+   then wraps to balanced rows (no orphan/lopsided rows the way a fixed 4-col grid
+   gives with 5 or 6 tiles). Scales cleanly from 4 tiles (today) to 6 (Hands, Shoot,
+   Passing, Dryland, Net play + All) as each discipline's flag flips on, with no
+   viewer-specific or breakpoint CSS. */
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:10px;margin:12px 0 16px}
+.metric{display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 6px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,var(--cardgrad1),var(--cardgrad2));cursor:pointer;min-height:56px;transition:border-color .12s ease,transform .08s ease}
+.metric[hidden]{display:none}
 .metric:active{transform:scale(.97)}
 .metric.on{border-color:var(--lime);box-shadow:inset 0 0 0 2px var(--lime)}
 .metric-label{font-size:13px;font-weight:800;color:var(--muted);white-space:nowrap}
 .metric-num{font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;font-size:26px;color:var(--text);line-height:1}
+/* On a narrow phone the tiles land 3-up (two balanced rows for 6): shrink the
+   number and label a touch so a 3-up tile at ~360px never clips its label. */
+@media (max-width:460px){
+  .metrics{gap:8px}
+  .metric{padding:12px 4px}
+  .metric-num{font-size:22px}
+  .metric-label{font-size:12px}
+}
 .metric.on .metric-num{color:var(--text)}
 /* Leaderboard team view */
 .lb-teamzone{margin-top:24px;margin-bottom:32px}
@@ -1635,7 +1649,9 @@ body.login-locked{overflow:hidden}
 <button type='button' class='metric on' data-disc='all'><span class='metric-label'>All</span><span class='metric-num' data-total='all'>0</span></button>
 <button type='button' class='metric' data-disc='stick'><span class='metric-label'>🏒 Hands</span><span class='metric-num' data-total='stick'>0</span></button>
 <button type='button' class='metric' data-disc='shoot'><span class='metric-label'>🥅 Shoot</span><span class='metric-num' data-total='shoot'>0</span></button>
+<button type='button' class='metric' data-disc='pass' id='metricPass' hidden><span class='metric-label'>🎯 Passing</span><span class='metric-num' data-total='pass'>0</span></button>
 <button type='button' class='metric' data-disc='dryland'><span class='metric-label'>⚡ Dryland</span><span class='metric-num' data-total='dryland'>0</span></button>
+<button type='button' class='metric' data-disc='netplay' id='metricNetplay' hidden><span class='metric-label'>🧤 Net play</span><span class='metric-num' data-total='netplay'>0</span></button>
 </div>
 <p id='boardscope' class='lb-scope'>Everyone, all training</p>
 <div class='board' id='board'></div>
@@ -3500,12 +3516,19 @@ function fetchBoard(){
     }).catch(function(){});
   }catch(e){}
 }
-/* A player's third-discipline reps live in shoot (skaters) OR netplay (goalie);
-   both fold into the shared third slot on the team board, so a goalie's Net play
-   counts toward the 'all' total and the '🥅 Shoot' third-slot metric without a
-   separate team-wide Net play column (which would be 15 zeros). */
-function thirdOf(p){ return (p.shoot||0)+(p.netplay||0); }
-function scoreOf(p){ return disc==='all' ? (p.stick+thirdOf(p)+p.dryland) : (disc==='shoot' ? thirdOf(p) : p[disc]); }
+/* A player's third-discipline reps live in shoot (skaters) OR netplay (goalie).
+   While Net play is gated coming-soon (NETPLAY_ENABLED false) they FOLD into the
+   shared '🥅 Shoot' third slot so no team-wide Net play column of 15 zeros appears.
+   When Net play is enabled it becomes its OWN '🧤 Net play' tile alongside Shoot
+   (both visible on the shared team board), so shoot stops absorbing netplay. The
+   'all' total always includes every discipline either way. */
+function netEnabled(){ return !!window.NETPLAY_ENABLED; }
+function thirdOf(p){ return netEnabled() ? (p.shoot||0) : (p.shoot||0)+(p.netplay||0); }
+function scoreOf(p){
+  if(disc==='all') return (p.stick||0)+(p.shoot||0)+(p.netplay||0)+(p.dryland||0)+(p.pass||0);
+  if(disc==='shoot') return thirdOf(p);
+  return p[disc]||0;
+}
 function render(){
   var rows=rowsFor().map(function(p){ return {n:p.n, s:scoreOf(p)}; });
   rows.sort(function(a,b){ return b.s-a.s || a.n.localeCompare(b.n); });
@@ -3521,10 +3544,10 @@ function render(){
   board.querySelectorAll('.row[data-player]').forEach(function(rw){
     rw.addEventListener('click',function(){ if(window.openPlayerPage) window.openPlayerPage(rw.getAttribute('data-player')); });
   });
-  var t={stick:0,shoot:0,dryland:0};
-  DATA[tf]; var _src=rowsFor(); _src.forEach(function(p){ t.stick+=p.stick; t.shoot+=thirdOf(p); t.dryland+=p.dryland; });
-  t.all=t.stick+t.shoot+t.dryland;
-  ['all','stick','shoot','dryland'].forEach(function(k){
+  var t={stick:0,shoot:0,dryland:0,pass:0,netplay:0};
+  var _src=rowsFor(); _src.forEach(function(p){ t.stick+=(p.stick||0); t.shoot+=thirdOf(p); t.dryland+=(p.dryland||0); t.pass+=(p.pass||0); t.netplay+=(p.netplay||0); });
+  t.all=t.stick+(t.shoot)+t.dryland+t.pass+(netEnabled()?t.netplay:0);
+  ['all','stick','shoot','dryland','pass','netplay'].forEach(function(k){
     var el=document.querySelector(".metric-num[data-total='"+k+"']"); if(el)countUp(el,t[k]);
   });
   /* Team goal block: This week has a target + bar; All time is a running total with no ceiling. */
@@ -3549,7 +3572,7 @@ function render(){
       if(info)info.style.display='none';
     }
   }
-  var discLabel={all:'all training',stick:'🏒 Hands',shoot:'🥅 Shoot',dryland:'⚡ Dryland'}[disc];
+  var discLabel={all:'all training',stick:'🏒 Hands',shoot:'🥅 Shoot',dryland:'⚡ Dryland',pass:'🎯 Passing',netplay:'🧤 Net play'}[disc];
   if(scope)scope.textContent=(disc==='all')?'Everyone, all training':('Just '+discLabel);
 }
 /* team streak: only shows when >= 3 days (temporal reward). Demo value until Phase 4. */
@@ -3559,6 +3582,16 @@ function render(){
   info.addEventListener('click',function(e){e.stopPropagation();info.classList.toggle('open');});
   document.addEventListener('click',function(){info.classList.remove('open');});
   document.addEventListener('keydown',function(e){if(e.key==='Escape')info.classList.remove('open');});
+})();
+/* Reveal a discipline's metric tile only once its content/flag is live, so the
+   shared board never shows a column of all-zeros for a not-yet-launched skill.
+   Passing: PASS_DAYS has content. Net play: NETPLAY_ENABLED flipped true. The
+   auto-fit grid re-balances the row automatically as tiles appear. */
+(function(){
+  var mp=document.getElementById('metricPass');
+  if(mp && Array.isArray(window.PASS_DAYS) && window.PASS_DAYS.length) mp.hidden=false;
+  var mn=document.getElementById('metricNetplay');
+  if(mn && window.NETPLAY_ENABLED) mn.hidden=false;
 })();
 document.querySelectorAll('#timeframe .segbtn').forEach(function(b){
   b.addEventListener('click',function(){
@@ -5138,11 +5171,35 @@ window.thwapIsGoalie = function(){
 };
 /* The active third-discipline day-set for the signed-in player: NETPLAY_DAYS for
    a goalie (when present), else SHOOT_DAYS. */
-function thirdDays(){ return (window.thwapIsGoalie() && Array.isArray(window.NETPLAY_DAYS)) ? window.NETPLAY_DAYS : SHOOT_DAYS; }
+/* Net play gate: the off-ice goalie drills in NETPLAY_DAYS are agent-authored
+   placeholder fundamentals, NOT content Woody has vetted, and have no videos.
+   Per the no-invented-training-content rule, keep Net play "coming soon" (no
+   markable drills, no stats accrue) until real goalie drills land -- exactly the
+   Passing pattern (PASS_DAYS empty). Flip to true and the drills + stats light up
+   with no rebuild. */
+var NETPLAY_ENABLED=window.NETPLAY_ENABLED=false;
+var NETPLAY_LAUNCH='soon';
+function netplayLive(){ return window.NETPLAY_ENABLED && Array.isArray(window.NETPLAY_DAYS) && window.NETPLAY_DAYS.length; }
+function thirdDays(){ return (window.thwapIsGoalie() && netplayLive()) ? window.NETPLAY_DAYS : SHOOT_DAYS; }
 function render(){
   var list=document.getElementById('shootList'); if(!list)return;
+  var goalie=window.thwapIsGoalie();
+  /* Goalie + Net play not yet enabled: show the coming-soon state, no drills, no
+     stats -- same shape as the Passing shell. */
+  if(goalie && !netplayLive()){
+    var h=document.querySelector('#shoot h1');
+    if(h){ for(var hn=h.firstChild;hn;hn=hn.nextSibling){ if(hn.nodeType===3 && /\S/.test(hn.nodeValue)){ hn.nodeValue=' Net play'; break; } } }
+    var blurb=document.querySelector('#shoot p'); if(blurb) blurb.textContent='Stance, angles, and stopping pucks.';
+    var navH=document.querySelector('.nav-shoot h2'); if(navH) navH.textContent='Net play';
+    var navP=document.querySelector('.nav-shoot p'); if(navP) navP.textContent='Goalie training, coming soon';
+    var shOptG=document.getElementById('shootOptional'); if(shOptG) shOptG.hidden=true;
+    list.innerHTML="<div class='soon-empty'>"+
+      "<h3>Net play drills are coming "+NETPLAY_LAUNCH+"</h3>"+
+      "<p>Off-ice goalie training you can do at home with a tennis ball and floor tape: stance, butterfly, footwork, reaction and tracking. Real drills drop right here soon. Until then, keep stacking days in Hands and Dryland.</p>"+
+    "</div>";
+    return;
+  }
   var DAYS=thirdDays();
-  var goalie=window.thwapIsGoalie() && Array.isArray(window.NETPLAY_DAYS);
   SHOOT=DAYS[shootDayI()%DAYS.length];   /* re-pick today's set on each render */
   /* Show 2 fewer drills per day so the session is less intense (keep at least 1). */
   SHOOT=SHOOT.slice(0, Math.max(1, SHOOT.length-2));
