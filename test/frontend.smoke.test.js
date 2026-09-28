@@ -33,7 +33,7 @@ describe('index.html structure', () => {
     const open = (html.match(/<section id=/g) || []).length;
     const close = (html.match(/<\/section>/g) || []).length;
     expect(open).toBe(close);
-    expect(open).toBe(11); // #addplayer is now a .sheet side panel, not a page section
+    expect(open).toBe(12); // + #pass (Passing shell); #addplayer is a .sheet side panel, not a page section
   });
 
   it('#home is the last section (required for :target hash nav)', () => {
@@ -172,7 +172,7 @@ describe('Drill videos on all three disciplines', () => {
     // was removed. The render call sites stay (videoBlock(dr) is still called in the
     // three tile strings), but videoBlock/ytEmbed now return "" so no link renders.
     const callSites = (html.match(/\+(?:window\.)?videoBlock\(dr\)(?:\+(?:window\.)?audioBlock\(dr\))?\+steps/g) || []).length;
-    expect(callSites).toBe(3);
+    expect(callSites).toBe(4); // stick, shoot, dryland + pass (Passing shell)
     expect(html).toMatch(/window\.ytid=ytid; window\.videoBlock=videoBlock;/);
     // No "Watch how" button is produced by either video renderer.
     expect(/function videoBlock\(dr\)\{[\s\S]{0,320}?return "";[\s\S]{0,10}?\}/.test(html)).toBe(true);
