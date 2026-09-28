@@ -265,7 +265,6 @@ body.login-locked .topbar{position:relative;z-index:120}
 /* Two-line "do" summary: lead sentence + flat colored discipline names (NOT tappable-looking). */
 .dolead{font-size:16px;color:var(--text);font-weight:800;line-height:1.25}
 .dolead.alldone{color:var(--green2)}
-.dodur{font-weight:600;color:var(--muted)}
 .discline{margin-top:7px;font-size:15px;font-weight:800;line-height:1.4;display:flex;gap:16px;flex-wrap:wrap}
 .disc{white-space:nowrap}
 .disc .demo{font-weight:400}
@@ -4861,7 +4860,7 @@ function fill(){
         lead.innerHTML="All 3 done "+todayLow+" 🎉";
       } else if(left.length===defs.length){
         lead.className='dolead';
-        lead.innerHTML=todayCap+"'s training <span class='dodur'>(about 30 mins)</span>:";
+        lead.innerHTML=todayCap+"'s training:";
       } else {
         lead.className='dolead';
         lead.innerHTML=left.length+" left "+todayLow+": "+left.map(function(d){return d.label;}).join(' and ');

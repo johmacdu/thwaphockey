@@ -37,8 +37,7 @@ describe('Home hero do-summary', () => {
     expect(reveal).toBeTruthy();
     expect(reveal.textContent.startsWith('Today')).toBe(true);   // the tappable word
     expect(reveal.querySelector('.todaydate').textContent).toBe('Monday, September 28');
-    expect(lead.innerHTML).toContain("'s training");             // possessive completes the label
-    expect(lead.innerHTML).toContain('about 30 mins');
+    expect(lead.innerHTML).toContain("'s training:");            // calm label, no duration, ends with the colon that introduces the list
   });
 
   it('marks finished disciplines done and reports what is left', () => {
