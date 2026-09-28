@@ -263,13 +263,12 @@ body.login-locked .topbar{position:relative;z-index:120}
 .dowrap{min-width:0;flex:1 1 100%}
 .forline{font-size:15px;color:var(--muted);font-weight:600}
 .fordur{display:block;font-size:15px;color:var(--muted);font-weight:600}
-/* Two-line "do" summary: lead sentence + flat colored discipline names (NOT tappable-looking). */
-.dolead{font-size:16px;color:var(--text);font-weight:800;line-height:1.25}
+/* One-sentence "do" summary: label + inline colored discipline names (NOT tappable-looking). */
+.dolead{font-size:16px;color:var(--text);font-weight:800;line-height:1.5;letter-spacing:.01em;word-spacing:.06em}
 .dolead.alldone{color:var(--green2)}
-.discline{margin-top:7px;font-size:15px;font-weight:800;line-height:1.6}
-.disc{white-space:nowrap;display:inline;margin-right:12px}
-.disc:last-child{margin-right:0}
-.disc .demo{font-weight:400}
+.discline{display:none}
+.disc{white-space:nowrap}
+.disc .demo{font-weight:400;margin-left:5px}
 .disc .chk{display:none;font-weight:900}
 .disc.done{opacity:.5}
 .disc.done .chk{display:inline}
@@ -4872,13 +4871,17 @@ function fill(){
   function isDone(disc){ try{ return localStorage.getItem('thwapDone|'+today2()+'|'+disc)==='1'; }catch(e){ return false; } }
   var DEFS=[{k:'stick',label:'Hands',emo:'🏒',cls:'disc-stick'},{k:'shoot',label:'Shooting',emo:'🥅',cls:'disc-shoot'},{k:'dryland',label:'Dryland',emo:'⚡',cls:'disc-dryland'}];
   var defs=weekend?DEFS.slice(0,2):DEFS;   /* dryland rests on weekends */
-  /* Build the flat, non-tappable discipline line. */
-  if(line){
-    line.innerHTML=defs.map(function(d){
-      var done=isDone(d.k)?' done':'';
-      return "<span class='disc "+d.cls+done+"'><span class='demo'>"+d.emo+"</span> "+d.label+" <span class='chk'>✓</span></span>";
-    }).join(" ");
+  /* Render one colored, non-tappable discipline chunk (emoji + name). */
+  function discSpan(d){
+    var done=isDone(d.k)?' done':'';
+    return "<span class='disc "+d.cls+done+"'><span class='demo'>"+d.emo+"</span> "+d.label+" <span class='chk'>✓</span></span>";
   }
+  /* Comma-join a list of defs, with "and" before the last when there is more than one. */
+  function discSentenceList(arr){
+    if(arr.length===1) return discSpan(arr[0]);
+    return arr.slice(0,-1).map(discSpan).join(", ")+" and "+discSpan(arr[arr.length-1]);
+  }
+  if(line){ line.innerHTML=""; }   /* disciplines now live inside the sentence in #doLead */
   /* Build the lead line. Open state uses a calm "Today's training:" label; once
      started, the count carries ("N left"), then the celebration. The tappable
      date reveal lives on "Today" (open) or "today" (in-progress). */
@@ -4887,18 +4890,18 @@ function fill(){
   if(lead){
     if(weekend){
       lead.className='dolead';
-      lead.innerHTML="Weekend: bonus skills, no dryland";
+      lead.innerHTML="No training "+todayLow+", bonus skills only.";
     } else {
       var left=defs.filter(function(d){return !isDone(d.k);});
       if(left.length===0){
         lead.className='dolead alldone';
-        lead.innerHTML="All 3 done "+todayLow+" 🎉";
+        lead.innerHTML="All done "+todayLow+". 🎉";
       } else if(left.length===defs.length){
         lead.className='dolead';
-        lead.innerHTML=todayCap+"'s training:";
+        lead.innerHTML=todayCap+"'s training is "+discSentenceList(defs)+".";
       } else {
         lead.className='dolead';
-        lead.innerHTML=left.length+" left "+todayLow+": "+left.map(function(d){return d.label;}).join(' and ');
+        lead.innerHTML="You still have "+discSentenceList(left)+" to do "+todayLow+".";
       }
     }
     /* tap toggles the date tooltip (hover/focus already handle desktop) */
