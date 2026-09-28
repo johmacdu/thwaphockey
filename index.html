@@ -141,6 +141,7 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 .png-cta{display:flex;align-items:center;gap:6px;margin-top:16px;padding-left:64px;font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;font-size:15px;letter-spacing:.005em;color:var(--green)}
 .png-cta .chev{font-family:system-ui,sans-serif;font-size:18px;font-weight:700}
 .png-cta-done{color:var(--muted)}
+.png-cta-soon{color:var(--muted);font-weight:600}
 .png-cta-done::before{content:'\2713';display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--green);color:var(--onaccent);font-size:12px;font-weight:900;margin-right:2px}
 a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient(180deg,var(--panel2),var(--panel));padding:18px;min-height:94px;box-shadow:0 6px 18px var(--shadow)}.ico{width:50px;height:50px;border-radius:16px;background:var(--soft);display:grid;place-items:center;font-size:25px}.nav h2{margin:0;font-size:19px;font-weight:800;letter-spacing:.005em}.nav p{margin:5px 0 0;font-size:16px;color:var(--muted)}.chev{font-size:44px;color:var(--chev)}
 .nav.soon{cursor:default;opacity:.72}.nav.soon:hover{border-color:var(--line);transform:none}
@@ -2665,13 +2666,24 @@ window.addEventListener('hashchange',function(){ if(location.hash===''||location
       if(meta){ var b=[MON[dt.getMonth()]+' '+dt.getDate()]; if(g.time) b.push(ftime(g.time)); if(g.place) b.push(g.place); meta.textContent=b.join(' | '); }
       var days=daysUntil(g.date), cnt=document.getElementById('pngCount'), dn=document.getElementById('pngDays');
       if(cnt&&dn&&days>=0&&days<=14){ dn.textContent=days===0?'today':days; if(days===0) cnt.querySelector('span').textContent=''; cnt.hidden=false; }
+      /* Game-goals prep window: goals should be set at least 2 days before a game.
+         The "set your goals" prompt OPENS 2 days out and stays until set; it never
+         blocks an imminent game (a game closer than 2 days opens the prompt right
+         away). Earlier than that, the card stays a calm preview. Once set, the
+         done-state below wins regardless of the window. */
+      var cta=document.getElementById('pngCta');
+      if(cta&&!set){
+        if(days>2){ cta.textContent='Goals open 2 days before the game'; cta.classList.add('png-cta-soon'); }
+        else if(days>=0){ cta.textContent='Set your game goals'; cta.classList.remove('png-cta-soon'); }
+        else { cta.textContent='How did it go? Log your goals'; cta.classList.remove('png-cta-soon'); }
+      }
     }).catch(function(){});
   /* Coach's team goal (the shared focus) as the card's focus line. */
   fetch('/api/coach?action=team-goal&code='+encodeURIComponent(CODE))
     .then(function(r){ return r.json(); })
     .then(function(j){ if(j&&j.ok&&j.teamGoal&&j.teamGoal.text){ var fg=document.getElementById('pngFocusGoal'), fw=document.getElementById('pngFocus'); if(fg) fg.textContent=j.teamGoal.text; if(fw) fw.hidden=false; } }).catch(function(){});
   var set=false; try{ var picks=JSON.parse(localStorage.getItem('thwapGameGoals')||'[]'); set=Array.isArray(picks)&&picks.length>0; }catch(_){}
-  if(set){ var cta=document.getElementById('pngCta'); if(cta){ cta.textContent='Your game goals are set'; cta.classList.add('png-cta-done'); } }
+  if(set){ var ctaDone=document.getElementById('pngCta'); if(ctaDone){ ctaDone.textContent='Your game goals are set'; ctaDone.classList.add('png-cta-done'); ctaDone.classList.remove('png-cta-soon'); } }
 })();
 /* A coach must never land on #home: it is display:none!important for coaches, so
    landing there shows a blank/stuck page (this is why the Team X looked like it
