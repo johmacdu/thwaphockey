@@ -4869,8 +4869,18 @@ function fill(){
   /* Per-discipline "done today" from the unified signal (thwapDone|<today>|<disc>). */
   function today2(){var t=(window.thwapToday?window.thwapToday():new Date());return t.getFullYear()+'-'+(t.getMonth()+1)+'-'+t.getDate();}
   function isDone(disc){ try{ return localStorage.getItem('thwapDone|'+today2()+'|'+disc)==='1'; }catch(e){ return false; } }
-  var DEFS=[{k:'stick',label:'Hands',emo:'🏒',cls:'disc-stick'},{k:'shoot',label:'Shooting',emo:'🥅',cls:'disc-shoot'},{k:'dryland',label:'Dryland',emo:'⚡',cls:'disc-dryland'}];
-  var defs=weekend?DEFS.slice(0,2):DEFS;   /* dryland rests on weekends */
+  /* A goalie trains Net play as their third discipline instead of Shooting. While
+     Net play is gated coming-soon (NETPLAY_ENABLED false) the goalie has no third
+     discipline to do today, so the line shows only Hands + Dryland; when Net play
+     goes live it joins the sentence. Helpers are defined later in the file, so
+     guard for load-time ordering. */
+  var isGoalie=(window.thwapIsGoalie&&window.thwapIsGoalie());
+  var netLive=(typeof netplayLive==='function')?netplayLive():false;
+  var third=isGoalie
+    ? (netLive?[{k:'netplay',label:'Net play',emo:'🧤',cls:'disc-shoot'}]:[])
+    : [{k:'shoot',label:'Shooting',emo:'🥅',cls:'disc-shoot'}];
+  var DEFS=[{k:'stick',label:'Hands',emo:'🏒',cls:'disc-stick'}].concat(third,[{k:'dryland',label:'Dryland',emo:'⚡',cls:'disc-dryland'}]);
+  var defs=weekend?DEFS.filter(function(d){return d.k!=='dryland';}):DEFS;   /* dryland rests on weekends */
   /* Render one colored, non-tappable discipline chunk (emoji + name). */
   function discSpan(d){
     var done=isDone(d.k)?' done':'';
@@ -4913,6 +4923,7 @@ function fill(){
   /* The weekday+date live only in the inline "today" reveal, never shown twice. */
 }
 fill();
+window.thwapRefreshHero=fill;
 })();
 </script>
 <div class='exthwap' id='exThwap'>THWAP!</div>
@@ -5174,6 +5185,10 @@ window.THWAP_GOALIE_NAMES = window.THWAP_GOALIE_NAMES || ['johnny'];
 window.thwapIsGoalie = function(){
   try{ var p=(localStorage.getItem('bfPlayer')||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,''); return window.THWAP_GOALIE_NAMES.indexOf(p)>=0; }catch(e){ return false; }
 };
+/* The home hero summary (fill()) runs earlier in the file than this helper, so a
+   goalie's first paint would fall back to the skater triad. Repaint the hero now
+   that thwapIsGoalie exists, so a goalie sees the correct discipline line. */
+try{ if(typeof window.thwapRefreshHero==='function') window.thwapRefreshHero(); }catch(e){}
 /* The active third-discipline day-set for the signed-in player: NETPLAY_DAYS for
    a goalie (when present), else SHOOT_DAYS. */
 /* Net play gate: the off-ice goalie drills in NETPLAY_DAYS are agent-authored
