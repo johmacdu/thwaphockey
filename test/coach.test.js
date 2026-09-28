@@ -788,3 +788,69 @@ describe('set-game-position (player-owned, separate from roster position)', () =
     expect(bad.statusCode).toBe(400);
   });
 });
+
+// Any number of guardian emails per player (dad's 2, mom's 2, etc.), and every
+// one on file receives the sign-in code.
+describe('multiple guardian emails per player', () => {
+  it('addPlayer stores the full parentEmails list (+ legacy mirror)', async () => {
+    const token = (await loginSeedCoach()).body.token;
+    const res = makeRes();
+    await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, firstName: 'Emmy', number: 77,
+      parentEmails: ['dad1@x.com', 'dad2@x.com', 'mom1@x.com'] }), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.member.parentEmails).toEqual(['dad1@x.com', 'dad2@x.com', 'mom1@x.com']);
+    const stored = fake.map.get('teamMember:emmy');
+    expect(stored.parentEmails).toEqual(['dad1@x.com', 'dad2@x.com', 'mom1@x.com']);
+    expect(stored.parentEmail).toBe('dad1@x.com');   // first two mirrored for legacy readers
+    expect(stored.parentEmail2).toBe('dad2@x.com');
+  });
+
+  it('rejects an invalid email anywhere in the list', async () => {
+    const token = (await loginSeedCoach()).body.token;
+    const res = makeRes();
+    await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, firstName: 'Emmy', number: 77,
+      parentEmails: ['ok@x.com', 'not-an-email'] }), res);
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('requires at least one email on add', async () => {
+    const token = (await loginSeedCoach()).body.token;
+    const res = makeRes();
+    await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, firstName: 'Emmy', number: 77, parentEmails: [] }), res);
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('admin-update-player replaces the whole list', async () => {
+    const token = (await loginSeedCoach()).body.token;
+    await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, firstName: 'Emmy', number: 77, parentEmail: 'old@x.com' }), makeRes());
+    const res = makeRes();
+    await _handlers.adminUpdatePlayer(post({ playerId: 'emmy', parentEmails: ['a@x.com', 'b@x.com', 'c@x.com', 'd@x.com'] }, { key: 'admin-test-token' }), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.member.parentEmails).toEqual(['a@x.com', 'b@x.com', 'c@x.com', 'd@x.com']);
+  });
+
+  it('a legacy two-field update replaces the first two but KEEPS the extras', async () => {
+    const token = (await loginSeedCoach()).body.token;
+    await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, firstName: 'Emmy', number: 77, parentEmails: ['a@x.com', 'b@x.com', 'c@x.com'] }), makeRes());
+    const res = makeRes();
+    await _handlers.updatePlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, playerId: 'emmy', parentEmail: 'a@x.com', parentEmail2: 'newmom@x.com' }), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.member.parentEmails).toEqual(['a@x.com', 'newmom@x.com', 'c@x.com']);
+  });
+
+  it('request-code emails EVERY guardian on file', async () => {
+    process.env.RESEND_API_KEY = 'rk_test';
+    process.env.PHOTO_FROM_EMAIL = 'thwap@example.com';
+    global.fetch = vi.fn(async () => ({ ok: true, status: 200, json: async () => ({}) }));
+    const token = (await loginSeedCoach()).body.token;
+    await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, firstName: 'Emmy', number: 77, parentEmails: ['a@x.com', 'b@x.com', 'c@x.com'] }), makeRes());
+    const res = makeRes();
+    await _handlers.requestCode(post({ code: _seed.SEED_TEAM_CODE, playerId: 'emmy' }), res);
+    expect(res.statusCode).toBe(200);
+    const recipients = global.fetch.mock.calls
+      .filter((c) => String(c[0]).includes('resend'))
+      .map((c) => JSON.parse(c[1].body).to[0])
+      .sort();
+    expect(recipients).toEqual(['a@x.com', 'b@x.com', 'c@x.com']);
+  });
+});

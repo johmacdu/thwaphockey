@@ -35,13 +35,47 @@ import {
   getTeamPlan, setTeamPlan,
   getTeamGoal, setTeamGoal,
   addDrillSuggestion, listDrillSuggestions, setSuggestionStatus, listAllTeamCodes,
-  updateMember, createResetToken, consumeResetToken,
+  updateMember, parentEmailList, createResetToken, consumeResetToken,
   getAdmin, setAdmin, ensureTeamIndexed,
   listTeamCoaches, ensureHeadCoach, addAssistantCoach, removeAssistantCoach, MAX_ASSISTANTS,
 } from '../lib/teams_store.js';
 import { ensureSchedule, getSchedule, addEvent as addScheduleEvent, nextEvent } from '../lib/schedule_store.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Validate + normalize an incoming guardian-email list (any number of emails).
+// Empty entries are dropped; each remaining one must look like an email. Returns
+// { emails: [...] } or { error } when one is malformed. `undefined` in ->
+// `undefined` out (the caller did not touch the emails).
+function normalizeParentEmails(input) {
+  if (input === undefined) return { emails: undefined };
+  const arr = Array.isArray(input) ? input : [input];
+  const seen = new Set();
+  const out = [];
+  for (const raw of arr) {
+    const e = String(raw || '').trim().toLowerCase();
+    if (!e) continue;
+    if (!EMAIL_RE.test(e)) return { error: 'a parent email is invalid' };
+    if (!seen.has(e)) { seen.add(e); out.push(e); }
+  }
+  return { emails: out };
+}
+
+// Resolve the guardian-email update fields for an edit action: prefer the
+// flexible `parentEmails` array; otherwise validate and pass the legacy pair
+// (updateMember replaces the first two but keeps any extra emails on file, so an
+// old two-field caller never drops the rest). Returns { fields } or { error }.
+function parentEmailFields(parentEmails, parentEmail, parentEmail2) {
+  const pe = normalizeParentEmails(parentEmails);
+  if (pe.error) return { error: pe.error };
+  if (pe.emails !== undefined) return { fields: { parentEmails: pe.emails } };
+  for (const e of [parentEmail, parentEmail2]) {
+    if (e !== undefined && String(e || '').trim() && !EMAIL_RE.test(String(e).trim().toLowerCase())) {
+      return { error: 'a parent email is invalid' };
+    }
+  }
+  return { fields: { parentEmail, parentEmail2 } };
+}
 
 // --- seed (Jr Rangers 10U) --------------------------------------------------
 // One known team for this phase. jason@riversidepayments.com / ranger10u, whose
@@ -241,14 +275,16 @@ async function createTeam(req, res) {
 async function addPlayer(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
   const coach = await requireCoach(req, res); if (!coach) return;
-  const { code, firstName, lastName, number, position, parentEmail, parentEmail2, photo } = parseBody(req);
+  const { code, firstName, lastName, number, position, parentEmail, parentEmail2, parentEmails, photo } = parseBody(req);
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
   if (!String(firstName || '').trim()) return res.status(400).json({ error: 'first name required' });
-  if (!EMAIL_RE.test(String(parentEmail || '').trim().toLowerCase())) return res.status(400).json({ error: 'a parent email is required' });
-  if (String(parentEmail2 || '').trim() && !EMAIL_RE.test(String(parentEmail2).trim().toLowerCase())) return res.status(400).json({ error: 'second parent email is invalid' });
+  // Accept the flexible list; fall back to the legacy two fields.
+  const pe = normalizeParentEmails(parentEmails !== undefined ? parentEmails : [parentEmail, parentEmail2]);
+  if (pe.error) return res.status(400).json({ error: pe.error });
+  if (!pe.emails.length) return res.status(400).json({ error: 'a parent email is required' });
   // id = lowercase first name (same id space as player:<id>).
   const playerId = String(firstName).trim().toLowerCase();
-  const rec = await addMember(code, { playerId, firstName, lastName, number, position, parentEmail, parentEmail2, photo, status: 'active' });
+  const rec = await addMember(code, { playerId, firstName, lastName, number, position, parentEmails: pe.emails, photo, status: 'active' });
   return res.status(200).json({ ok: true, member: rec });
 }
 
@@ -265,18 +301,14 @@ async function removePlayer(req, res) {
 async function updatePlayer(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
   const coach = await requireCoach(req, res); if (!coach) return;
-  const { code, playerId, firstName, lastName, number, position, photo, parentEmail, parentEmail2 } = parseBody(req);
+  const { code, playerId, firstName, lastName, number, position, photo, parentEmail, parentEmail2, parentEmails } = parseBody(req);
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
   if (firstName !== undefined && !String(firstName || '').trim()) {
     return res.status(400).json({ error: 'first name cannot be empty' });
   }
-  if (parentEmail !== undefined && String(parentEmail || '').trim() && !EMAIL_RE.test(String(parentEmail).trim().toLowerCase())) {
-    return res.status(400).json({ error: 'parent email is invalid' });
-  }
-  if (parentEmail2 !== undefined && String(parentEmail2 || '').trim() && !EMAIL_RE.test(String(parentEmail2).trim().toLowerCase())) {
-    return res.status(400).json({ error: 'second parent email is invalid' });
-  }
-  const rec = await updateMember(playerId, { firstName, lastName, number, position, photo, parentEmail, parentEmail2 });
+  const emailFields = parentEmailFields(parentEmails, parentEmail, parentEmail2);
+  if (emailFields.error) return res.status(400).json({ error: emailFields.error });
+  const rec = await updateMember(playerId, { firstName, lastName, number, position, photo, ...emailFields.fields });
   if (!rec) return res.status(404).json({ error: 'unknown player' });
   return res.status(200).json({ ok: true, member: rec });
 }
@@ -289,7 +321,7 @@ async function updatePlayer(req, res) {
 //   game-day position separately via set-game-position).
 async function selfUpdatePlayer(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
-  const { code, playerId, playerCode, firstName, lastName, number, parentEmail, parentEmail2 } = parseBody(req);
+  const { code, playerId, playerCode, firstName, lastName, number, parentEmail, parentEmail2, parentEmails } = parseBody(req);
   res.setHeader('Cache-Control', 'no-store');
   const pid = String(playerId || '').toLowerCase();
   if (!pid) return res.status(400).json({ error: 'playerId required' });
@@ -306,13 +338,9 @@ async function selfUpdatePlayer(req, res) {
   if (firstName !== undefined && !String(firstName || '').trim()) {
     return res.status(400).json({ error: 'first name cannot be empty' });
   }
-  if (parentEmail !== undefined && String(parentEmail || '').trim() && !EMAIL_RE.test(String(parentEmail).trim().toLowerCase())) {
-    return res.status(400).json({ error: 'parent email is invalid' });
-  }
-  if (parentEmail2 !== undefined && String(parentEmail2 || '').trim() && !EMAIL_RE.test(String(parentEmail2).trim().toLowerCase())) {
-    return res.status(400).json({ error: 'second parent email is invalid' });
-  }
-  const rec = await updateMember(pid, { firstName, lastName, number, parentEmail, parentEmail2 });
+  const emailFields = parentEmailFields(parentEmails, parentEmail, parentEmail2);
+  if (emailFields.error) return res.status(400).json({ error: emailFields.error });
+  const rec = await updateMember(pid, { firstName, lastName, number, ...emailFields.fields });
   if (!rec) return res.status(404).json({ error: 'unknown player' });
   return res.status(200).json({ ok: true, member: rec });
 }
@@ -329,7 +357,7 @@ async function adminRoster(req, res) {
     const ids = await listMembers(code);
     for (const pid of ids) {
       const m = await getMember(pid);
-      if (m) out.push({ ...m, id: pid, name: [m.firstName, m.lastName].filter(Boolean).join(' ') || m.firstName || pid, teamCode: code, teamName: (team && team.name) || code });
+      if (m) out.push({ ...m, id: pid, parentEmails: parentEmailList(m), name: [m.firstName, m.lastName].filter(Boolean).join(' ') || m.firstName || pid, teamCode: code, teamName: (team && team.name) || code });
     }
   }
   out.sort((a, b) => String(a.teamName || '').localeCompare(String(b.teamName || '')) || Number(a.number || 0) - Number(b.number || 0));
@@ -342,18 +370,14 @@ async function adminRoster(req, res) {
 async function adminUpdatePlayer(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
   if (!(await requireAdmin(req, res))) return;
-  const { playerId, firstName, lastName, number, position, parentEmail, parentEmail2 } = parseBody(req);
+  const { playerId, firstName, lastName, number, position, parentEmail, parentEmail2, parentEmails } = parseBody(req);
   if (!(await getMember(playerId))) return res.status(404).json({ error: 'unknown player' });
   if (firstName !== undefined && !String(firstName || '').trim()) {
     return res.status(400).json({ error: 'first name cannot be empty' });
   }
-  if (parentEmail !== undefined && String(parentEmail || '').trim() && !EMAIL_RE.test(String(parentEmail).trim().toLowerCase())) {
-    return res.status(400).json({ error: 'parent email is invalid' });
-  }
-  if (parentEmail2 !== undefined && String(parentEmail2 || '').trim() && !EMAIL_RE.test(String(parentEmail2).trim().toLowerCase())) {
-    return res.status(400).json({ error: 'second parent email is invalid' });
-  }
-  const rec = await updateMember(playerId, { firstName, lastName, number, position, parentEmail, parentEmail2 });
+  const emailFields = parentEmailFields(parentEmails, parentEmail, parentEmail2);
+  if (emailFields.error) return res.status(400).json({ error: emailFields.error });
+  const rec = await updateMember(playerId, { firstName, lastName, number, position, ...emailFields.fields });
   if (!rec) return res.status(404).json({ error: 'unknown player' });
   return res.status(200).json({ ok: true, member: rec });
 }
@@ -489,13 +513,9 @@ async function requestCode(req, res) {
       `The player code for ${name} is the jersey number followed by the season year.\n\n` +
       `For jersey #${m.number}: ${m.number}2026 or ${m.number}2027.\n\n` +
       `Use it to sign in on Thwap Hockey. If you did not ask for this, you can ignore this email.`;
-    const seen = {};
-    [m.parentEmail, m.parentEmail2].forEach((e) => {
-      const clean = String(e || '').trim().toLowerCase();
-      if (clean && EMAIL_RE.test(clean) && !seen[clean]) { seen[clean] = 1; }
-    });
-    for (const clean of Object.keys(seen)) {
-      await sendMail(clean, subject, text);
+    // Send the code to EVERY guardian email on file (any number of them).
+    for (const clean of parentEmailList(m)) {
+      if (EMAIL_RE.test(clean)) await sendMail(clean, subject, text);
     }
   }
   return res.status(200).json({ ok: true });

@@ -48,6 +48,13 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
 .pfields label{display:flex;flex-direction:column;gap:3px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;color:var(--muted)}
 .pfields input,.pfields select{padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:14px;background:var(--panel);color:var(--text);text-transform:none;font-weight:500}
 .pfields .full{grid-column:1 / -1}
+.email-list{grid-column:1 / -1;display:flex;flex-direction:column;gap:6px}
+.email-lab{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;color:var(--muted)}
+.email-row{display:flex;align-items:center;gap:6px}
+.email-row input{flex:1;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:14px;background:var(--panel);color:var(--text);font-weight:500}
+.email-del{flex:none;width:32px;height:32px;border-radius:8px;border:1px solid var(--line2);background:transparent;color:var(--muted);font-size:18px;line-height:1;cursor:pointer}
+.email-del:hover{border-color:var(--line2);color:var(--text)}
+.email-add{align-self:flex-start;margin-top:2px;font:inherit;font-size:13px;font-weight:800;border-radius:10px;padding:6px 12px;cursor:pointer;border:1px dashed var(--line2);background:transparent;color:var(--text)}
 .pbtns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 .pbtns button{font:inherit;font-size:13px;font-weight:800;border-radius:10px;padding:8px 14px;cursor:pointer;border:1px solid var(--line2);background:transparent;color:var(--text)}
 .pbtns .save{background:var(--lime);color:var(--ink);border-color:transparent}
@@ -207,6 +214,22 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
     return {'FORWARD':'F','DEFENSE':'D','GOALIE':'G','FORWARD & DEFENSE':'FD','FORWARD/DEFENSE':'FD','DEFENSE & FORWARD':'FD'}[up]||'';
   }
   var CONSENT=[['','How was consent given?'],['text','Text message'],['in_person','In person'],['written','Written / signed'],['email','Email']];
+  // Flexible guardian-email list: any number of emails per player. Every one on
+  // file receives the player's sign-in code.
+  function emailRow(val){
+    return "<div class='email-row'><input class='f-pe' type='email' placeholder='parent@email.com' value='"+esc(val||'')+"'>"+
+      "<button type='button' class='email-del' aria-label='Remove email'>&times;</button></div>";
+  }
+  function emailListHTML(p){
+    var arr=(Array.isArray(p.parentEmails)?p.parentEmails:[p.parentEmail,p.parentEmail2])
+      .filter(function(e){ return e && String(e).trim(); });
+    if(!arr.length) arr=[''];
+    return "<div class='full email-list'>"+
+      "<div class='email-lab'>Parent / guardian emails</div>"+
+      arr.map(emailRow).join('')+
+      "<button type='button' class='email-add'>+ Add another email</button>"+
+    "</div>";
+  }
   function loadRoster(){
     rmsg.textContent='Loading roster...'; rmsg.className='msg';
     fetch('/api/coach?action=admin-roster&'+tokenQS())
@@ -233,8 +256,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
           "<label>Last<input class='f-last' value='"+esc(p.lastName||'')+"'></label>"+
           "<label>Number<input class='f-num' value='"+esc(p.number||'')+"'></label>"+
           "<label>Position<select class='f-pos'>"+posOpts+"</select></label>"+
-          "<label class='full'>Parent email (dad)<input class='f-pe' value='"+esc(p.parentEmail||'')+"'></label>"+
-          "<label class='full'>Parent email (mom)<input class='f-pe2' value='"+esc(p.parentEmail2||'')+"'></label>"+
+          emailListHTML(p)+
         "</div>"+
         "<div class='pbtns'>"+
           "<button class='save'>Save details</button>"+
@@ -257,18 +279,34 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
       card.querySelector('.save').addEventListener('click',function(){ savePlayer(card); });
       card.querySelector('.addphoto').addEventListener('click',function(){ card.querySelector('.consent').classList.toggle('open'); });
       card.querySelector('.c-upload').addEventListener('click',function(){ uploadPhoto(card); });
+      // Guardian-email list: add and remove rows.
+      var list=card.querySelector('.email-list');
+      if(list){
+        list.querySelector('.email-add').addEventListener('click',function(){
+          this.insertAdjacentHTML('beforebegin', emailRow(''));
+          var rows=list.querySelectorAll('.email-row');
+          var last=rows[rows.length-1]; if(last){ last.querySelector('input').focus(); }
+        });
+        list.addEventListener('click',function(e){
+          var del=e.target.closest && e.target.closest('.email-del'); if(!del) return;
+          var rows=list.querySelectorAll('.email-row');
+          if(rows.length>1){ del.closest('.email-row').remove(); }
+          else { del.closest('.email-row').querySelector('input').value=''; }  /* keep one empty row */
+        });
+      }
     });
   }
   function flash(card){ var s=card.querySelector('.psaved'); s.hidden=false; setTimeout(function(){ s.hidden=true; },1800); }
   function savePlayer(card){
     var id=card.getAttribute('data-id');
+    var emails=Array.prototype.map.call(card.querySelectorAll('.email-list .f-pe'),
+      function(inp){ return inp.value.trim(); }).filter(Boolean);
     var body={ playerId:id,
       firstName:card.querySelector('.f-first').value.trim(),
       lastName:card.querySelector('.f-last').value.trim(),
       number:card.querySelector('.f-num').value.trim(),
       position:card.querySelector('.f-pos').value,
-      parentEmail:card.querySelector('.f-pe').value.trim(),
-      parentEmail2:card.querySelector('.f-pe2').value.trim() };
+      parentEmails:emails };
     fetch('/api/coach?action=admin-update-player&'+tokenQS(),
       {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
       .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
