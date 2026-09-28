@@ -30,12 +30,15 @@ describe('Home hero do-summary', () => {
     expect(line.querySelector('button')).toBeNull();
   });
 
-  it('lead line shows the remaining count and an inline tappable "today" that reveals the date', () => {
+  it('lead line shows a calm "Today\'s training" label when nothing is done, with an inline tappable "Today" that reveals the date', () => {
     const none = render(false, []);
-    expect(none.getElementById('doLead').textContent).toContain('Do all 3');
+    const lead = none.getElementById('doLead');
     const reveal = none.getElementById('todayReveal');
     expect(reveal).toBeTruthy();
+    expect(reveal.textContent.startsWith('Today')).toBe(true);   // the tappable word
     expect(reveal.querySelector('.todaydate').textContent).toBe('Monday, September 28');
+    expect(lead.innerHTML).toContain("'s training");             // possessive completes the label
+    expect(lead.innerHTML).toContain('about 30 mins');
   });
 
   it('marks finished disciplines done and reports what is left', () => {
