@@ -172,6 +172,7 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .exrow:active{transform:scale(.995)}
 .exhead{display:grid;grid-template-columns:56px 1fr auto;gap:14px;align-items:center;padding:18px 16px;cursor:pointer;min-height:72px}
 .exhead .exem{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font-size:30px;line-height:1;background:color-mix(in srgb,var(--exacc) 22%,transparent)}
+.exhead .exem .exicon{width:46px;height:46px;object-fit:contain;display:block}
 .exhead h3{margin:0;font-size:22px;font-weight:800;letter-spacing:.005em}
 .exhead .exdose{font-size:12px;color:var(--muted);margin-top:4px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
 .exhead .exchev{font-size:44px;color:var(--chev);transition:transform .15s ease}
@@ -768,6 +769,7 @@ body.roster-selfediting #roster-grid .pcard.pcard-you-card::after{content:'\270E
 .dpk-row.picked{border-color:var(--lime);box-shadow:0 0 0 1px var(--lime) inset}
 .dpk-main{display:flex;align-items:center;gap:14px;width:100%;min-height:64px;padding:16px;background:none;border:0;font-family:inherit;text-align:left;color:inherit;cursor:pointer}
 .dpk-emoji{font-size:30px;flex:none}
+.dpk-emoji .exicon{width:30px;height:30px;object-fit:contain;display:block}
 .dpk-nm{flex:1 1 auto;font-weight:800;font-size:18px;line-height:1.25;color:var(--text)}
 .dpk-check{flex:none;width:32px;height:32px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-weight:900;font-size:16px;color:transparent}
 .dpk-row.picked .dpk-check{background:var(--lime);border-color:transparent;color:var(--ink)}
@@ -2457,7 +2459,7 @@ window.thwapActiveTeam=function(coach){
       row.className='dpk-row'+(on?' picked':'');
       var steps=(dr.steps&&dr.steps.length)?('<ol>'+dr.steps.map(function(s){return '<li>'+esc(s)+'</li>';}).join('')+'</ol>'):'';
       row.innerHTML=
-        '<button type="button" class="dpk-main"><span class="dpk-emoji">'+(dr.emoji||'🏒')+'</span>'+
+        '<button type="button" class="dpk-main"><span class="dpk-emoji">'+drIcon(dr)+'</span>'+
           '<span class="dpk-nm">'+esc(dr.name)+'</span><span class="dpk-check">&#10003;</span></button>'+
         '<button type="button" class="dpk-how"><span class="dpk-how-chev">&rsaquo;</span> How-to</button>'+
         '<div class="dpk-body">'+ytEmbed(dr.video,dr.name)+(dr.cue?'<p>'+esc(dr.cue)+'</p>':'')+steps+'</div>';
@@ -2831,7 +2833,7 @@ var MOVE={
     steps:['Balance: Stand on one leg with a soft bend in that knee.','Tip: Bend at the hips. Reach toward the floor as your back leg lifts behind you.','Stay level: Keep your back flat and hips level, like a seesaw tipping.','Stand up: Squeeze the standing leg to stand back up tall. Do all reps, then switch legs.']},
   wallsit:{emoji:'🪑', cue:'Sit against the wall. No chair allowed.', video:'https://www.youtube.com/watch?v=M5MKJ4T4e2k', audio:'dry_07',
     steps:['Back flat: Put your back flat against a wall and walk your feet out.','Slide down: Slide down until your knees make an L shape, like sitting in a chair.','Hold: Keep your back flat on the wall. Weight in your heels.','Breathe: Hold for the time. Breathe steady. Then stand up and shake it out.']},
-  situps:{emoji:'💪', cue:'Curl up with your belly, not your neck.', video:'https://www.youtube.com/watch?v=sYszIZLOrDc', audio:'dry_08',
+  situps:{emoji:'💪', icon:'login/icon-situp.webp', cue:'Curl up with your belly, not your neck.', video:'https://www.youtube.com/watch?v=sYszIZLOrDc', audio:'dry_08',
     steps:['Down: Lie on your back, knees bent, feet flat on the floor.','Arms: Cross your arms or reach your hands toward your knees.','Curl: Curl up slowly using your belly, not your neck.','Lower: Lower back down with control. Breathe out on the way up.']},
   plank:{emoji:'🪵', cue:'Hold a strong plank. Tap the opposite shoulder. Don\'t rock.', video:'https://www.youtube.com/watch?v=3aLPIhE4AiY', audio:'dry_09',
     steps:['Set up: Get on your hands and toes, arms straight, body in one straight line.','Stay strong: Squeeze your belly so your hips don\'t sag or twist.','Tap across: Lift one hand and tap the opposite shoulder. Put it back down.','Switch hands: Tap the other way. Keep going, slow and steady. Try not to rock your hips.']},
@@ -2854,7 +2856,11 @@ var MOVE={
 /* Category per movement, used to build a balanced daily block. */
 var CAT={will:'Agility', skater:'Power',broad:'Power',box:'Power', stairs:'Speed',sprint:'Speed',reaction:'Speed', lunge:'Strength',rdl:'Strength',wallsit:'Strength',splitsquat:'Strength',calf:'Strength', situps:'Core',plank:'Core',deadbug:'Core',mcdavid:'Core'};
 /* d(key, dose) builds a drill from the shared MOVE library plus this workout's reps. */
-function d(k,dose,nameOverride){var m=MOVE[k];return {key:k, cat:CAT[k]||'', emoji:m.emoji, name:nameOverride||({will:"Will's Squares (4-sq Drill)",skater:'Skater Jumps',broad:'Broad Jumps',box:'Box Jumps',lunge:'Reverse Lunges',rdl:'Single-Leg RDL',wallsit:'Wall Sit',situps:'Sit-ups',plank:'Plank with Shoulder Taps',stairs:'Stair Sprints',sprint:'Sprint Starts',reaction:'Reaction Start',splitsquat:'Split Squat Hold',calf:'Calf Raises',deadbug:'Dead Bugs',mcdavid:"McDavid's"}[k]), dose:dose, cue:m.cue, video:m.video||'', audio:m.audio||'', steps:m.steps};}
+function d(k,dose,nameOverride){var m=MOVE[k];return {key:k, cat:CAT[k]||'', emoji:m.emoji, icon:m.icon||'', name:nameOverride||({will:"Will's Squares (4-sq Drill)",skater:'Skater Jumps',broad:'Broad Jumps',box:'Box Jumps',lunge:'Reverse Lunges',rdl:'Single-Leg RDL',wallsit:'Wall Sit',situps:'Sit-ups',plank:'Plank with Shoulder Taps',stairs:'Stair Sprints',sprint:'Sprint Starts',reaction:'Reaction Start',splitsquat:'Split Squat Hold',calf:'Calf Raises',deadbug:'Dead Bugs',mcdavid:"McDavid's"}[k]), dose:dose, cue:m.cue, video:m.video||'', audio:m.audio||'', steps:m.steps};}
+/* A drill shows its custom illustrated icon when it has one (dr.icon), otherwise
+   its emoji. Rendered into innerHTML at both the picker row and the drill row. */
+function drIcon(dr){ return (dr&&dr.icon) ? "<img src='"+dr.icon+"' alt='' class='exicon'>" : ((dr&&dr.emoji)||'🏒'); }
+window.drIcon=drIcon;
 
 var WORKOUTS=window.WORKOUTS=[
   /* Week 1 */
@@ -3110,7 +3116,7 @@ function render(){
     var doneLabel=prog[i]?'Done ✓':'Start';
     list.insertAdjacentHTML('beforeend',
       "<div class='exrow"+done+"' data-i='"+i+"'>"+
-        "<div class='exhead'><div class='exem'>"+dr.emoji+"</div>"+
+        "<div class='exhead'><div class='exem'>"+drIcon(dr)+"</div>"+
           "<div><h3>"+esc(dr.name)+"<span class='exbadge'>Done</span></h3>"+dose+"</div>"+
           "<div class='exchev'>›</div></div>"+
         "<div class='exbody'><p>"+esc(dr.cue)+"</p>"+videoBlock(dr)+audioBlock(dr)+steps+
@@ -4453,7 +4459,7 @@ function render(){
     var doneLabel=prog[i]?'Done ✓':'Start';
     list.insertAdjacentHTML('beforeend',
       "<div class='exrow"+done+"' data-i='"+i+"'>"+
-        "<div class='exhead'><div class='exem'>"+dr.emoji+"</div>"+
+        "<div class='exhead'><div class='exem'>"+drIcon(dr)+"</div>"+
           "<div><h3>"+esc(dr.name)+"<span class='exbadge'>Done</span></h3><div class='exdose'>"+esc(dr.cat)+"</div></div>"+
           "<div class='exchev'>›</div></div>"+
         "<div class='exbody'><p>"+esc(dr.cue)+"</p>"+window.videoBlock(dr)+window.audioBlock(dr)+steps+
@@ -5281,7 +5287,7 @@ function render(){
     var cue=dr.cue?"<p><b>Coach cue:</b> "+esc(dr.cue)+"</p>":'';
     list.insertAdjacentHTML('beforeend',
       "<div class='exrow"+done+"' data-i='"+i+"'>"+
-        "<div class='exhead'><div class='exem'>"+dr.emoji+"</div>"+
+        "<div class='exhead'><div class='exem'>"+drIcon(dr)+"</div>"+
           "<div><h3>"+esc(dr.name)+"<span class='exbadge'>Done</span></h3><div class='exdose'>"+esc(dr.theme||(goalie?'Net play':'Shooting'))+"</div></div>"+
           "<div class='exchev'>›</div></div>"+
         "<div class='exbody'>"+cue+window.videoBlock(dr)+window.audioBlock(dr)+steps+
@@ -5371,7 +5377,7 @@ function render(){
     var cue=dr.cue?"<p><b>Coach cue:</b> "+esc(dr.cue)+"</p>":'';
     list.insertAdjacentHTML('beforeend',
       "<div class='exrow"+done+"' data-i='"+i+"'>"+
-        "<div class='exhead'><div class='exem'>"+dr.emoji+"</div>"+
+        "<div class='exhead'><div class='exem'>"+drIcon(dr)+"</div>"+
           "<div><h3>"+esc(dr.name)+"<span class='exbadge'>Done</span></h3><div class='exdose'>"+esc(dr.theme||'Passing')+"</div></div>"+
           "<div class='exchev'>›</div></div>"+
         "<div class='exbody'>"+cue+window.videoBlock(dr)+window.audioBlock(dr)+steps+
