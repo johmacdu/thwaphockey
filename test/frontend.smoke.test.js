@@ -217,16 +217,22 @@ describe('Accent menu polish + kebab order', () => {
   it('accent sheet caps ~3.5 items and scrolls', () => {
     expect(html).toMatch(/\.vsheet\{[^}]*max-height:252px;overflow-y:auto/);
   });
-  it('locked accents are blurred, generic "Locked accent", no unlock threshold shown', () => {
-    expect(html).toMatch(/\.vopt\.locked\{[^}]*filter:blur/);
-    expect(html).toContain('Locked accent');
+  it('locked accents are dimmed and named with a day countdown (not blurred/hidden)', () => {
+    // The unlock ladder shows the reward: locked chips are dimmed but readable, name
+    // the accent, and count down the days -- not blurred out as a generic "Locked accent".
+    expect(html).toMatch(/\.vopt\.locked\{[^}]*opacity:/);
+    expect(html).not.toMatch(/\.vopt\.locked\{[^}]*filter:blur/);
+    expect(html).toContain('unlocks in ');
+    expect(html).not.toContain('Locked accent');
     expect(html).not.toContain('Unlock at ');
   });
-  it('accent labels are Finn/Swede/Dane', () => {
-    expect(html).toMatch(/label:'Finn'/);
-    expect(html).toMatch(/label:'Swede'/);
-    expect(html).toMatch(/label:'Dane'/);
-    expect(html).not.toMatch(/label:'Finnish'|label:'Swedish'|label:'Danish'/);
+  it('accent labels are the day-ladder set (Swedish/Finnish), not Finn/Swede/Dane', () => {
+    expect(html).toMatch(/label:'American'/);
+    expect(html).toMatch(/label:'Swedish'/);
+    expect(html).toMatch(/label:'Finnish'/);
+    expect(html).not.toMatch(/label:'Finn'/);
+    expect(html).not.toMatch(/label:'Swede'/);
+    expect(html).not.toMatch(/label:'Dane'/);
   });
   it('footer kebab lists Sign out LAST', () => {
     const menu = html.match(/<div class='footmenu'[^>]*>([\s\S]*?)<\/div>/)[1];

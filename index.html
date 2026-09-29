@@ -208,7 +208,7 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .vopt .vopt-emoji{font-size:18px;line-height:1}
 .vopt.on{background:color-mix(in srgb,var(--lime) 30%,var(--card));font-weight:900}
 .vopt.on:after{content:'\2713';margin-left:auto;color:var(--green);font-weight:900}
-.vopt.locked{opacity:.5;cursor:default;font-weight:700;filter:blur(1.5px);color:var(--muted);user-select:none}
+.vopt.locked{opacity:.6;cursor:default;font-weight:700;color:var(--muted);user-select:none}
 .exbody ol{margin:0 0 18px;padding-left:26px;color:var(--text);font-size:18px;font-weight:600;line-height:1.75}
 .exbody ol li{margin-bottom:14px;padding-left:4px}
 .exbody ol li::marker{font-weight:700;color:var(--text)}
@@ -2952,33 +2952,38 @@ window.ytid=ytid; window.videoBlock=videoBlock;
    Files live at audio/<voiceCode>/<slug>.mp3. The slug is on each drill's
    audio: field; the voice code comes from the picker below. One shared <audio>
    element plays them, and one document-level click handler serves every render
-   site (like __thwapVidDelegated). Voices unlock by completed-drill count so more
+   site (like __thwapVidDelegated). Voices unlock by days of training so more
    can be added later just by appending to THWAP_VOICES with a higher unlockAt. */
 var THWAP_VOICES=window.THWAP_VOICES=[
-  {code:'can', label:'Canadian', emoji:'🇨🇦', unlockAt:0},
-  {code:'mn',  label:'Minnesotan', emoji:'🏒', unlockAt:0},
-  /* Locked until the player has done a month of activities (~20 drills). */
-  {code:'ny',  label:'New Yorker', emoji:'🗽', unlockAt:20},
-  {code:'chi', label:'Chicagoan', emoji:'🌭', unlockAt:20},
-  {code:'bos', label:'Bostonian', emoji:'🦞', unlockAt:20},
-  {code:'fca', label:'French Canadian', emoji:'⚜️', unlockAt:20},
-  {code:'fin', label:'Finn', emoji:'🇫🇮', unlockAt:20},
-  {code:'swe', label:'Swede', emoji:'🇸🇪', unlockAt:20},
-  {code:'rus', label:'Russian', emoji:'🇷🇺', unlockAt:20},
-  {code:'dan', label:'Dane', emoji:'🇩🇰', unlockAt:20}
+  {code:'can', label:'Canadian',   emoji:'🇨🇦', unlockAt:0},
+  {code:'mn',  label:'Minnesota',  emoji:'🏒', unlockAt:0},
+  {code:'us',  label:'American',   emoji:'🇺🇸', unlockAt:30},
+  {code:'bos', label:'Boston',     emoji:'🦞', unlockAt:60},
+  {code:'ny',  label:'New Yorker', emoji:'🗽', unlockAt:90},
+  {code:'rus', label:'Russian',    emoji:'🇷🇺', unlockAt:120},
+  {code:'swe', label:'Swedish',    emoji:'🇸🇪', unlockAt:150},
+  {code:'fin', label:'Finnish',    emoji:'🇫🇮', unlockAt:180}
+  /* unlockAt = days of training (one new accent ~ per month). Every voice here has
+     recorded audio under audio/<code>/seg/; add a new rung only once its clips exist. */
 ];
 function thwapVoice(){ try{ return localStorage.getItem('thwapVoice')||'can'; }catch(e){ return 'can'; } }
 function thwapSetVoice(code){ try{ localStorage.setItem('thwapVoice',code); }catch(e){} }
-/* How many drills the player has finished, used for unlockAt thresholds. The board
-   API exposes per-slug week counts and all-time streaks, not a single lifetime drill
-   total, so there is no clean sum to read yet - return 0 so only unlockAt:0 voices
-   show unlocked for now. */
-function thwapCompletedCount(){
-  return 0; /* TODO: wire real completed-drill count when the board exposes a lifetime total */
+/* Voices unlock by DAYS OF TRAINING. The clock starts the first time the player
+   opens the app (thwapFirstDay, an epoch-day integer stored once). A voice's
+   `unlockAt` is the number of training days required (0 = available from day one).
+   The ladder is roughly one new accent per month. */
+function thwapTrainingDays(){
+  try{
+    var today=Math.floor(Date.now()/86400000);
+    var first=parseInt(localStorage.getItem('thwapFirstDay')||'',10);
+    if(!(first>0)){ first=today; localStorage.setItem('thwapFirstDay', String(first)); }
+    return Math.max(0, today-first);
+  }catch(e){ return 0; }
 }
-function thwapVoiceUnlocked(v){ if(!v) return false; if(!v.unlockAt) return true; return thwapCompletedCount()>=v.unlockAt; }
+function thwapVoiceUnlocked(v){ if(!v) return false; if(!v.unlockAt) return true; return thwapTrainingDays()>=v.unlockAt; }
+function thwapDaysToUnlock(v){ if(!v||!v.unlockAt) return 0; return Math.max(0, v.unlockAt-thwapTrainingDays()); }
 window.thwapVoice=thwapVoice; window.thwapSetVoice=thwapSetVoice;
-window.thwapCompletedCount=thwapCompletedCount; window.thwapVoiceUnlocked=thwapVoiceUnlocked;
+window.thwapTrainingDays=thwapTrainingDays; window.thwapVoiceUnlocked=thwapVoiceUnlocked;
 
 function audioBlock(dr){
   /* Narration now rides the drill timer (Start/Pause/Restart), so no standalone
@@ -3015,9 +3020,9 @@ if(!window.__thwapAudDelegated){window.__thwapAudDelegated=true;document.addEven
 });}
 
 /* Voice picker: a kid-friendly chip row (NOT a card). Unlocked voices are
-   selectable; locked ones show blurred as a generic 'Locked accent' (no name, no
-   threshold revealed). One delegated handler swaps the stored voice and re-marks
-   the selected chip in place. */
+   selectable; locked ones show as a ladder rung with the accent name and a
+   'unlocks in N days' countdown so the next reward is visible. One delegated
+   handler swaps the stored voice and re-marks the selected chip in place. */
 function voicePickerHTML(){
   var cur=thwapVoice();
   /* Use the window-level unlock check so demo-mode's unlock-all wrapper applies
@@ -3029,10 +3034,10 @@ function voicePickerHTML(){
     if(isUnlocked(v)){
       return "<button type=\"button\" class=\"vopt"+(v.code===curV.code?' on':'')+"\" data-voice=\""+v.code+"\" role=\"menuitemradio\">"+(v.emoji?"<span class=\"vopt-emoji\">"+v.emoji+"</span> ":'')+esc(v.label)+"</button>";
     }
-    return "<span class=\"vopt locked\">\uD83D\uDD12 Locked accent</span>";
+    return "<span class=\"vopt locked\">\uD83D\uDD12 "+esc(v.label)+" \u00B7 unlocks in "+thwapDaysToUnlock(v)+" days</span>";
   }).join('');
   return "<div class='vpick'>"+
-    "<p class='vmadlib'>Want Sass to have <button type=\"button\" class=\"pos-word vword\" aria-haspopup=\"true\" aria-expanded=\"false\">"+esc(curV.label)+"</button> accent?</p>"+
+    "<p class='vmadlib'>Sass talks with a <button type=\"button\" class=\"pos-word vword\" aria-haspopup=\"true\" aria-expanded=\"false\">"+esc(curV.label)+"</button> accent.</p>"+
     "<div class='pos-sheet vsheet' role='menu' hidden>"+opts+"</div>"+
   "</div>";
 }

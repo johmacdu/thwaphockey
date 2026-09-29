@@ -3,8 +3,9 @@
 // EXECUTION test: boots index.html in jsdom and checks the drill-narration voice
 // picker on ALL three discipline lists. Guards the bug where the picker used shared
 // ids (#vWord/#vSheet) so only the first (dryland) picker worked - stick/shoot were
-// dead. Also guards the voice list: only Canadian + Minnesotan unlocked, the rest
-// locked, no "American".
+// dead. Also guards the day-based unlock ladder: Canadian + Minnesota are free, the
+// rest (American, Boston, New Yorker, Russian, Swedish, Finnish) unlock by days of
+// training and render as locked chips that name the accent and count down the days.
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -58,16 +59,25 @@ describe('Drill narration voice picker (all three disciplines, no id collision)'
     expect(drylandSheet.hidden).toBe(true);  // dryland's did NOT
   });
 
-  it('only Canadian + Minnesotan are unlocked; the rest are locked; no American', () => {
+  it('Canadian + Minnesota unlock at day 0; the paid accents form the day-ladder', () => {
+    // Day-based ladder (#187): can/mn are free (unlockAt 0); every other voice
+    // unlocks by days of training. On a fresh boot thwapTrainingDays()===0 so only
+    // the free two are selectable.
     expect(win.THWAP_VOICES.filter((v) => !v.unlockAt).map((v) => v.label).sort())
-      .toEqual(['Canadian', 'Minnesotan']);
-    expect(win.THWAP_VOICES.some((v) => v.label === 'American')).toBe(false);
+      .toEqual(['Canadian', 'Minnesota']);
+    // American (us) is part of the ladder (unlocks at 30 days), not removed.
+    expect(win.THWAP_VOICES.some((v) => v.label === 'American')).toBe(true);
     const labels = win.THWAP_VOICES.map((v) => v.label);
-    ['New Yorker', 'Chicagoan', 'Bostonian', 'French Canadian', 'Finn', 'Swede', 'Russian', 'Dane']
+    ['American', 'Boston', 'New Yorker', 'Russian', 'Swedish', 'Finnish']
       .forEach((l) => expect(labels).toContain(l));
-    // a picker shows the locked ones as locked chips
+    // Aspirational placeholders with no recorded audio are NOT shipped in the app
+    // list (chi is generator-only; fca/dan were never generated).
+    ['Chicagoan', 'French Canadian', 'Dane'].forEach((l) => expect(labels).not.toContain(l));
+    // the paid accents render as locked chips...
     const lockedChips = doc.querySelectorAll('.vpick .vopt.locked');
     expect(lockedChips.length).toBeGreaterThan(0);
+    // ...and each locked chip names the accent and counts down the days to unlock.
+    expect(lockedChips[0].textContent).toMatch(/unlocks in \d+ days/);
   });
 
   it('the sheet is an absolute overlay (floats on top, does not shift items down)', () => {
