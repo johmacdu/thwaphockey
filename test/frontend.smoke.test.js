@@ -33,7 +33,7 @@ describe('index.html structure', () => {
     const open = (html.match(/<section id=/g) || []).length;
     const close = (html.match(/<\/section>/g) || []).length;
     expect(open).toBe(close);
-    expect(open).toBe(11); // #addplayer is now a .sheet side panel, not a page section
+    expect(open).toBe(12); // + #pass (Passing shell); #addplayer is a .sheet side panel, not a page section
   });
 
   it('#home is the last section (required for :target hash nav)', () => {
@@ -167,18 +167,16 @@ describe('Cross-tab identity guard', () => {
 });
 
 describe('Drill videos on all three disciplines', () => {
-  it('stick, shoot AND dryland renderers all insert the Watch-how video (videoBlock)', () => {
-    // Count the three real render call sites (in a tile string: "+...videoBlock(dr)+...steps").
-    // videoBlock/ytid live in the dryland IIFE, so stick+shoot call window.videoBlock;
-    // dryland calls it in-scope. The window export is what makes the cross-IIFE calls work.
-    // The audio-narration feature inserts an optional +(window.)audioBlock(dr) between
-    // videoBlock and steps, so allow it here without weakening the videoBlock check.
+  it('the Watch-how video link is removed from all drills (videoBlock/ytEmbed are no-ops)', () => {
+    // The linked clips were not accurate to the drill, so the "Watch how" expander
+    // was removed. The render call sites stay (videoBlock(dr) is still called in the
+    // three tile strings), but videoBlock/ytEmbed now return "" so no link renders.
     const callSites = (html.match(/\+(?:window\.)?videoBlock\(dr\)(?:\+(?:window\.)?audioBlock\(dr\))?\+steps/g) || []).length;
-    expect(callSites).toBe(3);
+    expect(callSites).toBe(4); // stick, shoot, dryland + pass (Passing shell)
     expect(html).toMatch(/window\.ytid=ytid; window\.videoBlock=videoBlock;/);
-    // the drill data carries real YouTube URLs for all disciplines
-    expect(html).toMatch(/name:'Narrow-to-Wide'[\s\S]{0,120}video:'https:\/\/www\.youtube/); // stick (DRILLS)
-    expect(html).toMatch(/name:'Moving Warm-Up'[\s\S]{0,120}video:'https:\/\/www\.youtube/); // shoot (SHOOT_DAYS)
+    // No "Watch how" button is produced by either video renderer.
+    expect(/function videoBlock\(dr\)\{[\s\S]{0,320}?return "";[\s\S]{0,10}?\}/.test(html)).toBe(true);
+    expect(html).not.toMatch(/if\(id\)\{\s*return "<button[^"]*exvid-link/);
   });
   it('each discipline launches the full-screen guided runner from its Start button', () => {
     // three thwapDrillTimer launch sites (dryland, stick, shoot), each with a Start label
@@ -197,5 +195,51 @@ describe('Sass logo easter egg: no mobile long-press image callout', () => {
     expect(html).toMatch(/#sassLogo\{[^}]*-webkit-user-drag:none/);
     // and the JS contextmenu guard is still present
     expect(html).toMatch(/logo\.addEventListener\('contextmenu',function\(e\)\{ e\.preventDefault\(\); \}\)/);
+  });
+});
+
+describe('Splash THWAP! impact sound', () => {
+  it('plays the hit sound at the impact step, guarded by mute/reduced-motion', () => {
+    // wired right where the burst fires
+    expect(html).toMatch(/setStep\('impact'\);\s*thwapPlaySplashHit\(\);/);
+    // guards: reduced motion + mute + autoplay-block safe
+    expect(html).toMatch(/function thwapPlaySplashHit\(\)\{[\s\S]*reduceMotion\(\)/);
+    expect(html).toMatch(/new Audio\('login\/thwap-hit\.mp3'\)/);
+    expect(html).toMatch(/p\.catch\(function\(\)\{\}\)/);
+  });
+  it('ships the thwap-hit.mp3 asset', () => {
+    const p = resolve(__dirname, '../login/thwap-hit.mp3');
+    expect(readFileSync(p).length).toBeGreaterThan(1000);
+  });
+});
+
+describe('Accent menu polish + kebab order', () => {
+  it('accent sheet caps ~3.5 items and scrolls', () => {
+    expect(html).toMatch(/\.vsheet\{[^}]*max-height:252px;overflow-y:auto/);
+  });
+  it('locked accents are dimmed and named with a day countdown (not blurred/hidden)', () => {
+    // The unlock ladder shows the reward: locked chips are dimmed but readable, name
+    // the accent, and count down the days -- not blurred out as a generic "Locked accent".
+    expect(html).toMatch(/\.vopt\.locked\{[^}]*opacity:/);
+    expect(html).not.toMatch(/\.vopt\.locked\{[^}]*filter:blur/);
+    expect(html).toContain('unlocks in ');
+    expect(html).not.toContain('Locked accent');
+    expect(html).not.toContain('Unlock at ');
+  });
+  it('accent labels are the day-ladder set (Swedish/Finnish), not Finn/Swede/Dane', () => {
+    expect(html).toMatch(/label:'American'/);
+    expect(html).toMatch(/label:'Swedish'/);
+    expect(html).toMatch(/label:'Finnish'/);
+    expect(html).not.toMatch(/label:'Finn'/);
+    expect(html).not.toMatch(/label:'Swede'/);
+    expect(html).not.toMatch(/label:'Dane'/);
+  });
+  it('footer kebab lists Sign out LAST', () => {
+    const menu = html.match(/<div class='footmenu'[^>]*>([\s\S]*?)<\/div>/)[1];
+    const iSignout = menu.indexOf('Sign out');
+    const iBug = menu.indexOf('Report a bug');
+    const iFeat = menu.indexOf('Request a feature');
+    expect(iSignout).toBeGreaterThan(iBug);
+    expect(iSignout).toBeGreaterThan(iFeat);
   });
 });

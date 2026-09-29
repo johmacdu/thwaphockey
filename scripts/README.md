@@ -18,9 +18,14 @@ is a synced Web Audio tick (no audio file), muted with the narration.
 
 ## Voices
 
+Voices unlock by **days of training** (`thwapTrainingDays` in `index.html`): the
+clock starts the first time the player opens the app, and each rung is roughly one
+new accent per month. Every voice in the app ladder below has recorded clips under
+`audio/<code>/seg/`.
+
 | code | label | ElevenLabs voice ID | unlockAt (days) |
 |------|-------|---------------------|-----------------|
-| `can` | Canadian | `dllHSct4GokGc1AH9JwT` | 0 |
+| `can` | Canadian | `5ZvI0fBo2w7CxuiM9ObF` | 0 |
 | `mn`  | Minnesota | `MqdBjMcqClsTO77t1vGB` | 0 |
 | `us`  | American | `kpftzLQxRv90Nn6qoJRf` | 30 |
 | `bos` | Boston | `UZvBfqEdvCFLqsBOo9Zr` | 60 |
@@ -28,6 +33,10 @@ is a synced Web Audio tick (no audio file), muted with the narration.
 | `rus` | Russian | `u5UJ3o5MZq3cWrXIXi37` | 120 |
 | `swe` | Swedish | `TIMFVcMCO4bdy7J79GWF` | 150 |
 | `fin` | Finnish | `KQem9e29QRWURqusQZoF` | 180 |
+
+`chi` (Chicagoan, `erLaZvTFBCJD969knK8N`) is configured in `VOICES` in
+`scripts/generate-segments.cjs` but has no clips yet, so it is **not** in the app
+ladder. Generate its segments (below) and add it to `THWAP_VOICES` to ship it.
 
 Add a voice: (1) pick/create it in ElevenLabs, (2) add a row to `VOICES` in
 `scripts/generate-segments.cjs` and to `THWAP_VOICES` in `index.html`, (3) run the

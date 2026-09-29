@@ -291,12 +291,22 @@ describe('Roster edit mode: pencil toggles to Cancel/Done, cards drop the badge'
     expect(doc.getElementById('rosterEditCancel')).toBeTruthy();
     expect(doc.getElementById('rosterEditDone')).toBeTruthy();
   });
-  it('the [hidden] overrides beat body.is-coach .roster-coachonly{display:block}', () => {
-    expect(html).toMatch(/body\.is-coach \.roster-editactions\[hidden\]\{display:none\}/);
-    expect(html).toMatch(/body\.is-coach \.roster-edit\[hidden\]\{display:none\}/);
+  it('role gating outranks the base display rules and obeys [hidden]', () => {
+    // The coach pencil must be hidden for a non-coach (player), so a two-class
+    // selector (0,2,0) beats the base .roster-edit display (0,1,0).
+    expect(html).toMatch(/\.roster-edit\.roster-coachonly,\.roster-editactions\.roster-coachonly\{display:none\}/);
+    expect(html).toMatch(/body\.is-coach \.roster-edit\.roster-coachonly\{display:inline-grid\}/);
+    // and edit-mode [hidden] still wins over the role show-rule
+    expect(html).toMatch(/body\.is-coach \.roster-edit\.roster-coachonly\[hidden\]/);
+    expect(html).toMatch(/\.roster-edit\[hidden\]\{display:none\}/);
   });
-  it('the per-card pencil badge (::after) is gone', () => {
-    expect(html).not.toMatch(/#roster-grid \.pcard:not\(\.pcard-add\)::after/);
+  it('no per-card pencil badge at rest, but a clear one in edit mode', () => {
+    // At rest (not editing) the cards carry no ::after edit badge...
+    expect(html).not.toMatch(/(?<!roster-editing )#roster-grid \.pcard:not\(\.pcard-add\)::after/);
+    // ...but edit mode adds a scoped badge + scale so it is visibly different
+    // from a normal (stat-page) tap.
+    expect(html).toMatch(/body\.roster-editing #roster-grid \.pcard:not\(\.pcard-add\)::after/);
+    expect(html).toContain('transform:scale(.965)');
   });
   it('the pencil enters edit mode and Cancel/Done exit it', () => {
     expect(html).toMatch(/editBtn\.addEventListener\('click',function\(\)\{ setEditing\(true\); \}\)/);
@@ -305,10 +315,11 @@ describe('Roster edit mode: pencil toggles to Cancel/Done, cards drop the badge'
   });
 });
 
-describe('Player edit sheet: PIN hint explains how to reset', () => {
-  it('tells the coach to change the jersey number, without leaking the code format', () => {
-    expect(html).toMatch(/To reset it, change the jersey number/);
-    expect(html).not.toMatch(/jersey number followed by the season year/i);
+describe('Player edit sheet: PIN section offers Request new code', () => {
+  it('replaced the jersey-reset hint with a Request new code button', () => {
+    expect(html).not.toMatch(/To reset it, change the jersey number/);
+    expect(html).toMatch(/id='peReqCode'/);
+    expect(html).toMatch(/Request new code/);
   });
 });
 

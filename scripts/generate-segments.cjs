@@ -22,10 +22,11 @@ const fs = require('fs');
 const path = require('path');
 
 const VOICES = {
-  can: { id: 'dllHSct4GokGc1AH9JwT', label: 'Canadian hockey voice' },
+  can: { id: '5ZvI0fBo2w7CxuiM9ObF', label: 'Canadian hockey voice' },
   mn:  { id: 'MqdBjMcqClsTO77t1vGB', label: 'Minnesota hockey voice' },
   us:  { id: 'kpftzLQxRv90Nn6qoJRf', label: 'American hockey voice' },
   bos: { id: 'UZvBfqEdvCFLqsBOo9Zr', label: 'Boston hockey voice' },
+  chi: { id: 'erLaZvTFBCJD969knK8N', label: 'Chicagoan hockey voice' },
   ny:  { id: 'q3pCVYOxlOb5G3l2O13o', label: 'New Yorker hockey voice' },
   rus: { id: 'u5UJ3o5MZq3cWrXIXi37', label: 'Russian hockey voice' },
   swe: { id: 'TIMFVcMCO4bdy7J79GWF', label: 'Swedish hockey voice' },

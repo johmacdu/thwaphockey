@@ -81,7 +81,8 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 .deck-3d.dragging{transition:none;cursor:grabbing}
 .deck-face{position:absolute;inset:0;border-radius:18px;overflow:hidden;background:#0f1712;box-shadow:0 14px 40px rgba(0,0,0,.45);backface-visibility:hidden;-webkit-backface-visibility:hidden}
 .deck-face.dragover{outline:3px dashed var(--lime);outline-offset:-3px}
-.deck-back{transform:rotateY(180deg)}
+.deck-front{transform:translateZ(1px);-webkit-transform:translateZ(1px)}
+.deck-back{transform:rotateY(180deg) translateZ(1px);-webkit-transform:rotateY(180deg) translateZ(1px)}
 .deck-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;-webkit-user-drag:none}
 @keyframes stickSlap{0%{transform:scale(1.8) rotate(-14deg);opacity:0}60%{transform:scale(.9) rotate(4deg);opacity:1}100%{transform:scale(1) rotate(var(--slap-rot,-5deg))}}
 .slapped{animation:stickSlap .6s cubic-bezier(.2,.8,.2,1)}
@@ -120,6 +121,7 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 @media (prefers-reduced-motion: reduce){.thwap-press{transition:opacity .12s ease}.thwap-press.is-pressed{transform:none;opacity:.8}}
 .nav{display:grid;grid-template-columns:50px 1fr auto;gap:14px;align-items:center;padding:16px 2px;min-height:auto;border-bottom:1px solid var(--line)}
 .pnextgame{display:block;text-decoration:none;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:14px;cursor:pointer;transition:transform .12s ease,box-shadow .12s ease}
+.pnextgame[hidden]{display:none}
 .pnextgame:hover{transform:translateY(-2px);box-shadow:0 10px 24px var(--shadow)}
 .pnextgame:active{transform:scale(.99)}
 .png-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
@@ -140,6 +142,7 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 .png-cta{display:flex;align-items:center;gap:6px;margin-top:16px;padding-left:64px;font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;font-size:15px;letter-spacing:.005em;color:var(--green)}
 .png-cta .chev{font-family:system-ui,sans-serif;font-size:18px;font-weight:700}
 .png-cta-done{color:var(--muted)}
+.png-cta-soon{color:var(--muted);font-weight:600}
 .png-cta-done::before{content:'\2713';display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--green);color:var(--onaccent);font-size:12px;font-weight:900;margin-right:2px}
 a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient(180deg,var(--panel2),var(--panel));padding:18px;min-height:94px;box-shadow:0 6px 18px var(--shadow)}.ico{width:50px;height:50px;border-radius:16px;background:var(--soft);display:grid;place-items:center;font-size:25px}.nav h2{margin:0;font-size:19px;font-weight:800;letter-spacing:.005em}.nav p{margin:5px 0 0;font-size:16px;color:var(--muted)}.chev{font-size:44px;color:var(--chev)}
 .nav.soon{cursor:default;opacity:.72}.nav.soon:hover{border-color:var(--line);transform:none}
@@ -195,17 +198,17 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .exaud-ic{font-size:15px;display:inline-block}
 .exaud-link.playing{color:var(--green2)}
 /* Kid-friendly voice picker: a pill/chip row, not a card. */
-.vpick{margin:2px 0 16px}
+.vpick{margin:2px 0 16px;position:relative}
 .vmadlib{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(17px,4.4vw,22px);line-height:1.3;margin:0;color:var(--text)}
 .pos-word.vword{color:var(--green2);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px;cursor:pointer;-webkit-tap-highlight-color:transparent;background:none;border:0;font:inherit;padding:0 2px}
 .pos-word.vword:hover{opacity:.82}
-.vsheet{position:relative;margin-top:10px;max-width:280px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--card);box-shadow:0 6px 20px var(--shadow)}
+.vsheet{position:absolute;top:100%;left:0;z-index:40;margin-top:6px;width:280px;max-width:min(280px,calc(100vw - 40px));max-height:252px;overflow-y:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:0 12px 32px var(--shadow)}
 .vopt{display:flex;width:100%;align-items:center;gap:12px;padding:14px 18px;min-height:44px;background:none;border:0;border-top:1px solid var(--line);font:inherit;font-size:16px;font-weight:800;color:var(--text);cursor:pointer;text-align:left}
 .vopt:first-child{border-top:0}
 .vopt .vopt-emoji{font-size:18px;line-height:1}
 .vopt.on{background:color-mix(in srgb,var(--lime) 30%,var(--card));font-weight:900}
 .vopt.on:after{content:'\2713';margin-left:auto;color:var(--green);font-weight:900}
-.vopt.locked{opacity:.5;cursor:default;font-weight:700}
+.vopt.locked{opacity:.6;cursor:default;font-weight:700;color:var(--muted);user-select:none}
 .exbody ol{margin:0 0 18px;padding-left:26px;color:var(--text);font-size:18px;font-weight:600;line-height:1.75}
 .exbody ol li{margin-bottom:14px;padding-left:4px}
 .exbody ol li::marker{font-weight:700;color:var(--text)}
@@ -257,7 +260,25 @@ body:not(.is-authed) .kebabmenu .nav-guest{display:flex}
    Sign In / Join Waitlist links are always visible over the ice. */
 body.login-locked .topbar{position:relative;z-index:120}
 .forrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px}
+.dowrap{min-width:0;flex:1 1 100%}
 .forline{font-size:15px;color:var(--muted);font-weight:600}
+.fordur{display:block;font-size:15px;color:var(--muted);font-weight:600}
+/* One-sentence "do" summary: label + inline colored discipline names (NOT tappable-looking). */
+.dolead{font-size:16px;color:var(--text);font-weight:800;line-height:1.5;letter-spacing:.01em;word-spacing:.06em}
+.dolead.alldone{color:var(--green2)}
+.discline{display:none}
+.disc{white-space:nowrap}
+.disc .demo{font-weight:400;margin-left:5px}
+.disc .chk{display:none;font-weight:900}
+.disc.done{opacity:.5}
+.disc.done .chk{display:inline}
+.disc-stick{color:#4E9128}.disc-shoot{color:#3E88D8}.disc-dryland{color:#E07A1F}
+.dosep{color:var(--muted);font-weight:600;padding:0 3px}
+/* Inline tappable "today" -> reveals the date, part of the sentence (replaces the floating chip). */
+.todayword{position:relative;display:inline;color:inherit;font:inherit;font-weight:800;background:none;border:0;padding:0;margin:0;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;-webkit-tap-highlight-color:transparent}
+.todaydate{position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%) translateY(4px);white-space:nowrap;background:var(--ink);color:#fff;font-size:12px;font-weight:600;padding:6px 10px;border-radius:8px;opacity:0;visibility:hidden;transition:opacity .15s ease,transform .15s ease;pointer-events:none;z-index:5}
+.todaydate::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--ink)}
+.todayword:hover .todaydate,.todayword:focus-visible .todaydate,.todayword.show .todaydate{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
 .playername{font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;letter-spacing:.01em;font-size:34px;line-height:1.1;color:var(--ink);margin:2px 0 8px;display:block;background:none;border:0;padding:0;text-align:left;cursor:pointer;text-decoration:none;-webkit-tap-highlight-color:transparent}
 /* ---- Flippable player card overlay ---- */
 .cardoverlay{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:rgba(9,15,11,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;transition:opacity .2s ease;padding:20px}
@@ -285,7 +306,8 @@ body.login-locked .topbar{position:relative;z-index:120}
 .card3d.intro{animation:cardIn .5s cubic-bezier(.2,.9,.2,1)}
 @keyframes cardIn{from{opacity:0;transform:scale(.85) rotateY(-30deg)}to{opacity:1;transform:none}}
 .cardface{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:var(--r-player);overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.14)}
-.cardback{transform:rotateY(180deg)}
+.cardfront{transform:translateZ(1px);-webkit-transform:translateZ(1px)}
+.cardback{transform:rotateY(180deg) translateZ(1px);-webkit-transform:rotateY(180deg) translateZ(1px)}
 .cardart{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;-webkit-user-drag:none;user-select:none}
 /* Frame overlay drawn over a player's own uploaded photo so it still reads as a Thwap card. */
 .cf-frame{position:absolute;inset:0;pointer-events:none;border:3px solid var(--acc,#F0645A);border-radius:var(--r-player);box-shadow:inset 0 0 0 2px rgba(0,0,0,.35)}
@@ -599,6 +621,12 @@ body.is-coach .roster .pcard-remove{display:grid;place-items:center}
 .banner-coaches{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:14px}
 .bcoach{display:inline-flex;align-items:center;gap:9px;box-sizing:border-box;height:44px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:0 12px 0 5px;font-family:inherit;text-align:left}
 .bcoach[hidden]{display:none}
+.cinfo-head{display:flex;align-items:center;gap:14px;margin-top:8px}
+.cinfo-av{width:56px;height:56px;border-radius:14px;display:inline-grid;place-items:center;background:var(--card2);color:var(--muted);font-weight:900;font-size:20px;overflow:hidden;flex:none}
+.cinfo-av img{width:100%;height:100%;object-fit:cover}
+.cinfo-name{font-family:'Archivo Black',system-ui,sans-serif;font-size:19px;color:var(--text)}
+.cinfo-role{font-size:14px;font-weight:800;color:var(--muted);margin-top:2px}
+.cinfo-note{margin-top:14px;font-size:14px;color:var(--muted);line-height:1.5}
 .bcoach-nmbtn{background:none;border:0;padding:0;margin:0;font:inherit;color:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .bcoach-av{width:34px;height:34px;border-radius:50%;display:inline-grid;place-items:center;background:var(--card2);color:var(--muted);font-weight:900;font-size:13px;overflow:hidden;flex:none}
 .bcoach-av img{width:100%;height:100%;object-fit:cover}
@@ -623,18 +651,44 @@ body.is-coach .roster .pcard-remove{display:grid;place-items:center}
 .coachcoaches-add{margin-top:10px;font-family:inherit;font-size:13px;font-weight:800;background:transparent;color:var(--text);border:1px solid var(--line2);border-radius:10px;padding:9px 14px;cursor:pointer}
 .roster-coachonly{display:none}
 body.is-coach .roster-coachonly{display:block}
+/* Player self-edit pencil: only for a signed-in, non-coach player (the parent/
+   player edits their OWN details). Hidden for guests and for coaches (coaches use
+   the roster-coachonly pencil, which edits any player). */
+.roster-playeronly{display:none}
+body.is-authed:not(.is-coach) .roster-playeronly{display:block}
+body.is-authed:not(.is-coach) .roster-playeronly[hidden]{display:none}
 .roster-playershead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:var(--gap-section) 0 12px;padding-top:0;border-top:0}
 .roster-edit{margin-left:auto;flex:none;display:inline-grid;place-items:center;width:44px;height:44px;border-radius:50%;font-family:inherit;font-size:19px;color:var(--text);cursor:pointer;background:var(--card);border:1px solid var(--line);box-shadow:0 2px 8px var(--shadow)}
 .roster-edit:hover{border-color:var(--line2)}
 .roster-edit.on{background:var(--lime);color:var(--ink);border-color:transparent}
-.roster-edit[hidden],body.is-coach .roster-edit[hidden]{display:none}
+/* Role gating must OUTRANK the base .roster-edit / .roster-editactions display
+   rules (same 0,1,0 specificity, defined later, so they would otherwise win and
+   show BOTH pencils to everyone). Two-class selectors (0,2,0) settle it: hide by
+   default, reveal only for the matching role, and always obey [hidden]. */
+.roster-edit.roster-coachonly,.roster-editactions.roster-coachonly{display:none}
+body.is-coach .roster-edit.roster-coachonly{display:inline-grid}
+body.is-coach .roster-editactions.roster-coachonly{display:flex}
+.roster-edit.roster-playeronly,.roster-editactions.roster-playeronly{display:none}
+body.is-authed:not(.is-coach) .roster-edit.roster-playeronly{display:inline-grid}
+body.is-authed:not(.is-coach) .roster-editactions.roster-playeronly{display:flex}
+.roster-edit[hidden],.roster-editactions[hidden],
+body.is-coach .roster-edit.roster-coachonly[hidden],body.is-coach .roster-editactions.roster-coachonly[hidden],
+body.is-authed:not(.is-coach) .roster-edit.roster-playeronly[hidden],body.is-authed:not(.is-coach) .roster-editactions.roster-playeronly[hidden]{display:none}
+.roster-edit[hidden]{display:none}
+.roster-editactions[hidden]{display:none}
 .roster-editactions{margin-left:auto;flex:none;display:flex;gap:8px}
-.roster-editactions[hidden],body.is-coach .roster-editactions[hidden]{display:none}
 .roster-editcancel,.roster-editdone{min-height:44px;font-family:inherit;font-weight:800;font-size:14px;border-radius:12px;padding:8px 16px;cursor:pointer}
 .roster-editcancel{background:var(--card2);border:1px solid var(--line);color:var(--text)}
 .roster-editdone{background:var(--lime);border:1px solid transparent;color:var(--ink)}
 /* Edit mode: cards show a subtle editable affordance. */
-body.roster-editing #roster-grid .pcard:not(.pcard-add){box-shadow:0 0 0 2px var(--lime) inset;position:relative}
+body.roster-editing #roster-grid .pcard:not(.pcard-add){box-shadow:0 0 0 3px var(--lime) inset;position:relative;transform:scale(.965);transition:transform .12s ease}
+body.roster-editing #roster-grid .pcard:not(.pcard-add)::after{content:'\270E';position:absolute;top:6px;right:6px;z-index:3;width:26px;height:26px;display:grid;place-items:center;border-radius:8px;background:var(--lime);color:var(--ink);font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,.28)}
+body.roster-editing #roster-grid .pcard.pcard-add{opacity:.4;pointer-events:none}
+/* Player self-edit mode: ONLY the player's own card is editable; everyone else is
+   dimmed and not tappable, so a player can only ever edit themselves. */
+body.roster-selfediting #roster-grid .pcard:not(.pcard-you-card){opacity:.4;pointer-events:none}
+body.roster-selfediting #roster-grid .pcard.pcard-you-card{box-shadow:0 0 0 3px var(--lime) inset;position:relative;transform:scale(.965);transition:transform .12s ease}
+body.roster-selfediting #roster-grid .pcard.pcard-you-card::after{content:'\270E';position:absolute;top:6px;right:6px;z-index:3;width:26px;height:26px;display:grid;place-items:center;border-radius:8px;background:var(--lime);color:var(--ink);font-size:14px;box-shadow:0 2px 6px rgba(0,0,0,.28)}
 
 /* Player-edit side sheet (X-close, slides from the right; no modal chrome). */
 .sheet{position:fixed;inset:0;z-index:60}
@@ -646,6 +700,10 @@ body.roster-editing #roster-grid .pcard:not(.pcard-add){box-shadow:0 0 0 2px var
 .sheet-pin{display:flex;flex-direction:column;gap:2px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:var(--fs-support);font-weight:800;color:var(--muted)}
 .sheet-pin-val{font-family:'Archivo Black',system-ui,sans-serif;font-size:22px;color:var(--text);letter-spacing:.02em}
 .sheet-pin-hint{font-size:var(--fs-meta);font-weight:700;color:var(--muted)}
+.sheet-pin-btn{align-self:flex-start;margin-top:8px;background:var(--green);color:var(--onaccent);border:0;border-radius:10px;padding:9px 14px;font-family:inherit;font-size:var(--fs-support);font-weight:800;cursor:pointer;transition:transform .12s ease,opacity .12s ease}
+.sheet-pin-btn:active{transform:scale(.97)}
+.sheet-pin-btn:disabled{opacity:.6;cursor:default}
+.sheet-pin-btn.done{background:var(--soft);color:var(--green2)}
 .pe-confirm{position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;padding:20px}
 .pe-confirm[hidden]{display:none}
 .pe-confirm-scrim{position:absolute;inset:0;background:rgba(9,15,11,.72);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
@@ -778,12 +836,26 @@ body.roster-editing #roster-grid .pcard:not(.pcard-add){box-shadow:0 0 0 2px var
 #plTf{margin-bottom:24px}
 .segbtn{font:inherit;font-size:14px;font-weight:700;color:var(--muted);background:none;border:0;padding:14px 20px;min-height:48px;border-radius:999px;cursor:pointer}
 .segbtn.on{background:var(--lime);color:var(--ink);box-shadow:0 1px 2px var(--shadow)}
-.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0 16px}
-.metric{display:flex;flex-direction:column;align-items:center;gap:4px;padding:16px 6px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,var(--cardgrad1),var(--cardgrad2));cursor:pointer;min-height:56px;transition:border-color .12s ease,transform .08s ease}
+/* Auto-fit grid: fits as many >=96px equal-width tiles per row as the width allows,
+   then wraps to balanced rows (no orphan/lopsided rows the way a fixed 4-col grid
+   gives with 5 or 6 tiles). Scales cleanly from 4 tiles (today) to 6 (Hands, Shoot,
+   Passing, Dryland, Net play + All) as each discipline's flag flips on, with no
+   viewer-specific or breakpoint CSS. */
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:10px;margin:12px 0 16px}
+.metric{display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 6px;border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,var(--cardgrad1),var(--cardgrad2));cursor:pointer;min-height:56px;transition:border-color .12s ease,transform .08s ease}
+.metric[hidden]{display:none}
 .metric:active{transform:scale(.97)}
 .metric.on{border-color:var(--lime);box-shadow:inset 0 0 0 2px var(--lime)}
 .metric-label{font-size:13px;font-weight:800;color:var(--muted);white-space:nowrap}
 .metric-num{font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;font-size:26px;color:var(--text);line-height:1}
+/* On a narrow phone the tiles land 3-up (two balanced rows for 6): shrink the
+   number and label a touch so a 3-up tile at ~360px never clips its label. */
+@media (max-width:460px){
+  .metrics{gap:8px}
+  .metric{padding:12px 4px}
+  .metric-num{font-size:22px}
+  .metric-label{font-size:12px}
+}
 .metric.on .metric-num{color:var(--text)}
 /* Leaderboard team view */
 .lb-teamzone{margin-top:24px;margin-bottom:32px}
@@ -953,15 +1025,25 @@ img.plflame{width:1.15em;height:auto;vertical-align:-.22em}
 .eggnet .egghole{position:absolute;left:82%;top:52%;width:0;height:0;border-radius:50%;background:radial-gradient(circle,rgba(0,0,0,.85),rgba(0,0,0,.55) 60%,transparent 72%);transform:translate(-50%,-50%);pointer-events:none;opacity:0}
 .eggnet .egghole.punch{animation:eggHole 1.1s ease-out forwards}
 @keyframes eggHole{0%{width:0;height:0;opacity:0}18%{width:34px;height:34px;opacity:.95}100%{width:30px;height:30px;opacity:0}}
-/* Dryland charge-up zap: the bolt shakes as it charges, flashes bright, then
-   fires energy sparks outward. Reads as explosive effort. No puck, no net. */
+/* Dryland power surge: the bolt cocks back and SNAPS, punching out a single
+   bold shockwave ring with a bright flash. Reads as explosive power. */
 .eggbolt{cursor:pointer;-webkit-user-select:none;user-select:none;touch-action:manipulation;position:relative;display:inline-block}
-.eggbolt.egg-zap{animation:eggBoltZap 1s ease-out}
-@keyframes eggBoltZap{0%{transform:scale(1) rotate(0);filter:none}10%{transform:scale(1.05) rotate(-4deg)}20%{transform:scale(1.08) rotate(4deg)}30%{transform:scale(1.05) rotate(-4deg)}40%{transform:scale(1.12) rotate(3deg)}48%{transform:scale(1.35) rotate(0);filter:brightness(1.9) drop-shadow(0 0 12px #FFD54A)}60%{transform:scale(1.1);filter:brightness(1.3)}100%{transform:scale(1) rotate(0);filter:none}}
-.eggspark{position:fixed;top:0;left:0;width:4px;height:14px;border-radius:2px;background:linear-gradient(180deg,#FFE08A,#FF9D4D);box-shadow:0 0 6px #FFC24A;pointer-events:none;z-index:120;opacity:0;will-change:transform,opacity}
-.eggspark.fire{animation:eggSparkFly .6s ease-out forwards}
-@keyframes eggSparkFly{0%{transform:translate(var(--sx),var(--sy)) rotate(var(--sa)) scale(.5);opacity:0}15%{opacity:1}100%{transform:translate(calc(var(--sx) + var(--dx)),calc(var(--sy) + var(--dy))) rotate(var(--sa)) scale(1);opacity:0}}
-@media (prefers-reduced-motion: reduce){.eggstick.egg-go,.eggdangle.weave,.eggbolt.egg-zap,.eggspark.fire,.eggshot.fly,.eggnet.egg-hit,.eggnet .egghole.punch{animation:none}}</style>
+.eggbolt.egg-surge{animation:eggBoltSurge .82s cubic-bezier(.2,1.4,.35,1)}
+@keyframes eggBoltSurge{0%{transform:scale(1) rotate(0);filter:none}22%{transform:scale(.8) rotate(-9deg);filter:brightness(.85)}40%{transform:scale(1.32) rotate(4deg);filter:brightness(2) drop-shadow(0 0 15px #FFD54A)}58%{transform:scale(1.06);filter:brightness(1.25)}100%{transform:scale(1) rotate(0);filter:none}}
+.eggshock{position:fixed;top:0;left:0;width:26px;height:26px;border-radius:50%;border:3px solid #FFC24A;box-shadow:0 0 12px #FFD54A,inset 0 0 8px rgba(255,213,74,.55);transform:translate(-50%,-50%) scale(.2);opacity:0;pointer-events:none;z-index:120;will-change:transform,opacity}
+.eggshock.go{animation:eggShock .62s ease-out forwards}
+@keyframes eggShock{0%{transform:translate(-50%,-50%) scale(.2);opacity:0}14%{opacity:.95}100%{transform:translate(-50%,-50%) scale(6.2);opacity:0}}
+.eggpass{cursor:pointer;-webkit-user-select:none;user-select:none;touch-action:manipulation;position:relative;display:inline-block}
+/* Tap: the puck ITSELF sauces a crisp pass (lift + forward + settle). No second
+   puck, so it never doubles up on the puck icon. */
+/* Tap: the puck leaves the header and sauces a pass back and forth across the
+   screen (arcing to each side), then returns. The header puck is hidden while it
+   is out, so there is never a second puck on screen. */
+.eggpass.egg-fly .egg-ico{opacity:0;transition:opacity .12s}
+.eggpassflight{position:fixed;top:0;left:0;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#3a3a3a,#0a0a0a 70%);border:1.5px solid rgba(255,255,255,.85);box-shadow:0 0 0 1px rgba(0,0,0,.4),0 3px 10px rgba(0,0,0,.5);pointer-events:none;z-index:130;will-change:transform;opacity:0}
+.eggpassflight.go{animation:eggPassSaucer 1.7s cubic-bezier(.45,.02,.5,1) forwards}
+@keyframes eggPassSaucer{0%{transform:translate(0,0) rotate(0);opacity:0}6%{opacity:1}18%{transform:translate(40vw,-58px) rotate(340deg)}33%{transform:translate(82vw,0) rotate(680deg)}48%{transform:translate(38vw,-58px) rotate(1020deg)}64%{transform:translate(-5vw,0) rotate(1360deg)}82%{transform:translate(0,-30px) rotate(1680deg)}95%{transform:translate(0,0) rotate(2000deg);opacity:1}100%{transform:translate(0,0) rotate(2000deg);opacity:0}}
+@media (prefers-reduced-motion: reduce){.eggstick.egg-go,.eggdangle.weave,.eggbolt.egg-surge,.eggshock.go,.eggshot.fly,.eggnet.egg-hit,.eggnet .egghole.punch,.eggpassflight.go{animation:none}}</style>
 <style id='login-splash-css'>
 /* ---- Break the Ice: login splash overlay (Pass 1 foundation) ----
    A full-screen frosted layer that sits OVER the real homepage. #home renders
@@ -1034,6 +1116,14 @@ html[data-theme='dark'] .login-frost{background:linear-gradient(180deg,rgba(120,
 .login-go:active{transform:scale(.98)}
 .login-err{min-height:18px;margin:10px 0 0;font-size:13px;font-weight:700;color:var(--alert);text-align:center}
 .login-alt{margin:15px 0 0;font-size:14px;color:var(--muted);text-align:center}
+.login-otp-toggle{display:block;width:100%;margin:10px 0 0;background:none;border:0;padding:4px;font-family:inherit;font-size:14px;font-weight:700;color:var(--green);text-decoration:underline;text-underline-offset:3px;cursor:pointer;text-align:center}
+.login-otp{margin-top:12px;padding:14px;border:1px solid var(--line2);border-radius:14px;background:var(--card2)}
+.login-otp .login-field{margin-bottom:10px}
+.login-go-outline{background:transparent;color:var(--green);border:1.5px solid var(--green);min-height:46px}
+.login-msg{min-height:16px;margin:10px 0 0;font-size:13px;font-weight:700;text-align:center;color:var(--muted)}
+.login-msg.err{color:var(--alert)}
+.login-msg.ok{color:var(--green)}
+#loginOtpStep2{margin-top:10px}
 .login-wordmark{height:56px;width:auto;vertical-align:-16px;display:inline-block}
 .login-alt a{color:var(--green2);font-weight:800;text-decoration:underline;text-underline-offset:3px}
 body.login-locked{overflow:hidden}
@@ -1126,7 +1216,7 @@ body.login-locked{overflow:hidden}
   .sp-sass,.sp-skater,.sp-frame,.sp-bubble-img,.sp-burst-img,.sp-shards,.sp-speed,.sp-speed i,.sp-ice,.sp-crack{transition:none!important;animation:none!important}
   #loginStage.shake,.login-modal{animation:none}
 }
-</style><script>try{if(localStorage.getItem('thwapTheme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script></head><body><div class='app'>
+</style><script>try{if(localStorage.getItem('thwapTheme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script></head><body><script src='demo/demo-data.js'></script><script src='demo/demo-mode.js'></script><div class='app'>
 <!-- Break the Ice login splash: two fixed layers over the real homepage.
      #loginBackdrop (frost + Sass/THWAP stage) sits BELOW the site header so its
      Sign In / Join Waitlist links stay visible and tappable; #loginOverlay (the
@@ -1159,6 +1249,7 @@ body.login-locked{overflow:hidden}
       <span class='login-selwrap'>
         <select class='login-in login-select' id='loginTeam'>
           <option value='vancouver-jr-rangers-10u' selected>Vancouver Jr. Rangers 10U</option>
+          <option value='demo-team'>Demo Team</option>
         </select>
         <span class='login-selchev' aria-hidden='true'>&#8250;</span>
       </span>
@@ -1184,6 +1275,22 @@ body.login-locked{overflow:hidden}
     </div>
     <button type='submit' class='login-go' id='loginGo' disabled>Sign In &#8594;</button>
     <p class='login-err' id='loginErr' aria-live='polite'></p>
+    <button type='button' class='login-otp-toggle' id='loginOtpToggle'>Forgot your code? Email me a sign-in code</button>
+    <div class='login-otp' id='loginOtp' hidden>
+      <label class='login-field'>
+        <span class='login-lab'>Player's first name</span>
+        <input class='login-in' id='loginOtpName' type='text' autocomplete='off' placeholder='e.g. Lewie'>
+      </label>
+      <button type='button' class='login-go login-go-outline' id='loginOtpSend'>Email me a code</button>
+      <div id='loginOtpStep2' hidden>
+        <label class='login-field'>
+          <span class='login-lab'>6-digit code from your email</span>
+          <input class='login-in' id='loginOtpCode' type='text' inputmode='numeric' autocomplete='one-time-code' maxlength='6' placeholder='&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;'>
+        </label>
+        <button type='button' class='login-go' id='loginOtpVerify'>Sign in with code</button>
+      </div>
+      <p class='login-msg' id='loginOtpMsg' aria-live='polite'></p>
+    </div>
     <p class='login-alt'>New to <img class='login-wordmark' id='loginMark' src='wordmark-tm-light.svg' alt='Thwap Hockey'>? <a href='#' id='loginWaitlist'>Join the waitlist.</a></p>
   </form>
   <div class='policy-page' id='policySheet' hidden>
@@ -1234,13 +1341,18 @@ body.login-locked{overflow:hidden}
 </section>
 
 <section id='stick' class='page'>
-<a class='glassclose' href='.' aria-label='Close'>✕</a><div class='heroCard'><div class='big eggstick' id='eggStick' role='img' aria-label='Hockey stick'><img class='egg-ico' id='eggStickImg' src='login/icon-stick.webp' alt=''></div><h1><button type='button' class='titletip' data-daytip>Today’s<span class='titletip-date'>Sunday, September 13</span></button> Stickhandling</h1><p>Head up, soft hands and clean puck movement.</p><div class='pills'><span class='pill' id='stickTime'>about 10-15 min</span><span class='pill pill-optional' id='stickOptional' hidden>optional training</span></div></div>
+<a class='glassclose' href='.' aria-label='Close'>✕</a><div class='heroCard'><div class='big eggstick' id='eggStick' role='img' aria-label='Hockey stick'><img class='egg-ico' id='eggStickImg' src='login/icon-stick.webp' alt=''></div><h1><button type='button' class='titletip' data-daytip>Today’s<span class='titletip-date'>Sunday, September 13</span></button> Hands</h1><p>Head up, soft hands and clean puck movement.</p><div class='pills'><span class='pill' id='stickTime'>about 10-15 min</span><span class='pill pill-optional' id='stickOptional' hidden>optional training</span></div></div>
 <div id='stickList'></div>
 </section>
 
 <section id='shoot' class='page'>
 <a class='glassclose' href='.' aria-label='Close'>✕</a><div class='heroCard'><div class='big eggnet' id='eggNet' role='img' aria-label='Hockey net'><img class='egg-ico' src='login/icon-net.webp' alt=''></div><h1><button type='button' class='titletip' data-daytip>Today’s<span class='titletip-date'>Sunday, September 13</span></button> Shooting</h1><p>Purposeful shots, not just more shots.</p><div class='pills'><span class='pill' id='shootTime'>about 15 min</span><span class='pill pill-optional' id='shootOptional' hidden>optional training</span></div></div>
 <div id='shootList'></div>
+</section>
+
+<section id='pass' class='page'>
+<a class='glassclose' href='.' aria-label='Close'>✕</a><div class='heroCard'><div class='big eggpass' id='eggPass' role='img' aria-label='Passing'><img class='egg-ico' src='login/icon-pass.webp' alt=''></div><h1>Passing <span class='soon-tag soon-tag-lg'>Soon</span></h1><p>Tape-to-tape passing, give-and-go, and reading the ice.</p><div class='pills'><span class='pill' id='passTime'>about 15 min</span></div></div>
+<div id='passList'></div>
 </section>
 
 <section id='coachhome' class='page'>
@@ -1293,7 +1405,7 @@ body.login-locked{overflow:hidden}
   </div>
 </div>
 <div class='rfilter' id='rFilter' hidden><span id='rFilterLab'></span> <button type='button' class='rfilter-clear' id='rFilterClear'>Clear</button></div>
-<div class='roster-playershead'><div class='coachcoaches-h'>Players</div><button type='button' class='roster-edit roster-coachonly' id='rosterEdit' aria-label='Edit players'><span aria-hidden='true'>&#9998;</span></button><div class='roster-editactions roster-coachonly' id='rosterEditActions' hidden><button type='button' class='roster-editcancel' id='rosterEditCancel'>Cancel</button><button type='button' class='roster-editdone' id='rosterEditDone'>Done</button></div></div>
+<div class='roster-playershead'><div class='coachcoaches-h'>Players</div><button type='button' class='roster-edit roster-coachonly' id='rosterEdit' aria-label='Edit players'><span aria-hidden='true'>&#9998;</span></button><div class='roster-editactions roster-coachonly' id='rosterEditActions' hidden><button type='button' class='roster-editcancel' id='rosterEditCancel'>Cancel</button><button type='button' class='roster-editdone' id='rosterEditDone'>Done</button></div><button type='button' class='roster-edit roster-playeronly' id='rosterEditSelf' aria-label='Edit my details'><span aria-hidden='true'>&#9998;</span></button><div class='roster-editactions roster-playeronly' id='rosterEditSelfActions' hidden><button type='button' class='roster-editcancel' id='rosterEditSelfCancel'>Cancel</button><button type='button' class='roster-editdone' id='rosterEditSelfDone'>Done</button></div></div>
 <div class='roster' id='roster-grid'><a href='#player' class='pcard' data-name='Alder Reese'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>71</span><span class='pcard-bnname'>Alder</span></div></a><a href='#player' class='pcard' data-name='Brooklyn Coughlan'><div class='pcard-bignum pos-def'><span class='pcard-bn'>92</span><span class='pcard-bnname'>Brooklyn</span></div></a><a href='#player' class='pcard' data-name='Dawson Huffman'><div class='pcard-bignum pos-def'><span class='pcard-bn'>19</span><span class='pcard-bnname'>Dawson</span></div></a><a href='#player' class='pcard' data-name='Dominic Cinque'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>98</span><span class='pcard-bnname'>Dominic</span></div></a><a href='#player' class='pcard' data-name='Eugene Kuhn'><div class='pcard-bignum pos-def'><span class='pcard-bn'>3</span><span class='pcard-bnname'>Eugene</span></div></a><a href='#player' class='pcard' data-name='Evan Ewing'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>13</span><span class='pcard-bnname'>Evan</span></div></a><a href='#player' class='pcard' data-name='Greyson Wertz'><div class='pcard-bignum pos-def'><span class='pcard-bn'>32</span><span class='pcard-bnname'>Greyson</span></div></a><a href='#player' class='pcard' data-name='Issac Moyer'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>53</span><span class='pcard-bnname'>Issac</span></div></a><a href='#player' class='pcard' data-name='Johnny Eraman'><div class='pcard-bignum pos-goalie'><span class='pcard-bn'>1</span><span class='pcard-bnname'>Johnny</span></div></a><a href='#player' class='pcard' data-name='Joziah Soto'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>59</span><span class='pcard-bnname'>Joziah</span></div></a><a href='#player' class='pcard pcard-you-card' data-name='Lewie'><img class='pcard-cardart' src='cards/lewie_photo.png' alt='Lewie'></a><a href='#player' class='pcard' data-name='Liam Delatorre'><div class='pcard-bignum pos-def'><span class='pcard-bn'>29</span><span class='pcard-bnname'>Liam</span></div></a><a href='#player' class='pcard' data-name='Maddux Jones'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>18</span><span class='pcard-bnname'>Maddux</span></div></a><a href='#player' class='pcard' data-name='Oliver Moyer'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>90</span><span class='pcard-bnname'>Oliver</span></div></a><a href='#player' class='pcard' data-name='Teddy Diss'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>11</span><span class='pcard-bnname'>Teddy</span></div></a><a href='#player' class='pcard' data-name='William Schnell'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>16</span><span class='pcard-bnname'>William</span></div></a></div>
 <div class='rsearch-empty' id='rsearchEmpty' hidden></div>
 <div class='pgate' id='switchGate' hidden>
@@ -1323,7 +1435,7 @@ body.login-locked{overflow:hidden}
     </select></label>
     <label class='sheet-lab'>Parent email (1)<input class='pgate-in' id='peEmail' type='email' inputmode='email' autocomplete='off' placeholder='parent@email.com'></label>
     <label class='sheet-lab'>Parent email (2)<input class='pgate-in' id='peEmail2' type='email' inputmode='email' autocomplete='off' placeholder='second parent (optional)'></label>
-    <div class='sheet-pin'>Player code (PIN)<span class='sheet-pin-val' id='pePin'>&mdash;</span><span class='sheet-pin-hint'>In case the player or parent forgets it. To reset it, change the jersey number above.</span></div>
+    <div class='sheet-pin'>Player code (PIN)<span class='sheet-pin-val' id='pePin'>&mdash;</span><span class='sheet-pin-hint'>In case the player or parent forgets it.</span><button type='button' class='sheet-pin-btn' id='peReqCode'>Request new code</button></div>
     <button type='submit' class='pgate-go' id='peSave'>Save</button>
     <button type='button' class='pe-remove' id='peRemove'>Remove from roster</button>
     <div class='pe-confirm' id='peConfirm' hidden>
@@ -1339,6 +1451,21 @@ body.login-locked{overflow:hidden}
       </div>
     </div>
     <p class='pgate-msg' id='peMsg' aria-live='polite'></p>
+  </form>
+</div>
+<div class='sheet' id='playerSelfSheet' hidden>
+  <div class='sheet-scrim' id='psScrim'></div>
+  <form class='sheet-panel' id='playerSelfForm' novalidate>
+    <button type='button' class='pgate-x' id='psX' aria-label='Close'>&#215;</button>
+    <h2 class='pgate-h'>Edit my details</h2>
+    <label class='sheet-lab'>First name<input class='pgate-in' id='psFirst' type='text' autocomplete='off' required></label>
+    <label class='sheet-lab'>Last name<input class='pgate-in' id='psLast' type='text' autocomplete='off'></label>
+    <label class='sheet-lab'>Jersey number<input class='pgate-in' id='psNum' type='text' inputmode='numeric' autocomplete='off'></label>
+    <label class='sheet-lab'>Parent email (1)<input class='pgate-in' id='psEmail' type='email' inputmode='email' autocomplete='off' placeholder='parent@email.com'></label>
+    <label class='sheet-lab'>Parent email (2)<input class='pgate-in' id='psEmail2' type='email' inputmode='email' autocomplete='off' placeholder='second parent (optional)'></label>
+    <div class='sheet-pin'>Player code (PIN)<span class='sheet-pin-val' id='psPin'>&mdash;</span><span class='sheet-pin-hint'>In case the player or parent forgets it.</span><button type='button' class='sheet-pin-btn' id='psReqCode'>Request new code</button></div>
+    <button type='submit' class='pgate-go' id='psSave'>Save</button>
+    <p class='pgate-msg' id='psMsg' aria-live='polite'></p>
   </form>
 </div>
 <div class='sheet' id='asstSheet' hidden>
@@ -1360,6 +1487,17 @@ body.login-locked{overflow:hidden}
     <button type='submit' class='pgate-go' id='asSave'>Add assistant</button>
     <p class='pgate-msg' id='asMsg' aria-live='polite'></p>
   </form>
+</div>
+<div class='sheet' id='coachInfoSheet' hidden>
+  <div class='sheet-scrim' id='coachInfoScrim'></div>
+  <div class='sheet-panel'>
+    <button type='button' class='pgate-x' id='coachInfoX' aria-label='Close'>&#215;</button>
+    <div class='cinfo-head'>
+      <span class='cinfo-av' id='coachInfoAv'></span>
+      <div><div class='cinfo-name' id='coachInfoName'>Coach</div><div class='cinfo-role' id='coachInfoRole'></div></div>
+    </div>
+    <p class='cinfo-note'>Your team&rsquo;s coach. Reach out through your team&rsquo;s usual channel.</p>
+  </div>
 </div>
 <div class='sheet' id='coachProfileGate' hidden>
   <div class='sheet-scrim' id='coachProfileScrim'></div>
@@ -1442,14 +1580,14 @@ body.login-locked{overflow:hidden}
 <div class='planwrap' id='planWrap'>
   <div class='plancard'>
     <div class='plancard-h'>Weekly training plan</div>
-    <p class='plancard-p'>Pick what your team trains each day. Tap a discipline to add or remove it; the count shows how many drills are set. Save when you&rsquo;re done so your team sees it.</p>
+    <p class='plancard-p'>Tap a discipline to set what your team trains each day, then Save.</p>
     <div class='plangrid' id='planGrid'></div>
     <button type='button' class='plansave' id='planSave' disabled>Save plan</button>
     <p class='plan-done' id='planDone' hidden>Saved! Your team sees this plan.</p>
   </div>
   <div class='tgoal-wrap' id='tgoalBox'>
     <div class='tgoal-h'>Team goal for the game</div>
-    <p class='tgoal-p'>Set one focus for the whole team. It shows in every player&rsquo;s Game Day plan, alongside their own two goals. Leave it empty to give players all three picks.</p>
+    <p class='tgoal-p'>One team focus, shown in every player&rsquo;s Game Day plan. Leave it empty to give players all three picks.</p>
     <input class='tgoal-in' id='tgoalIn' type='text' maxlength='80' placeholder='e.g. Talk on the ice'>
     <button type='button' class='tgoal-save' id='tgoalSave'>Save team goal</button>
     <p class='tgoal-done' id='tgoalDone' hidden>Saved! Your team sees this.</p>
@@ -1512,7 +1650,9 @@ body.login-locked{overflow:hidden}
 <button type='button' class='metric on' data-disc='all'><span class='metric-label'>All</span><span class='metric-num' data-total='all'>0</span></button>
 <button type='button' class='metric' data-disc='stick'><span class='metric-label'>🏒 Hands</span><span class='metric-num' data-total='stick'>0</span></button>
 <button type='button' class='metric' data-disc='shoot'><span class='metric-label'>🥅 Shoot</span><span class='metric-num' data-total='shoot'>0</span></button>
+<button type='button' class='metric' data-disc='pass' id='metricPass' hidden><span class='metric-label'>🎯 Passing</span><span class='metric-num' data-total='pass'>0</span></button>
 <button type='button' class='metric' data-disc='dryland'><span class='metric-label'>⚡ Dryland</span><span class='metric-num' data-total='dryland'>0</span></button>
+<button type='button' class='metric' data-disc='netplay' id='metricNetplay' hidden><span class='metric-label'>🧤 Net play</span><span class='metric-num' data-total='netplay'>0</span></button>
 </div>
 <p id='boardscope' class='lb-scope'>Everyone, all training</p>
 <div class='board' id='board'></div>
@@ -1603,9 +1743,9 @@ body.login-locked{overflow:hidden}
       rows[cat].style.display = (onCats.indexOf(cat)<0) ? 'none' : '';
     });
   }).catch(function(){});
-})();})();</script><div class='forrow'><span class='forline'>3 things, about 30 min</span><button type='button' class='daytip daytip-chip' id='dayTip' aria-label='Show today’s date'>Today<span class='daydate' id='dayDate'>Sunday, September 13</span></button></div></div>
+})();})();</script><div class='forrow'><div class='dowrap' id='doWrap'><div class='dolead' id='doLead'></div><div class='discline' id='discLine'></div></div></div>
 <div class='cards'>
-<a class='pnextgame' id='pNextGame' href='hockey_game_goals.html'>
+<a class='pnextgame' id='pNextGame' href='hockey_game_goals.html' hidden>
   <div class='png-top'>
     <div class='png-head'>
       <span class='png-goallight' role='img' aria-label='Target'><img class='nav-ico' src='login/icon-target.webp' alt=''></span>
@@ -1617,12 +1757,13 @@ body.login-locked{overflow:hidden}
   <div class='png-focus' id='pngFocus' hidden><span class='png-focus-lab'>Coach wants everyone on</span><span class='png-focus-goal' id='pngFocusGoal'></span></div>
   <div class='png-cta' id='pngCta'>Set your game goals</div>
 </a>
-<a class='nav nav-stick' href='#stick'><div class='ico'><img class='nav-ico' src='login/icon-stick.webp' alt=''></div><div><h2>Stickhandling</h2><p>Hands + puck control, about 10-15 min</p></div><div class='chev'>›</div></a>
+<a class='nav nav-stick' href='#stick'><div class='ico'><img class='nav-ico' src='login/icon-stick.webp' alt=''></div><div><h2>Hands</h2><p>Stickhandling + puck control, about 10-15 min</p></div><div class='chev'>›</div></a>
 <a class='nav nav-shoot' href='#shoot'><div class='ico'><img class='nav-ico' src='login/icon-net.webp' alt=''></div><div><h2>Shooting</h2><p>Accuracy + release, about 15 min</p></div><div class='chev'>›</div></a>
 <a class='nav nav-dryland' href='#dryland'><div class='ico'><img class='nav-ico' src='login/icon-bolt.webp' alt=''></div><div><h2>Dryland</h2><p>Speed + power + balance, about 15 min</p></div><div class='chev'>›</div></a>
+<a class='nav nav-pass' href='#pass'><div class='ico'><img class='nav-ico' src='login/icon-pass.webp' alt=''></div><div><h2>Passing <span class='soon-tag'>Coming soon</span></h2><p>Tape-to-tape + vision, coming early November</p></div><div class='chev'>›</div></a>
 </div>
 </section>
-<div class='footer'><span class='slogan'>Compete. Improve. Have fun.</span><div class='footer-actions'><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button><div class='footmenu-wrap'><button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button><div class='footmenu' id='footMenu' hidden role='menu'><a class='footmenu-item' id='menuSignout' href='#' role='menuitem'>Sign out</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a></div></div></div></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div>
+<div class='footer'><span class='slogan'>Compete. Improve. Have fun.</span><div class='footer-actions'><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button><div class='footmenu-wrap'><button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button><div class='footmenu' id='footMenu' hidden role='menu'><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a><a class='footmenu-item' id='menuSignout' href='#' role='menuitem'>Sign out</a></div></div></div></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div>
 </div><script>(function(){
 /* Player gate: tapping a drill card asks who you are, then continues to the drill. */
 var PLAYER='bfPlayer';
@@ -1812,29 +1953,30 @@ window.thwapActiveTeam=function(coach){
     function initials(nm,em){ var s=(nm||em||'').trim(); if(!s) return '?'; var p=s.split(/\s+/); return (p[0].charAt(0)+(p[1]?p[1].charAt(0):'')).toUpperCase(); }
     function render(coaches){
       box.hidden=false;
-      var amHead=coaches.some(function(c){ return c.role==='head' && c.email===myEmail; });
+      var amHead=coaches.some(function(c){ return c.role==='head' && String(c.email||'').toLowerCase()===myEmail; });
       strip.innerHTML='';
       coaches.forEach(function(c){
         var nm=c.name||c.email;
         var pill=document.createElement('span'); pill.className='bcoach';
         var isHead=c.role==='head';
         var canRemove=amHead && c.role==='assistant';
-        var isMe=c.email===myEmail;
+        var isMe=String(c.email||'').toLowerCase()===myEmail;
         pill.innerHTML='<span class="bcoach-av"></span>'+
-          '<span>'+(isMe?'<button type="button" class="bcoach-nmbtn"><span class="bcoach-nm"></span></button>':'<span class="bcoach-nm"></span>')+'<span class="bcoach-role" style="display:block">'+(isHead?'Head coach':'Assistant')+'</span></span>'+
+          '<span><button type="button" class="bcoach-nmbtn"><span class="bcoach-nm"></span></button><span class="bcoach-role" style="display:block">'+(isHead?'Head coach':'Assistant')+'</span></span>'+
           (isMe?'<button type="button" class="bcoach-btn" aria-label="Edit your profile">\u270E</button>':(canRemove?'<button type="button" class="bcoach-btn bcoach-remove" aria-label="Remove assistant">\u2715</button>':''));
         var av=pill.querySelector('.bcoach-av');
         if(c.photo){ var im=document.createElement('img'); im.src=c.photo; im.alt=nm; av.appendChild(im); } else { av.textContent=initials(c.name,c.email); }
         pill.querySelector('.bcoach-nm').textContent=nm;
         var pencil=pill.querySelector('.bcoach-btn:not(.bcoach-remove)');
+        var nmBtn=pill.querySelector('.bcoach-nmbtn');
         if(isMe){
-          /* Tapping the coach's own NAME (and the pencil) opens the profile editor.
-             Scoped to the name button, NOT the whole pill, so a stray tap on the
-             wide chip does not open it. */
-          var nmBtn=pill.querySelector('.bcoach-nmbtn');
+          /* The coach's own chip: name + pencil open the editable profile. */
           function openProfile(){ if(window.thwapOpenCoachProfile) window.thwapOpenCoachProfile(); }
           if(nmBtn) nmBtn.addEventListener('click',openProfile);
           if(pencil) pencil.addEventListener('click',openProfile);
+        } else {
+          /* Another coach's chip: open the read-only info sheet. */
+          if(nmBtn) nmBtn.addEventListener('click',(function(nm2,role2,photo2){ return function(){ if(window.thwapShowCoachInfo) window.thwapShowCoachInfo(nm2,role2,photo2); }; })(nm,isHead?'Head coach':'Assistant',c.photo||''));
         }
         var rm=pill.querySelector('.bcoach-remove');
         if(rm) rm.addEventListener('click',function(){
@@ -1906,6 +2048,8 @@ window.thwapActiveTeam=function(coach){
       var msgEl=document.getElementById('coachProfileMsg');
       var dataUrl='';
       function open(){
+        /* Ignore an open within the post-navigation guard window (the Team-tap auto-open). */
+        if(Date.now()<(window.__thwapNavGuardUntil||0)) return;
         if(nameIn) nameIn.value=coach.name&&coach.name!=='Coach'?coach.name:'';
         dataUrl=coach.photo||'';
         if(dataUrl){ imgEl.src=dataUrl; imgEl.hidden=false; initEl.hidden=true; } else { imgEl.hidden=true; initEl.hidden=false; initEl.textContent='+'; }
@@ -2018,7 +2162,7 @@ window.thwapActiveTeam=function(coach){
         var card=e.target.closest && e.target.closest('.pcard[data-name]');
         if(!card) return; /* let the +Player card through */
         e.preventDefault(); e.stopPropagation();
-        openPlayerEdit(card.getAttribute('data-name')||'');
+        openPlayerEdit(card.getAttribute('data-name')||'', card);
       }, true);
     })();
     /* Player-edit side sheet. */
@@ -2033,27 +2177,68 @@ window.thwapActiveTeam=function(coach){
     var SEASON_CODES=['2027','2026'];
     function pinFor(num){ var n=String(num==null?'':num).trim(); return n?(n+SEASON_CODES[0]):'\u2014'; }
     function peSheetShow(on){ if(sheet) sheet.hidden=!on; if(!on){ var c=document.getElementById('peConfirm'); if(c) c.hidden=true; } }
-    function openPlayerEdit(name){
-      var first=String(name||'').trim().split(/\s+/)[0]; pePid=first.toLowerCase();
+    function openPlayerEdit(name, cardEl){
+      var parts=String(name||'').trim().split(/\s+/);
+      var first=parts[0]||''; var last=parts.slice(1).join(' '); pePid=first.toLowerCase();
       if(peMsg) peMsg.textContent='';
       var c=document.getElementById('peConfirm'); if(c) c.hidden=true;
+      /* Open the sheet IMMEDIATELY with what we already know, so it never waits on
+         the network. The jersey comes straight off the tapped card's big-number
+         markup (always present); the fetch below then fills emails + canonical
+         fields in the background. */
+      var seed=(typeof infoFor==='function')?infoFor(name):null;
+      var cardNum=''; try{ var bn=cardEl&&cardEl.querySelector('.pcard-bn'); if(bn) cardNum=(bn.textContent||'').trim(); }catch(e){}
+      if(peFirst) peFirst.value=first;
+      if(peLast) peLast.value=last;
+      if(peNum) peNum.value=cardNum||(seed&&seed.info&&seed.info.num!=null?seed.info.num:'');
+      if(pePos) pePos.value=(seed&&seed.info&&seed.info.pos)||'F';
+      if(peEmail) peEmail.value='';
+      if(peEmail2) peEmail2.value='';
+      if(pePin) pePin.textContent=pinFor(cardNum||(seed&&seed.info&&seed.info.num));
+      peSheetShow(true);
+      /* Background: fetch the real record and fill emails + canonical fields. If a
+         cached roster is available (from the roster paint), use it without a round-trip. */
+      function fill(m){
+        if(!m) return;
+        if(peFirst && m.firstName) peFirst.value=m.firstName;
+        if(peLast && m.lastName!=null) peLast.value=m.lastName;
+        if(peNum && m.number!=null) peNum.value=m.number;
+        if(pePos && m.position) pePos.value=m.position;
+        if(peEmail) peEmail.value=m.parentEmail||'';
+        if(peEmail2) peEmail2.value=m.parentEmail2||'';
+        if(pePin) pePin.textContent=pinFor(m.number);
+      }
+      var cached=(window.__thwapRosterCache&&window.__thwapRosterCache.members)||null;
+      if(cached){ fill(cached.filter(function(x){ return (x.playerId||x.firstName||'').toLowerCase()===pePid; })[0]); }
       fetch('/api/coach?action=roster&code='+encodeURIComponent(code)+'&coachToken='+encodeURIComponent(coach.token))
         .then(function(r){ return r.json(); }).then(function(j){
-          var m=(j&&j.members||[]).filter(function(x){ return (x.playerId||x.firstName||'').toLowerCase()===pePid; })[0]||{};
-          if(peFirst) peFirst.value=m.firstName||first;
-          if(peLast) peLast.value=m.lastName||'';
-          if(peNum) peNum.value=(m.number!=null?m.number:'');
-          if(pePos) pePos.value=m.position||'F';
-          if(peEmail) peEmail.value=m.parentEmail||'';
-          if(peEmail2) peEmail2.value=m.parentEmail2||'';
-          if(pePin) pePin.textContent=pinFor(m.number);
-          peSheetShow(true);
-        }).catch(function(){ peSheetShow(true); });
+          if(j&&j.members){ window.__thwapRosterCache=j; }
+          var m=(j&&j.members||[]).filter(function(x){ return (x.playerId||x.firstName||'').toLowerCase()===pePid; })[0];
+          fill(m);
+        }).catch(function(){});
     }
     document.getElementById('peX') && document.getElementById('peX').addEventListener('click',function(){ peSheetShow(false); });
     document.getElementById('peScrim') && document.getElementById('peScrim').addEventListener('click',function(){ peSheetShow(false); });
     /* Live PIN recompute as the coach edits the jersey number. */
     if(peNum) peNum.addEventListener('input',function(){ if(pePin) pePin.textContent=pinFor(peNum.value); });
+    /* Request new code: emails the player code to the parent email(s) on file
+       (both parents when a second email is set), server-side. Changing the jersey
+       number changes the code, so a forgotten code is re-sent, never reset here. */
+    var peReqCode=document.getElementById('peReqCode');
+    if(peReqCode) peReqCode.addEventListener('click',function(){
+      var hasEmail=(peEmail&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((peEmail.value||'').trim()));
+      if(!hasEmail){ if(peMsg) peMsg.textContent='Add a parent email above first, then Save.'; return; }
+      var lab=peReqCode.textContent;
+      peReqCode.disabled=true; peReqCode.textContent='Sending...';
+      fetch('/api/coach?action=request-code',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code,playerId:pePid})})
+        .then(function(r){ return r.json(); }).then(function(){
+          peReqCode.textContent='Code sent'; peReqCode.classList.add('done');
+          setTimeout(function(){ peReqCode.textContent=lab; peReqCode.classList.remove('done'); peReqCode.disabled=false; },2600);
+        }).catch(function(){
+          peReqCode.textContent=lab; peReqCode.disabled=false;
+          if(peMsg) peMsg.textContent='Could not reach the server.';
+        });
+    });
     if(peForm) peForm.addEventListener('submit',function(e){
       e.preventDefault();
       var body={code:code,coachToken:coach.token,playerId:pePid,
@@ -2249,7 +2434,7 @@ window.thwapActiveTeam=function(coach){
   }
   function ytEmbed(video,name){
     var m=String(video||'').match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([A-Za-z0-9_-]{11})/);
-    if(m) return "<button type=\"button\" class=\"exvid-link\" data-yt=\""+m[1]+"\"><span class=\"exvid-tri\">\u25B6</span> Watch how</button><div class=\"exvid-slot\"></div>";
+    return ""; /* Watch-how videos removed: clips not accurate to the drill */
     return "";
   }
   function esc(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
@@ -2257,7 +2442,7 @@ window.thwapActiveTeam=function(coach){
      each category, so per-drill time = DAY_MIN / DAY_COUNT[cat] (the player's day
      set is ~DAY_MIN total). Coach stays under DAY_MIN for the day/category. */
   var DAY_MIN=15;
-  var DAY_COUNT={stick:2, shoot:5, dryland:6};
+  var DAY_COUNT={stick:3, shoot:5, dryland:6};
   function perDrillMin(cat){ var n=DAY_COUNT[cat]||6; return DAY_MIN/n; }
   function estMin(cat,count){ return Math.round(count*perDrillMin(cat)); }
   var pkStaged=[]; /* staged drill names for the open day/category (committed on Save) */
@@ -2421,11 +2606,15 @@ window.thwapActiveTeam=function(coach){
           var nm=c.name||'Coach';
           var isHead=c.role==='head';
           var pill=document.createElement('span'); pill.className='bcoach';
-          pill.innerHTML='<span class="bcoach-av"></span><span><span class="bcoach-nm"></span><span class="bcoach-role" style="display:block">'+(isHead?'Head coach':'Assistant')+'</span></span>';
+          pill.innerHTML='<span class="bcoach-av"></span><span><button type="button" class="bcoach-nmbtn"><span class="bcoach-nm"></span></button><span class="bcoach-role" style="display:block">'+(isHead?'Head coach':'Assistant')+'</span></span>';
           var av=pill.querySelector('.bcoach-av');
           if(c.photo){ var im=document.createElement('img'); im.src=c.photo; im.alt=nm; av.appendChild(im); }
           else { var s=nm.trim().split(/\s+/); av.textContent=((s[0]||'?').charAt(0)+(s[1]?s[1].charAt(0):'')).toUpperCase(); }
           pill.querySelector('.bcoach-nm').textContent=nm;
+          /* Player/parent view: tapping a coach chip opens a read-only info sheet
+             (a player cannot edit a coach). */
+          var nmBtn=pill.querySelector('.bcoach-nmbtn');
+          if(nmBtn) nmBtn.addEventListener('click',function(){ if(window.thwapShowCoachInfo) window.thwapShowCoachInfo(nm,isHead?'Head coach':'Assistant',c.photo||''); });
           strip.appendChild(pill);
         });
       }).catch(function(){});
@@ -2438,6 +2627,7 @@ window.thwapActiveTeam=function(coach){
     });
   }
   window.thwapRescaleRoster=rescaleRoster;
+  function repaintRosterGrid(){
   document.querySelectorAll('#roster .pcard').forEach(function(cardEl){
     if(cardEl.classList.contains('pcard-add')) return;
     var built=infoFor(cardEl.getAttribute('data-name'));
@@ -2447,7 +2637,7 @@ window.thwapActiveTeam=function(coach){
       if(!window.buildFront) return;
       cardEl.innerHTML="<div class='pcard-card' style='position:absolute;inset:0;overflow:hidden'>"+
         "<div style='position:absolute;top:0;left:0;width:"+BASE+"px;height:"+(BASE*7/5)+"px;transform-origin:top left' data-pcbase='1'>"+
-        window.buildFront(built.info, built.slug, photoUrl, 'red')+"</div></div>";
+        window.buildFront(built.info, built.slug, photoUrl)+"</div></div>";
       if(window.thwapRescaleRoster) window.thwapRescaleRoster();
     }
     paintCard(photo);
@@ -2458,6 +2648,10 @@ window.thwapActiveTeam=function(coach){
       window.thwapPhotoResolve(built.slug, function(url){ if(url && url!==photo){ paintCard(url); } });
     }
   });
+  }
+  window.thwapRepaintRoster=repaintRosterGrid;
+  repaintRosterGrid();
+  if(window.thwapEnsureAllBoard) window.thwapEnsureAllBoard();
   rescaleRoster();
   window.addEventListener('resize', rescaleRoster);
   window.addEventListener('load', function(){ setTimeout(rescaleRoster,0); });
@@ -2488,6 +2682,12 @@ window.thwapActiveTeam=function(coach){
       var isCoach=document.body.classList.contains('is-coach');
       var name=cardEl.getAttribute('data-name');
       if(isCoach && window.openPlayerPage){ window.openPlayerPage(name,'team'); return; }
+      /* A player tapping their OWN card lands on the own-card view (front + theme
+         picker + "See my stats" -> stats page). Tapping a teammate opens the
+         read-only viewer. Match on first name vs the signed-in bfPlayer. */
+      var mine=''; try{ mine=(localStorage.getItem('bfPlayer')||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,''); }catch(e){}
+      var tapped=String(name||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,'');
+      if(mine && tapped===mine && window.thwapOpenMyCard){ window.thwapOpenMyCard(); return; }
       if(window.openTeammateCard){ window.openTeammateCard(name); return; }
     });
   });
@@ -2535,19 +2735,31 @@ window.addEventListener('hashchange',function(){ if(location.hash===''||location
     .then(function(r){ return r.json(); })
     .then(function(j){
       var g=j&&j.ok&&j.next&&j.next.nextGame; if(!g) return;
+      var days=daysUntil(g.date);
+      /* Hide Game Day Goals until 2 days before the game (still show on game day
+         and afterward for the log-it prompt). Earlier than that, no card at all. */
+      if(days>2){ card.hidden=true; return; }
+      card.hidden=false;
       var dt=pd(g.date);
       var opp=document.getElementById('pngOpp'); if(opp) opp.textContent='Game '+(g.home?'vs ':'at ')+(g.opponent||'TBD');
       var meta=document.getElementById('pngMeta');
       if(meta){ var b=[MON[dt.getMonth()]+' '+dt.getDate()]; if(g.time) b.push(ftime(g.time)); if(g.place) b.push(g.place); meta.textContent=b.join(' | '); }
-      var days=daysUntil(g.date), cnt=document.getElementById('pngCount'), dn=document.getElementById('pngDays');
-      if(cnt&&dn&&days>=0&&days<=14){ dn.textContent=days===0?'today':days; if(days===0) cnt.querySelector('span').textContent=''; cnt.hidden=false; }
+      var cnt=document.getElementById('pngCount'), dn=document.getElementById('pngDays');
+      if(cnt&&dn&&days>=0){ dn.textContent=days===0?'today':days; if(days===0) cnt.querySelector('span').textContent=''; cnt.hidden=false; }
+      /* Within the window: prompt to set goals (or, once the game has passed, to log them).
+         Once set, the done-state below wins regardless. */
+      var cta=document.getElementById('pngCta');
+      if(cta&&!set){
+        if(days>=0){ cta.textContent='Set your game goals'; cta.classList.remove('png-cta-soon'); }
+        else { cta.textContent='How did it go? Log your goals'; cta.classList.remove('png-cta-soon'); }
+      }
     }).catch(function(){});
   /* Coach's team goal (the shared focus) as the card's focus line. */
   fetch('/api/coach?action=team-goal&code='+encodeURIComponent(CODE))
     .then(function(r){ return r.json(); })
     .then(function(j){ if(j&&j.ok&&j.teamGoal&&j.teamGoal.text){ var fg=document.getElementById('pngFocusGoal'), fw=document.getElementById('pngFocus'); if(fg) fg.textContent=j.teamGoal.text; if(fw) fw.hidden=false; } }).catch(function(){});
   var set=false; try{ var picks=JSON.parse(localStorage.getItem('thwapGameGoals')||'[]'); set=Array.isArray(picks)&&picks.length>0; }catch(_){}
-  if(set){ var cta=document.getElementById('pngCta'); if(cta){ cta.textContent='Your game goals are set'; cta.classList.add('png-cta-done'); } }
+  if(set){ var ctaDone=document.getElementById('pngCta'); if(ctaDone){ ctaDone.textContent='Your game goals are set'; ctaDone.classList.add('png-cta-done'); ctaDone.classList.remove('png-cta-soon'); } }
 })();
 /* A coach must never land on #home: it is display:none!important for coaches, so
    landing there shows a blank/stuck page (this is why the Team X looked like it
@@ -2558,6 +2770,10 @@ window.addEventListener('hashchange',function(){
     location.hash='#coachhome';
   }
 });
+/* Coach profile guard: any navigation opens a brief window during which the coach
+   profile editor refuses to open. This kills the auto-open the coach saw when
+   tapping Team (a click landing as the page changes); a genuine later tap works. */
+window.addEventListener('hashchange',function(){ window.__thwapNavGuardUntil=Date.now()+450; });
 /* Close (x) on coach/shared pages (Team, Plan, Standings) must land on the viewer's
    real home: a coach's home is #coachhome (#home is hidden for coaches), a player's
    is #home. href='#home' is the no-JS fallback; this routes coaches correctly. */
@@ -2615,7 +2831,7 @@ var MOVE={
     steps:['Balance: Stand on one leg with a soft bend in that knee.','Tip: Bend at the hips. Reach toward the floor as your back leg lifts behind you.','Stay level: Keep your back flat and hips level, like a seesaw tipping.','Stand up: Squeeze the standing leg to stand back up tall. Do all reps, then switch legs.']},
   wallsit:{emoji:'🪑', cue:'Sit against the wall. No chair allowed.', video:'https://www.youtube.com/watch?v=M5MKJ4T4e2k', audio:'dry_07',
     steps:['Back flat: Put your back flat against a wall and walk your feet out.','Slide down: Slide down until your knees make an L shape, like sitting in a chair.','Hold: Keep your back flat on the wall. Weight in your heels.','Breathe: Hold for the time. Breathe steady. Then stand up and shake it out.']},
-  situps:{emoji:'🤸', cue:'Curl up with your belly, not your neck.', video:'https://www.youtube.com/watch?v=sYszIZLOrDc', audio:'dry_08',
+  situps:{emoji:'💪', cue:'Curl up with your belly, not your neck.', video:'https://www.youtube.com/watch?v=sYszIZLOrDc', audio:'dry_08',
     steps:['Down: Lie on your back, knees bent, feet flat on the floor.','Arms: Cross your arms or reach your hands toward your knees.','Curl: Curl up slowly using your belly, not your neck.','Lower: Lower back down with control. Breathe out on the way up.']},
   plank:{emoji:'🪵', cue:'Hold a strong plank. Tap the opposite shoulder. Don\'t rock.', video:'https://www.youtube.com/watch?v=3aLPIhE4AiY', audio:'dry_09',
     steps:['Set up: Get on your hands and toes, arms straight, body in one straight line.','Stay strong: Squeeze your belly so your hips don\'t sag or twist.','Tap across: Lift one hand and tap the opposite shoulder. Put it back down.','Switch hands: Tap the other way. Keep going, slow and steady. Try not to rock your hips.']},
@@ -2643,30 +2859,30 @@ function d(k,dose,nameOverride){var m=MOVE[k];return {key:k, cat:CAT[k]||'', emo
 var WORKOUTS=window.WORKOUTS=[
   /* Week 1 */
   {id:'w1wed', name:'Power: Base & Technique', emoji:'💥', time:'25-30 min', blurb:'Week 1. Wednesday. Learn the movements, clean landings, confidence.',
-   drills:[d('will','20 seconds / sequence'),d('skater','8× (2 reps)'),d('broad','8× (2 reps)'),d('box','5× (2 reps)'),d('lunge','8× (2 reps)'),d('rdl','5× (2 reps) each side'),d('wallsit','45 seconds'),d('situps','30 (2 reps)'),d('plank','30 seconds (2 reps)')]},
+   drills:[d('will','4 sets of 30'),d('skater','4 sets of 20'),d('broad','4 sets of 8'),d('box','4 sets of 10'),d('lunge','4 sets of 10 per leg'),d('rdl','4 sets of 8 per leg'),d('wallsit','4 sets of 30 sec'),d('situps','4 sets of 15'),d('plank','4 sets of 30 sec')]},
   {id:'w1thu', name:'Speed: Base & Technique', emoji:'🚀', time:'25-30 min', blurb:'Week 1. Thursday. Sharp feet and quick reactions.',
-   drills:[d('will','20 seconds / sequence'),d('stairs','10 yards, 6 reps'),d('sprint','4 reps'),d('reaction','ball drop, before the second bounce'),d('splitsquat','2 × 20 seconds'),d('calf','12 × (2 reps)'),d('deadbug','8 each side'),d('plank','30 seconds (2 reps)')]},
+   drills:[d('will','4 sets of 30'),d('stairs','4 sets, 10 yards'),d('sprint','4 sets'),d('reaction','4 sets of 10'),d('splitsquat','4 sets of 20 sec per leg'),d('calf','4 sets of 20'),d('deadbug','4 sets of 10 per side'),d('plank','4 sets of 30 sec')]},
   {id:'w1fri', name:'Light / Balance', emoji:'⚡', time:'20-25 min', blurb:'Week 1. Friday. Lighter day, balance and control.',
-   drills:[d('will','20 seconds / sequence'),d('skater','3× (2 reps)'),d('box','light balance'),d('rdl','5× (2 reps) each side'),d('wallsit','45 seconds'),d('situps','30 (2 reps)'),d('mcdavid','60 seconds (3 reps)')]},
+   drills:[d('will','4 sets of 30'),d('skater','4 sets of 20'),d('box','4 sets of 10'),d('rdl','4 sets of 8 per leg'),d('wallsit','4 sets of 30 sec'),d('situps','4 sets of 15'),d('mcdavid','4 sets of 60 sec')]},
   /* Week 2 - build */
   {id:'w2wed', name:'Power: Build', emoji:'💥', time:'25-30 min', blurb:'Week 2. Wednesday. Slight volume increase, same movements.',
-   drills:[d('will','20 seconds / sequence'),d('skater','8× (3 reps)'),d('broad','8× (3 reps)'),d('box','6× (2 reps)'),d('lunge','8× (3 reps)'),d('rdl','6× (2 reps) each side'),d('wallsit','45 seconds'),d('situps','30 (2 reps)'),d('plank','35 seconds (2 reps)')]},
+   drills:[d('will','4 sets of 30'),d('skater','4 sets of 20'),d('broad','4 sets of 8'),d('box','4 sets of 10'),d('lunge','4 sets of 10 per leg'),d('rdl','4 sets of 8 per leg'),d('wallsit','4 sets of 30 sec'),d('situps','4 sets of 15'),d('plank','4 sets of 30 sec')]},
   {id:'w2fri', name:'Speed: Build', emoji:'🚀', time:'25-30 min', blurb:'Week 2. Friday. Faster feet, more reps.',
-   drills:[d('will','20 seconds / sequence'),d('stairs','10 yards, 8 reps'),d('sprint','5 reps'),d('reaction','ball drop, before the second bounce'),d('splitsquat','2 × 25 seconds'),d('calf','15 × (2 reps)'),d('deadbug','8 each side'),d('plank','30 seconds (2 reps)')]},
+   drills:[d('will','4 sets of 30'),d('stairs','4 sets, 10 yards'),d('sprint','4 sets'),d('reaction','4 sets of 10'),d('splitsquat','4 sets of 20 sec per leg'),d('calf','4 sets of 20'),d('deadbug','4 sets of 10 per side'),d('plank','4 sets of 30 sec')]},
   {id:'w2sat', name:'Light / Balance', emoji:'⚡', time:'20-25 min', blurb:'Week 2. Saturday. Lighter day, balance and control.',
-   drills:[d('will','20 seconds / sequence'),d('skater','3× (2 reps)'),d('box','light balance'),d('rdl','5× (2 reps) each side'),d('wallsit','45 seconds'),d('situps','30 (2 reps)'),d('mcdavid','60 seconds (3 reps)')]},
+   drills:[d('will','4 sets of 30'),d('skater','4 sets of 20'),d('box','4 sets of 10'),d('rdl','4 sets of 8 per leg'),d('wallsit','4 sets of 30 sec'),d('situps','4 sets of 15'),d('mcdavid','4 sets of 60 sec')]},
   /* Week 3 - peak (lower volume, max speed) */
   {id:'w3wed', name:'Power: Peak', emoji:'💥', time:'25-30 min', blurb:'Week 3. Wednesday. Peak intensity, lower volume. Faster, sharper, not tired.',
-   drills:[d('will','20 seconds / sequence'),d('skater','8× (3 reps)'),d('broad','3× (3 reps)'),d('box','4× (3 reps)'),d('lunge','8× (3 reps)'),d('rdl','5× (2 reps) each side'),d('wallsit','45 seconds'),d('situps','30 (2 reps)'),d('plank','30 seconds (2 reps)')]},
+   drills:[d('will','4 sets of 30'),d('skater','4 sets of 20'),d('broad','4 sets of 8'),d('box','4 sets of 10'),d('lunge','4 sets of 10 per leg'),d('rdl','4 sets of 8 per leg'),d('wallsit','4 sets of 30 sec'),d('situps','4 sets of 15'),d('plank','4 sets of 30 sec')]},
   {id:'w3fri', name:'Speed: Peak', emoji:'🚀', time:'25-30 min', blurb:'Week 3. Friday. Peak intensity, sharp and fast.',
-   drills:[d('will','20 seconds / sequence'),d('stairs','10 yards, 8 reps'),d('sprint','5 reps'),d('reaction','ball drop, before the second bounce'),d('splitsquat','2 × 25 seconds'),d('calf','12 × (2 reps)'),d('deadbug','8 each side'),d('plank','30 seconds (2 reps)')]},
+   drills:[d('will','4 sets of 30'),d('stairs','4 sets, 10 yards'),d('sprint','4 sets'),d('reaction','4 sets of 10'),d('splitsquat','4 sets of 20 sec per leg'),d('calf','4 sets of 20'),d('deadbug','4 sets of 10 per side'),d('plank','4 sets of 30 sec')]},
   {id:'w3sat', name:'Light / Balance', emoji:'⚡', time:'20-25 min', blurb:'Week 3. Saturday. Lighter day, balance and control.',
-   drills:[d('will','20 seconds / sequence'),d('skater','3× (2 reps)'),d('box','light balance'),d('rdl','5× (2 reps) each side'),d('wallsit','45 seconds'),d('situps','30 (2 reps)'),d('mcdavid','60 seconds (3 reps)')]},
+   drills:[d('will','4 sets of 30'),d('skater','4 sets of 20'),d('box','4 sets of 10'),d('rdl','4 sets of 8 per leg'),d('wallsit','4 sets of 30 sec'),d('situps','4 sets of 15'),d('mcdavid','4 sets of 60 sec')]},
   /* Week 4 - taper & pop */
   {id:'w4wed', name:'Power: Taper', emoji:'💥', time:'20-25 min', blurb:'Week 4. Wednesday. Fresh legs, nervous system sharp.',
-   drills:[d('will','20 seconds / sequence'),d('skater','6× (2 reps)'),d('broad','6× (2 reps)'),d('box','3× (2 reps)'),d('lunge','6× (2 reps)'),d('rdl','5× (1 rep) each side'),d('wallsit','30 seconds'),d('situps','30 (2 reps)'),d('plank','30 seconds (1 rep)')]},
+   drills:[d('will','4 sets of 30'),d('skater','4 sets of 20'),d('broad','4 sets of 8'),d('box','4 sets of 10'),d('lunge','4 sets of 10 per leg'),d('rdl','4 sets of 8 per leg'),d('wallsit','4 sets of 30 sec'),d('situps','4 sets of 15'),d('plank','4 sets of 30 sec')]},
   {id:'w4fri', name:'Speed: Taper', emoji:'🚀', time:'20-25 min', blurb:'Week 4. Friday. Fresh and fast, then rest for game day.',
-   drills:[d('will','20 seconds / sequence'),d('stairs','10 yards, 4 reps'),d('sprint','3 reps'),d('reaction','ball drop, before the second bounce'),d('splitsquat','2 × 15 seconds'),d('calf','10 × (2 reps)'),d('mcdavid','60 seconds (3 reps)')]}
+   drills:[d('will','4 sets of 30'),d('stairs','4 sets, 10 yards'),d('sprint','4 sets'),d('reaction','4 sets of 10'),d('splitsquat','4 sets of 20 sec per leg'),d('calf','4 sets of 20'),d('mcdavid','4 sets of 60 sec')]}
 ];
 
 /* Date override: view any day's drills via ?d=MDDYYYY (e.g. ?d=9222027 = Sep 22 2027)
@@ -2721,10 +2937,9 @@ function ytid(url){ if(!url)return ''; var m=String(url).match(/(?:youtu\.be\/|v
 /* Delegated 'Watch how' expand/collapse: loads the YouTube iframe only on tap. One document-level listener serves every render site and survives re-renders. */
 if(!window.__thwapVidDelegated){window.__thwapVidDelegated=true;document.addEventListener('click',function(ev){var link=ev.target.closest&&ev.target.closest('.exvid-link');if(!link)return;ev.preventDefault();var slot=link.nextElementSibling;while(slot&&!(slot.classList&&slot.classList.contains('exvid-slot')))slot=slot.nextElementSibling;if(!slot)return;if(!link.classList.contains('open')){var id=link.getAttribute('data-yt')||'';slot.innerHTML="<div class='exvideo'><iframe src='https://www.youtube-nocookie.com/embed/"+id+"?autoplay=1' title='drill video' loading='lazy' allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture' allowfullscreen></iframe></div>";link.classList.add('open');link.innerHTML="<span class='exvid-tri'>\u25B6</span> Hide video";}else{slot.innerHTML='';link.classList.remove('open');link.innerHTML="<span class='exvid-tri'>\u25B6</span> Watch how";}});}
 function videoBlock(dr){
-  var id=ytid(dr.video);
-  if(id){
-    return "<button type=\"button\" class=\"exvid-link\" data-yt=\""+id+"\"><span class=\"exvid-tri\">\u25B6</span> Watch how</button><div class=\"exvid-slot\"></div>";
-  }
+  /* "Watch how" videos removed from all drills: the linked clips were not accurate
+     to the drill. No-op (drill video: data left intact) so render call sites and the
+     cross-IIFE export stay valid and a real video can be restored later. */
   return "";
 }
 /* videoBlock/ytid are defined inside THIS (dryland) IIFE. The Stickhandling and
@@ -2737,7 +2952,7 @@ window.ytid=ytid; window.videoBlock=videoBlock;
    Files live at audio/<voiceCode>/<slug>.mp3. The slug is on each drill's
    audio: field; the voice code comes from the picker below. One shared <audio>
    element plays them, and one document-level click handler serves every render
-   site (like __thwapVidDelegated). Voices unlock by completed-drill count so more
+   site (like __thwapVidDelegated). Voices unlock by days of training so more
    can be added later just by appending to THWAP_VOICES with a higher unlockAt. */
 var THWAP_VOICES=window.THWAP_VOICES=[
   {code:'can', label:'Canadian',   emoji:'🇨🇦', unlockAt:0},
@@ -2748,7 +2963,8 @@ var THWAP_VOICES=window.THWAP_VOICES=[
   {code:'rus', label:'Russian',    emoji:'🇷🇺', unlockAt:120},
   {code:'swe', label:'Swedish',    emoji:'🇸🇪', unlockAt:150},
   {code:'fin', label:'Finnish',    emoji:'🇫🇮', unlockAt:180}
-  /* unlockAt = days of training (one new accent ~ per month). */
+  /* unlockAt = days of training (one new accent ~ per month). Every voice here has
+     recorded audio under audio/<code>/seg/; add a new rung only once its clips exist. */
 ];
 function thwapVoice(){ try{ return localStorage.getItem('thwapVoice')||'can'; }catch(e){ return 'can'; } }
 function thwapSetVoice(code){ try{ localStorage.setItem('thwapVoice',code); }catch(e){} }
@@ -2804,43 +3020,51 @@ if(!window.__thwapAudDelegated){window.__thwapAudDelegated=true;document.addEven
 });}
 
 /* Voice picker: a kid-friendly chip row (NOT a card). Unlocked voices are
-   selectable; locked ones show dimmed as 'Unlock at N drills'. One delegated
+   selectable; locked ones show as a ladder rung with the accent name and a
+   'unlocks in N days' countdown so the next reward is visible. One delegated
    handler swaps the stored voice and re-marks the selected chip in place. */
 function voicePickerHTML(){
   var cur=thwapVoice();
-  var unlocked=THWAP_VOICES.filter(thwapVoiceUnlocked);
+  /* Use the window-level unlock check so demo-mode's unlock-all wrapper applies
+     (demo-mode wraps window.thwapVoiceUnlocked; the bare local would bypass it). */
+  var isUnlocked=window.thwapVoiceUnlocked||thwapVoiceUnlocked;
+  var unlocked=THWAP_VOICES.filter(isUnlocked);
   var curV=unlocked.filter(function(v){return v.code===cur;})[0]||unlocked[0]||THWAP_VOICES[0];
   var opts=THWAP_VOICES.map(function(v){
-    if(thwapVoiceUnlocked(v)){
+    if(isUnlocked(v)){
       return "<button type=\"button\" class=\"vopt"+(v.code===curV.code?' on':'')+"\" data-voice=\""+v.code+"\" role=\"menuitemradio\">"+(v.emoji?"<span class=\"vopt-emoji\">"+v.emoji+"</span> ":'')+esc(v.label)+"</button>";
     }
     return "<span class=\"vopt locked\">\uD83D\uDD12 "+esc(v.label)+" \u00B7 unlocks in "+thwapDaysToUnlock(v)+" days</span>";
   }).join('');
   return "<div class='vpick'>"+
-    "<p class='vmadlib'>Sass talks with a <button type=\"button\" class=\"pos-word vword\" id=\"vWord\" aria-haspopup=\"true\" aria-expanded=\"false\">"+esc(curV.label)+"</button> accent.</p>"+
-    "<div class='pos-sheet vsheet' id='vSheet' role='menu' hidden>"+opts+"</div>"+
+    "<p class='vmadlib'>Sass talks with a <button type=\"button\" class=\"pos-word vword\" aria-haspopup=\"true\" aria-expanded=\"false\">"+esc(curV.label)+"</button> accent.</p>"+
+    "<div class='pos-sheet vsheet' role='menu' hidden>"+opts+"</div>"+
   "</div>";
 }
 window.voicePickerHTML=voicePickerHTML;
 if(!window.__thwapVoiceDelegated){window.__thwapVoiceDelegated=true;
-  function vSheetEl(){ return document.getElementById('vSheet'); }
-  function vWordEl(){ return document.getElementById('vWord'); }
-  function vOpenSheet(open){ var s=vSheetEl(), w=vWordEl(); if(!s||!w)return; s.hidden=!open; w.setAttribute('aria-expanded', open?'true':'false'); }
-  function vSetVoice(code){
+  /* IMPORTANT: dryland, stickhandling AND shooting each render a picker, so we
+     must NOT use shared ids (getElementById returns only the first, which is why
+     only dryland worked). Everything is scoped to the clicked picker's .vpick. */
+  function vOpenSheet(pick,open){ if(!pick)return; var s=pick.querySelector('.vsheet'), w=pick.querySelector('.vword'); if(!s||!w)return; s.hidden=!open; w.setAttribute('aria-expanded', open?'true':'false'); }
+  function vCloseAll(){ document.querySelectorAll('.vpick .vsheet').forEach(function(s){ s.hidden=true; }); document.querySelectorAll('.vpick .vword').forEach(function(w){ w.setAttribute('aria-expanded','false'); }); }
+  function vSetVoice(pick,code){
     var v=THWAP_VOICES.filter(function(x){return x.code===code;})[0]; if(!v||!thwapVoiceUnlocked(v))return;
     thwapSetVoice(code);
-    var w=vWordEl(); if(w) w.firstChild.nodeValue=v.label;
-    var s=vSheetEl(); if(s) s.querySelectorAll('.vopt[data-voice]').forEach(function(o){ o.classList.toggle('on', o.getAttribute('data-voice')===code); });
-    /* stop any playing narration so the next cue uses the new voice */
+    /* reflect the new voice in EVERY picker on the page, not just this one */
+    document.querySelectorAll('.vpick').forEach(function(p){
+      var w=p.querySelector('.vword'); if(w) w.firstChild.nodeValue=v.label;
+      p.querySelectorAll('.vopt[data-voice]').forEach(function(o){ o.classList.toggle('on', o.getAttribute('data-voice')===code); });
+    });
     var a=document.getElementById('thwapAudio'); if(a)a.pause();
-    vOpenSheet(false);
+    vCloseAll();
   }
   document.addEventListener('click',function(ev){
-    var w=ev.target.closest&&ev.target.closest('#vWord');
-    if(w){ ev.stopPropagation(); var s=vSheetEl(); vOpenSheet(s&&s.hidden); return; }
+    var w=ev.target.closest&&ev.target.closest('.vpick .vword');
+    if(w){ ev.stopPropagation(); var pick=w.closest('.vpick'); var s=pick&&pick.querySelector('.vsheet'); var wasOpen=s&&!s.hidden; vCloseAll(); if(!wasOpen) vOpenSheet(pick,true); return; }
     var opt=ev.target.closest&&ev.target.closest('.vopt[data-voice]');
-    if(opt){ vSetVoice(opt.getAttribute('data-voice')); return; }
-    var s=vSheetEl(); if(s&&!s.hidden){ vOpenSheet(false); }
+    if(opt){ vSetVoice(opt.closest('.vpick'), opt.getAttribute('data-voice')); return; }
+    vCloseAll();
   });
 }
 function todaysWorkout(){var s=window.thwapWeekdaySlot();return WORKOUTS[(s<0?0:s)%WORKOUTS.length];}
@@ -2849,7 +3073,8 @@ function todaysWorkout(){var s=window.thwapWeekdaySlot();return WORKOUTS[(s<0?0:
    capped at 6, in a sensible order. Which ones (when a category has several) rotates by day. */
 var CAT_ORDER=['Agility','Power','Speed','Strength','Core'];
 function trimDrills(dr){
-  if(dr.length<=6) return dr;
+  var CAP=4;   /* dryland shows up to 4 drills/day (reduced from 6 so it's less intense) */
+  if(dr.length<=CAP) return dr;
   var di=dayIndex();
   var byCat={};
   dr.forEach(function(x){ (byCat[x.cat]=byCat[x.cat]||[]).push(x); });
@@ -2857,11 +3082,13 @@ function trimDrills(dr){
   var pick=[];
   /* first pass: one per category (rotating which one by day) */
   cats.forEach(function(c){ var g=byCat[c]; pick.push(g[di%g.length]); });
-  /* second pass: add a 2nd from categories that have more, until we hit 6 */
-  for(var r=0; r<cats.length && pick.length<6; r++){
+  /* second pass: add a 2nd from categories that have more, until we hit the cap */
+  for(var r=0; r<cats.length && pick.length<CAP; r++){
     var g=byCat[cats[r]];
     if(g.length>1){ var second=g[(di+1)%g.length]; if(pick.indexOf(second)<0) pick.push(second); }
   }
+  /* the first pass can already exceed the cap when there are many categories; trim */
+  pick=pick.slice(0,CAP);
   /* keep the original workout order so it still reads sensibly */
   return dr.filter(function(x){return pick.indexOf(x)>=0;});
 }
@@ -2918,7 +3145,7 @@ function render(){
         btn.textContent='Done ✓';
       };
       if(row.classList.contains('done')){ return; }  /* already done: no-op */
-      if(window.thwapDrillTimer){ window.thwapDrillTimer(drills[i].name, markDone, drills[i].audio); }
+      if(window.thwapDrillTimer){ window.thwapDrillTimer(drills[i].name, markDone, drills[i].audio, {cue:drills[i].cue, steps:drills[i].steps}); }
       else { markDone(); }  /* engine missing: fall back to immediate done */
     });
   });
@@ -2935,7 +3162,8 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#dryland') 
 .gdr{--drill-stage:#0e1712;position:fixed;inset:0;z-index:130;display:flex;flex-direction:column;background:var(--drill-stage);padding:0}
 .gdr[hidden]{display:none}
 .gdr-top{display:flex;align-items:center;justify-content:space-between;padding:16px 18px}
-.gdr-audio{width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:rgba(255,255,255,.5);font-size:20px;display:grid;place-items:center;cursor:default}
+.gdr-audio{width:44px;height:44px;border-radius:50%;border:0;background:rgba(255,255,255,.08);color:rgba(255,255,255,.82);display:grid;place-items:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.gdr-audio .gdr-audio-ic{display:block}
 .gdr-audio[data-v1-disabled]{opacity:.4}
 .gdr-back{height:44px;padding:0 20px;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.1);color:#fff;font-family:inherit;font-size:16px;font-weight:800;line-height:1;cursor:pointer;backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px)}
 .gdr-mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;padding:0 24px}
@@ -2943,6 +3171,12 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#dryland') 
 .gdr-phase{font-size:15px;font-weight:800;color:var(--lime);text-transform:uppercase;letter-spacing:.05em;min-height:20px;margin-bottom:14px}
 .gdr-big{font-family:'Archivo Black',system-ui,sans-serif;font-size:128px;line-height:1;color:#fff;margin:6px 0}
 .gdr-sub{font-size:16px;font-weight:700;color:rgba(255,255,255,.8);min-height:22px;margin-top:6px}
+/* How-to shown on the Set up screen (before Begin), so the player knows how to
+   run the drill. Hidden once the timer starts. */
+.gdr-setup{margin:14px auto 0;max-width:420px;text-align:left;width:100%}
+.gdr-setup .gdr-cue{margin:0 0 10px;font-size:16px;font-weight:800;color:var(--lime,#B9F06B);text-align:center}
+.gdr-setup ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:7px}
+.gdr-setup li{font-size:15px;line-height:1.4;color:rgba(255,255,255,.9)}
 .gdr-bottom{padding:20px 24px calc(24px + env(safe-area-inset-bottom));text-align:center}
 .gdr-btn{min-height:60px;width:100%;max-width:420px;border:0;border-radius:16px;font-family:inherit;font-weight:900;font-size:20px;cursor:pointer;background:var(--lime);color:#0f1712}
 .gdr-reset{display:block;width:100%;margin-top:14px;background:none;border:0;color:rgba(255,255,255,.7);font:inherit;font-weight:700;font-size:15px;text-decoration:underline;cursor:pointer}
@@ -2950,13 +3184,14 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#dryland') 
 <div class='gdr' id='gdrOverlay' hidden>
   <div class='gdr-top'>
     <button type='button' class='gdr-back' id='gdrX' aria-label='Back'>Back</button>
-    <button type='button' class='gdr-audio' id='gdrAudio' aria-label='Mute narration' title='Mute'>🔊</button>
+    <button type='button' class='gdr-audio' id='gdrAudio' aria-label='Mute narration' title='Mute'><svg class='gdr-audio-ic' viewBox='0 0 24 24' width='22' height='22' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M4 9v6h4l5 4V5L8 9H4z'/><path d='M16.5 8.5a5 5 0 0 1 0 7'/><path d='M19 6a9 9 0 0 1 0 12'/></svg></button>
   </div>
   <div class='gdr-mid'>
     <p class='gdr-name' id='gdrName'></p>
     <p class='gdr-phase' id='gdrPhase'></p>
     <div class='gdr-big' id='gdrBig'></div>
     <p class='gdr-sub' id='gdrSub'></p>
+    <div class='gdr-setup' id='gdrSetup' hidden></div>
   </div>
   <div class='gdr-bottom'>
     <button type='button' class='gdr-btn' id='gdrToggle'>Begin</button>
@@ -2981,42 +3216,42 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#dryland') 
 var SETUP_SECS=5, COUNTDOWN=5;
 window.THWAP_DRILL_SCRIPT={
   /* --- Stickhandling --- */
-  'Stationary Side-to-Side':{type:'reps',reps:20,perRep:1.0,sides:1},
-  'Front-to-Back':{type:'reps',reps:20,perRep:1.0,sides:1},
-  'The "L" Shape':{type:'reps',reps:10,perRep:1.5,sides:2,sideLabels:['One way','Mirror it']},
-  'Wide Extensions':{type:'reps',reps:10,perRep:1.5,sides:2,sideLabels:['Forehand','Backhand']},
-  'Narrow-to-Wide':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['One way','Other way']},
-  'Figure-8 Around Cones':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['One way','Reverse']},
-  'The Triangle Drill':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['One way','Reverse']},
-  'The Diamond Matrix':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['One way','Reverse']},
-  'Z-Pattern Slalom':{type:'reps',reps:8,perRep:2.0,sides:2,sideLabels:['One way','Reverse']},
-  'The Square Box':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['One way','Reverse']},
-  'Top-Hand Only':{type:'reps',reps:15,perRep:1.5,sides:1},
-  'Bottom-Hand Only':{type:'reps',reps:15,perRep:1.5,sides:1},
-  'Toe Drag & Rescue':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['Right','Left']},
-  'Heel-to-Toe Flips':{type:'reps',reps:10,perRep:1.5,sides:1},
-  'Flip Over Objects':{type:'reps',reps:10,perRep:2.0,sides:1},
-  'Eyes-Up Glancing':{type:'reps',reps:20,perRep:1.5,sides:1},
-  'The Wall Bounce':{type:'reps',reps:20,perRep:1.5,sides:1},
-  'Cone Weave Course':{type:'reps',reps:6,perRep:4.0,sides:2,sideLabels:['Down','Back']},
-  'Chaos Dribbling':{type:'hold',seconds:30,sides:1},
+  'Stationary Side-to-Side':{type:'reps',reps:20,perRep:1.0,sides:1,sets:4,restSeconds:15},
+  'Front-to-Back':{type:'reps',reps:20,perRep:1.0,sides:1,sets:4,restSeconds:15},
+  'The "L" Shape':{type:'reps',reps:10,perRep:1.5,sides:2,sideLabels:['One way','Mirror it'],sets:4,restSeconds:15},
+  'Wide Extensions':{type:'reps',reps:10,perRep:1.5,sides:2,sideLabels:['Forehand','Backhand'],sets:4,restSeconds:15},
+  'Narrow-to-Wide':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['One way','Other way'],sets:4,restSeconds:15},
+  'Figure-8 Around Cones':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['One way','Reverse'],sets:4,restSeconds:15},
+  'The Triangle Drill':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['One way','Reverse'],sets:4,restSeconds:15},
+  'The Diamond Matrix':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['One way','Reverse'],sets:4,restSeconds:15},
+  'Z-Pattern Slalom':{type:'reps',reps:8,perRep:2.0,sides:2,sideLabels:['One way','Reverse'],sets:4,restSeconds:15},
+  'The Square Box':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['One way','Reverse'],sets:4,restSeconds:15},
+  'Top-Hand Only':{type:'reps',reps:15,perRep:1.5,sides:1,sets:4,restSeconds:15},
+  'Bottom-Hand Only':{type:'reps',reps:15,perRep:1.5,sides:1,sets:4,restSeconds:15},
+  'Toe Drag & Rescue':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['Right','Left'],sets:4,restSeconds:15},
+  'Heel-to-Toe Flips':{type:'reps',reps:10,perRep:1.5,sides:1,sets:4,restSeconds:15},
+  'Flip Over Objects':{type:'reps',reps:10,perRep:2.0,sides:1,sets:4,restSeconds:15},
+  'Eyes-Up Glancing':{type:'reps',reps:20,perRep:1.5,sides:1,sets:4,restSeconds:15},
+  'The Wall Bounce':{type:'reps',reps:20,perRep:1.5,sides:1,sets:4,restSeconds:15},
+  'Cone Weave Course':{type:'reps',reps:6,perRep:4.0,sides:2,sideLabels:['Down','Back'],sets:4,restSeconds:15},
+  'Chaos Dribbling':{type:'hold',seconds:30,sides:1,sets:4,restSeconds:15},
   /* --- Dryland --- */
-  "Will's Squares (4-sq Drill)":{type:'rounds',rounds:5,workLabel:'Pattern',restSeconds:8},
-  'Skater Jumps':{type:'reps',reps:10,perRep:1.5,sides:2,sideLabels:['Right','Left']},
-  'Broad Jumps':{type:'reps',reps:8,perRep:3.0,sides:1},
-  'Box Jumps':{type:'reps',reps:10,perRep:3.0,sides:1},
-  'Reverse Lunges':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['Right leg','Left leg']},
-  'Single-Leg RDL':{type:'reps',reps:8,perRep:2.5,sides:2,sideLabels:['Right leg','Left leg']},
-  'Wall Sit':{type:'hold',seconds:30,sides:1},
-  'Sit-ups':{type:'reps',reps:15,perRep:2.0,sides:1},
-  'Plank with Shoulder Taps':{type:'hold',seconds:30,sides:1},
-  'Stair Sprints':{type:'rounds',rounds:5,workLabel:'Sprint up',restSeconds:20},
-  'Sprint Starts':{type:'rounds',rounds:5,workLabel:'Sprint',restSeconds:20},
-  'Reaction Start':{type:'reps',reps:10,perRep:3.0,sides:1},
-  'Split Squat Hold':{type:'hold',seconds:20,sides:2,sideLabels:['Right leg','Left leg']},
-  'Calf Raises':{type:'reps',reps:20,perRep:1.5,sides:1},
-  'Dead Bugs':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['Right','Left']},
-  "McDavid's":{type:'hold',seconds:60,sides:1},
+  "Will's Squares (4-sq Drill)":{type:'reps',reps:30,perRep:1.0,sides:1,sets:4,restSeconds:15},
+  'Skater Jumps':{type:'reps',reps:10,perRep:1.5,sides:2,sideLabels:['Right','Left'],sets:4,restSeconds:15},
+  'Broad Jumps':{type:'reps',reps:8,perRep:3.0,sides:1,sets:4,restSeconds:15},
+  'Box Jumps':{type:'reps',reps:10,perRep:3.0,sides:1,sets:4,restSeconds:15},
+  'Reverse Lunges':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['Right leg','Left leg'],sets:4,restSeconds:15},
+  'Single-Leg RDL':{type:'reps',reps:8,perRep:2.5,sides:2,sideLabels:['Right leg','Left leg'],sets:4,restSeconds:15},
+  'Wall Sit':{type:'hold',seconds:30,sides:1,sets:4,restSeconds:15},
+  'Sit-ups':{type:'reps',reps:15,perRep:2.0,sides:1,sets:4,restSeconds:15},
+  'Plank with Shoulder Taps':{type:'hold',seconds:30,sides:1,sets:4,restSeconds:15},
+  'Stair Sprints':{type:'rounds',rounds:4,workLabel:'Sprint up',restSeconds:15},
+  'Sprint Starts':{type:'rounds',rounds:4,workLabel:'Sprint',restSeconds:15},
+  'Reaction Start':{type:'reps',reps:10,perRep:3.0,sides:1,sets:4,restSeconds:15},
+  'Split Squat Hold':{type:'hold',seconds:20,sides:2,sideLabels:['Right leg','Left leg'],sets:4,restSeconds:15},
+  'Calf Raises':{type:'reps',reps:20,perRep:1.5,sides:1,sets:4,restSeconds:15},
+  'Dead Bugs':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['Right','Left'],sets:4,restSeconds:15},
+  "McDavid's":{type:'hold',seconds:60,sides:1,sets:4,restSeconds:15},
   /* --- Shooting (shots, not timed reps; Random Target uses on-screen callouts) --- */
   'Moving Warm-Up':{type:'rounds',rounds:8,workLabel:'Shot',restSeconds:4},
   'Change the Angle':{type:'rounds',rounds:8,workLabel:'Shot',restSeconds:5,sides:2,sideLabels:['One side','Other side']},
@@ -3106,29 +3341,43 @@ function buildSteps(sc, slug){
   steps.push({phase:'Set up',big:'',sub:'Get the drill set up',ms:SETUP_SECS*1000, au:slug?('drill/'+slug+'/setup'):''});
   var sides=sc.sides||1;
   var labels=sc.sideLabels||[];
-  for(var s=0;s<sides;s++){
-    var sideNote=sides>1?(labels[s]||('Set '+(s+1))):'';
-    // Dedicated switch step before sides 2+ so "Now switch" gets its own time
-    // and does not collide with the "5,4,3,2,1" countdown that follows.
-    if(s>0) steps.push({phase:'Switch',big:'\u21C4',sub:(labels[s]||'other way'),ms:3000, au:'cue/switch'});
-    // countdown 5..1 GO
-    for(var c=COUNTDOWN;c>=1;c--){
-      steps.push({phase:sideNote||'Ready',big:String(c),sub:'',ms:1000, au:'n'+c});
-    }
-    steps.push({phase:sideNote||'Go',big:'GO',sub:'',ms:800, au:'cue/go'});
-    if(sc.type==='reps'){
-      for(var r=1;r<=sc.reps;r++) steps.push({phase:sideNote||'Reps',big:String(r),sub:'of '+sc.reps,ms:Math.round((sc.perRep||1.5)*1000), au:'n'+r, work:true});
-    } else if(sc.type==='hold'){
-      for(var h=sc.seconds;h>=1;h--) steps.push({phase:sideNote||'Hold',big:String(h),sub:'seconds',ms:1000, au:(h<=5?('n'+h):(h%10===0?'cue/keepgoing':'')), work:true});
-    } else if(sc.type==='rounds'){
-      for(var rd=1;rd<=sc.rounds;rd++){
-        steps.push({phase:(sc.workLabel||'Round')+' '+rd,big:String(rd),sub:'of '+sc.rounds,ms:3000, au:'n'+rd, work:true});
-        if(rd<sc.rounds) for(var rest=(sc.restSeconds||10);rest>=1;rest--) steps.push({phase:'Rest',big:String(rest),sub:'catch your breath',ms:1000, au:(rest===(sc.restSeconds||10)?'cue/rest':'')});
+  if(sc.type==='reps'||sc.type==='hold'){
+    // N SETS of the work (both sides run inside each set), with a rest between
+    // sets. sets defaults to 1 (unchanged). The number/switch/go/rest/done clips
+    // are all reused per set, so more sets need no new audio.
+    var sets=sc.sets||1, restSec=sc.restSeconds||(sets>1?15:0);
+    for(var set=1;set<=sets;set++){
+      var setNote=sets>1?('Set '+set+' of '+sets):'';
+      for(var c=(set===1?COUNTDOWN:3);c>=1;c--) steps.push({phase:setNote||'Ready',big:String(c),sub:'',ms:1000, au:(c<=5?'n'+c:'')});
+      steps.push({phase:setNote||'Go',big:'GO',sub:'',ms:800, au:'cue/go'});
+      for(var s=0;s<sides;s++){
+        var sideNote=sides>1?(labels[s]||('Side '+(s+1))):'';
+        var lab=setNote||sideNote||(sc.type==='hold'?'Hold':'Reps');
+        if(s>0) steps.push({phase:'Switch',big:'\u21C4',sub:(labels[s]||'other way'),ms:3000, au:'cue/switch'});
+        if(sc.type==='reps'){
+          for(var r=1;r<=sc.reps;r++) steps.push({phase:lab,big:String(r),sub:'of '+sc.reps,ms:Math.round((sc.perRep||1.5)*1000), au:'n'+r, work:true});
+        } else {
+          for(var h=sc.seconds;h>=1;h--) steps.push({phase:lab,big:String(h),sub:'seconds',ms:1000, au:(h<=5?('n'+h):(h%10===0?'cue/keepgoing':'')), work:true});
+        }
       }
-    } else if(sc.type==='callout'){
-      for(var sh=0;sh<sc.shots;sh++){
-        var spot=sc.spots[Math.floor(Math.random()*sc.spots.length)];
-        steps.push({phase:'Shot '+(sh+1)+' of '+sc.shots,big:spot,sub:'hit it',ms:Math.round((sc.everySeconds||4)*1000),small:true, au:'n'+(sh+1), work:true});
+      if(set<sets) for(var rest=restSec;rest>=1;rest--) steps.push({phase:'Rest',big:String(rest),sub:'catch your breath',ms:1000, au:(rest===restSec?'cue/rest':'')});
+    }
+  } else {
+    for(var si=0;si<sides;si++){
+      var sNote=sides>1?(labels[si]||('Set '+(si+1))):'';
+      if(si>0) steps.push({phase:'Switch',big:'\u21C4',sub:(labels[si]||'other way'),ms:3000, au:'cue/switch'});
+      for(var c2=COUNTDOWN;c2>=1;c2--) steps.push({phase:sNote||'Ready',big:String(c2),sub:'',ms:1000, au:'n'+c2});
+      steps.push({phase:sNote||'Go',big:'GO',sub:'',ms:800, au:'cue/go'});
+      if(sc.type==='rounds'){
+        for(var rd=1;rd<=sc.rounds;rd++){
+          steps.push({phase:(sc.workLabel||'Round')+' '+rd,big:String(rd),sub:'of '+sc.rounds,ms:3000, au:'n'+rd, work:true});
+          if(rd<sc.rounds) for(var rest2=(sc.restSeconds||10);rest2>=1;rest2--) steps.push({phase:'Rest',big:String(rest2),sub:'catch your breath',ms:1000, au:(rest2===(sc.restSeconds||10)?'cue/rest':'')});
+        }
+      } else if(sc.type==='callout'){
+        for(var sh=0;sh<sc.shots;sh++){
+          var spot=sc.spots[Math.floor(Math.random()*sc.spots.length)];
+          steps.push({phase:'Shot '+(sh+1)+' of '+sc.shots,big:spot,sub:'hit it',ms:Math.round((sc.everySeconds||4)*1000),small:true, au:'n'+(sh+1), work:true});
+        }
       }
     }
   }
@@ -3174,11 +3423,16 @@ function setPaused(p){
 elToggle.addEventListener('click',function(){
   if(!state) return;
   if(state.started){ setPaused(!state.paused); return; }
-  state.started=true; elToggle.textContent='Pause'; advance();
+  state.started=true; elToggle.textContent='Pause'; showSetup(false); advance();
 });
 /* Mute toggle (top-right) - persists and applies live to narration + metronome. */
 var elAudio=document.getElementById('gdrAudio');
-function paintMute(){ if(!elAudio)return; var m=thwapMuted(); elAudio.textContent=m?'🔇':'🔊'; elAudio.setAttribute('aria-label', m?'Unmute narration':'Mute narration'); elAudio.title=m?'Unmute':'Mute'; }
+/* Classic iOS-style speaker icons (SVG, currentColor) - not emoji, which render
+   inconsistently and don't look native. Unmuted = speaker + waves; muted =
+   speaker + slash. */
+var ICO_SPK="<svg class='gdr-audio-ic' viewBox='0 0 24 24' width='22' height='22' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M4 9v6h4l5 4V5L8 9H4z'/><path d='M16.5 8.5a5 5 0 0 1 0 7'/><path d='M19 6a9 9 0 0 1 0 12'/></svg>";
+var ICO_MUTE="<svg class='gdr-audio-ic' viewBox='0 0 24 24' width='22' height='22' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M4 9v6h4l5 4V5L8 9H4z'/><line x1='17' y1='9' x2='22' y2='14'/><line x1='22' y1='9' x2='17' y2='14'/></svg>";
+function paintMute(){ if(!elAudio)return; var m=thwapMuted(); elAudio.innerHTML=m?ICO_MUTE:ICO_SPK; elAudio.setAttribute('aria-label', m?'Unmute narration':'Mute narration'); elAudio.title=m?'Unmute':'Mute'; }
 if(elAudio){ paintMute(); elAudio.addEventListener('click',function(){ thwapSetMuted(!thwapMuted()); paintMute(); }); }
 elReset.addEventListener('click',function(){
   if(!state) return;
@@ -3187,16 +3441,31 @@ elReset.addEventListener('click',function(){
   elToggle.textContent='Begin';
   thwapTimerAudioStop();
   paint(state.steps[0]);
+  showSetup(true);
 });
 document.getElementById('gdrX').addEventListener('click', close);
 
 /* PUBLIC: run the guided timer for a drill by name; onDone fires once at the end.
    audioSlug (optional) plays Sass's narration in lock-step with the transport:
    Start plays (or resumes), Pause pauses, Restart/Back stop and reset to the top. */
-window.thwapDrillTimer=function(name, onDone, audioSlug){
-  state={ steps:buildSteps(sc0(name), audioSlug||''), idx:0, timer:null, paused:false, started:false, onDone:onDone, audio:audioSlug||'' };
+var elSetup=document.getElementById('gdrSetup');
+function escGdr(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+/* Render the drill's own coach cue + how-to steps for the Set up screen. */
+function renderSetup(setup){
+  if(!elSetup) return;
+  var cue=setup&&setup.cue, steps=(setup&&setup.steps)||[];
+  if(!cue && !steps.length){ elSetup.innerHTML=''; return; }
+  var html=cue?"<p class='gdr-cue'>"+escGdr(cue)+"</p>":'';
+  if(steps.length) html+="<ol>"+steps.map(function(s){return "<li>"+escGdr(s)+"</li>";}).join('')+"</ol>";
+  elSetup.innerHTML=html;
+}
+function showSetup(on){ if(elSetup) elSetup.hidden=!(on && elSetup.innerHTML); }
+window.thwapDrillTimer=function(name, onDone, audioSlug, setup){
+  state={ steps:buildSteps(sc0(name), audioSlug||''), idx:0, timer:null, paused:false, started:false, onDone:onDone, audio:audioSlug||'', setup:setup };
   document.getElementById('gdrName').textContent=name;
+  renderSetup(setup);
   paint(state.steps[0]);
+  showSetup(true);       /* show the how-to on the Set up screen, before Begin */
   elToggle.textContent='Begin';
   thwapTimerAudioStop();
   ov.hidden=false;
@@ -3236,7 +3505,7 @@ function countUp(el,target,fmt){
    weekly split at /api/board?tf=week and cumulative all-time at /api/board. */
 var LIVE={week:null, all:null};
 function mapPlayers(list){
-  return list.map(function(p){ return {n:(p.id.charAt(0).toUpperCase()+p.id.slice(1)), stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0}; });
+  return list.map(function(p){ return {n:(p.id.charAt(0).toUpperCase()+p.id.slice(1)), stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0, netplay:p.netplay||0}; });
 }
 /* Global real-data store so the stats page reads the SAME live numbers, not a
    name-hash demo. Keyed by lowercase first name. streak is the honest computed
@@ -3244,10 +3513,35 @@ function mapPlayers(list){
 window.thwapBoard=window.thwapBoard||{ week:{}, all:{}, ready:false };
 function stashBoard(which, list){
   var m={};
-  list.forEach(function(p){ m[String(p.id).toLowerCase()]={stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0, streak:p.streak||0}; });
+  list.forEach(function(p){ m[String(p.id).toLowerCase()]={stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0, netplay:p.netplay||0, streak:p.streak||0}; });
   window.thwapBoard[which]=m; window.thwapBoard.ready=true;
   if(window.thwapStatsRefresh) window.thwapStatsRefresh();
 }
+/* Cards (home / sticker / team / teammate viewer) show ALL-TIME stats, but the
+   all-time board is only fetched lazily by the standings page in all-time mode.
+   Fetch it once on demand so a card has real numbers even if standings was never
+   opened, then repaint any card already on screen. Guarded to run at most once. */
+var _allBoardReq=false;
+window.thwapEnsureAllBoard=function(){
+  if(_allBoardReq) return; _allBoardReq=true;
+  /* Fetch BOTH timeframes: the card back prefers all-time but falls back to weekly
+     when the all-time counters are empty, so we need both populated. */
+  function pull(url, which){
+    try{
+      fetch(url,{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(j){
+        if(j&&j.players&&j.players.length){
+          stashBoard(which, j.players);
+          if(window.thwapRebuildCard) window.thwapRebuildCard();
+          if(window.thwapRepaintRoster) window.thwapRepaintRoster();
+          if(window.thwapCardBackRefresh) window.thwapCardBackRefresh();
+          if(window.thwapDeckBackRefresh) window.thwapDeckBackRefresh();
+        }
+      }).catch(function(){});
+    }catch(e){}
+  }
+  pull('/api/board','all');
+  pull('/api/board?tf=week','week');
+};
 function rowsFor(){
   return LIVE[tf] || DATA[tf];     /* real data for this timeframe, else demo fallback */
 }
@@ -3264,7 +3558,19 @@ function fetchBoard(){
     }).catch(function(){});
   }catch(e){}
 }
-function scoreOf(p){ return disc==='all' ? (p.stick+p.shoot+p.dryland) : p[disc]; }
+/* A player's third-discipline reps live in shoot (skaters) OR netplay (goalie).
+   While Net play is gated coming-soon (NETPLAY_ENABLED false) they FOLD into the
+   shared '🥅 Shoot' third slot so no team-wide Net play column of 15 zeros appears.
+   When Net play is enabled it becomes its OWN '🧤 Net play' tile alongside Shoot
+   (both visible on the shared team board), so shoot stops absorbing netplay. The
+   'all' total always includes every discipline either way. */
+function netEnabled(){ return !!window.NETPLAY_ENABLED; }
+function thirdOf(p){ return netEnabled() ? (p.shoot||0) : (p.shoot||0)+(p.netplay||0); }
+function scoreOf(p){
+  if(disc==='all') return (p.stick||0)+(p.shoot||0)+(p.netplay||0)+(p.dryland||0)+(p.pass||0);
+  if(disc==='shoot') return thirdOf(p);
+  return p[disc]||0;
+}
 function render(){
   var rows=rowsFor().map(function(p){ return {n:p.n, s:scoreOf(p)}; });
   rows.sort(function(a,b){ return b.s-a.s || a.n.localeCompare(b.n); });
@@ -3280,10 +3586,10 @@ function render(){
   board.querySelectorAll('.row[data-player]').forEach(function(rw){
     rw.addEventListener('click',function(){ if(window.openPlayerPage) window.openPlayerPage(rw.getAttribute('data-player')); });
   });
-  var t={stick:0,shoot:0,dryland:0};
-  DATA[tf]; var _src=rowsFor(); _src.forEach(function(p){ t.stick+=p.stick; t.shoot+=p.shoot; t.dryland+=p.dryland; });
-  t.all=t.stick+t.shoot+t.dryland;
-  ['all','stick','shoot','dryland'].forEach(function(k){
+  var t={stick:0,shoot:0,dryland:0,pass:0,netplay:0};
+  var _src=rowsFor(); _src.forEach(function(p){ t.stick+=(p.stick||0); t.shoot+=thirdOf(p); t.dryland+=(p.dryland||0); t.pass+=(p.pass||0); t.netplay+=(p.netplay||0); });
+  t.all=t.stick+(t.shoot)+t.dryland+t.pass+(netEnabled()?t.netplay:0);
+  ['all','stick','shoot','dryland','pass','netplay'].forEach(function(k){
     var el=document.querySelector(".metric-num[data-total='"+k+"']"); if(el)countUp(el,t[k]);
   });
   /* Team goal block: This week has a target + bar; All time is a running total with no ceiling. */
@@ -3308,7 +3614,7 @@ function render(){
       if(info)info.style.display='none';
     }
   }
-  var discLabel={all:'all training',stick:'🏒 Hands',shoot:'🥅 Shoot',dryland:'⚡ Dryland'}[disc];
+  var discLabel={all:'all training',stick:'🏒 Hands',shoot:'🥅 Shoot',dryland:'⚡ Dryland',pass:'🎯 Passing',netplay:'🧤 Net play'}[disc];
   if(scope)scope.textContent=(disc==='all')?'Everyone, all training':('Just '+discLabel);
 }
 /* team streak: only shows when >= 3 days (temporal reward). Demo value until Phase 4. */
@@ -3318,6 +3624,16 @@ function render(){
   info.addEventListener('click',function(e){e.stopPropagation();info.classList.toggle('open');});
   document.addEventListener('click',function(){info.classList.remove('open');});
   document.addEventListener('keydown',function(e){if(e.key==='Escape')info.classList.remove('open');});
+})();
+/* Reveal a discipline's metric tile only once its content/flag is live, so the
+   shared board never shows a column of all-zeros for a not-yet-launched skill.
+   Passing: PASS_DAYS has content. Net play: NETPLAY_ENABLED flipped true. The
+   auto-fit grid re-balances the row automatically as tiles appear. */
+(function(){
+  var mp=document.getElementById('metricPass');
+  if(mp && Array.isArray(window.PASS_DAYS) && window.PASS_DAYS.length) mp.hidden=false;
+  var mn=document.getElementById('metricNetplay');
+  if(mn && window.NETPLAY_ENABLED) mn.hidden=false;
 })();
 document.querySelectorAll('#timeframe .segbtn').forEach(function(b){
   b.addEventListener('click',function(){
@@ -3357,6 +3673,7 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#progress')
     try{ localStorage.removeItem('thwapAuth'); sessionStorage.removeItem('thwapAuth'); }catch(_){}
     try{ document.cookie='thwapAuth=;path=/;max-age=0'; }catch(_){}
     try{ localStorage.removeItem('bfPlayer'); localStorage.removeItem('thwapRosterFilter'); }catch(_){}
+    try{ if(window.THWAP_DEMO) window.THWAP_DEMO.deactivate(); }catch(_){}
     location.hash='';
     location.reload();
   });
@@ -3446,8 +3763,11 @@ function currentPlayer(){
   var parts=saved.trim().split(/\s+/);
   var key=parts[0].toLowerCase();
   var info=ROSTER_INFO[key]||{num:'',pos:'F'};
+  /* Demo Team: when the demo mode is active, resolve the demo roster's real
+     number/position/photo instead of the Jr Rangers ROSTER_INFO (no-op off-demo). */
+  if(window.thwapDemoInfo){ var di=window.thwapDemoInfo(saved); if(di) info=di; }
   var display=parts.length>1?parts[0]+' '+parts[parts.length-1].charAt(0)+'.':parts[0];
-  return {name:saved, display:display, first:parts[0].toUpperCase(), num:info.num, pos:info.pos, photo:''};
+  return {name:saved, display:display, first:parts[0].toUpperCase(), num:info.num, pos:info.pos, photo:info.photo||''};
 }
 /* Coded card faces: real text-free art PLATES per color theme, with live per-player
    fields (number/name/position/association) and live weekly stats overlaid in the
@@ -3497,8 +3817,23 @@ function cb2Theme(slug){ /* stored per-player choice, else a stable pick among u
 function cb2SetTheme(slug,theme){ try{ localStorage.setItem('thwapCardTheme:'+slug, theme); }catch(e){} }
 function cb2Plate(face,slug){ var t=cb2Theme(slug); if(!(CB2_HAVE[face]&&CB2_HAVE[face][t])) t='red'; return 'cards/plate_'+face+'_'+t+'.svg'; }
 function cb2PosLabel(pos){ return pos==='G'?'Goalie':pos==='D'?'Defense':pos==='FD'?'Forward & Defense':pos==='DF'?'Defense & Forward':'Forward'; }
-function cb2Stat(slug,disc){ try{ var b=window.thwapBoard; if(b&&b.week&&b.week[slug]) return b.week[slug][disc]||0; }catch(e){} return 0; }
-function cb2Streak(slug){ try{ var b=window.thwapBoard; if(b&&b.all&&b.all[slug]) return b.all[slug].streak||0; }catch(e){} return 0; }
+/* Card-back stats. Prefer the all-time board, but the all-time cumulative
+   counters can be empty (the backend aggregates completions into the weekly
+   buckets; the all-time counter is not always populated). When a player's
+   all-time row is missing OR sums to zero, fall back to the weekly board so the
+   back always shows the real stats it has, never a wall of zeros. */
+function cb2Row(slug){
+  try{
+    var b=window.thwapBoard; if(!b) return null;
+    var a=b.all&&b.all[slug];
+    if(a && ((a.stick||0)+(a.shoot||0)+(a.dryland||0)+(a.streak||0))>0) return a;
+    var wk=b.week&&b.week[slug];
+    if(wk && ((wk.stick||0)+(wk.shoot||0)+(wk.dryland||0))>0) return wk;
+    return a||wk||null;
+  }catch(e){ return null; }
+}
+function cb2Stat(slug,disc){ var r=cb2Row(slug); return r?(r[disc]||0):0; }
+function cb2Streak(slug){ var r=cb2Row(slug); return r?(r.streak||0):0; }
 var CB2_ICONS={
   stick:"<svg viewBox='0 0 40 40' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M11 6 L26 27 L33 33'/><path d='M26 27 L18 31'/></svg>",
   shoot:"<svg viewBox='0 0 40 40' fill='none' stroke='currentColor' stroke-width='2.4'><rect x='7' y='9' width='26' height='22' rx='1.5'/><path d='M7 15h26M7 21h26M13 9v22M20 9v22M27 9v22' stroke-width='1.4'/></svg>",
@@ -3513,10 +3848,11 @@ var CB2_CREST="<svg viewBox='0 0 70 82' fill='none'><path d='M6 4 H64 V50 Q64 68
 function buildFront(p,slug,photoUrl,themeOverride){
   if(!photoUrl && slug==='lewie'){ photoUrl='cards/lewie_photo.png'; }  /* Lewie's photo ships; show it everywhere his card renders */
   var photo = photoUrl
-    ? "<img class='cf2-photo"+(slug==='liam'?' cf2-photo-lg':'')+"' src='"+photoUrl+"' alt='"+p.first+" photo'><div class='cf2-photo-mask'></div>"
+    ? "<img class='cf2-photo"+(slug==='liam'?' cf2-photo-lg':'')+" cf2-photo-"+slug+"' src='"+photoUrl+"' alt='"+p.first+" photo'><div class='cf2-photo-mask'></div>"
     : "";
   var th=themeOverride||cb2Theme(slug);
   var plate=themeOverride?('cards/plate_front_'+themeOverride+'.svg'):cb2Plate('front',slug);
+  var teamLabel=window.thwapTeamLabel||'Jr Rangers<br>Vancouver WA';
   return "<div class='cf2 cb2-th-"+th+"'>"+
       "<img class='cf2-plate' src='"+plate+"' alt=''>"+
       photo+
@@ -3526,31 +3862,33 @@ function buildFront(p,slug,photoUrl,themeOverride){
       "<div class='cf2-foot'>"+
         "<div><div class='cf2-nm'>"+p.first+"<i></i></div>"+
           "<div class='cf2-pos'>"+cb2PosLabel(p.pos)+"</div></div>"+
-        "<div class='cf2-team'>Jr Rangers<br>Vancouver WA</div>"+
+        "<div class='cf2-team'>"+teamLabel+"</div>"+
       "</div>"+
     "</div>";
 }
 function buildBack(p,slug){
-  var stick=cb2Stat(slug,'stick'), shoot=cb2Stat(slug,'shoot'), dry=cb2Stat(slug,'dryland');
+  var isG=(window.THWAP_GOALIE_NAMES&&window.THWAP_GOALIE_NAMES.indexOf(String(slug||'').toLowerCase().replace(/[^a-z]/g,''))>=0);
+  var stick=cb2Stat(slug,'stick'), shoot=cb2Stat(slug, isG?'netplay':'shoot'), dry=cb2Stat(slug,'dryland');
+  var thirdLabel=isG?'Net play':'Shooting';
   var streak=cb2Streak(slug), sessions=stick+shoot+dry;
   var tile=function(icoKey,mut,n,label){
     return "<div class='cb2-tile'><span class='cb2-ico"+(mut?' mut':'')+"'>"+CB2_ICONS[icoKey]+"</span>"+
       "<span class='cb2-n'>"+n+"</span><span class='cb2-l'>"+label+"</span></div>";
   };
-  return "<div class='cb2 cb2-th-"+cb2Theme(slug)+"' role='img' aria-label='"+p.first+" weekly stats card'>"+
+  return "<div class='cb2 cb2-th-"+cb2Theme(slug)+"' role='img' aria-label='"+p.first+" all-time stats card'>"+
     "<img class='cb2-plate' src='"+cb2Plate('back',slug)+"' alt=''>"+
     "<div class='cb2-in'>"+
       "<div class='cb2-hd'><div><div class='cb2-name'>"+p.first+"<i></i></div>"+
         "<div class='cb2-pos'>"+cb2PosLabel(p.pos)+"</div></div>"+
         "<div class='cb2-tag'>Same waters.<br>Stronger<br>players.<i></i></div></div>"+
-      "<div class='cb2-panel'><div class='cb2-eyebrow'>This week</div>"+
+      "<div class='cb2-panel'><div class='cb2-eyebrow'>All time</div>"+
         "<div class='cb2-grid'>"+
-          tile('stick',false,stick,'Stickhandling')+
-          tile('shoot',false,shoot,'Shooting')+
+          tile('stick',false,stick,'Hands')+
+          tile('shoot',false,shoot,thirdLabel)+
           tile('dryland',true,dry,'Dryland')+
           tile('streak',false,streak,'Day Streak')+
           "<div class='cb2-tile cb2-wide'><span class='cb2-ico'>"+CB2_ICONS.bars+"</span>"+
-            "<span class='cb2-n'>"+sessions+"</span><span class='cb2-l'>Sessions this week</span></div>"+
+            "<span class='cb2-n'>"+sessions+"</span><span class='cb2-l'>Total sessions</span></div>"+
         "</div></div>"+
       "<div class='cb2-ft'><div class='cb2-habits'>Good<br>Habits<br>Big Plays<i></i></div></div>"+
     "</div></div>";
@@ -3559,11 +3897,15 @@ function buildBack(p,slug){
 window.buildFront=buildFront; window.buildBack=buildBack; window.thwapCurrentPlayer=currentPlayer;
 function buildFaces(){
   var p=currentPlayer();
+  if(window.thwapEnsureAllBoard) window.thwapEnsureAllBoard();
   if(window.thwapViewTarget){ p=window.thwapViewTarget; }
   var posCls=p.pos==='G'?'pos-goalie':p.pos==='D'?'pos-def':'pos-fwd';
   var slug=p.first.toLowerCase().replace(/[^a-z]/g,'');
   front.className='cardface cardfront '+posCls;
   back.className='cardface cardback '+posCls;
+  /* Clear any stale inline visibility (an earlier build forced it); the flip is
+     governed by backface-visibility, so both faces must stay visibility:visible. */
+  front.style.visibility=''; back.style.visibility='';
   /* Front: the player's own photo (local-only) if they added one, framed as a Thwap card;
      otherwise the stock designed card art. The photo is stored on THIS device only
      (localStorage), never uploaded and never shown on anyone else's card (COPPA-safe). */
@@ -3695,22 +4037,23 @@ function stickerStrip(){
 
 /* rotation state */
 var rx=0, ry=0, sheen=.5, flipped=false;
+var _lastBackShowing=null;
 function paint(){
   card.style.transform='rotateX('+rx+'deg) rotateY('+ry+'deg)';
   front.style.setProperty('--sheen', sheen);
   back.style.setProperty('--sheen', 1-sheen);
-  /* Hide the front photo button whenever the BACK is toward the viewer. Safari can
-     bleed a z-indexed child of a backface-hidden face through the flip, so we
-     hide it explicitly rather than rely on backface-visibility. */
+  /* Which face is toward the viewer. Used only to hide the front photo button and
+     to flag the scene; the FACES themselves show/hide via backface-visibility (the
+     same mechanism the sticker deck uses and which works reliably), NOT via forced
+     inline visibility - forcing visibility here was leaving the back hidden so the
+     card never appeared to flip in the viewer. */
   var yy=((ry%360)+360)%360;
   var backShowing=(yy>90 && yy<270);
-  card.classList.toggle('showing-back', backShowing);
-  /* WebKit can bleed a backface-hidden face through the flip when it has a
-     positioned subtree, so hide the away-facing face explicitly. This is what
-     guarantees the BACK (stats) shows on the back and not a ghost of the front. */
-  front.style.visibility=backShowing?'hidden':'visible';
-  back.style.visibility=backShowing?'visible':'hidden';
-  var scene=document.getElementById('cardScene'); if(scene) scene.classList.toggle('on-back', backShowing);
+  if(backShowing!==_lastBackShowing){
+    _lastBackShowing=backShowing;
+    card.classList.toggle('showing-back', backShowing);
+    var scene=document.getElementById('cardScene'); if(scene) scene.classList.toggle('on-back', backShowing);
+  }
   /* The stats button lives in a card-sized layer in the scene (so it stays
      clickable and the card drag cannot capture it). We rotate that layer in
      lockstep with the card, +180deg on Y, so the button reads as printed on the
@@ -3723,7 +4066,7 @@ function open(){
   var picked=''; try{ picked=localStorage.getItem('bfPlayer')||''; }catch(e){}
   if(!picked){ location.hash='#roster'; return; }
   window.thwapViewTarget=null; document.body.classList.remove('viewing-teammate');
-  buildFaces(); buildThemePicker(); rx=0; ry=0; flipped=false; paint();
+  buildFaces(); buildThemePicker(); rx=0; ry=0; flipped=false; _lastBackShowing=null; paint();
   overlay.hidden=false;
   requestAnimationFrame(function(){ overlay.classList.add('show'); if(!reduce)card.classList.add('intro'); });
   document.addEventListener('keydown', onKey);
@@ -3741,7 +4084,11 @@ closeBtn.addEventListener('click', close);
 overlay.addEventListener('click', function(e){ if(e.target===overlay) close(); });
 
 /* open the card already showing the back (used by the stats-page back button) */
-window.openPlayerCardToBack=function(){ open(); ry=180; flipped=true; rx=0; paint(); };
+window.openPlayerCardToBack=function(){ open(); ry=180; flipped=true; rx=0; _lastBackShowing=null; paint(); };
+/* Open the SIGNED-IN player's OWN card (front, with theme picker + the
+   "See my stats" button). Distinct from the read-only teammate viewer: a player
+   tapping their own card on the Team page should land here, not in viewing-teammate. */
+window.thwapOpenMyCard=function(){ open(); };
 
 /* ---- Teammate card viewer (read-only): tap any player on the Team page to open
    their card and rotate it front/back. Shows their photo (parent-consented,
@@ -3752,10 +4099,12 @@ window.openTeammateCard=function(name){
   var parts=String(name||'').trim().split(/\s+/);
   var key=(parts[0]||'').toLowerCase().replace(/[^a-z]/g,'');
   var info=ROSTER_VIEW[key]||{num:'',pos:'F'};
+  /* Demo Team: resolve the demo roster's real number/position (no-op off-demo). */
+  if(window.thwapDemoInfo){ var dvi=window.thwapDemoInfo(name); if(dvi) info={num:dvi.num,pos:dvi.pos}; }
   var display=parts.length>1?parts[0]+' '+parts[parts.length-1].charAt(0)+'.':parts[0];
   window.thwapViewTarget={ name:String(name).trim(), display:display, first:(parts[0]||'').toUpperCase(), num:info.num, pos:info.pos, photo:'' };
   document.body.classList.add('viewing-teammate');
-  buildFaces(); rx=0; ry=0; flipped=false; paint();
+  buildFaces(); rx=0; ry=0; flipped=false; _lastBackShowing=null; paint();
   overlay.hidden=false;
   requestAnimationFrame(function(){ overlay.classList.add('show'); if(!reduce)card.classList.add('intro'); });
   document.addEventListener('keydown', onKey);
@@ -3776,6 +4125,7 @@ if(!reduce){
     vrx=0; vry=0;
     card.classList.add('dragging'); card.setPointerCapture(e.pointerId);
   });
+  var _moveRAF=null;
   card.addEventListener('pointermove', function(e){
     if(!dragging)return;
     var now=e.timeStamp||Date.now();
@@ -3789,7 +4139,9 @@ if(!reduce){
     /* track angular velocity (deg per frame ~16ms) */
     vry=ddy/dt*16; vrx=ddx/dt*16;
     sheen=Math.max(0,Math.min(1,(ry%360+360)%360/180));
-    paint();
+    /* Coalesce paints to one per frame: pointermove can fire many times per
+       frame and painting on each one is what made the drag feel choppy. */
+    if(!_moveRAF){ _moveRAF=requestAnimationFrame(function(){ _moveRAF=null; paint(); }); }
   });
   function coast(){
     /* apply velocity, friction slows it; gentle pull levels the X tilt for readability */
@@ -3813,21 +4165,45 @@ if(!reduce){
   }
   card.addEventListener('pointerup', endDrag);
   card.addEventListener('pointercancel', endDrag);
-  /* double-tap / double-click gives a playful flick spin toward the other face */
+  /* A clean single tap FLIPS the card to the other face (front <-> back). This is
+     the reliable way back to the front after rotating, and it works in the
+     teammate/read-only view too. A drag is ignored (moved>8). A double tap still
+     gives a playful flick spin. The flip animates via the .card3d CSS transition
+     (transitions are only off while .dragging), so we drop .dragging and settle
+     ry to the nearest opposite face. */
+  var _tapTimer=null;
+  function flipToOtherFace(){
+    stopMomentum();
+    card.classList.remove('dragging');   /* re-enable the CSS transition for a smooth flip */
+    var yy=((ry%360)+360)%360;
+    var backNow=(yy>90 && yy<270);
+    ry = backNow ? 0 : 180;              /* land squarely on the opposite face */
+    rx = 0; vry = 0; vrx = 0;
+    flipped = !backNow;
+    _lastBackShowing=null;
+    paint();
+  }
   card.addEventListener('click', function(e){
     if(moved>8)return; /* was a drag, not a tap */
     var now=Date.now();
     if(now-lastTap<300){
+      /* double tap: playful flick spin toward the other face */
+      if(_tapTimer){ clearTimeout(_tapTimer); _tapTimer=null; }
       stopMomentum();
       card.classList.add('dragging');
       vry=(flipped?-9:9); vrx=(Math.random()*4-2);
       momentum=requestAnimationFrame(coast);
       lastTap=0;
-    } else lastTap=now;
+    } else {
+      lastTap=now;
+      /* wait past the double-tap window, then treat as a single-tap flip */
+      if(_tapTimer) clearTimeout(_tapTimer);
+      _tapTimer=setTimeout(function(){ _tapTimer=null; flipToOtherFace(); }, 260);
+    }
   });
 } else {
   /* reduced motion: click toggles front/back, no spin */
-  card.addEventListener('click', function(){ ry=flipped?0:180; flipped=!flipped; rx=0; paint(); });
+  card.addEventListener('click', function(){ ry=flipped?0:180; flipped=!flipped; rx=0; _lastBackShowing=null; paint(); });
 }
 })();
 </script>
@@ -3864,11 +4240,26 @@ fetch('stickers/stickers.json').then(function(r){return r.json();}).then(functio
      so the theme, plate and photo are identical to the home card. */
   var pInfo=(window.thwapCurrentPlayer&&window.thwapCurrentPlayer())||null;
   var slug=pInfo?String(pInfo.name||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,''):playerId().replace(/[^a-z]/g,'');
+  /* If currentPlayer() has not resolved yet, synthesize a minimal pInfo from the
+     slug + saved name so the BACK still renders the coded stats card. Without this
+     it fell through to an empty/static back, and with the front rotated 180 that
+     reads as a mirrored copy of the front (the home-card bug). */
+  if(!pInfo && slug){
+    var savedNm=''; try{ savedNm=(localStorage.getItem('bfPlayer')||'').trim(); }catch(e){}
+    var first=(savedNm.split(/\s+/)[0])||(slug.charAt(0).toUpperCase()+slug.slice(1));
+    var ri=(window.thwapDemoInfo&&window.thwapDemoInfo(savedNm))||null;
+    pInfo={ name:savedNm||first, display:first, first:first.toUpperCase(), num:(ri&&ri.num)||'', pos:(ri&&ri.pos)||'F', photo:'' };
+  }
   var myPhoto=null; try{ myPhoto=localStorage.getItem('thwapCardPhoto:'+slug); }catch(e){}
   if(deckFront && window.buildFront && pInfo){ deckFront.innerHTML=window.buildFront(pInfo,slug,myPhoto); }
   else if(artFront){ artFront.src=myPhoto||(slug==='lewie'?'cards/lewie_photo.png':''); }
   if(deckBack && window.buildBack && pInfo){ deckBack.innerHTML=window.buildBack(pInfo,slug); }
   else if(artBack){ artBack.src=slug==='lewie'?'cards/lewie_back.png':''; }
+  /* When live stats land later, rebuild the coded back so its numbers are real. */
+  if(deckBack && window.buildBack && pInfo){
+    window.thwapDeckBackRefresh=function(){ try{ deckBack.innerHTML=window.buildBack(pInfo,slug); }catch(e){} };
+    if(window.thwapEnsureBoard) window.thwapEnsureBoard();
+  }
 
   var drx=0, dry=0;
   function deckPaint(){
@@ -4003,7 +4394,7 @@ var DRILLS=window.DRILLS=[
    steps:['Stance: Ready position, knees bent, hands out front.','Move it: Slide the puck side to side across your body.','Stay quick: Small, fast touches. Head up.']},
   {cat:'Fundamental Rhythm', emoji:'🔁', name:'Front-to-Back', cue:'Push the puck out in front, then pull it back to your toes.', video:'https://www.youtube.com/watch?v=pgPp6lDVMaw', audio:'stick_02',
    steps:['Push out: Reach the puck straight out in front.','Pull back: Draw it back to your toes.','Keep rhythm: Smooth push-pull, soft hands.']},
-  {cat:'Fundamental Rhythm', emoji:'📐', name:'The "L" Shape', cue:'Push forward, drag back, then push wide to one side.', video:'https://www.youtube.com/watch?v=Icy5KTq8Amg', audio:'stick_03',
+  {cat:'Fundamental Rhythm', emoji:'L', name:'The "L" Shape', cue:'Push forward, drag back, then push wide to one side.', video:'https://www.youtube.com/watch?v=Icy5KTq8Amg', audio:'stick_03',
    steps:['Forward: Push the puck out in front.','Back: Drag it back to you.','Wide: Push it out to one side to make an L.']},
   {cat:'Fundamental Rhythm', emoji:'🙌', name:'Wide Extensions', cue:'Reach as far to each side as you can, forehand and backhand.', video:'https://www.youtube.com/watch?v=BIRR2Kb0aEA', audio:'stick_04',
    steps:['Forehand: Reach the puck out wide on your strong side.','Backhand: Reach it out wide the other way.','Shift weight: Lean into each reach. Stay balanced.']},
@@ -4039,12 +4430,20 @@ var DRILLS=window.DRILLS=[
    steps:['Scatter: Drop about 10 items on the floor.','Weave: Move through them any way you can.','React: No set path. Read and go.']}
 ];
 
+/* Show STICK_PER_DAY distinct stickhandling drills, rotating by weekday slot so
+   the set changes day to day and wraps cleanly. 3 keeps the daily load sensible
+   for 10U now that each drill is a full guided run (bump to 4 if wanted). */
+var STICK_PER_DAY=3;
 function twoForToday(){
   var s=window.thwapWeekdaySlot(); if(s<0) s=0;
   var n=DRILLS.length;
-  var a=(s*2)%n, b=(s*2+1)%n;
-  if(b===a) b=(a+1)%n;
-  return [DRILLS[a], DRILLS[b]];
+  var out=[], seen={};
+  for(var k=0;k<STICK_PER_DAY && out.length<n;k++){
+    var idx=(s*STICK_PER_DAY+k)%n;
+    while(seen[idx]) idx=(idx+1)%n;   /* skip a wrap collision so all picks are distinct */
+    seen[idx]=1; out.push(DRILLS[idx]);
+  }
+  return out;
 }
 
 function render(){
@@ -4087,7 +4486,7 @@ function render(){
         btn.textContent='Done ✓';
       };
       if(row.classList.contains('done')){ return; }
-      if(window.thwapDrillTimer){ window.thwapDrillTimer(picks[i].name, markDone, picks[i].audio); }
+      if(window.thwapDrillTimer){ window.thwapDrillTimer(picks[i].name, markDone, picks[i].audio, {cue:picks[i].cue, steps:picks[i].steps}); }
       else { markDone(); }
     });
   });
@@ -4102,6 +4501,18 @@ function esc(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp
 /* position + card slug for the header */
 var INFO={Alder:{num:'71',pos:'F'},Brooklyn:{num:'92',pos:'D'},Dawson:{num:'19',pos:'D'},Dominic:{num:'98',pos:'F'},Eugene:{num:'3',pos:'D'},Evan:{num:'13',pos:'F'},Greyson:{num:'32',pos:'D'},Johnny:{num:'1',pos:'G'},Joziah:{num:'59',pos:'F'},Lewie:{num:'72',pos:'FD'},Liam:{num:'29',pos:'D'},Maddux:{num:'18',pos:'F'},Oliver:{num:'90',pos:'F'},Teddy:{num:'11',pos:'F'},William:{num:'16',pos:'F'},Issac:{num:'53',pos:'F'}};
 var POSNAME={F:'Forward',D:'Defense',G:'Goalie',FD:'Forward/Defense'};
+/* Position-aware discipline label triads (mirrors lib/store.js disciplinesFor).
+   The third slot is Net play for a goalie, Shooting for everyone else. `slug` is
+   a player id (lowercase first name). Used by the radar, IDP tiles, and card back
+   so a goalie's third discipline reads/pulls Net play, a skater's reads Shooting.
+   Pass want='plain' for bare labels, 'emoji' for the emoji-prefixed labels. */
+window.THWAP_GOALIE_NAMES = window.THWAP_GOALIE_NAMES || ['johnny'];
+window.thwapDiscsFor = function(slug, want){
+  var g = window.THWAP_GOALIE_NAMES.indexOf(String(slug||'').toLowerCase().replace(/[^a-z]/g,''))>=0;
+  var third = g ? ['netplay', want==='emoji'?'🥅 Net play':'Net play'] : ['shoot', want==='emoji'?'🥅 Shoot':'Shoot'];
+  if(want==='emoji') return [['stick','🏒 Hands'], third, ['dryland','⚡ Dryland']];
+  return [['stick','Hands'], third, ['dryland','Dryland']];
+};
 /* Exercise catalogs per discipline. The stub below is a FALLBACK only; the stats
    page uses buildCatalog() to show EVERY real activity per category. */
 var CATALOG={
@@ -4126,17 +4537,19 @@ function buildCatalog(){
     });
     return out;
   }
-  var stick=[], shoot=[], dry=[];
+  var stick=[], shoot=[], dry=[], net=[];
   /* These arrays live in OTHER script-tag IIFEs, so they are only reachable via
      window (a bare reference would ReferenceError and fall back to the stub). */
-  var DR=window.DRILLS||[], SD=window.SHOOT_DAYS||[], WK=window.WORKOUTS||[];
+  var DR=window.DRILLS||[], SD=window.SHOOT_DAYS||[], WK=window.WORKOUTS||[], NP=window.NETPLAY_DAYS||[];
   try{ DR.forEach(function(d){ stick.push([d.name,d.emoji]); }); }catch(e){}
   try{ SD.forEach(function(day){ (day||[]).forEach(function(s){ shoot.push([s.name,s.emoji]); }); }); }catch(e){}
   try{ WK.forEach(function(w){ (w.drills||[]).forEach(function(ex){ dry.push([ex.name,ex.emoji]); }); }); }catch(e){}
-  var uStick=uniq(stick), uShoot=uniq(shoot), uDry=uniq(dry);
+  try{ NP.forEach(function(day){ (day||[]).forEach(function(s){ net.push([s.name,s.emoji]); }); }); }catch(e){}
+  var uStick=uniq(stick), uShoot=uniq(shoot), uDry=uniq(dry), uNet=uniq(net);
   _catalogCache={
     Stickhandling: uStick.length?uStick:CATALOG.Stickhandling,
     Shooting: uShoot.length?uShoot:CATALOG.Shooting,
+    'Net play': uNet.length?uNet:[],
     Dryland: uDry.length?uDry:CATALOG.Dryland
   };
   return _catalogCache;
@@ -4161,7 +4574,7 @@ window.thwapDrillCatalog=function(cat){
 /* Real per-player completion counts, read from the same live board the leaderboard
    uses (window.thwapBoard, populated below). disc is the display name; the board
    keys are stick/shoot/dryland. Everyone reads 0 until the API responds. */
-var DKEY={Stickhandling:'stick',Shooting:'shoot',Dryland:'dryland'};
+var DKEY={Stickhandling:'stick',Shooting:'shoot','Net play':'netplay',Dryland:'dryland'};
 function boardRow(name,tf){
   var b=window.thwapBoard; if(!b) return null;
   var m=(tf==='all')?b.all:b.week;
@@ -4176,11 +4589,12 @@ function statsFetch(){
     var url=(which==='week')?'/api/board?tf=week':'/api/board';
     try{ fetch(url,{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.players&&j.players.length){
-        var m={}; j.players.forEach(function(p){ m[String(p.id).toLowerCase()]={stick:p.stick||0,shoot:p.shoot||0,dryland:p.dryland||0,streak:p.streak||0}; });
+        var m={}; j.players.forEach(function(p){ m[String(p.id).toLowerCase()]={stick:p.stick||0,shoot:p.shoot||0,dryland:p.dryland||0,netplay:p.netplay||0,streak:p.streak||0}; });
         window.thwapBoard=window.thwapBoard||{week:{},all:{},ready:false};
         window.thwapBoard[which]=m; window.thwapBoard.ready=true;
         if(window.thwapStatsRefresh) window.thwapStatsRefresh();
         if(window.thwapCardBackRefresh) window.thwapCardBackRefresh();
+        if(window.thwapDeckBackRefresh) window.thwapDeckBackRefresh();
       }
     }).catch(function(){}); }catch(e){}
   });
@@ -4249,11 +4663,11 @@ window.thwapStatsRefresh=function(){ if(current && location.hash==='#player') bu
           dev.hidden=false;
           /* Per-discipline volume: this week (baseThisWeek) + this month (summed trend). */
           var volEl=document.getElementById('idpDevVol');
-          var wkv=j.baseThisWeek||{stick:0,shoot:0,dryland:0};
-          var mo={stick:0,shoot:0,dryland:0};
-          (j.monthTrend||[]).forEach(function(w){ mo.stick+=w.stick||0; mo.shoot+=w.shoot||0; mo.dryland+=w.dryland||0; });
+          var wkv=j.baseThisWeek||{stick:0,shoot:0,dryland:0,netplay:0};
+          var mo={stick:0,shoot:0,dryland:0,netplay:0};
+          (j.monthTrend||[]).forEach(function(w){ mo.stick+=w.stick||0; mo.shoot+=w.shoot||0; mo.dryland+=w.dryland||0; mo.netplay+=w.netplay||0; });
           if(volEl){
-            var CATS=[['stick','🏒 Hands'],['shoot','🥅 Shoot'],['dryland','⚡ Dryland']];
+            var CATS=(window.thwapDiscsFor?window.thwapDiscsFor(slug,'emoji'):[['stick','🏒 Hands'],['shoot','🥅 Shoot'],['dryland','⚡ Dryland']]);
             volEl.innerHTML=CATS.map(function(c){
               return "<div class='idpdev-vol-cell'><div class='idpdev-vol-lab'>"+c[1]+"</div>"+
                 "<div class='idpdev-vol-n'>"+(wkv[c[0]]||0)+"</div>"+
@@ -4359,9 +4773,13 @@ function build(){
   if(window.thwapRenderIdp) window.thwapRenderIdp(slug);
   var streak=document.getElementById('plStreak'); if(streak){var _sk=demoStreak(first,tf); if(window.thwapStreakMilestone && slug===(window.thwapPlayerId?window.thwapPlayerId():'')) window.thwapStreakMilestone(_sk); if(_sk>=3){var _tier=_sk>=7?'m7':(_sk>=5?'m5':'m3');var _lab=_sk>=7?" <span class='plfire-lab'>On fire!</span>":"";streak.style.display='';streak.innerHTML="<img class='plflame "+_tier+"' src='login/flame.webp' alt=''> "+_sk+" day streak"+_lab;}else{streak.style.display='none';streak.innerHTML='';}}
   var wrap=document.getElementById('plDisc'); if(!wrap)return;
-  var DCOL={Stickhandling:'#8fd65e',Shooting:'#75B8FF',Dryland:'#FF9D4D'};
-  var DEMO={Stickhandling:'🏒',Shooting:'🥅',Dryland:'⚡'};
-  var discs=['Stickhandling','Shooting','Dryland'];
+  var goalieView=(window.THWAP_GOALIE_NAMES&&window.THWAP_GOALIE_NAMES.indexOf(String(slug||'').toLowerCase().replace(/[^a-z]/g,''))>=0);
+  var thirdDisc=goalieView?'Net play':'Shooting';
+  var DCOL={Stickhandling:'#8fd65e',Shooting:'#75B8FF','Net play':'#75B8FF',Dryland:'#FF9D4D'};
+  var DEMO={Stickhandling:'🏒',Shooting:'🥅','Net play':'🥅',Dryland:'⚡'};
+  var DNAME={Stickhandling:'Hands'};  /* display label; key stays 'Stickhandling' */
+  function dLabel(d){ return DNAME[d]||d; }
+  var discs=['Stickhandling',thirdDisc,'Dryland'];
 
   var visual='';
   if(tf==='week'){
@@ -4376,18 +4794,23 @@ function build(){
         "<circle cx='40' cy='40' r='"+r+"' fill='none' stroke='var(--soft)' stroke-width='9'/>"+
         "<circle class='pl-ringfill' cx='40' cy='40' r='"+r+"' fill='none' stroke='"+DCOL[disc]+"' stroke-width='9' stroke-linecap='round' stroke-dasharray='"+circ+"' stroke-dashoffset='"+circ+"' data-off='"+off+"' transform='rotate(-90 40 40)'/>"+
         "<text x='40' y='50' text-anchor='middle' font-size='24'>"+DEMO[disc]+"</text></svg>"+
-        "<div class='pl-ring-l'>"+disc+"</div><div class='pl-ring-n'>"+done+" / "+goal+"</div></button>";
+        "<div class='pl-ring-l'>"+dLabel(disc)+"</div><div class='pl-ring-n'>"+done+" / "+goal+"</div></button>";
     }).join('')+"</div>";
   } else {
     /* all-time: glowing power triangle + big totals, bigger and numbered */
     var cx=150,cy=150,R=104;
     var val=discs.map(function(disc){return demoDone(first,disc,'all');});
-    var maxv=Math.max(1,val[0],val[1],val[2]);
+    /* Season targets = outer ring. 24-week season: Stickhandling & Shooting 5/wk (120),
+       Dryland 3/wk (72). Each spoke scales to its OWN target so the triangle grows toward
+       a full season and only touches the ring at 100% of that discipline's season goal,
+       never automatically. */
+    var SEASON_TGT=[120,120,72];
+    var frac=function(a){return Math.min(1,val[a]/SEASON_TGT[a]);};
     var grid='';
     for(var g=1;g<=3;g++){var rr=R*g/3,p=[];for(var a=0;a<3;a++){var ang=-Math.PI/2+a*2*Math.PI/3;p.push((cx+rr*Math.cos(ang)).toFixed(1)+','+(cy+rr*Math.sin(ang)).toFixed(1));}grid+="<polygon points='"+p.join(' ')+"' fill='none' stroke='var(--line)' stroke-width='1.5'/>";}
     /* spokes */
     for(var a=0;a<3;a++){var ang=-Math.PI/2+a*2*Math.PI/3;grid+="<line x1='"+cx+"' y1='"+cy+"' x2='"+(cx+R*Math.cos(ang)).toFixed(1)+"' y2='"+(cy+R*Math.sin(ang)).toFixed(1)+"' stroke='var(--line)' stroke-width='1'/>";}
-    var pts=[];for(var a=0;a<3;a++){var ang=-Math.PI/2+a*2*Math.PI/3;var vv=R*(val[a]/maxv);pts.push((cx+vv*Math.cos(ang)).toFixed(1)+','+(cy+vv*Math.sin(ang)).toFixed(1));}
+    var pts=[];for(var a=0;a<3;a++){var ang=-Math.PI/2+a*2*Math.PI/3;var vv=R*frac(a);pts.push((cx+vv*Math.cos(ang)).toFixed(1)+','+(cy+vv*Math.sin(ang)).toFixed(1));}
     var labs=discs.map(function(disc,i){
       var ang=-Math.PI/2+i*2*Math.PI/3;
       var ex=(cx+(R+26)*Math.cos(ang)).toFixed(1), ey=(cy+(R+26)*Math.sin(ang)).toFixed(1);
@@ -4400,7 +4823,7 @@ function build(){
     var spokeHi='';
     if(plFilter!=='all'){var si=discs.indexOf(plFilter);if(si>=0){var ang=-Math.PI/2+si*2*Math.PI/3;var sx=(cx+R*Math.cos(ang)).toFixed(1),sy=(cy+R*Math.sin(ang)).toFixed(1);spokeHi="<line class='pl-spoke' x1='"+cx+"' y1='"+cy+"' x2='"+sx+"' y2='"+sy+"' stroke='"+DCOL[plFilter]+"' stroke-width='4' stroke-linecap='round'/>";}}
     /* number dot at each data vertex */
-    var vdots='';for(var a=0;a<3;a++){var ang=-Math.PI/2+a*2*Math.PI/3;var vv=R*(val[a]/maxv);var dd=(plFilter!=='all'&&plFilter!==discs[a])?.28:1;vdots+="<circle cx='"+(cx+vv*Math.cos(ang)).toFixed(1)+"' cy='"+(cy+vv*Math.sin(ang)).toFixed(1)+"' r='5' fill='#7bbf3a' opacity='"+dd+"'/>";}
+    var vdots='';for(var a=0;a<3;a++){var ang=-Math.PI/2+a*2*Math.PI/3;var vv=R*frac(a);var dd=(plFilter!=='all'&&plFilter!==discs[a])?.28:1;vdots+="<circle cx='"+(cx+vv*Math.cos(ang)).toFixed(1)+"' cy='"+(cy+vv*Math.sin(ang)).toFixed(1)+"' r='5' fill='#7bbf3a' opacity='"+dd+"'/>";}
     var radar="<div class='pl-radar-wrap'><svg width='300' height='300' viewBox='0 0 300 300'>"+
       "<defs><linearGradient id='plShimmer' x1='0' y1='0' x2='1' y2='0'>"+
       "<stop offset='0%' stop-color='rgba(185,240,107,.45)'/>"+
@@ -4482,16 +4905,66 @@ function fill(){
   var wdOpt=(ov!==null&&ov!==undefined)?{weekday:'long',timeZone:'UTC'}:{weekday:'long'};
   var wd=d.toLocaleDateString(undefined,wdOpt);
   document.querySelectorAll('.titletip-date').forEach(function(el){ el.textContent=full; });
-  var dd=document.getElementById('dayDate'); if(dd)dd.textContent=full;
-  var fl=document.querySelector('.forline');
+  var lead=document.getElementById('doLead'), line=document.getElementById('discLine');
   var weekend=(window.thwapIsWeekend&&window.thwapIsWeekend());
-  if(fl){ fl.textContent=weekend?'Weekend: bonus skills, no dryland':'3 things, about 30 min'; }
+  /* Per-discipline "done today" from the unified signal (thwapDone|<today>|<disc>). */
+  function today2(){var t=(window.thwapToday?window.thwapToday():new Date());return t.getFullYear()+'-'+(t.getMonth()+1)+'-'+t.getDate();}
+  function isDone(disc){ try{ return localStorage.getItem('thwapDone|'+today2()+'|'+disc)==='1'; }catch(e){ return false; } }
+  /* A goalie trains Net play as their third discipline instead of Shooting. While
+     Net play is gated coming-soon (NETPLAY_ENABLED false) the goalie has no third
+     discipline to do today, so the line shows only Hands + Dryland; when Net play
+     goes live it joins the sentence. Helpers are defined later in the file, so
+     guard for load-time ordering. */
+  var isGoalie=(window.thwapIsGoalie&&window.thwapIsGoalie());
+  var netLive=(typeof netplayLive==='function')?netplayLive():false;
+  var third=isGoalie
+    ? (netLive?[{k:'netplay',label:'Net play',emo:'🧤',cls:'disc-shoot'}]:[])
+    : [{k:'shoot',label:'Shooting',emo:'🥅',cls:'disc-shoot'}];
+  var DEFS=[{k:'stick',label:'Hands',emo:'🏒',cls:'disc-stick'}].concat(third,[{k:'dryland',label:'Dryland',emo:'⚡',cls:'disc-dryland'}]);
+  var defs=weekend?DEFS.filter(function(d){return d.k!=='dryland';}):DEFS;   /* dryland rests on weekends */
+  /* Render one colored, non-tappable discipline chunk (emoji + name). */
+  function discSpan(d){
+    var done=isDone(d.k)?' done':'';
+    return "<span class='disc "+d.cls+done+"'><span class='demo'>"+d.emo+"</span> "+d.label+" <span class='chk'>✓</span></span>";
+  }
+  /* Comma-join a list of defs, with "and" before the last when there is more than one. */
+  function discSentenceList(arr){
+    if(arr.length===1) return discSpan(arr[0]);
+    return arr.slice(0,-1).map(discSpan).join(", ")+" and "+discSpan(arr[arr.length-1]);
+  }
+  if(line){ line.innerHTML=""; }   /* disciplines now live inside the sentence in #doLead */
+  /* Build the lead line. Open state uses a calm "Today's training:" label; once
+     started, the count carries ("N left"), then the celebration. The tappable
+     date reveal lives on "Today" (open) or "today" (in-progress). */
+  var todayCap="<button type='button' class='todayword' id='todayReveal'>Today<span class='todaydate' id='dayDate'>"+full+"</span></button>";
+  var todayLow="<button type='button' class='todayword' id='todayReveal'>today<span class='todaydate' id='dayDate'>"+full+"</span></button>";
+  if(lead){
+    if(weekend){
+      lead.className='dolead';
+      lead.innerHTML="No training "+todayLow+", bonus skills only.";
+    } else {
+      var left=defs.filter(function(d){return !isDone(d.k);});
+      if(left.length===0){
+        lead.className='dolead alldone';
+        lead.innerHTML="All done "+todayLow+". 🎉";
+      } else if(left.length===defs.length){
+        lead.className='dolead';
+        lead.innerHTML=todayCap+"'s training is "+discSentenceList(defs)+".";
+      } else {
+        lead.className='dolead';
+        lead.innerHTML="You still have "+discSentenceList(left)+" to do "+todayLow+".";
+      }
+    }
+    /* tap toggles the date tooltip (hover/focus already handle desktop) */
+    var tw=document.getElementById('todayReveal');
+    if(tw){ tw.addEventListener('click',function(e){ e.preventDefault(); tw.classList.toggle('show'); }); }
+  }
   /* Weekend: dryland (load) rests, so hide its card. Skills stay available. */
   var dl=document.querySelector('.nav-dryland'); if(dl) dl.style.display=weekend?'none':'';
-  /* Home chip label stays "Today"; the weekday+date live only in the tap-reveal (#dayDate),
-     so the weekday is never shown twice. */
+  /* The weekday+date live only in the inline "today" reveal, never shown twice. */
 }
 fill();
+window.thwapRefreshHero=fill;
 })();
 </script>
 <div class='exthwap' id='exThwap'>THWAP!</div>
@@ -4538,7 +5011,12 @@ document.addEventListener('click',function(e){
 @keyframes wmShard{0%{transform:translate(0,0) rotate(0);opacity:1}100%{transform:translate(var(--dx),var(--dy)) rotate(var(--rot));opacity:0}}
 #brandMark.wm-reassemble{animation:wmReassemble .42s cubic-bezier(.2,1.1,.3,1)}
 @keyframes wmReassemble{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1)}}
-@media (prefers-reduced-motion: reduce){#sassLogo.wm-slap,.wm-puck.fly,.wm-shatter.go .wm-shard,#brandMark.wm-reassemble{animation:none}}
+/* Small THWAP! comic boom (the splash burst, shrunk to fit the header) that pops
+   when Sass skates through the wordmark and explodes it. */
+.wm-thwap{position:fixed;z-index:142;pointer-events:none;width:66px;height:auto;transform:translate(-50%,-50%) scale(0);opacity:0}
+.wm-thwap.go{animation:wmThwap .62s cubic-bezier(.2,1.3,.4,1) forwards}
+@keyframes wmThwap{0%{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(-12deg)}28%{opacity:1;transform:translate(-50%,-50%) scale(1.12) rotate(5deg)}52%{transform:translate(-50%,-50%) scale(1) rotate(-2deg)}100%{opacity:0;transform:translate(-50%,-50%) scale(1) rotate(0)}}
+@media (prefers-reduced-motion: reduce){#sassLogo.wm-slap,.wm-puck.fly,.wm-shatter.go .wm-shard,#brandMark.wm-reassemble,.wm-thwap.go{animation:none}}
 </style>
 <script>(function(){
   var logo=document.getElementById('sassLogo'); if(!logo)return;
@@ -4556,6 +5034,37 @@ document.addEventListener('click',function(e){
     logo.classList.add('skating');
     /* real moving legs: alternate the two stride frames while skating */
     var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    /* As Sass skates through the wordmark, explode it with a small THWAP! boom. */
+    (function(){
+      var wm=document.getElementById('brandMark'); if(!wm||reduce) return;
+      var wr=wm.getBoundingClientRect();
+      var enterX=wr.left+wr.width*0.22;      /* outbound: leading (right) edge reaches into the wordmark */
+      var returnX=wr.right-wr.width*0.22;    /* return: leading (left) edge re-enters from the right */
+      var boomX=wr.left+wr.width*0.5, boomY=wr.top+wr.height*0.5;
+      var thwap=function(){
+        if(window.thwapShatterWordmark) window.thwapShatterWordmark();
+        var boom=document.createElement('img'); boom.className='wm-thwap'; boom.src='login/thwap-burst.webp'; boom.alt='';
+        boom.style.left=boomX+'px'; boom.style.top=boomY+'px';
+        document.body.appendChild(boom);
+        requestAnimationFrame(function(){ boom.classList.add('go'); });
+        setTimeout(function(){ if(boom.parentNode)boom.parentNode.removeChild(boom); },680);
+      };
+      /* phase 0: skating out, 1: boomed on the way in, 2: turned around, 3: boomed on the way back */
+      var phase=0, maxRight=0;
+      var watch=function(){
+        if(phase>=3 || !logo.classList.contains('skating')) return;
+        var lr=logo.getBoundingClientRect();
+        if(phase===0){
+          if(lr.right>maxRight) maxRight=lr.right;
+          if(lr.right>=enterX){ thwap(); phase=1; }               /* explode as he skates INTO it */
+        }else if(phase===1){
+          if(lr.right>maxRight) maxRight=lr.right;
+          if(lr.right < maxRight-8) phase=2;                      /* he has flipped and is skating back */
+        }else if(phase===2 && lr.left<=returnX){ thwap(); phase=3; return; }  /* explode again on the way back */
+        requestAnimationFrame(watch);
+      };
+      requestAnimationFrame(watch);
+    })();
     var flip=null;
     if(!reduce){ var on2=false; flip=setInterval(function(){ on2=!on2; logo.src=on2?'sass-skate-2.png':'sass-skate-1.png'; },130); }
     logo.addEventListener('animationend',function done(ev){
@@ -4601,6 +5110,7 @@ function shatterWordmark(){
     wm.classList.add('wm-reassemble'); setTimeout(function(){ wm.classList.remove('wm-reassemble'); },440);
   },650);
 }
+window.thwapShatterWordmark=shatterWordmark;   /* reused by the skate egg when Sass skates through the wordmark */
 var LOGO_REST='sass-logo.svg', LOGO_SHOT='sass-logo-nopuck.webp';
 (function(){ var pl=new Image(); pl.src=LOGO_SHOT; })();   /* preload the puckless frame so the swap is instant */
 function logoSlapshot(){
@@ -4702,15 +5212,69 @@ var SHOOT_DAYS=window.SHOOT_DAYS=[
     {emoji:'🔁', name:'Ten Different Goals', theme:'Change release', cue:'Score 10 goals without using the same release twice in a row.', video:'https://www.youtube.com/watch?v=DmtTLZC__y8', audio:'shoot_05',
      steps:['Start: Grab a puck. Move before you shoot.','Score: Pick a way to attack and score a goal.','Change it: On the next one, change something: angle, release point, forehand, backhand, pull, or push.','Keep going: Score 10 different goals. If you repeat yourself, it doesn\'t count!']} ]
 ];
+window.NETPLAY_DAYS=[[{"emoji":"🧎","name":"Ready Stance","theme":"Set your base","cue":"Build a strong, comfortable stance you can hold and spring from.","steps":["Feet: A little wider than your shoulders.","Knees: Bend them so you feel springy, not stiff.","Hands: Out in front where you can see them.","Tall and calm: Chest up, eyes forward.","Hold it: Stay set 10 seconds, relax, repeat 10 times."]},{"emoji":"⬆️","name":"Butterfly Down-Ups","theme":"Drop and recover","cue":"Drop to your knees and pop back up, smooth and balanced.","steps":["Start set: Begin in your ready stance on a soft surface (carpet or a mat).","Drop: Go down to both knees, knees apart, chest up.","Stay square: Shoulders facing forward the whole time.","Pop up: Push back to your stance in one smooth move.","Reps: 10 clean down-ups. Quality over speed."]},{"emoji":"⏱️","name":"Butterfly Holds","theme":"Strong legs","cue":"Hold the butterfly to build the legs that get you up fast.","steps":["Drop: Go down into your butterfly.","Hold: Stay there, chest up, for 15 seconds.","Rest: Stand up and shake it out.","Again: Do 5 holds.","Goal: Add 5 seconds when it gets easy."]}],[{"emoji":"🩹","name":"Tape Your Line","theme":"Set it up","cue":"Make a line and two marks on the floor to be your crease.","steps":["Tape: Put a strip of tape on the floor, about as wide as a doorway.","Marks: Add a mark near each end (those are your posts).","Middle: Add one mark in the middle.","Ready: Stand on the middle mark in your stance.","This is your crease for the next drills."]},{"emoji":"↔️","name":"Shuffle the Crease","theme":"Move square","cue":"Slide side to side along your line, staying square.","steps":["Set: Start on the middle mark in your stance.","Push: Push off one leg and shuffle toward a post mark.","Stay square: Keep your shoulders facing forward, do not turn.","Arrive set: Stop on the mark already in your stance.","Reps: 10 shuffles each way."]},{"emoji":"📐","name":"T-Push to the Post","theme":"Cover the post","cue":"Push across to the far mark fast and arrive set.","steps":["Set: Start on one post mark.","Point: Turn your lead foot toward the far mark (make a T).","Push: Drive off your back leg across the line.","Arrive square: Stop on the far mark, facing forward.","Reps: 5 pushes each direction."]},{"emoji":"🔄","name":"Recover to Your Feet","theme":"Get back up","cue":"Drop, then get square and back on your feet quickly.","steps":["Drop: Go into your butterfly on the middle mark.","Eyes up: Look straight ahead.","Recover: Get one foot under you, then the other.","Set: Finish standing in your stance, facing forward.","Reps: 10 quick recoveries."]}],[{"emoji":"🎾","name":"Wall Toss Catch","theme":"Soft hands","cue":"Throw a tennis ball at a wall and catch it clean.","steps":["Stand: A few steps from a wall in your stance.","Throw: Toss the ball at the wall.","Watch: Follow it all the way back with your eyes.","Catch: Catch it soft, close your hand around it.","Reps: 25 clean catches. Move where the ball goes."]},{"emoji":"🧤","name":"Glove-Side Catches","theme":"Catch high","cue":"Catch balls to your glove hand and hold on.","steps":["Set: Ready stance, glove hand ready.","Throw: Toss the ball to your glove side (or have someone toss it).","Track: Watch it into your hand.","Catch and hold: Squeeze, do not swat.","Reps: 20 glove catches."]},{"emoji":"⚡","name":"Two-Ball Drop","theme":"React fast","cue":"A helper drops one of two balls, you catch it before it double-bounces.","steps":["Helper: Someone holds a ball in each hand, arms out.","Watch: You stay in your stance, eyes on their hands.","React: They drop ONE ball without warning.","Catch: Move and grab it before it bounces twice.","Reps: 15 drops. Switch which hand they use."]},{"emoji":"🤹","name":"Bounce and React","theme":"Quick hands","cue":"Bounce a ball off the ground or wall and snag the funny hops.","steps":["Throw low: Bounce the ball hard off the floor near a wall.","Read it: Watch which way it kicks.","Move: Get your body and hand to it.","Catch: Grab it clean.","Reps: 20 bounces. The weird hops are the point."]}],[{"emoji":"👀","name":"Follow the Ball","theme":"Track it","cue":"Keep your eyes glued to a ball the whole way in.","steps":["Helper: Someone slowly moves a ball around in front of you.","Track: Follow it with your eyes only.","Head still: Move your eyes, not your whole head.","Stay set: Hold your stance while you track.","Time it: Track for 30 seconds, rest, do 5 rounds."]},{"emoji":"🔦","name":"Head on a Swivel","theme":"Find it fast","cue":"Snap your eyes to a ball that appears from the side.","steps":["Set: Stance, eyes forward.","Surprise: A helper holds a ball out to one side, then the other.","Snap: Find it fast with your eyes and turn your head to face it.","Square up: Turn your shoulders toward it too.","Reps: 20 snaps, mixing sides."]},{"emoji":"🎯","name":"Track Behind a Screen","theme":"See past traffic","cue":"Find the ball when something is partly in the way.","steps":["Screen: Put a chair (or have a helper stand) a bit in front of you.","Move: A helper moves a ball behind and beside the screen.","Look around it: Shift your head to keep eyes on the ball.","Stay square: Face the ball once you find it.","Reps: 10 tracks past the screen."]},{"emoji":"📍","name":"Line Up the Shooter","theme":"Angles","cue":"Move so you are always between the ball and your net line.","steps":["Line: Use your taped line as the net.","Helper: Someone holds a ball and moves side to side in front of you.","Line up: Move so you are between the ball and the middle of your line.","Check: Your nose, the ball, and the middle mark make a straight line.","Reps: Follow the ball to 10 spots."]}],[{"emoji":"🧎","name":"Stance Warm-Up","theme":"Get set","cue":"A few clean butterfly down-ups to warm up your base.","steps":["Set: Ready stance.","Down-ups: 5 smooth drops and recoveries.","Balance: Chest up, square, in control."]},{"emoji":"↔️","name":"Shuffle and Set","theme":"Move square","cue":"Shuffle post to post on your line and arrive set.","steps":["Start: On a post mark, set.","Shuffle: Slide to the other mark staying square.","Arrive set: Stop in your stance, not sliding.","Reps: 6 post to post."]},{"emoji":"🎾","name":"Wall Toss Catch","theme":"Soft hands","cue":"Throw and catch off the wall, clean every time.","steps":["Throw: Toss the ball at the wall.","Track: Watch it back.","Catch: Soft hands, squeeze it.","Reps: 20 clean catches."]},{"emoji":"👀","name":"Follow the Ball","theme":"Track it","cue":"Eyes locked on a moving ball, head still.","steps":["Helper moves a ball; you track with your eyes.","Stay in your stance.","Time it: 3 rounds of 30 seconds."]},{"emoji":"⏱️","name":"Butterfly Hold Finish","theme":"Strong legs","cue":"End with a couple of butterfly holds to build recovery power.","steps":["Drop: Into your butterfly.","Hold: 15 seconds, chest up.","Reps: 3 holds, then shake it out."]}]];
 function shootDayI(){ var s=window.thwapWeekdaySlot(); if(s<0) s=0; return s%SHOOT_DAYS.length; }
 var SHOOT=SHOOT_DAYS[shootDayI()];
 /* Progress keyed by which rotation day it is, so finishing today does not mark another day. */
 function shootKey(){ return 'thwapShootProg|day'+shootDayI(); }
 function loadProg(){try{return JSON.parse(localStorage.getItem(shootKey())||'{}');}catch(e){return {};}}
 function saveProg(p){try{localStorage.setItem(shootKey(),JSON.stringify(p));}catch(e){}}
+/* A goalie (Johnny) trains Net play instead of Shooting. Same page, same
+   plumbing; only the drill source and labels change. The signed-in player is
+   bfPlayer (first name). GOALIE_NAMES mirrors lib/store.js GOALIE_IDS. */
+window.THWAP_GOALIE_NAMES = window.THWAP_GOALIE_NAMES || ['johnny'];
+window.thwapIsGoalie = function(){
+  try{ var p=(localStorage.getItem('bfPlayer')||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,''); return window.THWAP_GOALIE_NAMES.indexOf(p)>=0; }catch(e){ return false; }
+};
+/* The home hero summary (fill()) runs earlier in the file than this helper, so a
+   goalie's first paint would fall back to the skater triad. Repaint the hero now
+   that thwapIsGoalie exists, so a goalie sees the correct discipline line. */
+try{ if(typeof window.thwapRefreshHero==='function') window.thwapRefreshHero(); }catch(e){}
+/* The active third-discipline day-set for the signed-in player: NETPLAY_DAYS for
+   a goalie (when present), else SHOOT_DAYS. */
+/* Net play gate: the off-ice goalie drills in NETPLAY_DAYS are agent-authored
+   placeholder fundamentals, NOT content Woody has vetted, and have no videos.
+   Per the no-invented-training-content rule, keep Net play "coming soon" (no
+   markable drills, no stats accrue) until real goalie drills land -- exactly the
+   Passing pattern (PASS_DAYS empty). Flip to true and the drills + stats light up
+   with no rebuild. */
+var NETPLAY_ENABLED=window.NETPLAY_ENABLED=false;
+var NETPLAY_LAUNCH='soon';
+function netplayLive(){ return window.NETPLAY_ENABLED && Array.isArray(window.NETPLAY_DAYS) && window.NETPLAY_DAYS.length; }
+function thirdDays(){ return (window.thwapIsGoalie() && netplayLive()) ? window.NETPLAY_DAYS : SHOOT_DAYS; }
 function render(){
   var list=document.getElementById('shootList'); if(!list)return;
-  SHOOT=SHOOT_DAYS[shootDayI()];   /* re-pick today's set on each render */
+  var goalie=window.thwapIsGoalie();
+  /* Goalie + Net play not yet enabled: show the coming-soon state, no drills, no
+     stats -- same shape as the Passing shell. */
+  if(goalie && !netplayLive()){
+    var h=document.querySelector('#shoot h1');
+    if(h){ for(var hn=h.firstChild;hn;hn=hn.nextSibling){ if(hn.nodeType===3 && /\S/.test(hn.nodeValue)){ hn.nodeValue=' Net play'; break; } } }
+    var blurb=document.querySelector('#shoot p'); if(blurb) blurb.textContent='Stance, angles, and stopping pucks.';
+    var navH=document.querySelector('.nav-shoot h2'); if(navH) navH.textContent='Net play';
+    var navP=document.querySelector('.nav-shoot p'); if(navP) navP.textContent='Goalie training, coming soon';
+    var shOptG=document.getElementById('shootOptional'); if(shOptG) shOptG.hidden=true;
+    list.innerHTML="<div class='soon-empty'>"+
+      "<h3>Net play drills are coming "+NETPLAY_LAUNCH+"</h3>"+
+      "<p>Off-ice goalie training you can do at home with a tennis ball and floor tape: stance, butterfly, footwork, reaction and tracking. Real drills drop right here soon. Until then, keep stacking days in Hands and Dryland.</p>"+
+    "</div>";
+    return;
+  }
+  var DAYS=thirdDays();
+  SHOOT=DAYS[shootDayI()%DAYS.length];   /* re-pick today's set on each render */
+  /* Show 2 fewer drills per day so the session is less intense (keep at least 1). */
+  SHOOT=SHOOT.slice(0, Math.max(1, SHOOT.length-2));
+  /* Relabel the page for a goalie: hero title, blurb, nav row, and the default
+     dose fall back below use "Net play". */
+  if(goalie){
+    /* The #shoot h1 is "<button data-daytip>Today's</button> Shooting". Replace
+       only the trailing text node so the day-tip button is preserved. */
+    var h=document.querySelector('#shoot h1');
+    if(h){ for(var n=h.firstChild;n;n=n.nextSibling){ if(n.nodeType===3 && /\S/.test(n.nodeValue)){ n.nodeValue=' Net play'; break; } } }
+    var blurb=document.querySelector('#shoot p'); if(blurb) blurb.textContent='Stance, angles, and stopping pucks.';
+    var navH=document.querySelector('.nav-shoot h2'); if(navH) navH.textContent='Net play';
+    var navP=document.querySelector('.nav-shoot p'); if(navP) navP.textContent='Stance + saves, about 15 min';
+  }
   var prog=loadProg();
   list.innerHTML='';
   var shOpt=document.getElementById('shootOptional'); if(shOpt) shOpt.hidden=!(window.thwapIsWeekend&&window.thwapIsWeekend());
@@ -4723,7 +5287,7 @@ function render(){
     list.insertAdjacentHTML('beforeend',
       "<div class='exrow"+done+"' data-i='"+i+"'>"+
         "<div class='exhead'><div class='exem'>"+dr.emoji+"</div>"+
-          "<div><h3>"+esc(dr.name)+"<span class='exbadge'>Done</span></h3><div class='exdose'>"+esc(dr.theme||'Shooting')+"</div></div>"+
+          "<div><h3>"+esc(dr.name)+"<span class='exbadge'>Done</span></h3><div class='exdose'>"+esc(dr.theme||(goalie?'Net play':'Shooting'))+"</div></div>"+
           "<div class='exchev'>›</div></div>"+
         "<div class='exbody'>"+cue+window.videoBlock(dr)+window.audioBlock(dr)+steps+
           "<button type='button' class='exdone'>"+doneLabel+"</button></div>"+
@@ -4744,19 +5308,108 @@ function render(){
         var p=loadProg(); p[i]=true; saveProg(p);
         row.classList.add('done');
         var _l=row.parentNode;
+        /* Category celebration keys its blue net-rip effect off 'shoot' (which
+           fits a goalie visually), but the SERVER count must land in the
+           position-correct slot: netplay for a goalie, never shoot (fairness rule).
+           The LOCAL done-slot stays 'shoot' -- it only marks "third discipline done
+           today" for the daily celebration/streak, and the goalie's third page IS
+           the shoot route. */
         if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('shoot');
-        if(window.thwapMarkDone)window.thwapMarkDone('shoot');
+        if(window.thwapMarkDone)window.thwapMarkDone(goalie?'netplay':'shoot');
         if(window.thwapStampToday)window.thwapStampToday('shoot',true);
         btn.textContent='Done ✓';
       };
       if(row.classList.contains('done')){ return; }
-      if(window.thwapDrillTimer){ window.thwapDrillTimer(SHOOT[i].name, markDone, SHOOT[i].audio); }
+      if(window.thwapDrillTimer){ window.thwapDrillTimer(SHOOT[i].name, markDone, SHOOT[i].audio, {cue:SHOOT[i].cue, steps:SHOOT[i].steps}); }
       else { markDone(); }
     });
   });
 }
 render();
 window.addEventListener('hashchange',function(){ if(location.hash==='#shoot') render(); });
+})();</script>
+
+<style id='pass-shell-css'>
+/* "Soon" tag on the Passing card + hero, and the coming-soon placeholder page. */
+.soon-tag{display:inline-block;margin-left:8px;vertical-align:middle;font-size:11px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:var(--onaccent);background:var(--green);border-radius:999px;padding:3px 9px;line-height:1.5}
+.soon-tag-lg{font-size:13px;padding:4px 12px}
+.soon-empty{padding:8px 2px 4px}
+.soon-empty h3{margin:6px 0 8px;font-size:20px;color:var(--text)}
+.soon-empty p{margin:0;max-width:52ch;color:var(--text2);line-height:1.5}
+</style>
+<script>(function(){
+/* Passing discipline (shell). The machinery mirrors Shooting exactly: PASS_DAYS
+   has the SAME shape as SHOOT_DAYS -- an array of days, each an array of drill
+   objects { emoji, name, theme, cue, video, audio, steps[] }. It ships EMPTY in a
+   "Soon" state; drop real passing days into PASS_DAYS and the same checklist,
+   rotation, done-state and streak/sticker hookup light up with no rebuild.
+   Device note: tag device-dependent drills (e.g. add device:true) so a kid with
+   no passing device can be shown partner/wall alternatives when content lands.
+   Backend follow-up for launch: add 'pass' to DISCIPLINES in lib/store.js and a
+   'pass' pool in the celebration engine so done-marking counts on the board. */
+var PASS_DAYS=window.PASS_DAYS=[];
+var PASS_LAUNCH='early November';
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function passDayI(){ if(!PASS_DAYS.length) return 0; var s=window.thwapWeekdaySlot?window.thwapWeekdaySlot():0; if(s<0)s=0; return s%PASS_DAYS.length; }
+function passKey(){ return 'thwapPassProg|day'+passDayI(); }
+function loadP(){try{return JSON.parse(localStorage.getItem(passKey())||'{}');}catch(e){return {};}}
+function saveP(p){try{localStorage.setItem(passKey(),JSON.stringify(p));}catch(e){}}
+function render(){
+  var list=document.getElementById('passList'); if(!list)return;
+  if(!PASS_DAYS.length){
+    var third3=(window.thwapIsGoalie&&window.thwapIsGoalie())?'Net play':'Shooting';
+    list.innerHTML="<div class='soon-empty'>"+
+      "<h3>Passing lands "+esc(PASS_LAUNCH)+"</h3>"+
+      "<p>Tape-to-tape passing, give-and-go, and reading the ice. New drills drop right here soon. Until then, keep stacking days in Hands, "+third3+" and Dryland.</p>"+
+    "</div>";
+    return;
+  }
+  var today=PASS_DAYS[passDayI()];
+  var PASS=today.slice(0, Math.max(1, today.length-2));   /* mirror Shooting: 2 fewer per day */
+  var prog=loadP();
+  list.innerHTML='';
+  list.insertAdjacentHTML('beforeend', window.voicePickerHTML());
+  PASS.forEach(function(dr,i){
+    var done=prog[i]?' done':'';
+    var doneLabel=prog[i]?'Done ✓':'Start';
+    var steps=(dr.steps&&dr.steps.length)?"<ol>"+dr.steps.map(function(s){return "<li>"+esc(s)+"</li>";}).join('')+"</ol>":'';
+    var cue=dr.cue?"<p><b>Coach cue:</b> "+esc(dr.cue)+"</p>":'';
+    list.insertAdjacentHTML('beforeend',
+      "<div class='exrow"+done+"' data-i='"+i+"'>"+
+        "<div class='exhead'><div class='exem'>"+dr.emoji+"</div>"+
+          "<div><h3>"+esc(dr.name)+"<span class='exbadge'>Done</span></h3><div class='exdose'>"+esc(dr.theme||'Passing')+"</div></div>"+
+          "<div class='exchev'>›</div></div>"+
+        "<div class='exbody'>"+cue+window.videoBlock(dr)+window.audioBlock(dr)+steps+
+          "<button type='button' class='exdone'>"+doneLabel+"</button></div>"+
+      "</div>");
+  });
+  list.querySelectorAll('.exrow').forEach(function(row){
+    var i=+row.getAttribute('data-i');
+    row.querySelector('.exhead').addEventListener('click',function(){
+      var wasOpen=row.classList.contains('open');
+      row.parentNode.querySelectorAll('.exrow.open').forEach(function(other){ if(other!==row) other.classList.remove('open'); });
+      row.classList.toggle('open', !wasOpen);
+    });
+    row.querySelector('.exdone').addEventListener('click',function(ev){
+      ev.stopPropagation();
+      var btn=this;
+      var markDone=function(){
+        var p=loadP(); p[i]=true; saveP(p);
+        row.classList.add('done');
+        var _l=row.parentNode;
+        if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('pass');
+        if(window.thwapMarkDone)window.thwapMarkDone('pass');
+        if(window.thwapStampToday)window.thwapStampToday('pass',true);
+        btn.textContent='Done ✓';
+      };
+      if(row.classList.contains('done')){ return; }
+      if(window.thwapDrillTimer){ window.thwapDrillTimer(PASS[i].name, markDone, PASS[i].audio, {cue:PASS[i].cue, steps:PASS[i].steps}); }
+      else { markDone(); }
+    });
+  });
+}
+render();
+window.addEventListener('hashchange',function(){ if(location.hash==='#pass') render(); });
 })();</script>
 
 <script>(function(){
@@ -4766,12 +5419,22 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#shoot') re
    reachable yet (e.g. before Vercel KV is provisioned), so the app keeps working. */
 var PLAYER=(function(){try{var s=localStorage.getItem('bfPlayer')||'Lewie';return s.trim().split(/\s+/)[0];}catch(e){return 'Lewie';}})();  /* the chosen player on this device */
 window.thwapMarkDone=function(discipline){
-  /* A logged-in player logs their own work - no secret-number prompt. */
-  try{
-    fetch('/api/done',{
+  /* A logged-in player logs their own work. /api/done now REQUIRES a server
+     session; if this browser somehow lacks one (e.g. first load after the change),
+     the 401 triggers a transparent session mint and a single retry, so the write
+     still lands and the player is never blocked. Silent on any failure. */
+  var send=function(){
+    return fetch('/api/done',{
       method:'POST', headers:{'Content-Type':'application/json'}, cache:'no-store',
       body:JSON.stringify({player:PLAYER.toLowerCase(), discipline:discipline})
-    }).catch(function(){});                        /* offline / no API yet: silent */
+    });
+  };
+  try{
+    send().then(function(r){
+      if(r && r.status===401 && window.thwapEnsureSession){
+        return window.thwapEnsureSession().then(function(){ return send(); });
+      }
+    }).catch(function(){});                         /* offline / no API yet: silent */
   }catch(e){}
 };
 })();</script>
@@ -5014,6 +5677,16 @@ window.thwapCategoryDone=function(disc){
 /* Public: preview a specific effect (no once-per-day guard). For QA and tuning. */
 window.thwapCatFx=function(disc,idx){ var c=DC[disc]||'#75B8FF'; if(reduce){ badge(WORDS[disc]||'NICE!',c); return; } var p=POOLS[disc]; if(!p) return; (p[idx]||p[0])(c); };
 window.thwapCatFxCount=function(disc){ return (POOLS[disc]||[]).length; };
+/* Public: the drill-page long-press payoffs. Holding a header icon fires the
+   big illustrated Sass cameo for that discipline (reused from the pools above).
+   Fire-and-forget; reduced motion falls back to a plain word badge. */
+window.thwapLongPress={
+  stick:function(){ if(reduce){ badge('FILTHY!','#8FD65E'); return; } sassCameo('login/sass-dangle.webp','FILTHY!','#8FD65E'); },
+  shoot:function(){ if(reduce){ badge('SNIPE!','#75B8FF'); return; } screenCrack('#75B8FF',true); stamp('SNIPE!','#75B8FF'); },
+  dryland:function(){ if(reduce){ badge('POWERED UP','#FF9D4D'); return; } sassCameo('login/sass-power.webp','POWERED UP','#FF9D4D'); },
+  goals:function(){ if(reduce){ badge("LET'S GO!",'#FFC24A'); return; } sassCameo('login/sass-celly.webp',"LET'S GO!",'#FFC24A'); },
+  pass:function(){ if(reduce){ badge('SAUCE!','#2E86FF'); return; } sassCameo('login/sass-pass.webp','SAUCE!','#2E86FF'); }
+};
 /* Top tier: everything done today. A bigger, rotating finish (over the "today
    complete" card). Reduced motion shows nothing extra (the card is the fallback). */
 var FINALE=[
@@ -5448,26 +6121,34 @@ document.addEventListener('pointercancel',release,{passive:true});
 document.addEventListener('pointerleave',release,{passive:true,capture:true});
 })();</script>
 <script>(function(){
-/* Drill-page easter eggs. Long-press (500ms) the stick header to dangle a puck;
-   long-press the net header to fire a puck through the net and off the left edge.
-   Both reset themselves and are locked while playing so they cannot stack. */
+/* Drill-page easter eggs. Each header icon has two moves: a quick TAP runs the
+   in-icon flourish, and a LONG-PRESS (~450ms) fires that discipline's big
+   illustrated Sass cameo. Both lock while playing so they cannot stack. */
 var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-/* Tap to fire, on mobile and desktop. Long-press proved unreliable on mobile
-   (the browser grabs it for text-select and the context menu), so a plain tap
-   runs the egg. It stays locked while playing so a fast double-tap cannot stack.
-   Long-press is reserved for the future Sass slapshot. */
-function tapEgg(el,fire){
+/* Pointer-based so tap and hold both work on mobile and desktop. We suppress the
+   mobile long-press callout (contextmenu) and drag so the hold reads cleanly.
+   onTap uses the done-callback pattern; onHold is fire-and-forget and self-unlocks. */
+function holdEgg(el,onTap,onHold){
   if(!el) return;
-  var playing=false;
-  el.addEventListener('click',function(e){
-    if(playing) return;
-    playing=true; fire(function(){playing=false;});
+  var playing=false, timer=null, held=false;
+  el.style.webkitUserSelect='none'; el.style.userSelect='none'; el.style.touchAction='manipulation';
+  function tap(){ if(playing)return; playing=true; onTap(function(){playing=false;}); }
+  function hold(){ if(playing||!onHold)return; playing=true; held=true; onHold(); setTimeout(function(){playing=false;},1750); }
+  el.addEventListener('pointerdown',function(e){
+    if(playing||(e.button&&e.button!==0))return;
+    held=false;
+    if(onHold) timer=setTimeout(function(){ timer=null; hold(); },450);
   });
+  el.addEventListener('pointerup',function(){ if(timer){ clearTimeout(timer); timer=null; if(!held) tap(); } else if(!onHold && !held){ tap(); } });
+  el.addEventListener('pointercancel',function(){ if(timer){clearTimeout(timer);timer=null;} });
+  el.addEventListener('pointerleave',function(){ if(timer){clearTimeout(timer);timer=null;} });
+  el.addEventListener('contextmenu',function(e){ e.preventDefault(); });
+  el.addEventListener('dragstart',function(e){ e.preventDefault(); });
 }
 /* Stickhandling: the header icon swaps to the puckless stick and the SAME puck
    (a single moving puck) is stickhandled back and forth in front of the blade,
    so it never doubles up. The puck settles back on the blade at the end. */
-tapEgg(document.getElementById('eggStick'),function(done){
+holdEgg(document.getElementById('eggStick'),function(done){
   var el=document.getElementById('eggStick');
   if(reduce){ done(); return; }
   var img=document.getElementById('eggStickImg');
@@ -5486,9 +6167,9 @@ tapEgg(document.getElementById('eggStick'),function(done){
     if(p.parentNode)p.parentNode.removeChild(p);
     done();
   },1300);
-});
+},function(){ if(window.thwapLongPress) window.thwapLongPress.stick(); });
 /* Shooting: puck flies in from the right, punches the net, exits left. */
-tapEgg(document.getElementById('eggNet'),function(done){
+holdEgg(document.getElementById('eggNet'),function(done){
   var el=document.getElementById('eggNet');
   if(reduce){ done(); return; }
   var r=el.getBoundingClientRect();
@@ -5507,35 +6188,49 @@ tapEgg(document.getElementById('eggNet'),function(done){
     if(hole.parentNode)hole.parentNode.removeChild(hole);
     done();
   },1250);
-});
-/* Dryland: charge the bolt, then fire energy sparks outward at the flash moment. */
-tapEgg(document.getElementById('eggBolt'),function(done){
+},function(){ if(window.thwapLongPress) window.thwapLongPress.shoot(); });
+/* Dryland: the bolt cocks back and SNAPS, firing a single bold shockwave ring
+   (two staggered rings) with a bright flash. Reads as explosive power. */
+holdEgg(document.getElementById('eggBolt'),function(done){
   var el=document.getElementById('eggBolt');
   if(reduce){ done(); return; }
-  el.classList.add('egg-zap');
+  el.classList.add('egg-surge');
   var r=el.getBoundingClientRect();
-  var cx=Math.round(r.left+r.width/2-2), cy=Math.round(r.top+r.height/2-7);
-  var sparks=[];
-  setTimeout(function(){
-    var N=11;
-    for(var i=0;i<N;i++){
-      var ang=(-90 + (i/(N-1))*360 + (Math.random()*20-10))*Math.PI/180;
-      var dist=70+Math.random()*46;
-      var s=document.createElement('span'); s.className='eggspark';
-      s.style.setProperty('--sx',cx+'px'); s.style.setProperty('--sy',cy+'px');
-      s.style.setProperty('--sa',Math.round(ang*180/Math.PI+90)+'deg');
-      s.style.setProperty('--dx',Math.round(Math.cos(ang)*dist)+'px');
-      s.style.setProperty('--dy',Math.round(Math.sin(ang)*dist)+'px');
-      document.body.appendChild(s); sparks.push(s);
-      requestAnimationFrame(function(sp){return function(){sp.classList.add('fire');};}(s));
+  var cx=Math.round(r.left+r.width/2), cy=Math.round(r.top+r.height/2-4);
+  var rings=[];
+  setTimeout(function(){   /* launch at the SNAP moment (~40% of the .82s surge) */
+    for(var i=0;i<2;i++){
+      var s=document.createElement('span'); s.className='eggshock';
+      s.style.left=cx+'px'; s.style.top=cy+'px'; s.style.animationDelay=(i*110)+'ms';
+      document.body.appendChild(s); rings.push(s);
+      requestAnimationFrame(function(sp){return function(){sp.classList.add('go');};}(s));
     }
-  },470);
+  },300);
   setTimeout(function(){
-    el.classList.remove('egg-zap');
-    for(var j=0;j<sparks.length;j++){ if(sparks[j].parentNode)sparks[j].parentNode.removeChild(sparks[j]); }
+    el.classList.remove('egg-surge');
+    for(var j=0;j<rings.length;j++){ if(rings[j].parentNode)rings[j].parentNode.removeChild(rings[j]); }
     done();
-  },1120);
-});
+  },900);
+},function(){ if(window.thwapLongPress) window.thwapLongPress.dryland(); });
+/* Passing: TAP -> the puck leaves the header and sauces a pass back and forth
+   across the screen (arcing to each side), then returns home. The header puck is
+   hidden while it is out, so there is never a second puck. LONG-PRESS -> cameo. */
+holdEgg(document.getElementById('eggPass'),function(done){
+  var el=document.getElementById('eggPass');
+  if(reduce){ done(); return; }
+  var r=el.getBoundingClientRect();
+  el.classList.add('egg-fly');   /* hide the header puck while it is out on the ice */
+  var puck=document.createElement('span'); puck.className='eggpassflight';
+  puck.style.left=Math.round(r.left+r.width/2-9)+'px';
+  puck.style.top=Math.round(r.top+r.height/2-9)+'px';
+  document.body.appendChild(puck);
+  requestAnimationFrame(function(){ puck.classList.add('go'); });
+  setTimeout(function(){
+    el.classList.remove('egg-fly');
+    if(puck.parentNode)puck.parentNode.removeChild(puck);
+    done();
+  },1750);
+},function(){ if(window.thwapLongPress&&window.thwapLongPress.pass) window.thwapLongPress.pass(); });
 })();</script>
 <script>(function(){
 /* ---- Break the Ice: login gate (Pass 1 foundation) ----
@@ -5702,9 +6397,22 @@ function runToEnd(endFn){
   setStep('run');
   splashTimers.push(setTimeout(function(){
     setStep('impact');
+    thwapPlaySplashHit();
     if(stageEl){ stageEl.classList.add('shake'); setTimeout(function(){ stageEl.classList.remove('shake'); },420); }
   },1500));
   splashTimers.push(setTimeout(function(){ end(); },2250));
+}
+/* THWAP! impact sound. One lazily-created <audio>, played at the burst. Silent if
+   autoplay is blocked, if the player muted narration, or under reduced motion. */
+var _thwapHit=null;
+function thwapPlaySplashHit(){
+  try{
+    if(reduceMotion()) return;
+    if(window.thwapMuted && window.thwapMuted()) return;
+    if(!_thwapHit){ _thwapHit=new Audio('login/thwap-hit.mp3'); _thwapHit.preload='auto'; }
+    _thwapHit.currentTime=0;
+    var p=_thwapHit.play(); if(p&&p.catch) p.catch(function(){});
+  }catch(e){}
 }
 /* run -> impact -> sign-in. Fired automatically after the welcome delay, or early
    when the player taps Sass (which bypasses the remaining delay). */
@@ -5742,18 +6450,39 @@ function maybeSplash(){
   /* tap Sass during the welcome pause to start the skate right away */
   var welcomeGroup=document.querySelector('.sp-welcome'); if(welcomeGroup) welcomeGroup.addEventListener('click',function(){ if(overlay.classList.contains('is-playing')) playRun(); });
 })();
-function signIn(player,email,keep){
-  var rec={pid:player.pid,name:player.name,email:String(email||'').trim(),year:SEASON_YEAR,ts:Date.now()};
-  try{
-    var json=JSON.stringify(rec);
-    cookieSet(AUTH_KEY, json, keep?180:0);   /* client marker the gate + greeting read; the
-                                                server also set an HTTP-only thwapSession cookie */
-    localStorage.removeItem(AUTH_KEY); sessionStorage.removeItem(AUTH_KEY);
-    localStorage.setItem('bfPlayer',player.name);
-  }catch(e){}
-  hide();
-  if(location.hash==='#login'){ location.hash='#home'; }
-  location.reload();
+/* Mint the server session (HTTP-only thwapSession cookie) by re-verifying the
+   same code the player typed. Non-blocking and time-boxed: if the server is down
+   or unconfigured we still let the player in on the client-side path below, so no
+   one is ever locked out. Demo players (client-only, no backend) are skipped. */
+function mintServerSession(pid,code,email,keep){
+  if(!pid||pid==='demo'||!code) return Promise.resolve();
+  return new Promise(function(resolve){
+    var settled=false, fin=function(){ if(settled)return; settled=true; resolve(); };
+    var to=setTimeout(fin,3500);
+    try{
+      fetch('/api/login?action=code-signin',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({playerId:pid,code:String(code||''),email:String(email||''),keep:!!keep})})
+        .then(function(){ clearTimeout(to); fin(); },function(){ clearTimeout(to); fin(); });
+    }catch(e){ clearTimeout(to); fin(); }
+  });
+}
+function signIn(player,email,keep,code){
+  function finish(){
+    var rec={pid:player.pid,name:player.name,email:String(email||'').trim(),year:SEASON_YEAR,ts:Date.now()};
+    try{
+      var json=JSON.stringify(rec);
+      cookieSet(AUTH_KEY, json, keep?180:0);   /* client marker the gate + greeting read; the
+                                                  server also sets the HTTP-only thwapSession cookie */
+      localStorage.removeItem(AUTH_KEY); sessionStorage.removeItem(AUTH_KEY);
+      localStorage.setItem('bfPlayer',player.name);
+    }catch(e){}
+    hide();
+    if(location.hash==='#login'){ location.hash='#home'; }
+    location.reload();
+  }
+  /* establish the server session first (so the cookie is set before the reload),
+     then finish regardless of the outcome */
+  mintServerSession(player.pid, code, email, keep).then(finish, finish);
 }
 /* ---- Unified sign in --------------------------------------------------------
    ONE form, two kinds of user. On submit we try coach-login first (email +
@@ -5782,6 +6511,28 @@ if(form){
     var email=String(emailEl.value||'').trim();
     var code=String(pwEl.value||'');
     if(!validEmail(email)){ errEl.textContent='Enter your email.'; emailEl.focus(); return; }
+    /* Demo team: fully client-side, no OTP and no backend. Chosen via the team
+       dropdown with hi@woodymacduffie.com + 'player' | 'coach'. */
+    var teamSel=document.getElementById('loginTeam');
+    if(window.THWAP_DEMO && teamSel && teamSel.value===window.THWAP_DEMO.TEAM_VALUE){
+      var dres=window.THWAP_DEMO.login(teamSel.value,email,code);
+      if(dres&&dres.error){ errEl.textContent=dres.error; pwEl.focus(); pwEl.select(); return; }
+      if(dres&&dres.role==='player'){
+        window.THWAP_DEMO.activate();
+        /* Demo player signs straight in as Mario Lemieux (no picker). */
+        var DEMO_PLAYER='Mario Lemieux';
+        try{ localStorage.setItem('bfPlayer', DEMO_PLAYER); }catch(_){}
+        var drec={pid:'demo',name:DEMO_PLAYER,email:email,year:SEASON_YEAR,ts:Date.now()};
+        try{ cookieSet(AUTH_KEY, JSON.stringify(drec), keepEl.checked?180:0); }catch(_){}
+        hide(); location.hash='#home'; location.reload(); return;
+      }
+      if(dres&&dres.role==='coach'){
+        window.THWAP_DEMO.activate();
+        try{ localStorage.setItem('thwapCoach', JSON.stringify({ token:'demo', email:email, name:'Jack Adams', teams:['DEMO'], teamList:[{code:'DEMO',name:window.THWAP_DEMO.TEAM_NAME,ageGroup:''}], childPlayerId:null, demo:true })); }catch(_){}
+        hide(); location.hash='#coachhome'; location.reload(); return;
+      }
+      errEl.textContent="Demo code is 'player' or 'coach'."; pwEl.focus(); pwEl.select(); return;
+    }
     errEl.textContent='Signing in...';
     /* 1) Try coach first. A 200 with a token = coach. */
     fetch('/api/coach?action=coach-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:code})})
@@ -5792,17 +6543,106 @@ if(form){
         errEl.textContent='';
         var player=playerForPassword(code);
         if(!player){ errEl.textContent='That code did not match.'; pwEl.focus(); pwEl.select(); return; }
-        signIn(player,email,keepEl.checked);
+        signIn(player,email,keepEl.checked,code);
       })
       .catch(function(){
         /* Network/API down: still allow player sign in (client-side check). */
         errEl.textContent='';
         var player=playerForPassword(code);
         if(!player){ errEl.textContent='That code did not match.'; pwEl.focus(); pwEl.select(); return; }
-        signIn(player,email,keepEl.checked);
+        signIn(player,email,keepEl.checked,code);
       });
   });
 }
+/* Exposed so write endpoints can self-heal: if a signed-in player somehow lacks a
+   server session, mint one from their own derivable code (jersey number + season
+   year), then the caller retries. Returns a promise; a no-op resolve for demo or
+   unknown players. Used by thwapMarkDone on a 401 from /api/done. */
+window.thwapEnsureSession=function(){
+  try{
+    var a=readAuth(); if(!a||!a.pid||a.pid==='demo') return Promise.resolve();
+    var num=NUMS[a.pid]; if(!num) return Promise.resolve();
+    return mintServerSession(a.pid, String(num)+String(a.year||SEASON_YEAR), a.email||'', true);
+  }catch(e){ return Promise.resolve(); }
+};
+/* Already-signed-in players (from before server sessions existed) silently get a
+   server session on their next visit, by re-verifying their own derivable code
+   (jersey number + season year). No typing, no prompt. Runs once per tab; demo
+   players and anyone without a known jersey number are skipped. This lets writes
+   move onto the server-verified session without asking anyone to sign in again. */
+(function(){
+  try{
+    if(sessionStorage.getItem('thwapSessSync')==='1') return;
+    var a=readAuth(); if(!a||!a.pid||a.pid==='demo') return;
+    var num=NUMS[a.pid]; if(!num) return;
+    sessionStorage.setItem('thwapSessSync','1');
+    mintServerSession(a.pid, String(num)+String(a.year||SEASON_YEAR), a.email||'', true);
+  }catch(e){}
+})();
+/* Emailed sign-in code (OTP): request a 6-digit code to the parent email(s) ON
+   FILE for a player, then verify it to sign in. A stronger path alongside the
+   jersey-code sign-in above; the server never emails a typed address. */
+(function(){
+  var toggle=document.getElementById('loginOtpToggle'), panel=document.getElementById('loginOtp'),
+      nameEl=document.getElementById('loginOtpName'), sendBtn=document.getElementById('loginOtpSend'),
+      step2=document.getElementById('loginOtpStep2'), codeEl=document.getElementById('loginOtpCode'),
+      verifyBtn=document.getElementById('loginOtpVerify'), msg=document.getElementById('loginOtpMsg');
+  if(!toggle||!panel) return;
+  var pid='';
+  function firstName(n){ return String(n||'').trim().toLowerCase().split(/\s+/)[0]; }
+  toggle.addEventListener('click',function(){
+    var willOpen=panel.hidden; panel.hidden=!willOpen;
+    toggle.textContent=willOpen?'Use my player code instead':'Forgot your code? Email me a sign-in code';
+    if(willOpen && nameEl) nameEl.focus();
+  });
+  sendBtn.addEventListener('click',function(){
+    msg.className='login-msg'; msg.textContent='';
+    pid=firstName(nameEl.value);
+    if(!pid){ msg.className='login-msg err'; msg.textContent="Enter the player's first name."; nameEl.focus(); return; }
+    sendBtn.disabled=true; sendBtn.textContent='Sending...';
+    fetch('/api/login?action=request-code',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({playerId:pid})})
+      .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
+      .then(function(res){
+        sendBtn.disabled=false; sendBtn.textContent='Resend code';
+        if(res.ok && res.j && res.j.sent>0){
+          step2.hidden=false; msg.className='login-msg ok';
+          msg.textContent='A 6-digit code is on its way to the parent email on file. Enter it below.';
+          if(codeEl) codeEl.focus();
+        } else if(res.ok){
+          msg.className='login-msg';
+          msg.textContent="No parent email on file for that player yet. Use your player code above, or ask your coach to add one.";
+        } else {
+          msg.className='login-msg err'; msg.textContent=(res.j&&res.j.error)||'Could not send a code.';
+        }
+      })
+      .catch(function(){ sendBtn.disabled=false; sendBtn.textContent='Email me a code'; msg.className='login-msg err'; msg.textContent='Could not send a code. Check your connection.'; });
+  });
+  verifyBtn.addEventListener('click',function(){
+    msg.className='login-msg'; msg.textContent='';
+    if(consentEl&&!consentEl.checked){ msg.className='login-msg err'; msg.textContent='Please agree to the Terms and Privacy Policy above.'; return; }
+    var code=String(codeEl.value||'').trim();
+    if(!/^\d{6}$/.test(code)){ msg.className='login-msg err'; msg.textContent='Enter the 6-digit code.'; codeEl.focus(); return; }
+    verifyBtn.disabled=true; verifyBtn.textContent='Signing in...';
+    fetch('/api/login?action=verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({playerId:pid,code:code,keep:keepEl?keepEl.checked:true})})
+      .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
+      .then(function(res){
+        if(res.ok && res.j && res.j.player){
+          try{ localStorage.setItem('thwapTerms', JSON.stringify({at:new Date().toISOString(), version:POLICY_VERSION})); }catch(_){}
+          var p=res.j.player;
+          try{
+            cookieSet(AUTH_KEY, JSON.stringify({pid:p.id,name:p.name,email:'',year:SEASON_YEAR,ts:Date.now()}), (keepEl&&keepEl.checked)?180:0);
+            localStorage.removeItem(AUTH_KEY); sessionStorage.removeItem(AUTH_KEY); localStorage.setItem('bfPlayer',p.name);
+          }catch(_){}
+          hide(); if(location.hash==='#login'){ location.hash='#home'; } location.reload();
+        } else {
+          verifyBtn.disabled=false; verifyBtn.textContent='Sign in with code';
+          msg.className='login-msg err';
+          msg.textContent=(res.j&&res.j.error==='bad code')?'That code did not match. Try again or resend.':((res.j&&res.j.error)||'Sign in failed.');
+        }
+      })
+      .catch(function(){ verifyBtn.disabled=false; verifyBtn.textContent='Sign in with code'; msg.className='login-msg err'; msg.textContent='Sign in failed. Check your connection.'; });
+  });
+})();
 if(eyeEl&&pwEl){
   eyeEl.addEventListener('click',function(){
     var showing=pwEl.type==='text';
@@ -5908,5 +6748,146 @@ wireHeaderNav('navWaitlist', function(){ playToSheet(showWait); });
 wireHeaderNav('navWaitlistK', function(){ playToSheet(showWait); });
 window.addEventListener('hashchange',function(){ if(location.hash==='#login'){ show(); maybeSplash(); } });
 gate();
+})();</script>
+<script>(function(){
+/* ---- Player self-edit (Team page) ----
+   A signed-in, non-coach player can edit their OWN details from the Team page:
+   tap the pencil to enter self-edit mode (only their own card is editable), tap
+   their card to open a sheet with name / jersey / parent emails + Request new
+   code. Saving posts to self-update-player, authorized by the player's own code
+   (jersey + season year) so a player can never edit anyone else. Coaches use the
+   coach pencil; guests see nothing (CSS gates the pencil on body.is-authed:not(.is-coach)). */
+var TEAM='RANGERS72';
+function myName(){ try{ return (localStorage.getItem('bfPlayer')||'').trim(); }catch(e){ return ''; } }
+function myFirst(){ return (myName().split(/\s+/)[0]||''); }
+function myPid(){ return myFirst().toLowerCase().replace(/[^a-z]/g,''); }
+function myCard(){
+  var pid=myPid(); if(!pid) return null;
+  var cards=document.querySelectorAll('#roster-grid .pcard[data-name]');
+  for(var i=0;i<cards.length;i++){
+    var nm=(cards[i].getAttribute('data-name')||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,'');
+    if(nm===pid) return cards[i];
+  }
+  return null;
+}
+function cardNum(card){ try{ var bn=card&&card.querySelector('.pcard-bn'); return bn?(bn.textContent||'').trim():''; }catch(e){ return ''; } }
+
+var pencil=document.getElementById('rosterEditSelf');
+var actions=document.getElementById('rosterEditSelfActions');
+var doneBtn=document.getElementById('rosterEditSelfDone');
+/* Point pcard-you-card at the ACTUAL signed-in player's card (the static markup
+   only marks one card). Also: if this signed-in player has no card on the roster,
+   hide the self-edit pencil entirely (nothing for them to edit). */
+(function(){
+  var pid=myPid();
+  var cards=document.querySelectorAll('#roster-grid .pcard[data-name]');
+  var found=false;
+  cards.forEach(function(el){
+    var nm=(el.getAttribute('data-name')||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,'');
+    if(nm===pid){ el.classList.add('pcard-you-card'); found=true; }
+    else { el.classList.remove('pcard-you-card'); }
+  });
+  if(!found && pencil){ pencil.hidden=true; pencil.style.display='none'; }
+})();
+var sheet=document.getElementById('playerSelfSheet');
+var form=document.getElementById('playerSelfForm');
+var psFirst=document.getElementById('psFirst'), psLast=document.getElementById('psLast'),
+    psNum=document.getElementById('psNum'), psEmail=document.getElementById('psEmail'),
+    psEmail2=document.getElementById('psEmail2'), psPin=document.getElementById('psPin'),
+    psMsg=document.getElementById('psMsg'), psReqCode=document.getElementById('psReqCode');
+var editing=false, currentCode='';
+function pinFor(num){ var n=String(num==null?'':num).trim(); return n?(n+'2027'):'\u2014'; }
+function setEditing(on){
+  editing=on;
+  document.body.classList.toggle('roster-selfediting', on);
+  if(pencil){ pencil.hidden=on; pencil.classList.toggle('on',on); }
+  if(actions) actions.hidden=!on;
+}
+if(pencil) pencil.addEventListener('click',function(){ setEditing(true); });
+if(doneBtn) doneBtn.addEventListener('click',function(){ setEditing(false); });
+var selfCancelBtn=document.getElementById('rosterEditSelfCancel');
+if(selfCancelBtn) selfCancelBtn.addEventListener('click',function(){ setEditing(false); });
+function sheetShow(on){ if(sheet) sheet.hidden=!on; }
+function validEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v||'').trim()); }
+function openSelfEdit(){
+  var card=myCard(); if(!card) return;
+  var parts=myName().split(/\s+/); var first=parts[0]||''; var last=parts.slice(1).join(' ');
+  var num=cardNum(card);
+  currentCode=num?(num+'2027'):'';           /* proof-of-self for the server */
+  if(psMsg) psMsg.textContent='';
+  if(psFirst) psFirst.value=first;
+  if(psLast) psLast.value=last;
+  if(psNum) psNum.value=num;
+  if(psEmail) psEmail.value='';
+  if(psEmail2) psEmail2.value='';
+  if(psPin) psPin.textContent=pinFor(num);
+  sheetShow(true);
+  /* Fill emails + canonical fields from the roster in the background. */
+  fetch('/api/coach?action=roster&code='+encodeURIComponent(TEAM))
+    .then(function(r){ return r.json(); }).then(function(j){
+      var m=(j&&j.members||[]).filter(function(x){ return (x.playerId||x.firstName||'').toLowerCase()===myPid(); })[0];
+      if(!m) return;
+      if(psFirst && m.firstName) psFirst.value=m.firstName;
+      if(psLast && m.lastName!=null) psLast.value=m.lastName;
+      if(psNum && m.number!=null){ psNum.value=m.number; currentCode=String(m.number)+'2027'; if(psPin) psPin.textContent=pinFor(m.number); }
+      if(psEmail) psEmail.value=m.parentEmail||'';
+      if(psEmail2) psEmail2.value=m.parentEmail2||'';
+    }).catch(function(){});
+}
+/* In self-edit mode, tapping the player's OWN card opens the sheet. Capture phase
+   so it beats the card's normal navigation; other cards are pointer-events:none. */
+(function(){
+  var grid=document.getElementById('roster-grid'); if(!grid) return;
+  grid.addEventListener('click',function(e){
+    if(!editing) return;
+    var card=e.target.closest && e.target.closest('.pcard-you-card');
+    if(!card) return;
+    e.preventDefault(); e.stopPropagation();
+    openSelfEdit();
+  }, true);
+})();
+document.getElementById('psX') && document.getElementById('psX').addEventListener('click',function(){ sheetShow(false); });
+document.getElementById('psScrim') && document.getElementById('psScrim').addEventListener('click',function(){ sheetShow(false); });
+if(psNum) psNum.addEventListener('input',function(){ if(psPin) psPin.textContent=pinFor(psNum.value); });
+if(psReqCode) psReqCode.addEventListener('click',function(){
+  if(!validEmail(psEmail&&psEmail.value)){ if(psMsg) psMsg.textContent='Add a parent email above first, then Save.'; return; }
+  var lab=psReqCode.textContent; psReqCode.disabled=true; psReqCode.textContent='Sending...';
+  fetch('/api/coach?action=request-code',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:TEAM,playerId:myPid()})})
+    .then(function(r){ return r.json(); }).then(function(){
+      psReqCode.textContent='Code sent'; psReqCode.classList.add('done');
+      setTimeout(function(){ psReqCode.textContent=lab; psReqCode.classList.remove('done'); psReqCode.disabled=false; },2600);
+    }).catch(function(){ psReqCode.textContent=lab; psReqCode.disabled=false; if(psMsg) psMsg.textContent='Could not reach the server.'; });
+});
+if(form) form.addEventListener('submit',function(e){
+  e.preventDefault();
+  if(psEmail && psEmail.value && !validEmail(psEmail.value)){ if(psMsg) psMsg.textContent='Enter a valid parent email.'; return; }
+  if(psEmail2 && psEmail2.value && !validEmail(psEmail2.value)){ if(psMsg) psMsg.textContent='Second parent email is invalid.'; return; }
+  var body={code:TEAM,playerId:myPid(),playerCode:currentCode,
+    firstName:psFirst?psFirst.value:'',lastName:psLast?psLast.value:'',number:psNum?psNum.value:'',
+    parentEmail:psEmail?psEmail.value:'',parentEmail2:psEmail2?psEmail2.value:''};
+  if(psMsg) psMsg.textContent='Saving...';
+  fetch('/api/coach?action=self-update-player',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
+    .then(function(res){ if(res.ok&&res.j.ok){ sheetShow(false); location.reload(); } else if(psMsg){ psMsg.textContent=(res.j&&res.j.error)||'Could not save.'; } })
+    .catch(function(){ if(psMsg) psMsg.textContent='Could not reach the server.'; });
+});
+})();</script>
+<script>(function(){
+/* Read-only coach info sheet, opened by tapping a coach chip on the Team page
+   (player view, and non-self coach chips in the coach view). */
+var sheet=document.getElementById('coachInfoSheet');
+function show(on){ if(sheet) sheet.hidden=!on; }
+window.thwapShowCoachInfo=function(name, role, photo){
+  var nm=document.getElementById('coachInfoName'), rl=document.getElementById('coachInfoRole'), av=document.getElementById('coachInfoAv');
+  if(nm) nm.textContent=name||'Coach';
+  if(rl) rl.textContent=role||'';
+  if(av){ av.innerHTML='';
+    if(photo){ var im=document.createElement('img'); im.src=photo; im.alt=name||''; av.appendChild(im); }
+    else { var s=String(name||'').trim().split(/\s+/); av.textContent=((s[0]||'?').charAt(0)+(s[1]?s[1].charAt(0):'')).toUpperCase(); }
+  }
+  show(true);
+};
+document.getElementById('coachInfoX') && document.getElementById('coachInfoX').addEventListener('click',function(){ show(false); });
+document.getElementById('coachInfoScrim') && document.getElementById('coachInfoScrim').addEventListener('click',function(){ show(false); });
 })();</script>
 </body></html>

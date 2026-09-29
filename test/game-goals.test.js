@@ -70,3 +70,38 @@ describe('Game-day position persists + seeds from roster', () => {
     expect(html).toMatch(/rp==='FD'\|\|rp==='DF'\|\|rp\.indexOf\('\/'\)>=0\|\|rp==='B'/);
   });
 });
+
+describe('Game-day dart easter egg is correctly sized', () => {
+  it('the width is on .gd-dart itself (the img IS .gd-dart, so .gd-dart img never matched)', () => {
+    // the element is created as <img class="gd-dart">, so the size must be on .gd-dart
+    expect(html).toMatch(/\.gd-dart\{[^}]*width:clamp\(56px,12vw,90px\)/);
+    // and it's still created as a bare img with that class
+    expect(html).toMatch(/createElement\('img'\); dart\.className='gd-dart'/);
+  });
+});
+
+describe('Vision-focused game-day goals (Head Up on the Puck, Five Clean Passes)', () => {
+  it('"Head Up on the Puck" (g44) lives in Brain / Pre-Scan with the eyes-up cue', () => {
+    expect(html).toMatch(/<label class="goal goal-44" for="g44">/);
+    expect(html).toMatch(/<h3>Head Up on the Puck<\/h3>/);
+    expect(html).toMatch(/Eyes up, feel the puck\./);
+  });
+
+  it('"Five Clean Passes" (g45) is a countable passing goal with the tape-to-tape cue', () => {
+    expect(html).toMatch(/<label class="goal goal-45" for="g45">/);
+    expect(html).toMatch(/<h3>Five Clean Passes<\/h3>/);
+    expect(html).toMatch(/Tape to tape, five times\./);
+  });
+
+  it('both new goals are fully wired: input, selected-state CSS, and final-view chip', () => {
+    // hidden checkbox inputs
+    expect(html).toMatch(/id="g44" class="choice-input"/);
+    expect(html).toMatch(/id="g45" class="choice-input"/);
+    // selected-state CSS + final-view reveal
+    expect(html).toMatch(/#g44:checked ~ \.final-view \.final-44 \{ display:grid; \}/);
+    expect(html).toMatch(/#g45:checked ~ \.final-view \.final-45 \{ display:grid; \}/);
+    // final-view Game Plan chips
+    expect(html).toMatch(/class="final-card final-44"/);
+    expect(html).toMatch(/class="final-card final-45"/);
+  });
+});

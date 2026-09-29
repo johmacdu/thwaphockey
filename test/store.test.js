@@ -30,6 +30,8 @@ const {
   listPlayers,
   getPlayer,
   monthTrend,
+  disciplinesFor,
+  GOALIE_IDS,
 } = await import('../lib/store.js');
 
 // Helper: keys the store uses.
@@ -93,7 +95,7 @@ describe('computeStreak', () => {
 describe('weekCount (Monday-based)', () => {
   // Week containing Wed 2026-01-14 starts Mon 2026-01-12.
   it('is all zeros for a fresh player', async () => {
-    expect(await weekCount('lewie')).toEqual({ stick: 0, shoot: 0, dryland: 0 });
+    expect(await weekCount('lewie')).toEqual({ stick: 0, shoot: 0, dryland: 0, netplay: 0 });
   });
 
   it('counts only events within the current Monday-based week', async () => {
@@ -103,7 +105,7 @@ describe('weekCount (Monday-based)', () => {
       { date: '2026-01-13', disc: 'shoot' }, // Tuesday - included
       { date: '2026-01-14', disc: 'stick' }, // Wednesday (today) - included
     ]);
-    expect(await weekCount('lewie')).toEqual({ stick: 2, shoot: 1, dryland: 0 });
+    expect(await weekCount('lewie')).toEqual({ stick: 2, shoot: 1, dryland: 0, netplay: 0 });
   });
 
   it('ignores events with an unknown discipline', async () => {
@@ -111,7 +113,7 @@ describe('weekCount (Monday-based)', () => {
       { date: '2026-01-13', disc: 'stick' },
       { date: '2026-01-13', disc: 'bogus' },
     ]);
-    expect(await weekCount('lewie')).toEqual({ stick: 1, shoot: 0, dryland: 0 });
+    expect(await weekCount('lewie')).toEqual({ stick: 1, shoot: 0, dryland: 0, netplay: 0 });
   });
 });
 
@@ -148,7 +150,7 @@ describe('bumpPlayer', () => {
     pinDate('2026-01-14');
     await bumpPlayer('lewie', 'shoot');
     expect(await computeStreak('lewie')).toBe(2);
-    expect(await weekCount('lewie')).toEqual({ stick: 1, shoot: 1, dryland: 0 });
+    expect(await weekCount('lewie')).toEqual({ stick: 1, shoot: 1, dryland: 0, netplay: 0 });
   });
 });
 
@@ -180,9 +182,9 @@ describe('weekBoard', () => {
     const board = await weekBoard();
     expect(board).toHaveLength(ROSTER.length);
     const lewie = board.find((p) => p.id === 'lewie');
-    expect(lewie).toEqual({ id: 'lewie', stick: 1, shoot: 1, dryland: 0 });
+    expect(lewie).toEqual({ id: 'lewie', stick: 1, shoot: 1, dryland: 0, netplay: 0 });
     const johnny = board.find((p) => p.id === 'johnny');
-    expect(johnny).toEqual({ id: 'johnny', stick: 0, shoot: 0, dryland: 0 });
+    expect(johnny).toEqual({ id: 'johnny', stick: 0, shoot: 0, dryland: 0, netplay: 0 });
   });
 });
 
@@ -207,5 +209,28 @@ describe('monthTrend', () => {
     // the two oldest weeks are empty
     expect(trend[0].total).toBe(0);
     expect(trend[1].total).toBe(0);
+  });
+});
+
+describe('position-aware disciplines (goalie Net play)', () => {
+  it('gives skaters stick/shoot/dryland', () => {
+    expect(disciplinesFor('lewie')).toEqual(['stick', 'shoot', 'dryland']);
+    expect(disciplinesFor('alder')).toEqual(['stick', 'shoot', 'dryland']);
+  });
+
+  it('gives the goalie stick/netplay/dryland (no shoot)', () => {
+    expect(GOALIE_IDS).toContain('johnny');
+    expect(disciplinesFor('johnny')).toEqual(['stick', 'netplay', 'dryland']);
+    expect(disciplinesFor('JOHNNY')).toEqual(['stick', 'netplay', 'dryland']);
+    expect(disciplinesFor('johnny')).not.toContain('shoot');
+  });
+
+  it('bumps and counts netplay for the goalie in the weekly split', async () => {
+    await bumpPlayer('johnny', 'netplay');
+    const wk = await weekCount('johnny');
+    expect(wk.netplay).toBe(1);
+    expect(wk.shoot).toBe(0);
+    const stored = await getPlayer('johnny');
+    expect(stored.netplay).toBe(1);
   });
 });

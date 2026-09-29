@@ -20,6 +20,9 @@ beforeAll(async () => {
   const dom = new JSDOM(html, {
     runScripts: 'dangerously',
     pretendToBeVisual: true,
+    // Pin to a WEEKDAY (?day=0 -> Thursday via dayIndex): dryland rests on
+    // weekends, so on a Sat/Sun run its list is a rest card with no drill rows.
+    url: 'https://thwaphockey.com/?day=0',
     beforeParse(window) {
       // stub network + storage the inline scripts touch so they run to completion
       window.fetch = () => Promise.resolve({ ok: true, json: () => Promise.resolve({ ok: false }) });
@@ -35,22 +38,42 @@ describe('Drill lists actually render (no cross-IIFE ReferenceError)', () => {
   it('exposes videoBlock/ytid globally so stick + shoot IIFEs can call them', () => {
     expect(typeof win.videoBlock).toBe('function');
     expect(typeof win.ytid).toBe('function');
+    // Watch-how videos were removed (clips not accurate); videoBlock is now a no-op.
     const out = win.videoBlock({ video: 'https://www.youtube.com/watch?v=5daeyw6mRzA' });
-    expect(out).toContain('exvid-link');
-    expect(out).toContain('5daeyw6mRzA');
+    expect(out).toBe('');
   });
 
   it('the Stickhandling list renders drill tiles (not empty)', () => {
     const list = win.document.getElementById('stickList');
     expect(list).toBeTruthy();
     expect(list.querySelectorAll('.exrow').length).toBeGreaterThan(0);
-    // and the Watch-how link is present in the rendered tile
-    expect(list.querySelector('.exvid-link')).toBeTruthy();
+    // the Watch-how link was removed from all drills
+    expect(list.querySelector('.exvid-link')).toBeFalsy();
   });
 
   it('the Shooting list renders drill tiles (not empty)', () => {
     const list = win.document.getElementById('shootList');
     expect(list).toBeTruthy();
     expect(list.querySelectorAll('.exrow').length).toBeGreaterThan(0);
+  });
+});
+
+describe('Drill intensity reduced (shooting -2, dryland cap 4)', () => {
+  it('dryland caps at 4 drills and shooting renders 2 fewer than the day list', () => {
+    // dryland cap
+    expect(html).toMatch(/var CAP=4;/);
+    // shooting render-time slice
+    expect(html).toMatch(/SHOOT=SHOOT\.slice\(0, Math\.max\(1, SHOOT\.length-2\)\)/);
+  });
+  it('renders the reduced counts (dryland <= 4; shooting = day length - 2)', () => {
+    // uses the win from the earlier beforeAll in this file
+    const dryland = win.document.getElementById('drylandList').querySelectorAll('.exrow').length;
+    const shoot = win.document.getElementById('shootList').querySelectorAll('.exrow').length;
+    expect(dryland).toBeLessThanOrEqual(4);
+    expect(dryland).toBeGreaterThan(0);
+    const dayLens = (win.SHOOT_DAYS || []).map((d) => d.length);
+    const maxDay = Math.max(...dayLens);
+    // shooting shows 2 fewer than a full day (days are all 5 -> 3), min 1
+    expect(shoot).toBe(Math.max(1, maxDay - 2));
   });
 });
