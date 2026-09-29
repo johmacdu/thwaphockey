@@ -697,6 +697,15 @@ body.roster-selfediting #roster-grid .pcard.pcard-you-card::after{content:'\270E
 .sheet-panel{position:absolute;top:0;right:0;bottom:0;width:min(420px,90vw);background:var(--bg);border-left:1px solid var(--line);box-shadow:-12px 0 32px rgba(0,0,0,.28);padding:calc(env(safe-area-inset-top,0px) + 24px) 20px 24px;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
 .sheet-lab{display:flex;flex-direction:column;gap:5px;font-size:var(--fs-support);font-weight:800;color:var(--muted)}
 .sheet-lab .pgate-in{margin:0}
+/* Flexible guardian-email list inside the coach + player-self edit sheets: any
+   number of emails, each one on file receives the player's sign-in code. */
+.pe-elist{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.pe-elab{font-size:var(--fs-support);font-weight:800;color:var(--muted)}
+.pe-erow{display:flex;align-items:center;gap:8px}
+.pe-erow .pe-em{flex:1;margin:0}
+.pe-edel{flex:none;width:38px;height:38px;border-radius:10px;border:1px solid var(--line2);background:var(--card);color:var(--muted);font-size:20px;line-height:1;cursor:pointer}
+.pe-edel:active{transform:scale(.95)}
+.pe-eadd{align-self:flex-start;background:none;border:0;color:var(--green2);font-family:inherit;font-size:var(--fs-support);font-weight:800;cursor:pointer;padding:2px 0}
 .sheet-pin{display:flex;flex-direction:column;gap:2px;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;font-size:var(--fs-support);font-weight:800;color:var(--muted)}
 .sheet-pin-val{font-family:'Archivo Black',system-ui,sans-serif;font-size:22px;color:var(--text);letter-spacing:.02em}
 .sheet-pin-hint{font-size:var(--fs-meta);font-weight:700;color:var(--muted)}
@@ -1433,8 +1442,7 @@ body.login-locked{overflow:hidden}
       <option value='G'>Goalie</option>
       <option value='FD'>Forward/Defense</option>
     </select></label>
-    <label class='sheet-lab'>Parent email (1)<input class='pgate-in' id='peEmail' type='email' inputmode='email' autocomplete='off' placeholder='parent@email.com'></label>
-    <label class='sheet-lab'>Parent email (2)<input class='pgate-in' id='peEmail2' type='email' inputmode='email' autocomplete='off' placeholder='second parent (optional)'></label>
+    <div class='pe-elist' id='peEmailList'></div>
     <div class='sheet-pin'>Player code (PIN)<span class='sheet-pin-val' id='pePin'>&mdash;</span><span class='sheet-pin-hint'>In case the player or parent forgets it.</span><button type='button' class='sheet-pin-btn' id='peReqCode'>Request new code</button></div>
     <button type='submit' class='pgate-go' id='peSave'>Save</button>
     <button type='button' class='pe-remove' id='peRemove'>Remove from roster</button>
@@ -1461,8 +1469,7 @@ body.login-locked{overflow:hidden}
     <label class='sheet-lab'>First name<input class='pgate-in' id='psFirst' type='text' autocomplete='off' required></label>
     <label class='sheet-lab'>Last name<input class='pgate-in' id='psLast' type='text' autocomplete='off'></label>
     <label class='sheet-lab'>Jersey number<input class='pgate-in' id='psNum' type='text' inputmode='numeric' autocomplete='off'></label>
-    <label class='sheet-lab'>Parent email (1)<input class='pgate-in' id='psEmail' type='email' inputmode='email' autocomplete='off' placeholder='parent@email.com'></label>
-    <label class='sheet-lab'>Parent email (2)<input class='pgate-in' id='psEmail2' type='email' inputmode='email' autocomplete='off' placeholder='second parent (optional)'></label>
+    <div class='pe-elist' id='psEmailList'></div>
     <div class='sheet-pin'>Player code (PIN)<span class='sheet-pin-val' id='psPin'>&mdash;</span><span class='sheet-pin-hint'>In case the player or parent forgets it.</span><button type='button' class='sheet-pin-btn' id='psReqCode'>Request new code</button></div>
     <button type='submit' class='pgate-go' id='psSave'>Save</button>
     <p class='pgate-msg' id='psMsg' aria-live='polite'></p>
@@ -1764,7 +1771,42 @@ body.login-locked{overflow:hidden}
 </div>
 </section>
 <div class='footer'><span class='slogan'>Compete. Improve. Have fun.</span><div class='footer-actions'><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button><div class='footmenu-wrap'><button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button><div class='footmenu' id='footMenu' hidden role='menu'><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a><a class='footmenu-item' id='menuSignout' href='#' role='menuitem'>Sign out</a></div></div></div></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div>
-</div><script>(function(){
+</div><script>
+/* Shared flexible guardian-email list for the coach and player-self edit sheets.
+   Any number of emails per player; each one on file receives the sign-in code.
+   render() fills a container with rows + an "add" button and wires add/remove once;
+   collect() reads the trimmed, non-empty emails back as an array. */
+window.thwapEmailUI=window.thwapEmailUI||(function(){
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function rowHTML(val){
+    return "<div class='pe-erow'><input class='pgate-in pe-em' type='email' inputmode='email' autocomplete='off' placeholder='parent@email.com' value=\""+esc(val)+"\">"+
+      "<button type='button' class='pe-edel' aria-label='Remove email'>×</button></div>";
+  }
+  function render(container, emails){
+    if(!container) return;
+    var arr=(Array.isArray(emails)?emails:[]).filter(function(e){ return e && String(e).trim(); });
+    if(!arr.length) arr=[''];
+    container.innerHTML="<div class='pe-elab'>Parent / guardian emails</div>"+
+      arr.map(rowHTML).join('')+
+      "<button type='button' class='pe-eadd'>+ Add another email</button>";
+    if(!container.__peWired){
+      container.__peWired=true;
+      container.addEventListener('click',function(e){
+        var add=e.target.closest && e.target.closest('.pe-eadd');
+        if(add){ add.insertAdjacentHTML('beforebegin', rowHTML('')); var rows=container.querySelectorAll('.pe-erow'); var last=rows[rows.length-1]; if(last){ var i=last.querySelector('input'); if(i) i.focus(); } return; }
+        var del=e.target.closest && e.target.closest('.pe-edel');
+        if(del){ var rs=container.querySelectorAll('.pe-erow'); if(rs.length>1){ del.closest('.pe-erow').remove(); } else { var inp=del.closest('.pe-erow').querySelector('input'); if(inp) inp.value=''; } }
+      });
+    }
+  }
+  function collect(container){
+    if(!container) return [];
+    return Array.prototype.map.call(container.querySelectorAll('.pe-em'), function(i){ return i.value.trim(); }).filter(Boolean);
+  }
+  function first(container){ return collect(container)[0]||''; }
+  return { render:render, collect:collect, first:first };
+})();
+</script><script>(function(){
 /* Player gate: tapping a drill card asks who you are, then continues to the drill. */
 var PLAYER='bfPlayer';
 /* Real per-player identity: the chosen player is saved in localStorage on THIS device.
@@ -2170,7 +2212,7 @@ window.thwapActiveTeam=function(coach){
     var peForm=document.getElementById('playerEditForm');
     var peFirst=document.getElementById('peFirst'), peLast=document.getElementById('peLast'),
         peNum=document.getElementById('peNum'), pePos=document.getElementById('pePos'),
-        peEmail=document.getElementById('peEmail'), peEmail2=document.getElementById('peEmail2'),
+        peEmailList=document.getElementById('peEmailList'),
         pePin=document.getElementById('pePin'), peMsg=document.getElementById('peMsg'),
         peRemove=document.getElementById('peRemove');
     var pePid='';
@@ -2192,8 +2234,7 @@ window.thwapActiveTeam=function(coach){
       if(peLast) peLast.value=last;
       if(peNum) peNum.value=cardNum||(seed&&seed.info&&seed.info.num!=null?seed.info.num:'');
       if(pePos) pePos.value=(seed&&seed.info&&seed.info.pos)||'F';
-      if(peEmail) peEmail.value='';
-      if(peEmail2) peEmail2.value='';
+      window.thwapEmailUI.render(peEmailList, []);
       if(pePin) pePin.textContent=pinFor(cardNum||(seed&&seed.info&&seed.info.num));
       peSheetShow(true);
       /* Background: fetch the real record and fill emails + canonical fields. If a
@@ -2204,8 +2245,7 @@ window.thwapActiveTeam=function(coach){
         if(peLast && m.lastName!=null) peLast.value=m.lastName;
         if(peNum && m.number!=null) peNum.value=m.number;
         if(pePos && m.position) pePos.value=m.position;
-        if(peEmail) peEmail.value=m.parentEmail||'';
-        if(peEmail2) peEmail2.value=m.parentEmail2||'';
+        window.thwapEmailUI.render(peEmailList, Array.isArray(m.parentEmails)?m.parentEmails:[m.parentEmail,m.parentEmail2]);
         if(pePin) pePin.textContent=pinFor(m.number);
       }
       var cached=(window.__thwapRosterCache&&window.__thwapRosterCache.members)||null;
@@ -2226,7 +2266,7 @@ window.thwapActiveTeam=function(coach){
        number changes the code, so a forgotten code is re-sent, never reset here. */
     var peReqCode=document.getElementById('peReqCode');
     if(peReqCode) peReqCode.addEventListener('click',function(){
-      var hasEmail=(peEmail&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((peEmail.value||'').trim()));
+      var hasEmail=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(window.thwapEmailUI.first(peEmailList));
       if(!hasEmail){ if(peMsg) peMsg.textContent='Add a parent email above first, then Save.'; return; }
       var lab=peReqCode.textContent;
       peReqCode.disabled=true; peReqCode.textContent='Sending...';
@@ -2243,7 +2283,7 @@ window.thwapActiveTeam=function(coach){
       e.preventDefault();
       var body={code:code,coachToken:coach.token,playerId:pePid,
         firstName:peFirst.value,lastName:peLast.value,number:peNum.value,position:pePos.value,
-        parentEmail:peEmail?peEmail.value:'',parentEmail2:peEmail2?peEmail2.value:''};
+        parentEmails:window.thwapEmailUI.collect(peEmailList)};
       if(peMsg) peMsg.textContent='Saving...';
       fetch('/api/coach?action=update-player',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
         .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
@@ -6787,8 +6827,8 @@ var doneBtn=document.getElementById('rosterEditSelfDone');
 var sheet=document.getElementById('playerSelfSheet');
 var form=document.getElementById('playerSelfForm');
 var psFirst=document.getElementById('psFirst'), psLast=document.getElementById('psLast'),
-    psNum=document.getElementById('psNum'), psEmail=document.getElementById('psEmail'),
-    psEmail2=document.getElementById('psEmail2'), psPin=document.getElementById('psPin'),
+    psNum=document.getElementById('psNum'), psEmailList=document.getElementById('psEmailList'),
+    psPin=document.getElementById('psPin'),
     psMsg=document.getElementById('psMsg'), psReqCode=document.getElementById('psReqCode');
 var editing=false, currentCode='';
 function pinFor(num){ var n=String(num==null?'':num).trim(); return n?(n+'2027'):'\u2014'; }
@@ -6813,8 +6853,7 @@ function openSelfEdit(){
   if(psFirst) psFirst.value=first;
   if(psLast) psLast.value=last;
   if(psNum) psNum.value=num;
-  if(psEmail) psEmail.value='';
-  if(psEmail2) psEmail2.value='';
+  window.thwapEmailUI.render(psEmailList, []);
   if(psPin) psPin.textContent=pinFor(num);
   sheetShow(true);
   /* Fill emails + canonical fields from the roster in the background. */
@@ -6825,8 +6864,7 @@ function openSelfEdit(){
       if(psFirst && m.firstName) psFirst.value=m.firstName;
       if(psLast && m.lastName!=null) psLast.value=m.lastName;
       if(psNum && m.number!=null){ psNum.value=m.number; currentCode=String(m.number)+'2027'; if(psPin) psPin.textContent=pinFor(m.number); }
-      if(psEmail) psEmail.value=m.parentEmail||'';
-      if(psEmail2) psEmail2.value=m.parentEmail2||'';
+      window.thwapEmailUI.render(psEmailList, Array.isArray(m.parentEmails)?m.parentEmails:[m.parentEmail,m.parentEmail2]);
     }).catch(function(){});
 }
 /* In self-edit mode, tapping the player's OWN card opens the sheet. Capture phase
@@ -6845,7 +6883,7 @@ document.getElementById('psX') && document.getElementById('psX').addEventListene
 document.getElementById('psScrim') && document.getElementById('psScrim').addEventListener('click',function(){ sheetShow(false); });
 if(psNum) psNum.addEventListener('input',function(){ if(psPin) psPin.textContent=pinFor(psNum.value); });
 if(psReqCode) psReqCode.addEventListener('click',function(){
-  if(!validEmail(psEmail&&psEmail.value)){ if(psMsg) psMsg.textContent='Add a parent email above first, then Save.'; return; }
+  if(!validEmail(window.thwapEmailUI.first(psEmailList))){ if(psMsg) psMsg.textContent='Add a parent email above first, then Save.'; return; }
   var lab=psReqCode.textContent; psReqCode.disabled=true; psReqCode.textContent='Sending...';
   fetch('/api/coach?action=request-code',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:TEAM,playerId:myPid()})})
     .then(function(r){ return r.json(); }).then(function(){
@@ -6855,11 +6893,11 @@ if(psReqCode) psReqCode.addEventListener('click',function(){
 });
 if(form) form.addEventListener('submit',function(e){
   e.preventDefault();
-  if(psEmail && psEmail.value && !validEmail(psEmail.value)){ if(psMsg) psMsg.textContent='Enter a valid parent email.'; return; }
-  if(psEmail2 && psEmail2.value && !validEmail(psEmail2.value)){ if(psMsg) psMsg.textContent='Second parent email is invalid.'; return; }
+  var psEmails=window.thwapEmailUI.collect(psEmailList);
+  for(var qi=0;qi<psEmails.length;qi++){ if(!validEmail(psEmails[qi])){ if(psMsg) psMsg.textContent='Enter a valid parent email.'; return; } }
   var body={code:TEAM,playerId:myPid(),playerCode:currentCode,
     firstName:psFirst?psFirst.value:'',lastName:psLast?psLast.value:'',number:psNum?psNum.value:'',
-    parentEmail:psEmail?psEmail.value:'',parentEmail2:psEmail2?psEmail2.value:''};
+    parentEmails:psEmails};
   if(psMsg) psMsg.textContent='Saving...';
   fetch('/api/coach?action=self-update-player',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
     .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
