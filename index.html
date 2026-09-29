@@ -3140,7 +3140,7 @@ function render(){
         btn.textContent='Done ✓';
       };
       if(row.classList.contains('done')){ return; }  /* already done: no-op */
-      if(window.thwapDrillTimer){ window.thwapDrillTimer(drills[i].name, markDone, drills[i].audio); }
+      if(window.thwapDrillTimer){ window.thwapDrillTimer(drills[i].name, markDone, drills[i].audio, {cue:drills[i].cue, steps:drills[i].steps}); }
       else { markDone(); }  /* engine missing: fall back to immediate done */
     });
   });
@@ -3166,6 +3166,12 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#dryland') 
 .gdr-phase{font-size:15px;font-weight:800;color:var(--lime);text-transform:uppercase;letter-spacing:.05em;min-height:20px;margin-bottom:14px}
 .gdr-big{font-family:'Archivo Black',system-ui,sans-serif;font-size:128px;line-height:1;color:#fff;margin:6px 0}
 .gdr-sub{font-size:16px;font-weight:700;color:rgba(255,255,255,.8);min-height:22px;margin-top:6px}
+/* How-to shown on the Set up screen (before Begin), so the player knows how to
+   run the drill. Hidden once the timer starts. */
+.gdr-setup{margin:14px auto 0;max-width:420px;text-align:left;width:100%}
+.gdr-setup .gdr-cue{margin:0 0 10px;font-size:16px;font-weight:800;color:var(--lime,#B9F06B);text-align:center}
+.gdr-setup ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:7px}
+.gdr-setup li{font-size:15px;line-height:1.4;color:rgba(255,255,255,.9)}
 .gdr-bottom{padding:20px 24px calc(24px + env(safe-area-inset-bottom));text-align:center}
 .gdr-btn{min-height:60px;width:100%;max-width:420px;border:0;border-radius:16px;font-family:inherit;font-weight:900;font-size:20px;cursor:pointer;background:var(--lime);color:#0f1712}
 .gdr-reset{display:block;width:100%;margin-top:14px;background:none;border:0;color:rgba(255,255,255,.7);font:inherit;font-weight:700;font-size:15px;text-decoration:underline;cursor:pointer}
@@ -3180,6 +3186,7 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#dryland') 
     <p class='gdr-phase' id='gdrPhase'></p>
     <div class='gdr-big' id='gdrBig'></div>
     <p class='gdr-sub' id='gdrSub'></p>
+    <div class='gdr-setup' id='gdrSetup' hidden></div>
   </div>
   <div class='gdr-bottom'>
     <button type='button' class='gdr-btn' id='gdrToggle'>Begin</button>
@@ -3411,7 +3418,7 @@ function setPaused(p){
 elToggle.addEventListener('click',function(){
   if(!state) return;
   if(state.started){ setPaused(!state.paused); return; }
-  state.started=true; elToggle.textContent='Pause'; advance();
+  state.started=true; elToggle.textContent='Pause'; showSetup(false); advance();
 });
 /* Mute toggle (top-right) - persists and applies live to narration + metronome. */
 var elAudio=document.getElementById('gdrAudio');
@@ -3429,16 +3436,31 @@ elReset.addEventListener('click',function(){
   elToggle.textContent='Begin';
   thwapTimerAudioStop();
   paint(state.steps[0]);
+  showSetup(true);
 });
 document.getElementById('gdrX').addEventListener('click', close);
 
 /* PUBLIC: run the guided timer for a drill by name; onDone fires once at the end.
    audioSlug (optional) plays Sass's narration in lock-step with the transport:
    Start plays (or resumes), Pause pauses, Restart/Back stop and reset to the top. */
-window.thwapDrillTimer=function(name, onDone, audioSlug){
-  state={ steps:buildSteps(sc0(name), audioSlug||''), idx:0, timer:null, paused:false, started:false, onDone:onDone, audio:audioSlug||'' };
+var elSetup=document.getElementById('gdrSetup');
+function escGdr(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+/* Render the drill's own coach cue + how-to steps for the Set up screen. */
+function renderSetup(setup){
+  if(!elSetup) return;
+  var cue=setup&&setup.cue, steps=(setup&&setup.steps)||[];
+  if(!cue && !steps.length){ elSetup.innerHTML=''; return; }
+  var html=cue?"<p class='gdr-cue'>"+escGdr(cue)+"</p>":'';
+  if(steps.length) html+="<ol>"+steps.map(function(s){return "<li>"+escGdr(s)+"</li>";}).join('')+"</ol>";
+  elSetup.innerHTML=html;
+}
+function showSetup(on){ if(elSetup) elSetup.hidden=!(on && elSetup.innerHTML); }
+window.thwapDrillTimer=function(name, onDone, audioSlug, setup){
+  state={ steps:buildSteps(sc0(name), audioSlug||''), idx:0, timer:null, paused:false, started:false, onDone:onDone, audio:audioSlug||'', setup:setup };
   document.getElementById('gdrName').textContent=name;
+  renderSetup(setup);
   paint(state.steps[0]);
+  showSetup(true);       /* show the how-to on the Set up screen, before Begin */
   elToggle.textContent='Begin';
   thwapTimerAudioStop();
   ov.hidden=false;
@@ -4459,7 +4481,7 @@ function render(){
         btn.textContent='Done ✓';
       };
       if(row.classList.contains('done')){ return; }
-      if(window.thwapDrillTimer){ window.thwapDrillTimer(picks[i].name, markDone, picks[i].audio); }
+      if(window.thwapDrillTimer){ window.thwapDrillTimer(picks[i].name, markDone, picks[i].audio, {cue:picks[i].cue, steps:picks[i].steps}); }
       else { markDone(); }
     });
   });
@@ -5293,7 +5315,7 @@ function render(){
         btn.textContent='Done ✓';
       };
       if(row.classList.contains('done')){ return; }
-      if(window.thwapDrillTimer){ window.thwapDrillTimer(SHOOT[i].name, markDone, SHOOT[i].audio); }
+      if(window.thwapDrillTimer){ window.thwapDrillTimer(SHOOT[i].name, markDone, SHOOT[i].audio, {cue:SHOOT[i].cue, steps:SHOOT[i].steps}); }
       else { markDone(); }
     });
   });
@@ -5376,7 +5398,7 @@ function render(){
         btn.textContent='Done ✓';
       };
       if(row.classList.contains('done')){ return; }
-      if(window.thwapDrillTimer){ window.thwapDrillTimer(PASS[i].name, markDone, PASS[i].audio); }
+      if(window.thwapDrillTimer){ window.thwapDrillTimer(PASS[i].name, markDone, PASS[i].audio, {cue:PASS[i].cue, steps:PASS[i].steps}); }
       else { markDone(); }
     });
   });
