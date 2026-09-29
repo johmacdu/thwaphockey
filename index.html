@@ -3248,25 +3248,25 @@ window.THWAP_DRILL_SCRIPT={
   'Dead Bugs':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['Right','Left'],sets:4,restSeconds:15},
   "McDavid's":{type:'hold',seconds:60,sides:1,sets:4,restSeconds:15},
   /* --- Shooting (shots, not timed reps; Random Target uses on-screen callouts) --- */
-  'Moving Warm-Up':{type:'rounds',rounds:8,workLabel:'Shot',restSeconds:4},
-  'Change the Angle':{type:'rounds',rounds:8,workLabel:'Shot',restSeconds:5,sides:2,sideLabels:['One side','Other side']},
-  'Random Target':{type:'callout',shots:10,everySeconds:4,spots:['Top right','Bottom right','Top left','Bottom left','Glove-side armpit','Blocker-side armpit','Left ear','Right ear','Five hole']},
-  'Under Two Seconds':{type:'rounds',rounds:10,workLabel:'Quick shot',restSeconds:4},
-  'Ten Different Goals':{type:'rounds',rounds:10,workLabel:'Goal',restSeconds:5},
-  'Backhand Basics':{type:'rounds',rounds:10,workLabel:'Backhand',restSeconds:4},
-  'Backhand Accuracy':{type:'rounds',rounds:8,workLabel:'Corner',restSeconds:5},
-  'Moving Backhand':{type:'rounds',rounds:8,workLabel:'Shot',restSeconds:5},
-  'Forehand to Backhand':{type:'rounds',rounds:8,workLabel:'Shot',restSeconds:5},
-  'Backhand Only':{type:'rounds',rounds:10,workLabel:'Goal',restSeconds:5},
-  'Quick Hands':{type:'rounds',rounds:8,workLabel:'Shot',restSeconds:4,sides:2,sideLabels:['One side','Other side']},
-  'Catch and Release':{type:'rounds',rounds:10,workLabel:'Shot',restSeconds:4},
-  'Pull Across':{type:'rounds',rounds:8,workLabel:'Shot',restSeconds:5,sides:2,sideLabels:['One way','Other way']},
-  'Forehand / Backhand Finish':{type:'rounds',rounds:8,workLabel:'Finish',restSeconds:5},
-  'Rebound Finish':{type:'rounds',rounds:8,workLabel:'Rebound',restSeconds:5},
-  'Carry / Pass / Shoot':{type:'rounds',rounds:8,workLabel:'Play',restSeconds:6},
-  'Bad Puck Challenge':{type:'rounds',rounds:8,workLabel:'Shot',restSeconds:5},
-  'Angle Attack':{type:'rounds',rounds:8,workLabel:'Shot',restSeconds:5,sides:2,sideLabels:['One side','Other side']},
-  'Quick Release Challenge':{type:'rounds',rounds:5,workLabel:'Quick release',restSeconds:5}
+  'Moving Warm-Up':{type:'rounds',rounds:8,workLabel:'Shot',restSeconds:4,sets:4,setRestSeconds:15},
+  'Change the Angle':{type:'rounds',rounds:8,workLabel:'Shot',restSeconds:5,sides:2,sideLabels:['One side','Other side'],sets:4,setRestSeconds:15},
+  'Random Target':{type:'callout',shots:10,everySeconds:4,spots:['Top right','Bottom right','Top left','Bottom left','Glove-side armpit','Blocker-side armpit','Left ear','Right ear','Five hole'],sets:4,setRestSeconds:15},
+  'Under Two Seconds':{type:'rounds',rounds:10,workLabel:'Quick shot',restSeconds:4,sets:4,setRestSeconds:15},
+  'Ten Different Goals':{type:'rounds',rounds:10,workLabel:'Goal',restSeconds:5,sets:4,setRestSeconds:15},
+  'Backhand Basics':{type:'rounds',rounds:10,workLabel:'Backhand',restSeconds:4,sets:4,setRestSeconds:15},
+  'Backhand Accuracy':{type:'rounds',rounds:8,workLabel:'Corner',restSeconds:5,sets:4,setRestSeconds:15},
+  'Moving Backhand':{type:'rounds',rounds:8,workLabel:'Shot',restSeconds:5,sets:4,setRestSeconds:15},
+  'Forehand to Backhand':{type:'rounds',rounds:8,workLabel:'Shot',restSeconds:5,sets:4,setRestSeconds:15},
+  'Backhand Only':{type:'rounds',rounds:10,workLabel:'Goal',restSeconds:5,sets:4,setRestSeconds:15},
+  'Quick Hands':{type:'rounds',rounds:8,workLabel:'Shot',restSeconds:4,sides:2,sideLabels:['One side','Other side'],sets:4,setRestSeconds:15},
+  'Catch and Release':{type:'rounds',rounds:10,workLabel:'Shot',restSeconds:4,sets:4,setRestSeconds:15},
+  'Pull Across':{type:'rounds',rounds:8,workLabel:'Shot',restSeconds:5,sides:2,sideLabels:['One way','Other way'],sets:4,setRestSeconds:15},
+  'Forehand / Backhand Finish':{type:'rounds',rounds:8,workLabel:'Finish',restSeconds:5,sets:4,setRestSeconds:15},
+  'Rebound Finish':{type:'rounds',rounds:8,workLabel:'Rebound',restSeconds:5,sets:4,setRestSeconds:15},
+  'Carry / Pass / Shoot':{type:'rounds',rounds:8,workLabel:'Play',restSeconds:6,sets:4,setRestSeconds:15},
+  'Bad Puck Challenge':{type:'rounds',rounds:8,workLabel:'Shot',restSeconds:5,sets:4,setRestSeconds:15},
+  'Angle Attack':{type:'rounds',rounds:8,workLabel:'Shot',restSeconds:5,sides:2,sideLabels:['One side','Other side'],sets:4,setRestSeconds:15},
+  'Quick Release Challenge':{type:'rounds',rounds:5,workLabel:'Quick release',restSeconds:5,sets:4,setRestSeconds:15}
 };
 function scriptFor(name){ return window.THWAP_DRILL_SCRIPT[name] || {type:'reps',reps:10,perRep:1.5,sides:1}; }
 
@@ -3358,22 +3358,32 @@ function buildSteps(sc, slug){
       if(set<sets) for(var rest=restSec;rest>=1;rest--) steps.push({phase:'Rest',big:String(rest),sub:'catch your breath',ms:1000, au:(rest===restSec?'cue/rest':'')});
     }
   } else {
-    for(var si=0;si<sides;si++){
-      var sNote=sides>1?(labels[si]||('Set '+(si+1))):'';
-      if(si>0) steps.push({phase:'Switch',big:'\u21C4',sub:(labels[si]||'other way'),ms:3000, au:'cue/switch'});
-      for(var c2=COUNTDOWN;c2>=1;c2--) steps.push({phase:sNote||'Ready',big:String(c2),sub:'',ms:1000, au:'n'+c2});
-      steps.push({phase:sNote||'Go',big:'GO',sub:'',ms:800, au:'cue/go'});
-      if(sc.type==='rounds'){
-        for(var rd=1;rd<=sc.rounds;rd++){
-          steps.push({phase:(sc.workLabel||'Round')+' '+rd,big:String(rd),sub:'of '+sc.rounds,ms:3000, au:'n'+rd, work:true});
-          if(rd<sc.rounds) for(var rest2=(sc.restSeconds||10);rest2>=1;rest2--) steps.push({phase:'Rest',big:String(rest2),sub:'catch your breath',ms:1000, au:(rest2===(sc.restSeconds||10)?'cue/rest':'')});
-        }
-      } else if(sc.type==='callout'){
-        for(var sh=0;sh<sc.shots;sh++){
-          var spot=sc.spots[Math.floor(Math.random()*sc.spots.length)];
-          steps.push({phase:'Shot '+(sh+1)+' of '+sc.shots,big:spot,sub:'hit it',ms:Math.round((sc.everySeconds||4)*1000),small:true, au:'n'+(sh+1), work:true});
+    // Shooting: N SETS of the shot block (both sides run inside each set), with a
+    // longer breather between sets. `sets` defaults to 1 (unchanged). NOTE the two
+    // rests differ: restSeconds is the short reset BETWEEN SHOTS; setRestSeconds is
+    // the catch-your-breath rest BETWEEN SETS (default 15). All clips are reused, so
+    // more sets need no new audio.
+    var sets2=sc.sets||1, setRest=sc.setRestSeconds||(sets2>1?15:0);
+    for(var set2=1;set2<=sets2;set2++){
+      var setNote2=sets2>1?('Set '+set2+' of '+sets2):'';
+      for(var si=0;si<sides;si++){
+        var sNote=setNote2||(sides>1?(labels[si]||('Set '+(si+1))):'');
+        if(si>0) steps.push({phase:'Switch',big:'\u21C4',sub:(labels[si]||'other way'),ms:3000, au:'cue/switch'});
+        for(var c2=(set2===1&&si===0?COUNTDOWN:3);c2>=1;c2--) steps.push({phase:sNote||'Ready',big:String(c2),sub:'',ms:1000, au:(c2<=5?'n'+c2:'')});
+        steps.push({phase:sNote||'Go',big:'GO',sub:'',ms:800, au:'cue/go'});
+        if(sc.type==='rounds'){
+          for(var rd=1;rd<=sc.rounds;rd++){
+            steps.push({phase:setNote2||((sc.workLabel||'Round')+' '+rd),big:String(rd),sub:'of '+sc.rounds,ms:3000, au:'n'+rd, work:true});
+            if(rd<sc.rounds) for(var rest2=(sc.restSeconds||10);rest2>=1;rest2--) steps.push({phase:'Rest',big:String(rest2),sub:'catch your breath',ms:1000, au:(rest2===(sc.restSeconds||10)?'cue/rest':'')});
+          }
+        } else if(sc.type==='callout'){
+          for(var sh=0;sh<sc.shots;sh++){
+            var spot=sc.spots[Math.floor(Math.random()*sc.spots.length)];
+            steps.push({phase:setNote2||('Shot '+(sh+1)+' of '+sc.shots),big:spot,sub:(setNote2?('shot '+(sh+1)+' of '+sc.shots):'hit it'),ms:Math.round((sc.everySeconds||4)*1000),small:true, au:'n'+(sh+1), work:true});
+          }
         }
       }
+      if(set2<sets2) for(var srest=setRest;srest>=1;srest--) steps.push({phase:'Rest',big:String(srest),sub:'catch your breath',ms:1000, au:(srest===setRest?'cue/rest':'')});
     }
   }
   steps.push({phase:'Done',big:'✓',sub:'Nice work!',ms:3200,last:true, au:'cue/done'});
