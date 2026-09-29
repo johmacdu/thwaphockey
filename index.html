@@ -3347,7 +3347,22 @@ function buildSteps(sc, slug){
   steps.push({phase:'Set up',big:'',sub:'Get the drill set up',ms:SETUP_SECS*1000, au:slug?('drill/'+slug+'/setup'):''});
   var sides=sc.sides||1;
   var labels=sc.sideLabels||[];
-  if(sc.type==='reps'||sc.type==='hold'){
+  if(sc.type==='session'){
+    // ONE continuous block: 5-count in, then a single MM:SS countdown for the
+    // whole drill, no rests. Light spoken cues at the halfway and final-10 marks;
+    // the metronome carries the beat. mm:ss shown as the big number.
+    var total=Math.max(30, sc.seconds||210);
+    for(var cc=COUNTDOWN;cc>=1;cc--) steps.push({phase:'Ready',big:String(cc),sub:'',ms:1000, au:(cc<=5?'n'+cc:'')});
+    steps.push({phase:'Go',big:'GO',sub:'',ms:800, au:'cue/go'});
+    var mmss=function(sec){ var m=Math.floor(sec/60), s2=sec%60; return m+':'+(s2<10?'0':'')+s2; };
+    var half=Math.round(total/2);
+    for(var t=total;t>=1;t--){
+      var au='';
+      if(t===half) au='cue/keepgoing';
+      else if(t===10) au='cue/almostdone';
+      steps.push({phase:'Keep shooting',big:mmss(t),sub:'',ms:1000, au:au, work:true, small:true});
+    }
+  } else if(sc.type==='reps'||sc.type==='hold'){
     // N SETS of the work (both sides run inside each set), with a rest between
     // sets. sets defaults to 1 (unchanged). The number/switch/go/rest/done clips
     // are all reused per set, so more sets need no new audio.
@@ -3466,8 +3481,14 @@ function renderSetup(setup){
   elSetup.innerHTML=html;
 }
 function showSetup(on){ if(elSetup) elSetup.hidden=!(on && elSetup.innerHTML); }
-window.thwapDrillTimer=function(name, onDone, audioSlug, setup){
-  state={ steps:buildSteps(sc0(name), audioSlug||''), idx:0, timer:null, paused:false, started:false, onDone:onDone, audio:audioSlug||'', setup:setup };
+window.thwapDrillTimer=function(name, onDone, audioSlug, setup, durSecs){
+  var sc=sc0(name);
+  /* A shooting drill runs as ONE continuous countdown of durSecs (set by how many
+     drills the day shows), no rest phases -- shoot at your own pace for the block.
+     durSecs is only passed by the shooting list, so every other discipline is
+     untouched and keeps its reps/hold/rounds script. */
+  if(durSecs && durSecs>0) sc={type:'session', seconds:Math.round(durSecs)};
+  state={ steps:buildSteps(sc, audioSlug||''), idx:0, timer:null, paused:false, started:false, onDone:onDone, audio:audioSlug||'', setup:setup };
   document.getElementById('gdrName').textContent=name;
   renderSetup(setup);
   paint(state.steps[0]);
@@ -5326,7 +5347,14 @@ function render(){
         btn.textContent='Done ✓';
       };
       if(row.classList.contains('done')){ return; }
-      if(window.thwapDrillTimer){ window.thwapDrillTimer(SHOOT[i].name, markDone, SHOOT[i].audio, {cue:SHOOT[i].cue, steps:SHOOT[i].steps}); }
+      if(window.thwapDrillTimer){
+        /* Per-drill length adapts to how many drills the day shows so the whole
+           session lands ~13.5 min: 3 drills -> 4:30 each, 4 -> 3:30 each,
+           otherwise ~810s / count. No rests -- one continuous countdown. */
+        var _n=SHOOT.length;
+        var _dur=_n===3?270:(_n===4?210:Math.round(810/Math.max(1,_n)));
+        window.thwapDrillTimer(SHOOT[i].name, markDone, SHOOT[i].audio, {cue:SHOOT[i].cue, steps:SHOOT[i].steps}, _dur);
+      }
       else { markDone(); }
     });
   });
