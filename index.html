@@ -5981,12 +5981,15 @@ function processFile(file, cb){
       var dw=img.width*s, dh=img.height*s;
       cx.drawImage(img,(TW-dw)/2,(TH-dh)/2,dw,dh);
       var croppedJpeg=cv.toDataURL('image/jpeg',0.82);
-      /* Background removal on the cropped canvas. Transparent PNG on success. */
+      /* Background removal is MANDATORY: the card is a transparent cutout sitting
+         on the plate art. If removal fails we must NOT store the raw photo (that
+         bakes the real background into the card) - abort and tell the user. */
       showPhotoBusy(true);
+      function bgFail(m){ showPhotoBusy(false); window.alert(m||"Couldn't remove the background from that photo. Please try again, or pick a clearer photo with the player against a simpler background."); cb(null); }
       loadBgRemover().then(function(removeBackground){
-        if(typeof removeBackground!=='function'){ showPhotoBusy(false); cb(croppedJpeg); return; }
+        if(typeof removeBackground!=='function'){ bgFail("The background remover couldn't load (check your connection) - your photo was NOT saved. Please try again."); return; }
         cv.toBlob(function(blob){
-          if(!blob){ showPhotoBusy(false); cb(croppedJpeg); return; }
+          if(!blob){ bgFail(); return; }
           removeBackground(blob).then(function(outBlob){
             /* Re-encode the transparent cutout smaller so it fits the server's ~400KB
                cap (a full-size PNG of a person often exceeds it). Keeps transparency. */
@@ -6002,11 +6005,11 @@ function processFile(file, cb){
               x2.drawImage(cut,(OW-w2)/2,OH-h2,w2,h2);   /* bottom-anchored */
               showPhotoBusy(false); cb(c2.toDataURL('image/png'));
             };
-            cut.onerror=function(){ URL.revokeObjectURL(url); showPhotoBusy(false); cb(croppedJpeg); };
+            cut.onerror=function(){ URL.revokeObjectURL(url); bgFail(); };
             cut.src=url;
-          }).catch(function(){ showPhotoBusy(false); cb(croppedJpeg); });
+          }).catch(function(){ bgFail(); });
         }, 'image/png');
-      });
+      }).catch(function(){ bgFail("The background remover couldn't load (check your connection) - your photo was NOT saved. Please try again."); });
     };
     img.onerror=function(){ cb(null); };
     img.src=rd.result;
