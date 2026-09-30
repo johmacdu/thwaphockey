@@ -10,7 +10,7 @@ describe('UI sound layer', () => {
   it('ships the thwapSfx engine and the 10 owned hockey clips referenced from /sfx', () => {
     expect(html).toContain('window.thwapSfx=play');
     for (const f of ['tap', 'done', 'hands', 'bardown', 'buzzer', 'whistle',
-      'goal-crowd', 'skate-nav', 'card-open', 'skate-loop']) {
+      'goal-crowd', 'card-open', 'skate-loop']) {
       expect(html).toContain(`sfx/${f}.mp3`);
     }
   });
@@ -41,6 +41,9 @@ describe('UI sound layer', () => {
     expect(html).toContain("thwapSfx('cardOpen')");            // open player card -> glide + settle
     expect(html).toContain('thwapSfxGlideStart()');            // drag-spin: continuous skate glide
     expect(html).toContain('thwapSfxGlideStop()');
+    // Open card / Back / See my stats all share the open-player-card glide sound
+    expect(html).toContain("navOpen:{c:'card-open'");
+    expect(html).toContain("navBack:{c:'card-open'");
   });
 
   it('silences the celebratory sounds under prefers-reduced-motion', () => {

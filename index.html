@@ -7014,13 +7014,13 @@ document.getElementById('coachInfoScrim') && document.getElementById('coachInfoS
   var FILES={
     tap:'sfx/tap.mp3', done:'sfx/done.mp3', hands:'sfx/hands.mp3',
     bardown:'sfx/bardown.mp3', buzzer:'sfx/buzzer.mp3', whistle:'sfx/whistle.mp3',
-    'goal-crowd':'sfx/goal-crowd.mp3', 'skate-nav':'sfx/skate-nav.mp3',
+    'goal-crowd':'sfx/goal-crowd.mp3',
     'card-open':'sfx/card-open.mp3', 'skate-loop':'sfx/skate-loop.mp3'
   };
   /* moment -> {clip, rate, gain}. rate<1 = pitched down. */
   var MAP={
     tap:{c:'tap',g:0.7}, toggleOn:{c:'tap',r:1.04,g:0.7}, toggleOff:{c:'tap',r:0.82,g:0.6},
-    navOpen:{c:'skate-nav',r:1.0,g:0.85}, navBack:{c:'skate-nav',r:0.9,g:0.8},
+    navOpen:{c:'card-open',r:1.0,g:1.6}, navBack:{c:'card-open',r:1.0,g:1.6},
     cardOpen:{c:'card-open',r:1.0,g:1.6},
     check:{c:'tap',r:1.12,g:0.65}, uncheck:{c:'tap',r:0.86,g:0.5},
     streak:{c:'buzzer',g:0.7}, error:{c:'whistle',g:0.6},
