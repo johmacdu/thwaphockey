@@ -1138,6 +1138,12 @@ html[data-theme='dark'] .login-frost{background:linear-gradient(180deg,rgba(120,
 .login-otp-toggle{display:block;width:100%;margin:10px 0 0;background:none;border:0;padding:4px;font-family:inherit;font-size:14px;font-weight:700;color:var(--green);text-decoration:underline;text-underline-offset:3px;cursor:pointer;text-align:center}
 .login-otp{margin-top:12px;padding:14px;border:1px solid var(--line2);border-radius:14px;background:var(--card2)}
 .login-otp .login-field{margin-bottom:10px}
+.login-otphead{display:flex;align-items:center;gap:12px}
+.login-back{flex:none;width:38px;height:38px;border-radius:50%;border:1px solid var(--line2);background:var(--card2);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 2px 8px var(--shadow);transition:transform .08s ease,filter .12s ease}
+.login-back:hover{filter:brightness(1.04)}
+.login-back:active{transform:scale(.94)}
+.login-back span{font-size:22px;line-height:1;color:var(--text);font-weight:700;margin-top:-2px}
+.login-otpsub{margin-top:16px}
 .login-go-outline{background:transparent;color:var(--green);border:1.5px solid var(--green);min-height:46px}
 .login-msg{min-height:16px;margin:10px 0 0;font-size:13px;font-weight:700;text-align:center;color:var(--muted)}
 .login-msg.err{color:var(--alert)}
@@ -1261,46 +1267,54 @@ body.login-locked{overflow:hidden}
 </div>
 <div id='loginOverlay' hidden aria-hidden='true'>
   <form class='login-modal' id='loginForm' role='dialog' aria-modal='true' aria-labelledby='loginTitle' novalidate>
-    <h2 class='login-h' id='loginTitle'>Welcome back!</h2>
-    <p class='login-sub'>Sign in to your team.</p>
-    <label class='login-field'>
-      <span class='login-lab'>Team</span>
-      <span class='login-selwrap'>
-        <select class='login-in login-select' id='loginTeam'>
-          <option value='vancouver-jr-rangers-10u' selected>Vancouver Jr. Rangers 10U</option>
-          <option value='demo-team'>Demo Team</option>
-        </select>
-        <span class='login-selchev' aria-hidden='true'>&#8250;</span>
-      </span>
-    </label>
-    <label class='login-field'>
-      <span class='login-lab'>Email</span>
-      <input class='login-in' id='loginEmail' type='email' inputmode='email' autocomplete='email' placeholder='name@email.com' required>
-    </label>
-    <label class='login-field'>
-      <span class='login-lab'>Code</span>
-      <span class='login-pwwrap'>
-        <input class='login-in' id='loginPw' type='password' autocomplete='current-password' placeholder='&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;' required>
-        <button type='button' class='login-eye' id='loginEye' aria-label='Show code'>Show</button>
-      </span>
-    </label>
-    <div class='login-row'>
-      <input type='checkbox' id='loginKeep' checked>
-      <label for='loginKeep'>Keep me signed in</label>
+    <div id='loginSignInView'>
+      <h2 class='login-h' id='loginTitle'>Welcome back!</h2>
+      <p class='login-sub'>Sign in to your team.</p>
+      <label class='login-field'>
+        <span class='login-lab'>Team</span>
+        <span class='login-selwrap'>
+          <select class='login-in login-select' id='loginTeam'>
+            <option value='vancouver-jr-rangers-10u' selected>Vancouver Jr. Rangers 10U</option>
+            <option value='demo-team'>Demo Team</option>
+          </select>
+          <span class='login-selchev' aria-hidden='true'>&#8250;</span>
+        </span>
+      </label>
+      <label class='login-field'>
+        <span class='login-lab'>Email</span>
+        <input class='login-in' id='loginEmail' type='email' inputmode='email' autocomplete='email' placeholder='name@email.com' required>
+      </label>
+      <label class='login-field'>
+        <span class='login-lab'>Code</span>
+        <span class='login-pwwrap'>
+          <input class='login-in' id='loginPw' type='password' autocomplete='current-password' placeholder='&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;' required>
+          <button type='button' class='login-eye' id='loginEye' aria-label='Show code'>Show</button>
+        </span>
+      </label>
+      <div class='login-row'>
+        <input type='checkbox' id='loginKeep' checked>
+        <label for='loginKeep'>Keep me signed in</label>
+      </div>
+      <div class='login-row login-consent'>
+        <input type='checkbox' id='loginConsent'>
+        <label for='loginConsent'>I agree to the <a href='#terms' id='loginTerms'>Terms</a> and <a href='#privacy' id='loginPrivacy'>Privacy Policy</a></label>
+      </div>
+      <button type='submit' class='login-go' id='loginGo' disabled>Sign In &#8594;</button>
+      <p class='login-err' id='loginErr' aria-live='polite'></p>
+      <button type='button' class='login-otp-toggle' id='loginOtpToggle'>Forgot your code?</button>
+      <p class='login-alt'>New to <img class='login-wordmark' id='loginMark' src='wordmark-tm-light.svg' alt='Thwap Hockey'>? <a href='#' id='loginWaitlist'>Join the waitlist.</a></p>
     </div>
-    <div class='login-row login-consent'>
-      <input type='checkbox' id='loginConsent'>
-      <label for='loginConsent'>I agree to the <a href='#terms' id='loginTerms'>Terms</a> and <a href='#privacy' id='loginPrivacy'>Privacy Policy</a></label>
-    </div>
-    <button type='submit' class='login-go' id='loginGo' disabled>Sign In &#8594;</button>
-    <p class='login-err' id='loginErr' aria-live='polite'></p>
-    <button type='button' class='login-otp-toggle' id='loginOtpToggle'>Forgot your code? Email me a sign-in code</button>
-    <div class='login-otp' id='loginOtp' hidden>
+    <div id='loginOtpView' hidden>
+      <div class='login-otphead'>
+        <button type='button' class='login-back' id='loginOtpBack' aria-label='Back to sign in'><span aria-hidden='true'>&#8249;</span></button>
+        <h2 class='login-h'>Get a sign-in code</h2>
+      </div>
+      <p class='login-sub login-otpsub'>Emailed the parent(s) on file.</p>
       <label class='login-field'>
         <span class='login-lab'>Player's first name</span>
         <input class='login-in' id='loginOtpName' type='text' autocomplete='off' placeholder='e.g. Lewie'>
       </label>
-      <button type='button' class='login-go login-go-outline' id='loginOtpSend'>Email me a code</button>
+      <button type='button' class='login-go' id='loginOtpSend'>Email a code</button>
       <div id='loginOtpStep2' hidden>
         <label class='login-field'>
           <span class='login-lab'>6-digit code from your email</span>
@@ -1310,7 +1324,6 @@ body.login-locked{overflow:hidden}
       </div>
       <p class='login-msg' id='loginOtpMsg' aria-live='polite'></p>
     </div>
-    <p class='login-alt'>New to <img class='login-wordmark' id='loginMark' src='wordmark-tm-light.svg' alt='Thwap Hockey'>? <a href='#' id='loginWaitlist'>Join the waitlist.</a></p>
   </form>
   <div class='policy-page' id='policySheet' hidden>
     <button type='button' class='glassclose policy-x' id='policyClose' aria-label='Close'>&#215;</button>
@@ -6462,6 +6475,8 @@ function show(){
   if(backdrop) backdrop.hidden=false;
   overlay.hidden=false; overlay.setAttribute('aria-hidden','false');
   document.body.classList.add('login-locked');
+  var sv=document.getElementById('loginSignInView'), ov=document.getElementById('loginOtpView');
+  if(sv&&ov){ sv.hidden=false; ov.hidden=true; }
 }
 function hide(){
   if(backdrop) backdrop.hidden=true;
@@ -6678,18 +6693,23 @@ window.thwapEnsureSession=function(){
    FILE for a player, then verify it to sign in. A stronger path alongside the
    jersey-code sign-in above; the server never emails a typed address. */
 (function(){
-  var toggle=document.getElementById('loginOtpToggle'), panel=document.getElementById('loginOtp'),
+  var toggle=document.getElementById('loginOtpToggle'), panel=document.getElementById('loginOtpView'),
+      signinView=document.getElementById('loginSignInView'), backBtn=document.getElementById('loginOtpBack'),
       nameEl=document.getElementById('loginOtpName'), sendBtn=document.getElementById('loginOtpSend'),
       step2=document.getElementById('loginOtpStep2'), codeEl=document.getElementById('loginOtpCode'),
       verifyBtn=document.getElementById('loginOtpVerify'), msg=document.getElementById('loginOtpMsg');
-  if(!toggle||!panel) return;
+  if(!toggle||!panel||!signinView) return;
   var pid='';
   function firstName(n){ return String(n||'').trim().toLowerCase().split(/\s+/)[0]; }
-  toggle.addEventListener('click',function(){
-    var willOpen=panel.hidden; panel.hidden=!willOpen;
-    toggle.textContent=willOpen?'Use my player code instead':'Forgot your code? Email me a sign-in code';
-    if(willOpen && nameEl) nameEl.focus();
-  });
+  function showOtp(){ signinView.hidden=true; panel.hidden=false; if(nameEl) nameEl.focus(); }
+  function showSignin(){
+    panel.hidden=true; signinView.hidden=false;
+    if(step2) step2.hidden=true;
+    if(msg){ msg.className='login-msg'; msg.textContent=''; }
+    if(sendBtn){ sendBtn.disabled=false; sendBtn.textContent='Email a code'; }
+  }
+  toggle.addEventListener('click',showOtp);
+  if(backBtn) backBtn.addEventListener('click',showSignin);
   sendBtn.addEventListener('click',function(){
     msg.className='login-msg'; msg.textContent='';
     pid=firstName(nameEl.value);
@@ -6710,7 +6730,7 @@ window.thwapEnsureSession=function(){
           msg.className='login-msg err'; msg.textContent=(res.j&&res.j.error)||'Could not send a code.';
         }
       })
-      .catch(function(){ sendBtn.disabled=false; sendBtn.textContent='Email me a code'; msg.className='login-msg err'; msg.textContent='Could not send a code. Check your connection.'; });
+      .catch(function(){ sendBtn.disabled=false; sendBtn.textContent='Email a code'; msg.className='login-msg err'; msg.textContent='Could not send a code. Check your connection.'; });
   });
   verifyBtn.addEventListener('click',function(){
     msg.className='login-msg'; msg.textContent='';
