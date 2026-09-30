@@ -7065,13 +7065,25 @@ document.getElementById('coachInfoScrim') && document.getElementById('coachInfoS
   }
   if(document.readyState!=='loading') wireMute(); else document.addEventListener('DOMContentLoaded',wireMute);
 
-  /* ---- hook the real seams via delegation ---- */
+  /* ---- universal UI sound: EVERY interactive element makes a sound ----
+     Default is the soft puck-to-stick 'tap'. Specific moments override it:
+     done drills -> puck off boards; back / close x / card open / player name ->
+     the open-player-card glide; the mute button itself stays silent. */
+  var BACK_SEL='.backlink,.gdr-back,.glassback,.login-back,.cardaway,.back';
+  var CLOSE_SEL='.cardclose,.glassclose,.sugg-close,[aria-label=\'Close\'],[data-close]';
+  var CARDOPEN_SEL='.cb-stats,.pl-name,.pcard,.cardthumb,.cardctl-open,.stickerbook-head';
+  function hit(el){ return el&&el.closest?el:null; }
   document.addEventListener('click',function(e){
     var t=e.target; if(!t||!t.closest)return;
+    /* never sound the sound toggle itself (it plays its own confirm) */
+    if(t.closest('#sfxToggle'))return;
+    /* Mark drill done -> the THWAP (only when it actually transitions to done) */
     if(t.closest('.exdone')){ var row=t.closest('.exrow'); if(row&&!row.classList.contains('done')) play('done'); return; }
-    if(t.closest('.cardaway')){ play('navBack'); return; }
-    if(t.closest('.cb-stats')){ play('navOpen'); return; }
-    if(t.closest('.back')){ play('navBack'); return; }
+    /* Back, close (x), open-card, and player-name all use the open-card glide */
+    if(t.closest(BACK_SEL)||t.closest(CLOSE_SEL)){ play('navBack'); return; }
+    if(t.closest(CARDOPEN_SEL)){ play('navOpen'); return; }
+    /* Everything else interactive gets the default tap */
+    if(t.closest('button, a[href], [role=\'button\'], .exchev, .chev, input[type=\'checkbox\'], input[type=\'radio\'], label, select, .seg, .toggle')){ play('tap'); }
   }, true);
 })();
 </script>
