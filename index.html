@@ -419,11 +419,9 @@ body.viewing-teammate .cardctl,body.viewing-teammate .cb-stats-layer,body.viewin
 /* Per-player photo crop/scale: frames the photo to fill the card (no DB change,
    no re-upload). object-fit:cover crops the photo to the slot instead of
    letterboxing it; scale fine-tunes the zoom. Bottom/top-anchored per photo. */
-.cf2-photo.cf2-photo-alder,
 .cf2-photo.cf2-photo-dominic,
-.cf2-photo.cf2-photo-evan,
-.cf2-photo.cf2-photo-joziah{object-fit:cover;object-position:top center}
-.cf2-photo.cf2-photo-teddy{object-fit:cover;object-position:top center;transform:scale(2.25);transform-origin:top center}
+.cf2-photo.cf2-photo-evan{object-fit:cover;object-position:top center}
+.cf2-photo.cf2-photo-teddy{object-fit:contain;object-position:center;transform:scale(2);transform-origin:center}
 .cf2-photo-mask{position:absolute;left:0;right:0;bottom:0;height:34%;z-index:2;pointer-events:none;background:linear-gradient(0deg,rgba(10,14,12,.55) 0%,transparent 100%)}
 /* keeps the number and name legible over any plate/photo */
 .cf2-scrim{position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(0deg,rgba(10,14,12,.62) 0%,transparent 26%)}
