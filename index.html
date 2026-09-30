@@ -5525,26 +5525,84 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#pass') ren
    year), asked once per browser session and cached. Fails silently if the API is not
    reachable yet (e.g. before Vercel KV is provisioned), so the app keeps working. */
 var PLAYER=(function(){try{var s=localStorage.getItem('bfPlayer')||'Lewie';return s.trim().split(/\s+/)[0];}catch(e){return 'Lewie';}})();  /* the chosen player on this device */
+/* Quiet, non-blocking "not saved" notice. A drill that a kid marked done but that
+   never reached the board is a lost real completion (see the photo-upload lesson:
+   fail LOUD, never swallow). This does NOT undo the on-device done/celebration.
+   The local streak is honest per device; this only tells the parent the shared
+   board write did not land so they can check they are signed in. Reduced-motion
+   safe, aria-live polite, auto-dismisses, no blocking alert during a drill. */
+window.thwapDoneNotSaved=function(){
+  try{
+    var host=document.getElementById('thwapSaveNote');
+    if(!host){
+      host=document.createElement('div');
+      host.id='thwapSaveNote';
+      host.setAttribute('role','status');
+      host.setAttribute('aria-live','polite');
+      document.body.appendChild(host);
+    }
+    host.textContent="Saved on this device, but not to Standings yet. Check you are signed in.";
+    host.className='thwap-savenote show';
+    clearTimeout(window.__thwapSaveNoteT);
+    window.__thwapSaveNoteT=setTimeout(function(){ if(host) host.className='thwap-savenote'; },6000);
+  }catch(e){}
+};
 window.thwapMarkDone=function(discipline){
-  /* A logged-in player logs their own work. /api/done now REQUIRES a server
-     session; if this browser somehow lacks one (e.g. first load after the change),
-     the 401 triggers a transparent session mint and a single retry, so the write
-     still lands and the player is never blocked. Silent on any failure. */
+  /* A logged-in player logs their own work. /api/done REQUIRES a server session;
+     if this browser lacks one, a 401 (or a transient network error on the very
+     first tap) triggers a transparent session mint and a SINGLE retry, so the
+     write still lands and the player is never blocked. If it STILL fails after the
+     retry, we surface a quiet "not saved" notice rather than silently losing the
+     completion. Returns a promise resolving to { ok, status } for testability. */
   var send=function(){
     return fetch('/api/done',{
       method:'POST', headers:{'Content-Type':'application/json'}, cache:'no-store',
       body:JSON.stringify({player:PLAYER.toLowerCase(), discipline:discipline})
     });
   };
+  /* Heal the session once, then retry. Shared by the 401 path and the
+     network-error path so a first-tap blip is not permanent silent loss. */
+  var healAndRetry=function(){
+    var heal=(window.thwapEnsureSession?window.thwapEnsureSession():Promise.resolve());
+    return Promise.resolve(heal).then(function(){ return send(); });
+  };
+  var settle=function(r){
+    var ok=!!(r && r.ok);
+    if(!ok && window.thwapDoneNotSaved) window.thwapDoneNotSaved();
+    return { ok:ok, status:(r?r.status:0) };
+  };
+  var attempt;
   try{
-    send().then(function(r){
-      if(r && r.status===401 && window.thwapEnsureSession){
-        return window.thwapEnsureSession().then(function(){ return send(); });
+    attempt=send().then(function(r){
+      /* A missing/invalid session is the one recoverable case: mint + retry once. */
+      if(r && r.status===401){
+        return healAndRetry().then(settle, function(){ if(window.thwapDoneNotSaved) window.thwapDoneNotSaved(); return { ok:false, status:0 }; });
       }
-    }).catch(function(){});                         /* offline / no API yet: silent */
-  }catch(e){}
+      return settle(r);
+    }, function(){
+      /* First tap hit a network error (offline, or the server session cookie was
+         not yet in flight). Try one heal+retry before giving up loudly. */
+      return healAndRetry().then(settle, function(){ if(window.thwapDoneNotSaved) window.thwapDoneNotSaved(); return { ok:false, status:0 }; });
+    });
+  }catch(e){
+    if(window.thwapDoneNotSaved) window.thwapDoneNotSaved();
+    return Promise.resolve({ ok:false, status:0 });
+  }
+  return attempt;
 };
 })();</script>
+
+<style>
+/* Quiet "not saved to Standings" notice (thwapDoneNotSaved). Bottom-center, above
+   most chrome, dismissible by time. Warm, not alarming: a kid's completion is safe
+   on the device; this only nudges the parent to sign in so it reaches the board. */
+.thwap-savenote{position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(14px);z-index:130;max-width:min(420px,92vw);
+  background:var(--panel);color:var(--text);border:2px solid var(--green);border-radius:14px;
+  padding:12px 16px;font-size:14px;font-weight:800;line-height:1.4;text-align:center;
+  box-shadow:0 12px 34px rgba(0,0,0,.28);opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s ease}
+.thwap-savenote.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion: reduce){.thwap-savenote{transition:none}}
+</style>
 
 <script>(function(){
 /* Micro-reward: tap the streak flame and it flares. Pure delight, no navigation. */var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
