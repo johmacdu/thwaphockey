@@ -5130,6 +5130,7 @@ document.addEventListener('click',function(e){
     var travel=Math.max(60, stopX - r.right - 12);
     logo.style.setProperty('--sass-travel', travel+'px');
     logo.classList.add('skating');
+    try{ if(window.thwapSfxEgg)thwapSfxEgg('eggSkate'); }catch(e){}
     /* real moving legs: alternate the two stride frames while skating */
     var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     /* As Sass skates through the wordmark, explode it with a small THWAP! boom. */
@@ -5201,6 +5202,7 @@ function shatterWordmark(){
     layer.appendChild(sh);
   });
   wm.style.visibility='hidden';
+  try{ if(window.thwapSfxEgg)thwapSfxEgg('eggThwap'); }catch(e){}
   requestAnimationFrame(function(){ layer.classList.add('go'); });
   setTimeout(function(){
     if(layer.parentNode)layer.parentNode.removeChild(layer);
@@ -5786,11 +5788,11 @@ window.thwapCatFxCount=function(disc){ return (POOLS[disc]||[]).length; };
    big illustrated Sass cameo for that discipline (reused from the pools above).
    Fire-and-forget; reduced motion falls back to a plain word badge. */
 window.thwapLongPress={
-  stick:function(){ if(reduce){ badge('FILTHY!','#8FD65E'); return; } sassCameo('login/sass-dangle.webp','FILTHY!','#8FD65E'); },
-  shoot:function(){ if(reduce){ badge('SNIPE!','#75B8FF'); return; } screenCrack('#75B8FF',true); stamp('SNIPE!','#75B8FF'); },
-  dryland:function(){ if(reduce){ badge('POWERED UP','#FF9D4D'); return; } sassCameo('login/sass-power.webp','POWERED UP','#FF9D4D'); },
-  goals:function(){ if(reduce){ badge("LET'S GO!",'#FFC24A'); return; } sassCameo('login/sass-celly.webp',"LET'S GO!",'#FFC24A'); },
-  pass:function(){ if(reduce){ badge('SAUCE!','#2E86FF'); return; } sassCameo('login/sass-pass.webp','SAUCE!','#2E86FF'); }
+  stick:function(){ try{ if(window.thwapSfxEgg)thwapSfxEgg('eggStick'); }catch(e){} if(reduce){ badge('FILTHY!','#8FD65E'); return; } sassCameo('login/sass-dangle.webp','FILTHY!','#8FD65E'); },
+  shoot:function(){ try{ if(window.thwapSfxEgg)thwapSfxEgg('eggShoot'); }catch(e){} if(reduce){ badge('SNIPE!','#75B8FF'); return; } screenCrack('#75B8FF',true); stamp('SNIPE!','#75B8FF'); },
+  dryland:function(){ try{ if(window.thwapSfxEgg)thwapSfxEgg('eggDryland'); }catch(e){} if(reduce){ badge('POWERED UP','#FF9D4D'); return; } sassCameo('login/sass-power.webp','POWERED UP','#FF9D4D'); },
+  goals:function(){ try{ if(window.thwapSfxEgg)thwapSfxEgg('eggShoot'); }catch(e){} if(reduce){ badge("LET'S GO!",'#FFC24A'); return; } sassCameo('login/sass-celly.webp',"LET'S GO!",'#FFC24A'); },
+  pass:function(){ try{ if(window.thwapSfxEgg)thwapSfxEgg('eggPass'); }catch(e){} if(reduce){ badge('SAUCE!','#2E86FF'); return; } sassCameo('login/sass-pass.webp','SAUCE!','#2E86FF'); }
 };
 /* Top tier: everything done today. A bigger, rotating finish (over the "today
    complete" card). Reduced motion shows nothing extra (the card is the fallback). */
@@ -6269,6 +6271,7 @@ holdEgg(document.getElementById('eggStick'),function(done){
   p.style.setProperty('--px',px); p.style.setProperty('--py',py);
   document.body.appendChild(p);
   requestAnimationFrame(function(){ p.classList.add('weave'); });
+  try{ if(window.thwapSfxEgg)thwapSfxEgg('eggStick'); }catch(e){}
   setTimeout(function(){ if(img) img.src='login/icon-stick.webp'; },1150);  /* puck settles back on the blade */
   setTimeout(function(){
     el.classList.remove('egg-go');
@@ -6289,7 +6292,7 @@ holdEgg(document.getElementById('eggNet'),function(done){
   el.appendChild(hole);
   /* fly in, then the net hit fires at the impact moment (40% of the 1.15s flight) */
   requestAnimationFrame(function(){ shot.classList.add('fly'); });
-  setTimeout(function(){ el.classList.add('egg-hit'); hole.classList.add("punch"); },440);
+  setTimeout(function(){ el.classList.add('egg-hit'); hole.classList.add("punch"); try{ if(window.thwapSfxEgg)thwapSfxEgg('eggShoot'); }catch(e){} },440);
   setTimeout(function(){
     el.classList.remove('egg-hit');
     if(shot.parentNode)shot.parentNode.removeChild(shot);
@@ -6307,6 +6310,7 @@ holdEgg(document.getElementById('eggBolt'),function(done){
   var cx=Math.round(r.left+r.width/2), cy=Math.round(r.top+r.height/2-4);
   var rings=[];
   setTimeout(function(){   /* launch at the SNAP moment (~40% of the .82s surge) */
+    try{ if(window.thwapSfxEgg)thwapSfxEgg('eggDryland'); }catch(e){}
     for(var i=0;i<2;i++){
       var s=document.createElement('span'); s.className='eggshock';
       s.style.left=cx+'px'; s.style.top=cy+'px'; s.style.animationDelay=(i*110)+'ms';
@@ -6333,6 +6337,7 @@ holdEgg(document.getElementById('eggPass'),function(done){
   puck.style.top=Math.round(r.top+r.height/2-9)+'px';
   document.body.appendChild(puck);
   requestAnimationFrame(function(){ puck.classList.add('go'); });
+  try{ if(window.thwapSfxEgg)thwapSfxEgg('eggPass'); }catch(e){}
   setTimeout(function(){
     el.classList.remove('egg-fly');
     if(puck.parentNode)puck.parentNode.removeChild(puck);
@@ -7045,6 +7050,29 @@ document.getElementById('coachInfoScrim') && document.getElementById('coachInfoS
     if(navigator.vibrate){ navigator.vibrate(CELEBRATE[name]?18:8); }
   }
   window.thwapSfx=play;
+
+  /* ---- easter-egg sounds -----------------------------------------------
+     Each egg's sound is tied to its own hockey reference and fired at the
+     moment INSIDE the animation (the puck's bar-down ring, the bolt's snap,
+     the wordmark THWAP). Deliberately IGNORES the mute toggle (Woody's call):
+     the eggs are the delight payoff, so a muted UI still gets them. Still
+     silenced under reduced-motion, because the egg's visual is disabled there
+     and a sound with no motion would be orphaned. */
+  var EGG={
+    eggStick:{c:'hands',r:1.06,g:0.9},                      /* puck weaves on the blade */
+    eggShoot:{c:'bardown',g:1.0},                           /* rings off the iron */
+    eggDryland:{c:'buzzer',r:1.25,g:0.6},                   /* the bolt snaps (zap) */
+    eggPass:{c:'hands',r:0.92,g:0.75},                      /* soft sauce off the blade */
+    eggSkate:{c:'card-open',r:1.0,g:1.5},                   /* Sass skates across */
+    eggThwap:{c:'done',r:1.08,g:1.0}                        /* wordmark THWAP hit */
+  };
+  function playEgg(name){
+    if(reduce)return;                                       /* egg visual is off under reduced-motion */
+    var m=EGG[name]; if(!m)return; ctx(); if(!AC)return;
+    shot(m.c,m.r,m.g);
+    if(navigator.vibrate)navigator.vibrate(16);
+  }
+  window.thwapSfxEgg=playEgg;
 
   /* ---- velocity-driven skate-glide for the draggable card spin ---- */
   var glSrc=null,glGain=null,glActive=false,glStop=null;
