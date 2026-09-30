@@ -41,6 +41,13 @@ describe('UI sound layer', () => {
     expect(html).toContain("thwapSfx('cardOpen')");            // open player card -> glide + settle
     expect(html).toContain('thwapSfxGlideStart()');            // drag-spin: continuous skate glide
     expect(html).toContain('thwapSfxGlideStop()');
+    // Universal: every interactive element makes a sound (default tap),
+    // with back / close x mapped to the nav glide and player-name to card open.
+    expect(html).toContain("play('tap')");
+    expect(html).toContain('.backlink');
+    expect(html).toContain('.cardclose');
+    expect(html).toContain('.pl-name');
+
     // Open card / Back / See my stats all share the open-player-card glide sound
     expect(html).toContain("navOpen:{c:'card-open'");
     expect(html).toContain("navBack:{c:'card-open'");
