@@ -1006,7 +1006,7 @@ img.plflame{width:1.15em;height:auto;vertical-align:-.22em}
 .pl-thwap.go{animation:plthwap .7s ease}
 @keyframes plthwap{0%{transform:translate(-50%,-50%) rotate(-8deg) scale(0);opacity:0}30%{transform:translate(-50%,-50%) rotate(-8deg) scale(1.2);opacity:1}100%{transform:translate(-50%,-50%) rotate(-8deg) scale(1);opacity:0}}
 @media (prefers-reduced-motion: reduce){.plflame,.pl-radar-poly,.pl-radar-poly.grow,.pl-radar-wrap svg circle,.pl-spoke,.pl-thwap.go,.pl-ringfill{animation:none;transition:none}.pl-spoke{stroke-dashoffset:0}}.row:last-child{border-bottom:0}.row.me{background:rgba(185,240,107,.18);box-shadow:inset 3px 0 0 var(--lime)}.row-you{display:inline-block;margin-left:7px;font-size:11px;font-weight:900;letter-spacing:.05em;color:#0f1712;background:var(--lime);border-radius:999px;padding:2px 7px;vertical-align:middle}.bar{height:6px;background:var(--soft);border-radius:99px;overflow:hidden}.fill{height:100%;background:var(--lime)}.score{font-weight:950;color:var(--green2)}.note{padding:14px 2px 0;margin-top:16px;border-top:1px solid var(--line);color:var(--muted2);font-size:13px;line-height:1.5}.footer{text-align:center;color:var(--chev);font-size:11px;padding:28px 0}
-.footer{display:flex;align-items:center;justify-content:space-between;gap:14px;color:var(--muted);font-size:12px;padding:28px 4px}.footer .slogan{font-weight:800;letter-spacing:.01em}.trademark{text-align:center;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.02em;padding:0 4px 24px}.trademark-mark{height:72px;width:auto;object-fit:contain;display:inline-block;opacity:.9}.themetoggle{display:inline-flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit}.themetoggle:hover{border-color:var(--line2)}.themetoggle .ttico{font-size:14px;line-height:1}
+.footer{display:flex;align-items:center;justify-content:space-between;gap:14px;color:var(--muted);font-size:12px;padding:28px 4px}.footer .slogan{font-weight:800;letter-spacing:.01em}.trademark{text-align:center;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.02em;padding:0 4px 24px}.trademark-mark{height:72px;width:auto;object-fit:contain;display:inline-block;opacity:.9}.sfxtoggle{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:999px;cursor:pointer;font-family:inherit;padding:0}.sfxtoggle:active{transform:scale(.95)}.sfxtoggle.off{color:var(--muted)}.themetoggle{display:inline-flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit}.themetoggle:hover{border-color:var(--line2)}.themetoggle .ttico{font-size:14px;line-height:1}
 .footer-actions{display:inline-flex;align-items:center;gap:8px}
 .footmenu-wrap{position:relative}
 .footkebab{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:999px;font-size:18px;line-height:1;cursor:pointer;font-family:inherit}
@@ -1793,7 +1793,7 @@ body.login-locked{overflow:hidden}
 <a class='nav nav-pass' href='#pass'><div class='ico'><img class='nav-ico' src='login/icon-pass.webp' alt=''></div><div><h2>Passing <span class='soon-tag'>Coming soon</span></h2><p>Tape-to-tape + vision, coming early November</p></div><div class='chev'>›</div></a>
 </div>
 </section>
-<div class='footer'><span class='slogan'>Compete. Improve. Have fun.</span><div class='footer-actions'><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button><div class='footmenu-wrap'><button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button><div class='footmenu' id='footMenu' hidden role='menu'><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a><a class='footmenu-item' id='menuSignout' href='#' role='menuitem'>Sign out</a></div></div></div></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div>
+<div class='footer'><span class='slogan'>Compete. Improve. Have fun.</span><div class='footer-actions'><button class='sfxtoggle' id='sfxToggle' type='button' aria-label='Mute sounds' title='Mute sounds' aria-pressed='true'></button><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button><div class='footmenu-wrap'><button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button><div class='footmenu' id='footMenu' hidden role='menu'><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a><a class='footmenu-item' id='menuSignout' href='#' role='menuitem'>Sign out</a></div></div></div></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div>
 </div><script>
 /* Shared flexible guardian-email list for the coach and player-self edit sheets.
    Any number of emails per player; each one on file receives the sign-in code.
@@ -3208,7 +3208,7 @@ function render(){
         var _l=row.parentNode;
         if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('dryland');
         if(window.thwapMarkDone)window.thwapMarkDone('dryland');
-        if(window.thwapStampToday)window.thwapStampToday('dryland',true);
+        if(window.thwapStampToday)window.thwapStampToday('dryland',true); try{ if(window.thwapSfx)thwapSfx('drylandReward'); }catch(e){}
         btn.textContent='Done ✓';
       };
       if(row.classList.contains('done')){ return; }  /* already done: no-op */
@@ -4099,7 +4099,7 @@ function buildThemePicker(){
     }); }
   showMain();
 }
-window.thwapOpenCard=function(){ try{ open(); }catch(e){} };
+window.thwapOpenCard=function(){ try{ open(); }catch(e){} try{ if(window.thwapSfx)thwapSfx('cardOpen'); }catch(e){} };
 /* Photo add/change/remove for the player's OWN card. Local-only: the image is
    read in the browser, downscaled, and stored as a data URL in localStorage on
    THIS device. It is never uploaded, never sent to the server, and never shown on
@@ -4221,7 +4221,7 @@ if(!reduce){
     stopMomentum();
     dragging=true; moved=0; lastX=e.clientX; lastY=e.clientY; lastT=e.timeStamp||Date.now();
     vrx=0; vry=0;
-    card.classList.add('dragging'); card.setPointerCapture(e.pointerId);
+    card.classList.add('dragging'); card.setPointerCapture(e.pointerId); if(window.thwapSfxGlideStart)thwapSfxGlideStart();
   });
   var _moveRAF=null;
   card.addEventListener('pointermove', function(e){
@@ -4235,7 +4235,7 @@ if(!reduce){
     ry+=ddy; rx+=ddx;
     rx=Math.max(-85,Math.min(85,rx));
     /* track angular velocity (deg per frame ~16ms) */
-    vry=ddy/dt*16; vrx=ddx/dt*16;
+    vry=ddy/dt*16; vrx=ddx/dt*16; if(window.thwapSfxGlideSpeed){var _sp=Math.min(1,(Math.abs(dx)+Math.abs(dy))/dt*0.8);thwapSfxGlideSpeed(_sp);}
     sheen=Math.max(0,Math.min(1,(ry%360+360)%360/180));
     /* Coalesce paints to one per frame: pointermove can fire many times per
        frame and painting on each one is what made the drag feel choppy. */
@@ -4255,7 +4255,7 @@ if(!reduce){
     } else { momentum=null; card.classList.remove('dragging'); }
   }
   function endDrag(e){
-    if(!dragging)return; dragging=false;
+    if(!dragging)return; dragging=false; if(window.thwapSfxGlideStop)thwapSfxGlideStop();
     /* keep transitions off and let momentum coast to a natural stop (no snap) */
     if(Math.abs(vry)>0.2 || Math.abs(vrx)>0.2 || Math.abs(rx)>0.3){
       momentum=requestAnimationFrame(coast);
@@ -4580,7 +4580,7 @@ function render(){
         var _l=row.parentNode;
         if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('stick');
         if(window.thwapMarkDone)window.thwapMarkDone('stick');
-        if(window.thwapStampToday)window.thwapStampToday('stick',true);
+        if(window.thwapStampToday)window.thwapStampToday('stick',true); try{ if(window.thwapSfx)thwapSfx('handsReward'); }catch(e){}
         btn.textContent='Done ✓';
       };
       if(row.classList.contains('done')){ return; }
@@ -5414,7 +5414,7 @@ function render(){
            the shoot route. */
         if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('shoot');
         if(window.thwapMarkDone)window.thwapMarkDone(goalie?'netplay':'shoot');
-        if(window.thwapStampToday)window.thwapStampToday('shoot',true);
+        if(window.thwapStampToday)window.thwapStampToday('shoot',true); try{ if(window.thwapSfx)thwapSfx('shootReward'); }catch(e){}
         btn.textContent='Done ✓';
       };
       if(row.classList.contains('done')){ return; }
@@ -7003,4 +7003,76 @@ window.thwapShowCoachInfo=function(name, role, photo){
 document.getElementById('coachInfoX') && document.getElementById('coachInfoX').addEventListener('click',function(){ show(false); });
 document.getElementById('coachInfoScrim') && document.getElementById('coachInfoScrim').addEventListener('click',function(){ show(false); });
 })();</script>
+<script>
+/* ==========================================================================
+   Thwap UI sound layer (hockey-referenced, owned recordings in /sfx).
+   - Separate from narration mute (thwapMuted): this is thwapSfxOn, ON by default.
+   - Reuses a single WebAudio context, decoded buffers, pitch/gain variation.
+   - Reduced-motion silences the celebratory sounds (respects prefers-reduced-motion).
+   ========================================================================== */
+(function(){
+  var FILES={
+    tap:'sfx/tap.mp3', done:'sfx/done.mp3', hands:'sfx/hands.mp3',
+    bardown:'sfx/bardown.mp3', buzzer:'sfx/buzzer.mp3', whistle:'sfx/whistle.mp3',
+    'goal-crowd':'sfx/goal-crowd.mp3',
+    'card-open':'sfx/card-open.mp3', 'skate-loop':'sfx/skate-loop.mp3'
+  };
+  /* moment -> {clip, rate, gain}. rate<1 = pitched down. */
+  var MAP={
+    tap:{c:'tap',g:0.7}, toggleOn:{c:'tap',r:1.04,g:0.7}, toggleOff:{c:'tap',r:0.82,g:0.6},
+    navOpen:{c:'card-open',r:1.0,g:1.6}, navBack:{c:'card-open',r:1.0,g:1.6},
+    cardOpen:{c:'card-open',r:1.0,g:1.6},
+    check:{c:'tap',r:1.12,g:0.65}, uncheck:{c:'tap',r:0.86,g:0.5},
+    streak:{c:'buzzer',g:0.7}, error:{c:'whistle',g:0.6},
+    done:{c:'done',g:1.0}, handsReward:{c:'hands',g:0.9},
+    shootReward:{c:'bardown',g:1.0}, drylandReward:{c:'buzzer',r:1.15,g:0.55},
+    sticker:{c:'hands',r:1.2,g:0.7}, perfect:{c:'__perfect__'}
+  };
+  var CELEBRATE={done:1,perfect:1,sticker:1,shootReward:1,handsReward:1,drylandReward:1,streak:1};
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var AC=null,MASTER=null,BUF={},decoded=false;
+  function sfxOn(){ try{ return localStorage.getItem('thwapSfxOn')!=='0'; }catch(e){ return true; } } /* default ON */
+  function setSfxOn(v){ try{ localStorage.setItem('thwapSfxOn', v?'1':'0'); }catch(e){} }
+  function ctx(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); MASTER=AC.createGain(); MASTER.gain.value=0.85; MASTER.connect(AC.destination); decodeAll(); }catch(e){ AC=null; } } if(AC&&AC.state==='suspended')AC.resume(); return AC; }
+  function decodeAll(){ if(decoded||!AC)return; decoded=true; Object.keys(FILES).forEach(function(k){ try{ fetch(FILES[k]).then(function(r){return r.arrayBuffer();}).then(function(ab){ AC.decodeAudioData(ab,function(b){BUF[k]=b;},function(){}); }).catch(function(){}); }catch(e){} }); }
+  function jit(){ return 1+(Math.random()*2-1)*0.05; }
+  function shot(clip,rate,gain,when){ var b=BUF[clip]; if(!b||!AC)return; var s=AC.createBufferSource(); s.buffer=b; s.playbackRate.value=(rate||1)*jit(); var g=AC.createGain(); g.gain.value=(gain==null?1:gain); s.connect(g); g.connect(MASTER); s.start(when||0); }
+  function play(name){
+    if(!sfxOn())return; if(reduce&&CELEBRATE[name])return;
+    var m=MAP[name]; if(!m)return; ctx(); if(!AC)return;
+    if(m.c==='__perfect__'){ var t=AC.currentTime; shot('buzzer',1,0.85,t); shot('goal-crowd',1,0.6,t+0.12); if(navigator.vibrate)navigator.vibrate(24); return; }
+    shot(m.c,m.r,m.g);
+    if(navigator.vibrate){ navigator.vibrate(CELEBRATE[name]?18:8); }
+  }
+  window.thwapSfx=play;
+
+  /* ---- velocity-driven skate-glide for the draggable card spin ---- */
+  var glSrc=null,glGain=null,glActive=false,glStop=null;
+  function glideStart(){ if(!sfxOn())return; ctx(); if(!AC||!BUF['skate-loop'])return; if(glStop){clearTimeout(glStop);glStop=null;} if(glActive)return;
+    glSrc=AC.createBufferSource(); glSrc.buffer=BUF['skate-loop']; glSrc.loop=true; glGain=AC.createGain(); glGain.gain.value=0.0001; glSrc.connect(glGain); glGain.connect(MASTER); glSrc.start(0); glActive=true; }
+  function glideSpeed(v){ if(!glActive||!glGain||!AC)return; var t=AC.currentTime; glGain.gain.setTargetAtTime(Math.min(0.9,v*1.1),t,0.05); if(glSrc)glSrc.playbackRate.setTargetAtTime(0.85+v*0.6,t,0.06); }
+  function glideStop(){ if(!glActive||!AC)return; var t=AC.currentTime; glGain.gain.setTargetAtTime(0.0001,t,0.18); var s=glSrc; if(glStop)clearTimeout(glStop); glStop=setTimeout(function(){ try{s&&s.stop();}catch(e){} glActive=false; glSrc=null; glGain=null; glStop=null; },600); }
+  window.thwapSfxGlideStart=glideStart; window.thwapSfxGlideSpeed=glideSpeed; window.thwapSfxGlideStop=glideStop;
+
+  /* ---- mute/unmute button (left of footer theme toggle) ---- */
+  var SPK="<svg viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M11 5 6 9H2v6h4l5 4V5z'/><path d='M15.5 8.5a5 5 0 0 1 0 7'/><path d='M18.5 5.5a9 9 0 0 1 0 13'/></svg>";
+  var OFF="<svg viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M11 5 6 9H2v6h4l5 4V5z'/><line x1='23' y1='9' x2='17' y2='15'/><line x1='17' y1='9' x2='23' y2='15'/></svg>";
+  function wireMute(){
+    var b=document.getElementById('sfxToggle'); if(!b||b._wired)return; b._wired=1;
+    function paint(){ var on=sfxOn(); b.innerHTML=on?SPK:OFF; b.setAttribute('aria-pressed',on?'true':'false'); b.setAttribute('aria-label',on?'Mute sounds':'Unmute sounds'); b.title=on?'Mute sounds':'Unmute sounds'; b.classList.toggle('off',!on); }
+    paint();
+    b.addEventListener('click',function(e){ e.stopPropagation(); var next=!sfxOn(); setSfxOn(next); paint(); if(next){ ctx(); play('toggleOn'); } });
+  }
+  if(document.readyState!=='loading') wireMute(); else document.addEventListener('DOMContentLoaded',wireMute);
+
+  /* ---- hook the real seams via delegation ---- */
+  document.addEventListener('click',function(e){
+    var t=e.target; if(!t||!t.closest)return;
+    if(t.closest('.exdone')){ var row=t.closest('.exrow'); if(row&&!row.classList.contains('done')) play('done'); return; }
+    if(t.closest('.cardaway')){ play('navBack'); return; }
+    if(t.closest('.cb-stats')){ play('navOpen'); return; }
+    if(t.closest('.back')){ play('navBack'); return; }
+  }, true);
+})();
+</script>
 </body></html>
