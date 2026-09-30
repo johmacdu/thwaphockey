@@ -364,7 +364,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
       onStatus('Removing background...');
       window.thwapRemoveBg(file)
         .then(function(blob){ onStatus('Uploading...'); afterBlob(blob, true); })
-        .catch(function(){ alert('Could not remove the background. Uploading the photo as-is.'); onStatus('Uploading...'); afterBlob(file, false); });
+        .catch(function(){ alert('Could not remove the background from that photo. It was NOT uploaded. Try a clearer photo, or uncheck "Remove background" to upload it as-is on purpose.'); cb(null); });
     } else {
       onStatus('Uploading...');
       afterBlob(file, false);
