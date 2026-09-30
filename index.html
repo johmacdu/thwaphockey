@@ -99,7 +99,7 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 
 .glassclose{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);right:max(16px, calc(50vw - 534px));z-index:50;display:inline-grid;place-items:center;width:48px;height:48px;border-radius:50%;font-size:20px;font-weight:700;color:var(--text);cursor:pointer;text-decoration:none;background:color-mix(in srgb,var(--panel) 62%,transparent);border:1px solid color-mix(in srgb,var(--text) 12%,transparent);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);box-shadow:0 6px 20px var(--shadow)}
 .glassclose:hover{background:color-mix(in srgb,var(--panel) 78%,transparent)}
-.hero{padding:30px 0 15px}.kicker{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--green);font-weight:950}
+.hero{padding:38px 0 19px}.kicker{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--green);font-weight:950}
 /* Kid-voice home hero: greeting + a tappable Today chip. */
 .hero-hey{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(26px,7vw,44px);line-height:1.05;letter-spacing:.005em;margin:8px 0 2px;color:var(--text);white-space:nowrap}
 .hero-hey .playername-inline{display:inline;margin:0;font-family:inherit;font-size:inherit;font-weight:inherit;letter-spacing:inherit;color:var(--green2);background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
@@ -112,7 +112,7 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 .daydate{position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%) translateY(4px);white-space:nowrap;background:var(--ink);color:#fff;font-size:12px;font-weight:600;padding:6px 10px;border-radius:8px;opacity:0;visibility:hidden;transition:opacity .15s ease,transform .15s ease;pointer-events:none;z-index:5}
 .daydate::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--ink)}
 .daytip:hover .daydate,.daytip:focus-visible .daydate,.daytip.show .daydate{opacity:1;visibility:visible;transform:translateX(-50%) translateY(0)}
-.cards{display:grid;gap:12px;margin-top:20px;grid-template-columns:1fr}
+.cards{display:grid;gap:18px;margin-top:20px;grid-template-columns:1fr}
 /* Springy press: one consistent feel for every tappable card/button. A JS hook
    adds .is-pressed on pointerdown and removes it on release, so the bounce-back
    plays on the up. Reduced motion gets a plain opacity dip, no scale. */
@@ -260,7 +260,7 @@ body:not(.is-authed) .kebabmenu .nav-guest{display:flex}
 /* The header sits ABOVE the login splash frost so the logo, wordmark and the
    Sign In / Join Waitlist links are always visible over the ice. */
 body.login-locked .topbar{position:relative;z-index:120}
-.forrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px}
+.forrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px;padding-bottom:11px}
 .dowrap{min-width:0;flex:1 1 100%}
 .forline{font-size:15px;color:var(--muted);font-weight:600}
 .fordur{display:block;font-size:15px;color:var(--muted);font-weight:600}
