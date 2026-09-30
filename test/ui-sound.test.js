@@ -50,7 +50,7 @@ describe('UI sound layer', () => {
 
     // Open card / Back / See my stats all share the open-player-card glide sound
     expect(html).toContain("navOpen:{c:'card-open'");
-    expect(html).toContain("navBack:{c:'card-open'");
+    expect(html).toContain("navBack:{c:'nav-back'");
   });
 
   it('silences the celebratory sounds under prefers-reduced-motion', () => {
