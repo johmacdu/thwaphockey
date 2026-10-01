@@ -1812,6 +1812,16 @@ body.login-locked{overflow:hidden}
 </section>
 <div class='footer'><span class='slogan'>Compete. Improve. Have fun.</span><div class='footer-actions'><button class='sfxtoggle' id='sfxToggle' type='button' aria-label='Mute sounds' title='Mute sounds' aria-pressed='true'></button><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button><div class='footmenu-wrap'><button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button><div class='footmenu' id='footMenu' hidden role='menu'><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a><a class='footmenu-item' id='menuSignout' href='#' role='menuitem'>Sign out</a></div></div></div></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div>
 </div><script>
+/* ---- Single client-side roster source of truth ----
+   Was duplicated as four separate maps (ROSTER / ROSTER_INFO / ROSTER_VIEW with
+   lowercase keys, INFO with capitalized keys). They drifted independently; now
+   each derives from THIS one object so there is one place to change roster facts.
+   (The server roster endpoint will hydrate this in the full async step; today it
+   is still the seed roster, byte-identical to what the four maps held.) */
+window.THWAP_ROSTER={alder:{num:'71',pos:'F'},brooklyn:{num:'92',pos:'D'},dawson:{num:'19',pos:'D'},dominic:{num:'98',pos:'F'},eugene:{num:'3',pos:'D'},evan:{num:'13',pos:'F'},greyson:{num:'32',pos:'D'},johnny:{num:'1',pos:'G'},joziah:{num:'59',pos:'F'},lewie:{num:'72',pos:'FD'},liam:{num:'29',pos:'D'},maddux:{num:'18',pos:'F'},oliver:{num:'90',pos:'F'},teddy:{num:'11',pos:'F'},william:{num:'16',pos:'F'},issac:{num:'53',pos:'F'}};
+/* Capitalized-key view of the same data, for the few readers keyed by display name. */
+window.THWAP_ROSTER_CAP=(function(m){var o={};Object.keys(m).forEach(function(k){o[k.charAt(0).toUpperCase()+k.slice(1)]=m[k];});return o;})(window.THWAP_ROSTER);
+</script><script>
 /* Shared flexible guardian-email list for the coach and player-self edit sheets.
    Any number of emails per player; each one on file receives the sign-in code.
    render() fills a container with rows + an "add" button and wires add/remove once;
@@ -2655,7 +2665,7 @@ window.thwapActiveTeam=function(coach){
    player, and gate a switch behind the parent email + player code (jersey number
    + season year, e.g. 722027) so a kid cannot start logging work as someone else. */
 (function(){
-  var ROSTER={alder:{num:'71',pos:'F'},brooklyn:{num:'92',pos:'D'},dawson:{num:'19',pos:'D'},dominic:{num:'98',pos:'F'},eugene:{num:'3',pos:'D'},evan:{num:'13',pos:'F'},greyson:{num:'32',pos:'D'},johnny:{num:'1',pos:'G'},joziah:{num:'59',pos:'F'},lewie:{num:'72',pos:'FD'},liam:{num:'29',pos:'D'},maddux:{num:'18',pos:'F'},oliver:{num:'90',pos:'F'},teddy:{num:'11',pos:'F'},william:{num:'16',pos:'F'},issac:{num:'53',pos:'F'}};
+  var ROSTER=window.THWAP_ROSTER||{};
   var SEASON_YEAR=2027;
   function infoFor(name){
     var parts=String(name||'').trim().split(/\s+/);
@@ -3982,7 +3992,7 @@ function currentPlayer(){
      neutral prompt state if none picked yet. Full roster facts live in ROSTER_INFO. */
   var saved='';
   try{ saved=localStorage.getItem('bfPlayer')||''; }catch(e){}
-  var ROSTER_INFO={alder:{num:'71',pos:'F'},brooklyn:{num:'92',pos:'D'},dawson:{num:'19',pos:'D'},dominic:{num:'98',pos:'F'},eugene:{num:'3',pos:'D'},evan:{num:'13',pos:'F'},greyson:{num:'32',pos:'D'},johnny:{num:'1',pos:'G'},joziah:{num:'59',pos:'F'},lewie:{num:'72',pos:'FD'},liam:{num:'29',pos:'D'},maddux:{num:'18',pos:'F'},oliver:{num:'90',pos:'F'},teddy:{num:'11',pos:'F'},william:{num:'16',pos:'F'},issac:{num:'53',pos:'F'}};
+  var ROSTER_INFO=window.THWAP_ROSTER||{};
   if(!saved) saved='Lewie';  /* neutral default so the card still renders before a pick */
   var parts=saved.trim().split(/\s+/);
   var key=parts[0].toLowerCase();
@@ -4326,7 +4336,7 @@ window.thwapOpenMyCard=function(){ open(); };
    their card and rotate it front/back. Shows their photo (parent-consented,
    team-visible) and public stats. Owner-only controls (theme picker, photo button)
    are hidden via body.viewing-teammate. No switch-player - accounts handle identity. */
-var ROSTER_VIEW={alder:{num:'71',pos:'F'},brooklyn:{num:'92',pos:'D'},dawson:{num:'19',pos:'D'},dominic:{num:'98',pos:'F'},eugene:{num:'3',pos:'D'},evan:{num:'13',pos:'F'},greyson:{num:'32',pos:'D'},johnny:{num:'1',pos:'G'},joziah:{num:'59',pos:'F'},lewie:{num:'72',pos:'FD'},liam:{num:'29',pos:'D'},maddux:{num:'18',pos:'F'},oliver:{num:'90',pos:'F'},teddy:{num:'11',pos:'F'},william:{num:'16',pos:'F'},issac:{num:'53',pos:'F'}};
+var ROSTER_VIEW=window.THWAP_ROSTER||{};
 window.openTeammateCard=function(name){
   var parts=String(name||'').trim().split(/\s+/);
   var key=(parts[0]||'').toLowerCase().replace(/[^a-z]/g,'');
@@ -4756,7 +4766,7 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#stick') re
 /* ---- Player detail page (opened from a leaderboard row) ---- */
 function esc(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
 /* position + card slug for the header */
-var INFO={Alder:{num:'71',pos:'F'},Brooklyn:{num:'92',pos:'D'},Dawson:{num:'19',pos:'D'},Dominic:{num:'98',pos:'F'},Eugene:{num:'3',pos:'D'},Evan:{num:'13',pos:'F'},Greyson:{num:'32',pos:'D'},Johnny:{num:'1',pos:'G'},Joziah:{num:'59',pos:'F'},Lewie:{num:'72',pos:'FD'},Liam:{num:'29',pos:'D'},Maddux:{num:'18',pos:'F'},Oliver:{num:'90',pos:'F'},Teddy:{num:'11',pos:'F'},William:{num:'16',pos:'F'},Issac:{num:'53',pos:'F'}};
+var INFO=window.THWAP_ROSTER_CAP||{};
 var POSNAME={F:'Forward',D:'Defense',G:'Goalie',FD:'Forward/Defense'};
 /* Position-aware discipline label triads (mirrors lib/store.js disciplinesFor).
    The third slot is Net play for a goalie, Shooting for everyone else. `slug` is
