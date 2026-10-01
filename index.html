@@ -3040,12 +3040,16 @@ var MOVE={
     steps:['Start: Lie on your back, arms reaching up, knees bent up over your hips.','Press: Press your low back into the floor. Keep it there.','Lower: Slowly lower one arm overhead and the opposite leg toward the floor.','Switch: Bring them back and switch sides. Keep it slow.']},
   mcdavid:{emoji:'🏒', cue:'Feet moving. Hands working. Eyes up, call the numbers.',
     video:'https://www.youtube.com/watch?v=GQK1RBm8Vx4&t=17', audio:'dry_16',
-    steps:['Stance: Get low in a hockey stance. Keep your feet moving fast. Shuffle or crossover over a line.','Stickhandle: Stickhandle a ball or puck right in front of you. Soft, fast touches.','Eyes up: Keep your eyes on your partner. Call out every number they flash.','All at once: Chest forward. Let your hands and feet work. Eyes just read the numbers.']}
+    steps:['Stance: Get low in a hockey stance. Keep your feet moving fast. Shuffle or crossover over a line.','Stickhandle: Stickhandle a ball or puck right in front of you. Soft, fast touches.','Eyes up: Keep your eyes on your partner. Call out every number they flash.','All at once: Chest forward. Let your hands and feet work. Eyes just read the numbers.']},
+  run20:{emoji:'🏃‍♂️', cue:'Go for a 20 minute run. Keep a steady pace you can hold.', video:'', audio:'', noTimer:true,
+    steps:['Pace: Easy enough to talk.','Steady: Keep moving the whole 20 minutes.','Finish strong: Pick it up a little at the end.']},
+  shuttle:{emoji:'💨', cue:'Sprint 20 feet, touch the line, sprint back. Go hard every rep.', video:'', audio:'dry_17',
+    steps:['Mark it: Set two lines about 20 feet apart.','Sprint: Run hard to the far line and touch it.','Back: Sprint back and touch the start.','That is 1 rep: Catch your breath, then go again.']}
 };
 /* Category per movement, used to build a balanced daily block. */
-var CAT={will:'Agility', skater:'Power',broad:'Power',box:'Power', stairs:'Speed',sprint:'Speed',reaction:'Speed', lunge:'Strength',rdl:'Strength',wallsit:'Strength',splitsquat:'Strength',calf:'Strength', situps:'Core',plank:'Core',deadbug:'Core',mcdavid:'Core'};
+var CAT={will:'Agility', skater:'Power',broad:'Power',box:'Power', stairs:'Speed',sprint:'Speed',reaction:'Speed',run20:'Speed',shuttle:'Speed', lunge:'Strength',rdl:'Strength',wallsit:'Strength',splitsquat:'Strength',calf:'Strength', situps:'Core',plank:'Core',deadbug:'Core',mcdavid:'Core'};
 /* d(key, dose) builds a drill from the shared MOVE library plus this workout's reps. */
-function d(k,dose,nameOverride){var m=MOVE[k];return {key:k, cat:CAT[k]||'', emoji:m.emoji, icon:m.icon||'', name:nameOverride||({will:"Will's Squares (4-sq Drill)",skater:'Skater Jumps',broad:'Broad Jumps',box:'Box Jumps',lunge:'Reverse Lunges',rdl:'Single-Leg RDL',wallsit:'Wall Sit',situps:'Sit-ups',plank:'Plank with Shoulder Taps',stairs:'Stair Sprints',sprint:'Sprint Starts',reaction:'Reaction Start',splitsquat:'Split Squat Hold',calf:'Calf Raises',deadbug:'Dead Bugs',mcdavid:"McDavid's"}[k]), dose:dose, cue:m.cue, video:m.video||'', audio:m.audio||'', steps:m.steps};}
+function d(k,dose,nameOverride){var m=MOVE[k];return {key:k, cat:CAT[k]||'', emoji:m.emoji, icon:m.icon||'', name:nameOverride||({will:"Will's Squares (4-sq Drill)",skater:'Skater Jumps',broad:'Broad Jumps',box:'Box Jumps',lunge:'Reverse Lunges',rdl:'Single-Leg RDL',wallsit:'Wall Sit',situps:'Sit-ups',plank:'Plank with Shoulder Taps',stairs:'Stair Sprints',sprint:'Sprint Starts',reaction:'Reaction Start',splitsquat:'Split Squat Hold',calf:'Calf Raises',deadbug:'Dead Bugs',mcdavid:"McDavid's",run20:'20-Minute Run',shuttle:'Sprints'}[k]), dose:dose, cue:m.cue, video:m.video||'', audio:m.audio||'', steps:m.steps, noTimer:m.noTimer||false};}
 /* A drill shows its custom illustrated icon when it has one (dr.icon), otherwise
    its emoji. Rendered into innerHTML at both the picker row and the drill row. */
 function drIcon(dr){ return (dr&&dr.icon) ? "<img src='"+dr.icon+"' alt='' class='exicon'>" : ((dr&&dr.emoji)||'🏒'); }
@@ -3056,28 +3060,28 @@ var WORKOUTS=window.WORKOUTS=[
   {id:'w1wed', name:'Power: Base & Technique', emoji:'💥', time:'25-30 min', blurb:'Week 1. Wednesday. Learn the movements, clean landings, confidence.',
    drills:[d('will','4 sets of 30'),d('skater','4 sets of 20'),d('broad','4 sets of 8'),d('box','4 sets of 10'),d('lunge','4 sets of 10 per leg'),d('rdl','4 sets of 8 per leg'),d('wallsit','4 sets of 30 sec'),d('situps','4 sets of 15'),d('plank','4 sets of 30 sec')]},
   {id:'w1thu', name:'Speed: Base & Technique', emoji:'🚀', time:'25-30 min', blurb:'Week 1. Thursday. Sharp feet and quick reactions.',
-   drills:[d('will','4 sets of 30'),d('stairs','4 sets, 10 yards'),d('sprint','4 sets'),d('reaction','4 sets of 10'),d('splitsquat','4 sets of 20 sec per leg'),d('calf','4 sets of 20'),d('deadbug','4 sets of 10 per side'),d('plank','4 sets of 30 sec')]},
+   drills:[d('will','4 sets of 30'),d('stairs','4 sets, 10 yards'),d('sprint','4 sets'),d('run20','20 minutes'),d('shuttle','5 reps, 20 feet'),d('reaction','4 sets of 10'),d('splitsquat','4 sets of 20 sec per leg'),d('calf','4 sets of 20'),d('deadbug','4 sets of 10 per side'),d('plank','4 sets of 30 sec')]},
   {id:'w1fri', name:'Light / Balance', emoji:'⚡', time:'20-25 min', blurb:'Week 1. Friday. Lighter day, balance and control.',
    drills:[d('will','4 sets of 30'),d('skater','4 sets of 20'),d('box','4 sets of 10'),d('rdl','4 sets of 8 per leg'),d('wallsit','4 sets of 30 sec'),d('situps','4 sets of 15'),d('mcdavid','4 sets of 60 sec')]},
   /* Week 2 - build */
   {id:'w2wed', name:'Power: Build', emoji:'💥', time:'25-30 min', blurb:'Week 2. Wednesday. Slight volume increase, same movements.',
    drills:[d('will','4 sets of 30'),d('skater','4 sets of 20'),d('broad','4 sets of 8'),d('box','4 sets of 10'),d('lunge','4 sets of 10 per leg'),d('rdl','4 sets of 8 per leg'),d('wallsit','4 sets of 30 sec'),d('situps','4 sets of 15'),d('plank','4 sets of 30 sec')]},
   {id:'w2fri', name:'Speed: Build', emoji:'🚀', time:'25-30 min', blurb:'Week 2. Friday. Faster feet, more reps.',
-   drills:[d('will','4 sets of 30'),d('stairs','4 sets, 10 yards'),d('sprint','4 sets'),d('reaction','4 sets of 10'),d('splitsquat','4 sets of 20 sec per leg'),d('calf','4 sets of 20'),d('deadbug','4 sets of 10 per side'),d('plank','4 sets of 30 sec')]},
+   drills:[d('will','4 sets of 30'),d('stairs','4 sets, 10 yards'),d('sprint','4 sets'),d('run20','20 minutes'),d('shuttle','5 reps, 20 feet'),d('reaction','4 sets of 10'),d('splitsquat','4 sets of 20 sec per leg'),d('calf','4 sets of 20'),d('deadbug','4 sets of 10 per side'),d('plank','4 sets of 30 sec')]},
   {id:'w2sat', name:'Light / Balance', emoji:'⚡', time:'20-25 min', blurb:'Week 2. Saturday. Lighter day, balance and control.',
    drills:[d('will','4 sets of 30'),d('skater','4 sets of 20'),d('box','4 sets of 10'),d('rdl','4 sets of 8 per leg'),d('wallsit','4 sets of 30 sec'),d('situps','4 sets of 15'),d('mcdavid','4 sets of 60 sec')]},
   /* Week 3 - peak (lower volume, max speed) */
   {id:'w3wed', name:'Power: Peak', emoji:'💥', time:'25-30 min', blurb:'Week 3. Wednesday. Peak intensity, lower volume. Faster, sharper, not tired.',
    drills:[d('will','4 sets of 30'),d('skater','4 sets of 20'),d('broad','4 sets of 8'),d('box','4 sets of 10'),d('lunge','4 sets of 10 per leg'),d('rdl','4 sets of 8 per leg'),d('wallsit','4 sets of 30 sec'),d('situps','4 sets of 15'),d('plank','4 sets of 30 sec')]},
   {id:'w3fri', name:'Speed: Peak', emoji:'🚀', time:'25-30 min', blurb:'Week 3. Friday. Peak intensity, sharp and fast.',
-   drills:[d('will','4 sets of 30'),d('stairs','4 sets, 10 yards'),d('sprint','4 sets'),d('reaction','4 sets of 10'),d('splitsquat','4 sets of 20 sec per leg'),d('calf','4 sets of 20'),d('deadbug','4 sets of 10 per side'),d('plank','4 sets of 30 sec')]},
+   drills:[d('will','4 sets of 30'),d('stairs','4 sets, 10 yards'),d('sprint','4 sets'),d('run20','20 minutes'),d('shuttle','5 reps, 20 feet'),d('reaction','4 sets of 10'),d('splitsquat','4 sets of 20 sec per leg'),d('calf','4 sets of 20'),d('deadbug','4 sets of 10 per side'),d('plank','4 sets of 30 sec')]},
   {id:'w3sat', name:'Light / Balance', emoji:'⚡', time:'20-25 min', blurb:'Week 3. Saturday. Lighter day, balance and control.',
    drills:[d('will','4 sets of 30'),d('skater','4 sets of 20'),d('box','4 sets of 10'),d('rdl','4 sets of 8 per leg'),d('wallsit','4 sets of 30 sec'),d('situps','4 sets of 15'),d('mcdavid','4 sets of 60 sec')]},
   /* Week 4 - taper & pop */
   {id:'w4wed', name:'Power: Taper', emoji:'💥', time:'20-25 min', blurb:'Week 4. Wednesday. Fresh legs, nervous system sharp.',
    drills:[d('will','4 sets of 30'),d('skater','4 sets of 20'),d('broad','4 sets of 8'),d('box','4 sets of 10'),d('lunge','4 sets of 10 per leg'),d('rdl','4 sets of 8 per leg'),d('wallsit','4 sets of 30 sec'),d('situps','4 sets of 15'),d('plank','4 sets of 30 sec')]},
   {id:'w4fri', name:'Speed: Taper', emoji:'🚀', time:'20-25 min', blurb:'Week 4. Friday. Fresh and fast, then rest for game day.',
-   drills:[d('will','4 sets of 30'),d('stairs','4 sets, 10 yards'),d('sprint','4 sets'),d('reaction','4 sets of 10'),d('splitsquat','4 sets of 20 sec per leg'),d('calf','4 sets of 20'),d('mcdavid','4 sets of 60 sec')]}
+   drills:[d('will','4 sets of 30'),d('stairs','4 sets, 10 yards'),d('sprint','4 sets'),d('run20','20 minutes'),d('shuttle','5 reps, 20 feet'),d('reaction','4 sets of 10'),d('splitsquat','4 sets of 20 sec per leg'),d('calf','4 sets of 20'),d('mcdavid','4 sets of 60 sec')]}
 ];
 
 /* Date override: view any day's drills via ?d=MDDYYYY (e.g. ?d=9222027 = Sep 22 2027)
@@ -3307,7 +3311,7 @@ function render(){
     var done=prog[i]?' done':'';
     var dose=dr.dose?"<div class='exdose'>"+esc(dr.dose)+"</div>":'';
     var steps=(dr.steps&&dr.steps.length)?"<ol>"+dr.steps.map(function(s){var ci=s.indexOf(':');if(ci>0&&ci<28){return "<li><b>"+esc(s.slice(0,ci))+"</b>"+esc(s.slice(ci))+"</li>";}return "<li>"+esc(s)+"</li>";}).join('')+"</ol>":'';
-    var doneLabel=prog[i]?'Done ✓':'Start';
+    var doneLabel=prog[i]?'Done ✓':(dr.noTimer?'Done':'Start');
     list.insertAdjacentHTML('beforeend',
       "<div class='exrow"+done+"' data-i='"+i+"'>"+
         "<div class='exhead'><div class='exem'>"+drIcon(dr)+"</div>"+
@@ -3344,10 +3348,11 @@ function render(){
         row.classList.remove('done');
         if(window.thwapStampToday)window.thwapStampToday('dryland',false);
         if(window.thwapUnmarkDone)window.thwapUnmarkDone('dryland:'+i);
-        btn.textContent='Start';
+        btn.textContent=(drills[i]&&drills[i].noTimer)?'Done':'Start';
       };
       if(row.classList.contains('done')){ unMark(); return; }  /* tap a done row to un-mark it (no timer) */
-      if(window.thwapDrillTimer){ window.thwapDrillTimer(drills[i].name, markDone, drills[i].audio, {cue:drills[i].cue, steps:drills[i].steps}); }
+      if(drills[i] && drills[i].noTimer){ markDone(); }  /* no-timer drill (e.g. 20-Minute Run): Done fires straight to markDone, no runner */
+      else if(window.thwapDrillTimer){ window.thwapDrillTimer(drills[i].name, markDone, drills[i].audio, {cue:drills[i].cue, steps:drills[i].steps}); }
       else { markDone(); }  /* engine missing: fall back to immediate done */
     });
   });
@@ -3460,6 +3465,7 @@ window.THWAP_DRILL_SCRIPT={
   'Plank with Shoulder Taps':{type:'hold',seconds:30,sides:1,sets:4,restSeconds:15},
   'Stair Sprints':{type:'rounds',rounds:4,workLabel:'Sprint up',restSeconds:15},
   'Sprint Starts':{type:'rounds',rounds:4,workLabel:'Sprint',restSeconds:15},
+  'Sprints':{type:'rounds',rounds:5,workLabel:'Sprint',restSeconds:30},
   'Reaction Start':{type:'reps',reps:10,perRep:3.0,sides:1,sets:4,restSeconds:15},
   'Split Squat Hold':{type:'hold',seconds:20,sides:2,sideLabels:['Right leg','Left leg'],sets:4,restSeconds:15},
   'Calf Raises':{type:'reps',reps:20,perRep:1.5,sides:1,sets:4,restSeconds:15},
