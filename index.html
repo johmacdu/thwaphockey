@@ -362,6 +362,22 @@ body.viewing-teammate .cardctl,body.viewing-teammate .cb-stats-layer,body.viewin
 .cb-stats::before{content:'📊'}
 .cb-stats:hover{filter:brightness(1.05)}
 .cb-stats:active{transform:translateX(-50%) scale(.96)}
+/* Cheer (teammate high-five) layer. Same card-sized layer trick as the stats
+   layer: it spins in lockstep with the card (+180deg on Y, backface-visibility)
+   so the Cheer button + count read as printed on the BACK face. It is the mirror
+   of the stats layer: HIDDEN on your own card, shown ONLY when viewing a teammate
+   (body.viewing-teammate), so you can never cheer yourself. */
+.cb-cheer-layer{position:absolute;top:0;left:50%;width:min(380px,94vw);height:calc(min(380px,94vw) * 1.4);transform-origin:center center;transform:translateX(-50%) rotateY(180deg);backface-visibility:hidden;-webkit-backface-visibility:hidden;pointer-events:none;z-index:6;display:none}
+body.viewing-teammate .cb-cheer-layer{display:block}
+.cb-cheer-wrap{position:absolute;left:50%;bottom:40px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px}
+.cb-cheer-count{pointer-events:none;font-family:'Nunito Sans',system-ui,sans-serif;font-weight:900;font-size:13px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.5);letter-spacing:.01em}
+.cb-cheer{pointer-events:auto;display:inline-flex;align-items:center;gap:6px;background:var(--lime);color:#0f1712;font-family:'Nunito Sans',system-ui,sans-serif;font-weight:900;font-size:13px;border:0;border-radius:999px;padding:9px 18px;min-height:40px;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.4);-webkit-tap-highlight-color:transparent;transition:transform .12s ease,filter .12s ease}
+.cb-cheer:hover{filter:brightness(1.05)}
+.cb-cheer:active{transform:scale(.95)}
+.cb-cheer:disabled,.cb-cheer.cheered{cursor:default;background:var(--soft, #22402f);color:var(--lime);box-shadow:none;filter:none}
+.cb-cheer.cheered{animation:cheerPop .4s cubic-bezier(.2,1.1,.3,1)}
+@keyframes cheerPop{0%{transform:scale(1)}45%{transform:scale(1.14)}100%{transform:scale(1)}}
+@media (prefers-reduced-motion: reduce){.cb-cheer{transition:none}.cb-cheer.cheered{animation:none}}
 .cb-disc{margin-top:14px}
 .cb-disc-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
 .cb-disc-name{font-size:15px;font-weight:800;color:#fff}
@@ -3634,6 +3650,7 @@ window.thwapEnsureAllBoard=function(){
           if(window.thwapRepaintRoster) window.thwapRepaintRoster();
           if(window.thwapCardBackRefresh) window.thwapCardBackRefresh();
           if(window.thwapDeckBackRefresh) window.thwapDeckBackRefresh();
+          if(window.thwapRenderCheer && window.thwapViewTarget) window.thwapRenderCheer();
         }
       }).catch(function(){});
     }catch(e){}
@@ -3805,6 +3822,7 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#progress')
       <div class='cardface cardback' id='cardBack'></div>
     </div>
     <div class='cb-stats-layer' id='cbStatsLayer'><button type='button' class='cb-stats' id='cbStats'>See my stats</button></div>
+    <div class='cb-cheer-layer' id='cbCheerLayer'><div class='cb-cheer-wrap'><div class='cb-cheer-count' id='cbCheerCount'></div><button type='button' class='cb-cheer' id='cbCheer'>👏 Cheer</button></div></div>
     <div class='cardhint' id='cardHint' hidden></div>
     <div class='cardctl' id='cardCtl'>
       <div class='cardctl-row' id='cardCtlMain'>
@@ -3837,6 +3855,113 @@ if(statsBtn){ statsBtn.addEventListener('click',function(e){
   close();
   setTimeout(function(){ if(window.openPlayerPage) window.openPlayerPage(name,'card'); },220);
 }); }
+/* ---- Cheer (teammate high-five) --------------------------------------------
+   Coach/deploy off-switch: flip CHEERS_ENABLED to false to stop the Cheer button
+   from ever rendering, without ripping the code out. Default ON. */
+var CHEERS_ENABLED=(window.CHEERS_ENABLED!==undefined)?!!window.CHEERS_ENABLED:true;
+window.CHEERS_ENABLED=CHEERS_ENABLED;
+var cheerBtn=document.getElementById('cbCheer');
+var cheerCountEl=document.getElementById('cbCheerCount');
+/* The signed-in player's own id (lowercase first name), used to double-check we
+   never render Cheer on your own card and never post a self-cheer. */
+function myCheerId(){ try{ return (localStorage.getItem('bfPlayer')||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,''); }catch(e){ return ''; } }
+/* The id of the teammate currently being viewed, or '' when not on a teammate card. */
+function viewedCheerId(){
+  var t=window.thwapViewTarget; if(!t) return '';
+  return String(t.first||t.name||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,'');
+}
+/* Vancouver-agnostic local day key for the "I already cheered them today" memory.
+   The server is the real dedup (per Vancouver day); this local marker only keeps
+   the button in its satisfied state across reopens on this device so the kid is
+   not invited to tap a cheer that the server will just no-op. */
+function cheerDayKey(from,to){ var d=new Date(); return 'thwapCheer|'+d.getFullYear()+'-'+(d.getMonth()+1)+'-'+(d.getDate())+'|'+from+'|'+to; }
+function alreadyCheeredToday(from,to){ try{ return localStorage.getItem(cheerDayKey(from,to))==='1'; }catch(e){ return false; } }
+function markCheeredToday(from,to){ try{ localStorage.setItem(cheerDayKey(from,to),'1'); }catch(e){} }
+/* Read the viewed teammate's all-time cheer count from the board data the card
+   already fetches (window.thwapBoard.all), 0 until it lands. */
+function cheerCountFor(id){
+  try{ var b=window.thwapBoard&&window.thwapBoard.all&&window.thwapBoard.all[id]; return (b&&typeof b.cheers==='number')?b.cheers:0; }catch(e){ return 0; }
+}
+function paintCheerCount(n){ if(cheerCountEl) cheerCountEl.textContent='👏 '+n+(n===1?' cheer':' cheers'); }
+function setCheered(){
+  if(!cheerBtn) return;
+  cheerBtn.textContent='👏 Cheered!';
+  cheerBtn.disabled=true; cheerBtn.setAttribute('aria-disabled','true');
+  cheerBtn.classList.add('cheered');
+}
+function setCheerable(){
+  if(!cheerBtn) return;
+  cheerBtn.textContent='👏 Cheer';
+  cheerBtn.disabled=false; cheerBtn.setAttribute('aria-disabled','false');
+  cheerBtn.classList.remove('cheered');
+}
+/* Prepare the Cheer button + count for the teammate now being viewed. Called by
+   openTeammateCard. Shows nothing (layer stays empty) when cheers are disabled,
+   when there is no valid teammate target, or when the target is yourself. */
+window.thwapRenderCheer=function(){
+  if(!cheerBtn||!cheerCountEl) return;
+  var from=myCheerId(), to=viewedCheerId();
+  var layer=document.getElementById('cbCheerLayer');
+  var ok=CHEERS_ENABLED && !!to && to!==from;
+  if(layer) layer.style.visibility=ok?'':'hidden';
+  if(!ok) return;
+  paintCheerCount(cheerCountFor(to));
+  if(alreadyCheeredToday(from,to)) setCheered(); else setCheerable();
+};
+/* Repaint the count when fresh board data lands (the board pull calls
+   thwapRenderCheer so an open teammate card updates live). */
+if(cheerBtn){
+  cheerBtn.addEventListener('pointerdown',function(e){ e.stopPropagation(); });
+  cheerBtn.addEventListener('click',function(e){
+    e.preventDefault(); e.stopPropagation();
+    if(cheerBtn.disabled) return;
+    var from=myCheerId(), to=viewedCheerId();
+    if(!CHEERS_ENABLED || !to || to===from) return;   /* never cheer yourself */
+    var send=function(){
+      return fetch('/api/board?action=cheer',{
+        method:'POST', headers:{'Content-Type':'application/json'}, cache:'no-store',
+        credentials:'include', body:JSON.stringify({to:to})
+      });
+    };
+    var healAndRetry=function(){
+      var heal=(window.thwapEnsureSession?window.thwapEnsureSession():Promise.resolve());
+      return Promise.resolve(heal).then(function(){ return send(); });
+    };
+    /* Optimistic: flip to the satisfied state immediately; reconcile on reply. */
+    var shownCount=cheerCountFor(to);
+    var apply=function(j,status){
+      if(j&&j.ok){
+        markCheeredToday(from,to); setCheered();
+        if(j.already){
+          /* Already cheered today on the server: show satisfied, do NOT bump. */
+          paintCheerCount(shownCount);
+        } else {
+          var next=(typeof j.count==='number')?j.count:(shownCount+1);
+          paintCheerCount(next);
+          /* Keep board data in sync so a reopen shows the new count. */
+          try{ if(window.thwapBoard&&window.thwapBoard.all){ window.thwapBoard.all[to]=window.thwapBoard.all[to]||{}; window.thwapBoard.all[to].cheers=next; } }catch(_){}
+        }
+        return { ok:true, status:status };
+      }
+      /* A 401 is the one recoverable case: mint a session + retry once. */
+      if(status===401){ return healAndRetry().then(function(r2){ return r2.json().then(function(j2){ return apply(j2,r2.status); }, function(){ return fail(); }); }, function(){ return fail(); }); }
+      return fail();
+    };
+    var fail=function(){ setCheerable(); if(window.thwapDoneNotSaved) window.thwapDoneNotSaved(); return { ok:false, status:0 }; };
+    try{
+      return send().then(function(r){
+        return r.json().then(function(j){ return apply(j,r.status); }, function(){
+          /* non-JSON reply (e.g. 401 html) still carries a usable status */
+          if(r.status===401){ return healAndRetry().then(function(r2){ return r2.json().then(function(j2){ return apply(j2,r2.status); }, function(){ return fail(); }); }, function(){ return fail(); }); }
+          return fail();
+        });
+      }, function(){
+        /* network error on first tap: heal + retry once before failing loudly */
+        return healAndRetry().then(function(r2){ return r2.json().then(function(j2){ return apply(j2,r2.status); }, function(){ return fail(); }); }, function(){ return fail(); });
+      });
+    }catch(err){ return Promise.resolve(fail()); }
+  });
+}
 var closeBtn=document.getElementById('cardClose');
 var openBtn=document.getElementById('homePlayer');
 var hint=document.getElementById('cardHint');
@@ -4163,6 +4288,10 @@ function paint(){
      BACK face and spins with the card; backface-visibility hides it on the front. */
   var sl=document.getElementById('cbStatsLayer');
   if(sl){ sl.style.transform='translateX(-50%) rotateX('+rx+'deg) rotateY('+(ry+180)+'deg)'; }
+  /* The cheer layer (teammate view only) spins the same way so its Cheer button
+     and count read as printed on the BACK face, exactly like the stats layer. */
+  var cl=document.getElementById('cbCheerLayer');
+  if(cl){ cl.style.transform='translateX(-50%) rotateX('+rx+'deg) rotateY('+(ry+180)+'deg)'; }
 }
 function open(){
   /* If no player is chosen yet on this device, send them to pick one first. */
@@ -4208,6 +4337,7 @@ window.openTeammateCard=function(name){
   window.thwapViewTarget={ name:String(name).trim(), display:display, first:(parts[0]||'').toUpperCase(), num:info.num, pos:info.pos, photo:'' };
   document.body.classList.add('viewing-teammate');
   buildFaces(); rx=0; ry=0; flipped=false; _lastBackShowing=null; paint();
+  if(window.thwapRenderCheer) window.thwapRenderCheer();
   overlay.hidden=false;
   requestAnimationFrame(function(){ overlay.classList.add('show'); if(!reduce)card.classList.add('intro'); });
   document.addEventListener('keydown', onKey);
