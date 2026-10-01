@@ -50,15 +50,16 @@ beforeEach(() => {
 });
 
 describe('done handler', () => {
-  it('rejects non-POST with 405', async () => {
+  it('rejects a non-GET/POST method with 405', async () => {
     const res = makeRes();
-    await handler({ method: 'GET' }, res);
+    await handler({ method: 'DELETE' }, res);
     expect(res.statusCode).toBe(405);
   });
 
   it('400 on an unknown discipline', async () => {
     const res = makeRes();
-    await handler(post({ player: 'lewie', discipline: 'skating' }), res);
+    const token = mintSession('lewie', 'p@e.com');
+    await handler(postAs({ player: 'lewie', discipline: 'skating' }, token), res);
     expect(res.statusCode).toBe(400);
     expect(res.body.error).toBe('bad discipline');
   });

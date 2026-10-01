@@ -95,7 +95,7 @@ describe('goalie Net play server slot + board plumbing (regression: fairness rul
   // as Shooting. The done-handler must post `netplay` for a goalie, and the
   // board plumbing (mapPlayers/stashBoard) must carry `netplay` through.
   it('the shoot-page done-handler posts netplay for a goalie, shoot otherwise', () => {
-    expect(html).toMatch(/window\.thwapMarkDone\(goalie\?'netplay':'shoot'\)/);
+    expect(html).toMatch(/window\.thwapMarkDone\(goalie\?'netplay':'shoot','shoot:'\+i\)/);
   });
 
   it('mapPlayers carries netplay through to the board', () => {
