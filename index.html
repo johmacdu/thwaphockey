@@ -4572,11 +4572,11 @@ fetch('stickers/stickers.json').then(function(r){return r.json();}).then(functio
   }
   /* rotate-drag on the card background (decals stop propagation, so they move instead) */
   if(deck3d && !reduce){
-    var dg=false, lx=0, ly=0;
-    deck3d.addEventListener('pointerdown',function(e){ dg=true; lx=e.clientX; ly=e.clientY; deck3d.classList.add('dragging'); try{ deck3d.setPointerCapture(e.pointerId); }catch(_){} });
-    deck3d.addEventListener('pointermove',function(e){ if(!dg) return; var dx=e.clientX-lx, dy=e.clientY-ly; lx=e.clientX; ly=e.clientY; dry+=dx*0.6; drx+=-dy*0.6; drx=Math.max(-85,Math.min(85,drx)); deckPaint(); });
-    deck3d.addEventListener('pointerup',function(){ dg=false; deck3d.classList.remove('dragging'); });
-    deck3d.addEventListener('pointercancel',function(){ dg=false; deck3d.classList.remove('dragging'); });
+    var dg=false, lx=0, ly=0, lt=0;
+    deck3d.addEventListener('pointerdown',function(e){ dg=true; lx=e.clientX; ly=e.clientY; lt=e.timeStamp||Date.now(); deck3d.classList.add('dragging'); try{ deck3d.setPointerCapture(e.pointerId); }catch(_){} if(window.thwapSfxGlideStart)thwapSfxGlideStart(); });
+    deck3d.addEventListener('pointermove',function(e){ if(!dg) return; var now=e.timeStamp||Date.now(); var dx=e.clientX-lx, dy=e.clientY-ly; var dt=Math.max(1, now-lt); lx=e.clientX; ly=e.clientY; lt=now; dry+=dx*0.6; drx+=-dy*0.6; drx=Math.max(-85,Math.min(85,drx)); if(window.thwapSfxGlideSpeed){var _sp=Math.min(1,(Math.abs(dx)+Math.abs(dy))/dt*0.8);thwapSfxGlideSpeed(_sp);} deckPaint(); });
+    deck3d.addEventListener('pointerup',function(){ dg=false; deck3d.classList.remove('dragging'); if(window.thwapSfxGlideStop)thwapSfxGlideStop(); });
+    deck3d.addEventListener('pointercancel',function(){ dg=false; deck3d.classList.remove('dragging'); if(window.thwapSfxGlideStop)thwapSfxGlideStop(); });
   }
   deckPaint();
 
