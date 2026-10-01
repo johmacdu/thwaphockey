@@ -38,6 +38,10 @@ describe('Player next-game tag + Game Day Goals 48h window', () => {
     expect(html).toMatch(/tag\.hidden=false;/);
     // the tag is a FLAT pill, not a card (Woody's no-cards-without-navigation rule)
     expect(html).toMatch(/\.nextgame-tag\{[^}]*border-radius:999px/);
+    // sized to its content, not full-width (it is a grid child, so justify-self:start)
+    expect(html).toMatch(/\.nextgame-tag\{[^}]*justify-self:start/);
+    // the opponent name is bolded
+    expect(html).toMatch(/<b>'\+opp\+'<\/b>/);
   });
 
   it('inside 48h: hide the tag, show the goals card', () => {
