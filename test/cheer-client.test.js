@@ -258,3 +258,69 @@ describe('Cheer notification copy respects the punctuation rules', () => {
     expect(slice.includes('\u2013')).toBe(false);
   });
 });
+
+// The count tag must show NOTHING at zero (just the action button), and the
+// count only once a teammate actually has one. Rather than assert text in the
+// markup, pull the real paint functions out of index.html and run them against
+// a jsdom span, so the zero-empty behavior is executed, not guessed.
+describe('paintCheerCount / paintFireCount hide the zero-count tag', () => {
+  function extractFn(name) {
+    // match: function NAME(n){ ... } up to the matching close brace of the body.
+    const re = new RegExp('function ' + name + '\\(n\\)\\{([\\s\\S]*?)\\}\\s*(?:function|$)');
+    const m = html.match(re);
+    expect(m).toBeTruthy();
+    return m[1];
+  }
+
+  function makePaint(name) {
+    const el = doc.createElement('span');
+    const body = extractFn(name);
+    // bind the module-local element variable the body references.
+    const varName = name === 'paintCheerCount' ? 'cheerCountEl' : 'fireCountEl';
+    // eslint-disable-next-line no-new-func
+    const fn = new Function(varName, 'n', body);
+    return { el, call: (n) => fn(el, n) };
+  }
+
+  it('paintCheerCount(0) leaves the span empty, (1) and (3) show the count', () => {
+    const { el, call } = makePaint('paintCheerCount');
+    call(0);
+    expect(el.textContent).toBe('');
+    call(1);
+    expect(el.textContent).toBe('\u{1F44F} 1 cheer');
+    call(3);
+    expect(el.textContent).toBe('\u{1F44F} 3 cheers');
+  });
+
+  it('paintCheerCount with falsy/invalid input leaves the span empty', () => {
+    const { el, call } = makePaint('paintCheerCount');
+    el.textContent = 'stale';
+    call(null);
+    expect(el.textContent).toBe('');
+    call(undefined);
+    expect(el.textContent).toBe('');
+    call('nope');
+    expect(el.textContent).toBe('');
+  });
+
+  it('paintFireCount(0) leaves the span empty, (1) and (3) show the count', () => {
+    const { el, call } = makePaint('paintFireCount');
+    call(0);
+    expect(el.textContent).toBe('');
+    call(1);
+    expect(el.textContent).toBe('\u{1F525} 1 fire');
+    call(3);
+    expect(el.textContent).toBe('\u{1F525} 3 fires');
+  });
+
+  it('paintFireCount with falsy/invalid input leaves the span empty', () => {
+    const { el, call } = makePaint('paintFireCount');
+    el.textContent = 'stale';
+    call(null);
+    expect(el.textContent).toBe('');
+    call(undefined);
+    expect(el.textContent).toBe('');
+    call('nope');
+    expect(el.textContent).toBe('');
+  });
+});
