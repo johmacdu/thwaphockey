@@ -32,6 +32,10 @@ const {
   monthTrend,
   disciplinesFor,
   GOALIE_IDS,
+  getCheers,
+  listCheers,
+  sendCheer,
+  isRosterPlayer,
 } = await import('../lib/store.js');
 
 // Helper: keys the store uses.
@@ -232,5 +236,74 @@ describe('position-aware disciplines (goalie Net play)', () => {
     expect(wk.shoot).toBe(0);
     const stored = await getPlayer('johnny');
     expect(stored.netplay).toBe(1);
+  });
+});
+
+describe('cheers (teammate high-fives)', () => {
+  it('getCheers is 0 for a player who has never been cheered', async () => {
+    expect(await getCheers('lewie')).toBe(0);
+  });
+
+  it('isRosterPlayer accepts roster ids (any case) and rejects others', () => {
+    expect(isRosterPlayer('lewie')).toBe(true);
+    expect(isRosterPlayer('LEWIE')).toBe(true);
+    expect(isRosterPlayer('nobody')).toBe(false);
+    expect(isRosterPlayer('')).toBe(false);
+  });
+
+  it('rejects a self-cheer and does not increment', async () => {
+    const res = await sendCheer('lewie', 'lewie');
+    expect(res).toEqual({ ok: false, error: 'self' });
+    expect(await getCheers('lewie')).toBe(0);
+  });
+
+  it('rejects an off-roster sender or target', async () => {
+    expect(await sendCheer('nobody', 'lewie')).toEqual({ ok: false, error: 'bad id' });
+    expect(await sendCheer('lewie', 'nobody')).toEqual({ ok: false, error: 'bad id' });
+    expect(await getCheers('lewie')).toBe(0);
+  });
+
+  it('a first cheer increments the recipient and returns the new count', async () => {
+    const res = await sendCheer('lewie', 'william');
+    expect(res).toEqual({ ok: true, count: 1 });
+    expect(await getCheers('william')).toBe(1);
+    // The sender received nothing.
+    expect(await getCheers('lewie')).toBe(0);
+  });
+
+  it('a second same-day cheer is idempotent (no double count)', async () => {
+    await sendCheer('lewie', 'william');
+    const again = await sendCheer('lewie', 'william');
+    expect(again).toEqual({ ok: true, already: true });
+    expect(await getCheers('william')).toBe(1); // still 1, not 2
+  });
+
+  it('a DIFFERENT sender can also cheer the same teammate the same day', async () => {
+    await sendCheer('lewie', 'william');
+    const other = await sendCheer('maddux', 'william');
+    expect(other).toEqual({ ok: true, count: 2 });
+    expect(await getCheers('william')).toBe(2);
+  });
+
+  it('allows the same sender to cheer again the NEXT day', async () => {
+    await sendCheer('lewie', 'william');
+    expect(await getCheers('william')).toBe(1);
+    pinDate('2026-01-15'); // next Vancouver day
+    const next = await sendCheer('lewie', 'william');
+    expect(next).toEqual({ ok: true, count: 2 });
+    expect(await getCheers('william')).toBe(2);
+  });
+
+  it('listCheers returns the whole roster with counts, zeroed where unset', async () => {
+    await sendCheer('lewie', 'william');
+    await sendCheer('maddux', 'william');
+    await sendCheer('lewie', 'teddy');
+    const all = await listCheers();
+    expect(all).toHaveLength(ROSTER.length);
+    const byId = Object.fromEntries(all.map((c) => [c.id, c.cheers]));
+    expect(byId.william).toBe(2);
+    expect(byId.teddy).toBe(1);
+    expect(byId.lewie).toBe(0); // sender never gains cheers
+    expect(byId.johnny).toBe(0); // untouched player
   });
 });
