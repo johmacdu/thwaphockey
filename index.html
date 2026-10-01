@@ -6405,6 +6405,15 @@ window.thwapApplyServerDone=function(drillIds){
     }catch(e){}
   });
   try{ if(window.thwapCheckToday) window.thwapCheckToday(); }catch(e){}
+  /* The home hero summary (fill()) and the stats ring paint at load time from the
+     device's LOCAL done signals, BEFORE this async /api/done hydration resolves.
+     Without repainting them, a second device fetches the server's completions but
+     the home screen keeps showing the stale pre-hydration state (the drills look
+     untouched even though standings reflect them). Repaint both now that the
+     thwapDone|<today>|<disc> signals have been applied, so every browser the
+     player is signed into shows the same up-to-date home screen. Fail-open. */
+  try{ if(typeof window.thwapRefreshHero==='function') window.thwapRefreshHero(); }catch(e){}
+  try{ if(typeof window.thwapStatsRefresh==='function') window.thwapStatsRefresh(); }catch(e){}
 };
 
 /* Kick off cross-device hydration on load: pull this signed-in player's completed
