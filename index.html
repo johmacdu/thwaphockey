@@ -4014,7 +4014,11 @@ function buildFaces(){
   try{ myPhoto=localStorage.getItem('thwapCardPhoto:'+slug); }catch(e){}
   function renderFront(photoUrl){
     front.innerHTML=buildFront(p,slug,photoUrl);
-    if(window.thwapRenderPlaced){ window.thwapRenderPlaced('front', front, {}); }
+    /* Placed stickers belong to the SIGNED-IN player and live under their own
+       storage key. Only render them on the player's OWN card, never on a teammate
+       card being viewed read-only (viewing-teammate), or the viewer's stickers would
+       appear on every teammate's card. */
+    if(window.thwapRenderPlaced && !window.thwapViewTarget){ window.thwapRenderPlaced('front', front, {}); }
   }
   renderFront(myPhoto);
   /* Cross-device: if the server has a photo for this player (added by a parent
@@ -4029,7 +4033,7 @@ function buildFaces(){
      of 6 dark color themes assigned deterministically by name so it is stable. */
   function renderBack(){
     back.innerHTML=buildBack(p,slug);
-    if(window.thwapRenderPlaced){ window.thwapRenderPlaced('back', back, {}); }
+    if(window.thwapRenderPlaced && !window.thwapViewTarget){ window.thwapRenderPlaced('back', back, {}); }
   }
   renderBack();
   /* Pull live stats so the back is real; rebuild it when data lands. */
@@ -4355,7 +4359,12 @@ fetch('stickers/stickers.json').then(function(r){return r.json();}).then(functio
   else if(artBack){ artBack.src=slug==='lewie'?'cards/lewie_back.png':''; }
   /* When live stats land later, rebuild the coded back so its numbers are real. */
   if(deckBack && window.buildBack && pInfo){
-    window.thwapDeckBackRefresh=function(){ try{ deckBack.innerHTML=window.buildBack(pInfo,slug); }catch(e){} };
+    window.thwapDeckBackRefresh=function(){ try{ deckBack.innerHTML=window.buildBack(pInfo,slug);
+      /* Rebuilding the back HTML wipes any placed decals; re-render them (via the
+         deck's own redraw so they stay editable with the right onchange) so a
+         sticker dropped on the back survives the live-stats rebuild. */
+      if(window.thwapDeckRedraw){ window.thwapDeckRedraw(); }
+    }catch(e){} };
     if(window.thwapEnsureBoard) window.thwapEnsureBoard();
   }
 
