@@ -110,3 +110,28 @@ describe('Player view: core structure the kid depends on', () => {
     expect(doc.getElementById('dryland')).toBeTruthy();
   });
 });
+
+// ---------------------------------------------------------------------------
+// 4. Coach create-team UI (Gap 4): the create-team endpoint now has a screen.
+// ---------------------------------------------------------------------------
+describe('Coach create-team UI', () => {
+  it('the create-team sheet, its fields, code display and trigger all exist', () => {
+    expect(doc.getElementById('createteam')).toBeTruthy();
+    expect(doc.getElementById('createTeamForm')).toBeTruthy();
+    expect(doc.getElementById('ctName')).toBeTruthy();
+    expect(doc.getElementById('ctAssoc')).toBeTruthy();
+    expect(doc.getElementById('ctAge')).toBeTruthy();
+    expect(doc.getElementById('ctCode')).toBeTruthy();
+    expect(doc.getElementById('coachNewTeam')).toBeTruthy();
+  });
+  it('the trigger is coach-only (gated by the roster-coachonly class)', () => {
+    expect(doc.getElementById('coachNewTeam').className).toMatch(/roster-coachonly/);
+  });
+  it('the sheet and its done-state start hidden', () => {
+    expect(doc.getElementById('createteam').hasAttribute('hidden')).toBe(true);
+    expect(doc.getElementById('ctDone').hasAttribute('hidden')).toBe(true);
+  });
+  it('the submit calls the real create-team endpoint', () => {
+    expect(html).toMatch(/action=create-team/);
+  });
+});

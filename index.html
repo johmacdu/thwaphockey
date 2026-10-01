@@ -693,6 +693,18 @@ body.is-authed:not(.is-coach) .roster-playeronly[hidden]{display:none}
    default, reveal only for the matching role, and always obey [hidden]. */
 .roster-edit.roster-coachonly,.roster-editactions.roster-coachonly{display:none}
 body.is-coach .roster-edit.roster-coachonly{display:inline-grid}
+/* Coach-only "Create a team" pill: sits left of the edit tools, pushed right. */
+.roster-newteam{display:none}
+body.is-coach .roster-newteam{display:inline-flex;align-items:center;margin-left:auto;flex:none;font-family:inherit;font-size:var(--fs-support);font-weight:800;color:var(--green2);background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:8px 14px;min-height:44px;cursor:pointer}
+body.is-coach .roster-newteam+.roster-edit{margin-left:12px}
+.roster-newteam:hover{border-color:var(--line2)}
+/* Create-team: generated code display + done state. */
+.ct-done[hidden]{display:none}
+.ct-done{display:flex;flex-direction:column;gap:var(--sp-3);align-items:center;text-align:center;margin-top:var(--sp-2)}
+.ct-done-lab{font-size:var(--fs-support);font-weight:800;color:var(--muted);margin:0}
+.ct-code{font-family:'Archivo Black',system-ui,sans-serif;font-size:30px;letter-spacing:.08em;color:var(--text);background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 20px;user-select:all}
+.ct-done .pgate-go{width:100%}
+.createteam .addform[hidden]{display:none}
 body.is-coach .roster-editactions.roster-coachonly{display:flex}
 .roster-edit.roster-playeronly,.roster-editactions.roster-playeronly{display:none}
 body.is-authed:not(.is-coach) .roster-edit.roster-playeronly{display:inline-grid}
@@ -1454,7 +1466,7 @@ body.login-locked{overflow:hidden}
   </div>
 </div>
 <div class='rfilter' id='rFilter' hidden><span id='rFilterLab'></span> <button type='button' class='rfilter-clear' id='rFilterClear'>Clear</button></div>
-<div class='roster-playershead'><div class='coachcoaches-h'>Players</div><button type='button' class='roster-edit roster-coachonly' id='rosterEdit' aria-label='Edit players'><span aria-hidden='true'>&#9998;</span></button><div class='roster-editactions roster-coachonly' id='rosterEditActions' hidden><button type='button' class='roster-editcancel' id='rosterEditCancel'>Cancel</button><button type='button' class='roster-editdone' id='rosterEditDone'>Done</button></div><button type='button' class='roster-edit roster-playeronly' id='rosterEditSelf' aria-label='Edit my details'><span aria-hidden='true'>&#9998;</span></button><div class='roster-editactions roster-playeronly' id='rosterEditSelfActions' hidden><button type='button' class='roster-editcancel' id='rosterEditSelfCancel'>Cancel</button><button type='button' class='roster-editdone' id='rosterEditSelfDone'>Done</button></div></div>
+<div class='roster-playershead'><div class='coachcoaches-h'>Players</div><button type='button' class='roster-newteam roster-coachonly' id='coachNewTeam'>+ Create a team</button><button type='button' class='roster-edit roster-coachonly' id='rosterEdit' aria-label='Edit players'><span aria-hidden='true'>&#9998;</span></button><div class='roster-editactions roster-coachonly' id='rosterEditActions' hidden><button type='button' class='roster-editcancel' id='rosterEditCancel'>Cancel</button><button type='button' class='roster-editdone' id='rosterEditDone'>Done</button></div><button type='button' class='roster-edit roster-playeronly' id='rosterEditSelf' aria-label='Edit my details'><span aria-hidden='true'>&#9998;</span></button><div class='roster-editactions roster-playeronly' id='rosterEditSelfActions' hidden><button type='button' class='roster-editcancel' id='rosterEditSelfCancel'>Cancel</button><button type='button' class='roster-editdone' id='rosterEditSelfDone'>Done</button></div></div>
 <div class='roster' id='roster-grid'><a href='#player' class='pcard' data-name='Alder Reese' data-pid='alder'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>71</span><span class='pcard-bnname'>Alder</span></div></a><a href='#player' class='pcard' data-name='Brooklyn Coughlan' data-pid='brooklyn'><div class='pcard-bignum pos-def'><span class='pcard-bn'>92</span><span class='pcard-bnname'>Brooklyn</span></div></a><a href='#player' class='pcard' data-name='Dawson Huffman' data-pid='dawson'><div class='pcard-bignum pos-def'><span class='pcard-bn'>19</span><span class='pcard-bnname'>Dawson</span></div></a><a href='#player' class='pcard' data-name='Dominic Cinque' data-pid='dominic'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>98</span><span class='pcard-bnname'>Dominic</span></div></a><a href='#player' class='pcard' data-name='Eugene Kuhn' data-pid='eugene'><div class='pcard-bignum pos-def'><span class='pcard-bn'>3</span><span class='pcard-bnname'>Eugene</span></div></a><a href='#player' class='pcard' data-name='Evan Ewing' data-pid='evan'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>13</span><span class='pcard-bnname'>Evan</span></div></a><a href='#player' class='pcard' data-name='Greyson Wertz' data-pid='greyson'><div class='pcard-bignum pos-def'><span class='pcard-bn'>32</span><span class='pcard-bnname'>Greyson</span></div></a><a href='#player' class='pcard' data-name='Issac Moyer' data-pid='issac'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>53</span><span class='pcard-bnname'>Issac</span></div></a><a href='#player' class='pcard' data-name='Johnny Eraman' data-pid='johnny'><div class='pcard-bignum pos-goalie'><span class='pcard-bn'>1</span><span class='pcard-bnname'>Johnny</span></div></a><a href='#player' class='pcard' data-name='Joziah Soto' data-pid='joziah'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>59</span><span class='pcard-bnname'>Joziah</span></div></a><a href='#player' class='pcard pcard-you-card' data-name='Lewie' data-pid='lewie'><img class='pcard-cardart' src='cards/lewie_photo.png' alt='Lewie'></a><a href='#player' class='pcard' data-name='Liam Delatorre' data-pid='liam'><div class='pcard-bignum pos-def'><span class='pcard-bn'>29</span><span class='pcard-bnname'>Liam</span></div></a><a href='#player' class='pcard' data-name='Maddux Jones' data-pid='maddux'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>18</span><span class='pcard-bnname'>Maddux</span></div></a><a href='#player' class='pcard' data-name='Oliver Moyer' data-pid='oliver'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>90</span><span class='pcard-bnname'>Oliver</span></div></a><a href='#player' class='pcard' data-name='Teddy Diss' data-pid='teddy'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>11</span><span class='pcard-bnname'>Teddy</span></div></a><a href='#player' class='pcard' data-name='William Schnell' data-pid='william'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>16</span><span class='pcard-bnname'>William</span></div></a></div>
 <div class='rsearch-empty' id='rsearchEmpty' hidden></div>
 <div class='pgate' id='switchGate' hidden>
@@ -1618,6 +1630,27 @@ body.login-locked{overflow:hidden}
   <label class='addfield'><span class='addfield-lab'>Parent email (2)</span><input class='login-in' id='apEmail2' type='email' inputmode='email' placeholder='second parent (optional)'></label>
   <button type='submit' class='pgate-go' id='apSave'>Add player</button>
   <p class='login-err' id='apErr' aria-live='polite'></p>
+</form>
+</div>
+
+<div class='sheet' id='createteam' hidden>
+<div class='sheet-scrim' id='ctScrim'></div>
+<form class='sheet-panel addform' id='createTeamForm' novalidate>
+  <button type='button' class='pgate-x' id='ctX' aria-label='Close'>&#215;</button>
+  <h2 class='pgate-h'>Create a team</h2>
+  <p class='sheet-sub'>Start a new team. You will get a code to share with its families.</p>
+  <label class='addfield'><span class='addfield-lab'>Team name</span><input class='login-in' id='ctName' type='text' autocomplete='off' placeholder='Vancouver Jr. Rangers' required></label>
+  <label class='addfield'><span class='addfield-lab'>Association</span><input class='login-in' id='ctAssoc' type='text' autocomplete='off' placeholder='Optional'></label>
+  <label class='addfield'><span class='addfield-lab'>Age group</span>
+    <span class='login-selwrap'><select class='login-in login-select' id='ctAge'><option value='8U'>8U</option><option value='10U' selected>10U</option><option value='12U'>12U</option><option value='14U'>14U</option><option value='16U'>16U</option><option value='18U'>18U</option></select><span class='login-selchev' aria-hidden='true'>&#8250;</span></span>
+  </label>
+  <button type='submit' class='pgate-go' id='ctSave'>Create team</button>
+  <p class='login-err' id='ctErr' aria-live='polite'></p>
+  <div class='ct-done' id='ctDone' hidden>
+    <p class='ct-done-lab'>Team created. Share this code with families to join:</p>
+    <div class='ct-code' id='ctCode'></div>
+    <button type='button' class='pgate-go' id='ctClose'>Done</button>
+  </div>
 </form>
 </div>
 
@@ -2219,6 +2252,52 @@ window.thwapActiveTeam=function(coach){
     if(apX) apX.addEventListener('click',function(){ apSheetShow(false); });
     var addBtn=document.getElementById('coachAddBtn');
     if(addBtn) addBtn.addEventListener('click',function(){ apSheetShow(true); });
+    /* Create-a-team side sheet. Calls the existing create-team endpoint and shows
+       the generated team code for the coach to share. coach + code are in scope
+       from bootCoach above. */
+    (function(){
+      var ctSheet=document.getElementById('createteam'), ctScrim=document.getElementById('ctScrim'), ctX=document.getElementById('ctX');
+      var ctForm=document.getElementById('createTeamForm'), ctErr=document.getElementById('ctErr'), ctSave=document.getElementById('ctSave');
+      var ctDone=document.getElementById('ctDone'), ctCodeEl=document.getElementById('ctCode'), ctClose=document.getElementById('ctClose');
+      function ctShow(on){
+        if(ctSheet) ctSheet.hidden=!on;
+        if(!on){ /* reset to the form state for next open */
+          if(ctForm){ try{ ctForm.reset(); }catch(_){ } }
+          if(ctDone) ctDone.hidden=true; if(ctForm) ctForm.querySelector('.pgate-go').style.display='';
+          var nameInp=document.getElementById('ctName'), assocInp=document.getElementById('ctAssoc');
+          [nameInp,assocInp].forEach(function(el){ if(el) el.closest('.addfield').style.display=''; });
+          var ageWrap=document.getElementById('ctAge'); if(ageWrap&&ageWrap.closest('.addfield')) ageWrap.closest('.addfield').style.display='';
+          if(ctErr) ctErr.textContent='';
+        }
+      }
+      var newTeamBtn=document.getElementById('coachNewTeam');
+      if(newTeamBtn) newTeamBtn.addEventListener('click',function(){ ctShow(true); });
+      if(ctScrim) ctScrim.addEventListener('click',function(){ ctShow(false); });
+      if(ctX) ctX.addEventListener('click',function(){ ctShow(false); });
+      if(ctClose) ctClose.addEventListener('click',function(){ ctShow(false); });
+      if(ctForm) ctForm.addEventListener('submit',function(e){
+        e.preventDefault(); if(ctErr) ctErr.textContent='';
+        var name=String((document.getElementById('ctName')||{}).value||'').trim();
+        if(!name){ if(ctErr) ctErr.textContent='Enter a team name.'; return; }
+        var body={ coachToken:coach.token, name:name,
+          association:String((document.getElementById('ctAssoc')||{}).value||'').trim(),
+          ageGroup:(document.getElementById('ctAge')||{}).value||'10U' };
+        if(ctSave){ ctSave.disabled=true; ctSave.textContent='Creating...'; }
+        fetch('/api/coach?action=create-team',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+          .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
+          .then(function(res){
+            if(ctSave){ ctSave.disabled=false; ctSave.textContent='Create team'; }
+            if(res.ok&&res.j.ok&&res.j.code){
+              /* Hide the form fields + submit, reveal the code. */
+              ['ctName','ctAssoc','ctAge'].forEach(function(id){ var el=document.getElementById(id); if(el&&el.closest('.addfield')) el.closest('.addfield').style.display='none'; });
+              ctSave.style.display='none';
+              if(ctCodeEl) ctCodeEl.textContent=res.j.code;
+              if(ctDone) ctDone.hidden=false;
+            } else if(ctErr){ ctErr.textContent=(res.j&&res.j.error)||'Could not create the team.'; }
+          })
+          .catch(function(){ if(ctSave){ ctSave.disabled=false; ctSave.textContent='Create team'; } if(ctErr) ctErr.textContent='Could not reach the server.'; });
+      });
+    })();
     /* Coach Team X returns to Coach Home (href='.' cleared the hash and stranded the coach). */
     var rClose=document.getElementById('rosterClose');
     if(rClose){ rClose.setAttribute('href','#coachhome'); rClose.addEventListener('click',function(ev){ ev.preventDefault(); location.hash='#coachhome'; }); }
