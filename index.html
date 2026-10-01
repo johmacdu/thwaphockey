@@ -4083,7 +4083,7 @@ function markCheeredToday(from,to){ try{ localStorage.setItem(cheerDayKey(from,t
 function cheerCountFor(id){
   try{ var b=window.thwapBoard&&window.thwapBoard.all&&window.thwapBoard.all[id]; return (b&&typeof b.cheers==='number')?b.cheers:0; }catch(e){ return 0; }
 }
-function paintCheerCount(n){ if(cheerCountEl) cheerCountEl.textContent='👏 '+n+(n===1?' cheer':' cheers'); }
+function paintCheerCount(n){ if(!cheerCountEl) return; var c=Number(n)||0; cheerCountEl.textContent = c>0 ? ('👏 '+c+(c===1?' cheer':' cheers')) : ''; }
 function setCheered(){
   if(!cheerBtn) return;
   cheerBtn.textContent='👏 Cheered!';
@@ -4281,7 +4281,7 @@ function markFiredToday(from,to){ try{ localStorage.setItem(fireDayKey(from,to),
 function fireCountFor(id){
   try{ var b=window.thwapBoard&&window.thwapBoard.all&&window.thwapBoard.all[id]; return (b&&typeof b.fire==='number')?b.fire:0; }catch(e){ return 0; }
 }
-function paintFireCount(n){ if(fireCountEl) fireCountEl.textContent='🔥 '+n+(n===1?' fire':' fires'); }
+function paintFireCount(n){ if(!fireCountEl) return; var c=Number(n)||0; fireCountEl.textContent = c>0 ? ('🔥 '+c+(c===1?' fire':' fires')) : ''; }
 function setFired(){
   if(!fireBtn) return;
   fireBtn.textContent='🔥 On fire!';
