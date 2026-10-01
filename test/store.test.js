@@ -35,6 +35,9 @@ const {
   getCheers,
   listCheers,
   sendCheer,
+  getFires,
+  listFires,
+  sendFire,
   isRosterPlayer,
 } = await import('../lib/store.js');
 
@@ -305,5 +308,77 @@ describe('cheers (teammate high-fives)', () => {
     expect(byId.teddy).toBe(1);
     expect(byId.lewie).toBe(0); // sender never gains cheers
     expect(byId.johnny).toBe(0); // untouched player
+  });
+});
+
+describe('fire ("On fire" reactions)', () => {
+  it('getFires is 0 for a player who has never been fired', async () => {
+    expect(await getFires('lewie')).toBe(0);
+  });
+
+  it('rejects a self-fire and does not increment', async () => {
+    const res = await sendFire('lewie', 'lewie');
+    expect(res).toEqual({ ok: false, error: 'self' });
+    expect(await getFires('lewie')).toBe(0);
+  });
+
+  it('rejects an off-roster sender or target', async () => {
+    expect(await sendFire('nobody', 'lewie')).toEqual({ ok: false, error: 'bad id' });
+    expect(await sendFire('lewie', 'nobody')).toEqual({ ok: false, error: 'bad id' });
+    expect(await getFires('lewie')).toBe(0);
+  });
+
+  it('a first fire increments the recipient and returns the new count', async () => {
+    const res = await sendFire('lewie', 'william');
+    expect(res).toEqual({ ok: true, count: 1 });
+    expect(await getFires('william')).toBe(1);
+    expect(await getFires('lewie')).toBe(0);
+  });
+
+  it('a second same-day fire is idempotent (no double count)', async () => {
+    await sendFire('lewie', 'william');
+    const again = await sendFire('lewie', 'william');
+    expect(again).toEqual({ ok: true, already: true });
+    expect(await getFires('william')).toBe(1);
+  });
+
+  it('a DIFFERENT sender can also fire the same teammate the same day', async () => {
+    await sendFire('lewie', 'william');
+    const other = await sendFire('maddux', 'william');
+    expect(other).toEqual({ ok: true, count: 2 });
+    expect(await getFires('william')).toBe(2);
+  });
+
+  it('allows the same sender to fire again the NEXT day', async () => {
+    await sendFire('lewie', 'william');
+    expect(await getFires('william')).toBe(1);
+    pinDate('2026-01-15');
+    const next = await sendFire('lewie', 'william');
+    expect(next).toEqual({ ok: true, count: 2 });
+    expect(await getFires('william')).toBe(2);
+  });
+
+  it('listFires returns the whole roster with counts, zeroed where unset', async () => {
+    await sendFire('lewie', 'william');
+    await sendFire('maddux', 'william');
+    await sendFire('lewie', 'teddy');
+    const all = await listFires();
+    expect(all).toHaveLength(ROSTER.length);
+    const byId = Object.fromEntries(all.map((f) => [f.id, f.fires]));
+    expect(byId.william).toBe(2);
+    expect(byId.teddy).toBe(1);
+    expect(byId.lewie).toBe(0); // sender never gains fires
+    expect(byId.johnny).toBe(0); // untouched player
+  });
+
+  it('a fire does NOT consume the same-day cheer slot (independent dedup)', async () => {
+    // A sender can cheer AND fire the same teammate the same day; one does not
+    // block the other because they use separate per-day dedup keys.
+    const c = await sendCheer('lewie', 'william');
+    const f = await sendFire('lewie', 'william');
+    expect(c).toEqual({ ok: true, count: 1 });
+    expect(f).toEqual({ ok: true, count: 1 });
+    expect(await getCheers('william')).toBe(1);
+    expect(await getFires('william')).toBe(1);
   });
 });

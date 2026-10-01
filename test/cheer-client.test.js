@@ -115,3 +115,69 @@ describe('Cheer copy respects the punctuation rules', () => {
     expect(slice.includes('\u2013')).toBe(false);
   });
 });
+
+describe('On fire (second teammate reaction) markup', () => {
+  it('has the fire button + count in the same below-card control row as Cheer', () => {
+    expect(doc.getElementById('cbFire')).toBeTruthy();
+    expect(doc.getElementById('cbFireCount')).toBeTruthy();
+    // The fire button lives in the same cheer control row as the Cheer button.
+    const fireBtn = doc.getElementById('cbFire');
+    expect(fireBtn.closest('#cardCtlCheer')).toBeTruthy();
+    expect(doc.getElementById('cbCheer').closest('#cardCtlCheer')).toBeTruthy();
+  });
+
+  it('the button renders the flame + On fire label', () => {
+    const btn = doc.getElementById('cbFire');
+    expect((btn.textContent || '')).toContain('\u{1F525}'); // fire emoji
+    expect((btn.textContent || '')).toContain('On fire');
+  });
+});
+
+describe('On fire tap wiring', () => {
+  it('posts to /api/board?action=fire with { to } and credentials', () => {
+    expect(html).toMatch(/fetch\('\/api\/board\?action=fire'/);
+    // the fire send carries credentials and the { to } body
+    const start = html.indexOf('Fire ("On fire")');
+    expect(start).toBeGreaterThan(-1);
+    const slice = html.slice(start, start + 4000);
+    expect(slice).toMatch(/credentials:'include'/);
+    expect(slice).toMatch(/body:JSON\.stringify\(\{to:to\}\)/);
+  });
+
+  it('flips to the satisfied "On fire!" disabled state on success', () => {
+    expect(html).toMatch(/'\u{1F525} On fire!'/u);
+    expect(html).toMatch(/fireBtn\.disabled=true/);
+  });
+
+  it('guards the render + tap to a valid teammate that is not yourself', () => {
+    expect(html).toMatch(/window\.thwapRenderFire *= *function/);
+    expect(html).toMatch(/FIRE_ENABLED && /);
+    // openTeammateCard and the board repaint both trigger the fire render.
+    expect(html).toMatch(/if\(window\.thwapRenderFire\) window\.thwapRenderFire\(\);/);
+  });
+
+  it('surfaces the quiet not-saved notice on a hard failure and heals a 401', () => {
+    const start = html.indexOf('Fire ("On fire")');
+    const slice = html.slice(start, start + 6000);
+    expect(slice).toMatch(/if\(window\.thwapDoneNotSaved\) window\.thwapDoneNotSaved\(\);/);
+    expect(slice).toMatch(/status===401/);
+    expect(slice).toMatch(/window\.thwapEnsureSession/);
+  });
+});
+
+describe('On fire off-switch', () => {
+  it('has a FIRE_ENABLED flag defaulting ON that gates the render', () => {
+    expect(html).toMatch(/FIRE_ENABLED *= *\(window\.FIRE_ENABLED!==undefined\)\?!!window\.FIRE_ENABLED:true/);
+  });
+});
+
+describe('On fire copy respects the punctuation rules', () => {
+  it('the fire code block has no middot or em/en dash', () => {
+    const start = html.indexOf('Fire ("On fire")');
+    expect(start).toBeGreaterThan(-1);
+    const slice = html.slice(start, start + 4000);
+    expect(slice.includes('\u00b7')).toBe(false);
+    expect(slice.includes('\u2014')).toBe(false);
+    expect(slice.includes('\u2013')).toBe(false);
+  });
+});

@@ -84,7 +84,7 @@ describe('board handler', () => {
     const res = makeRes();
     await handler({ method: 'GET', query: { tf: 'week' } }, res);
     const lewie = res.body.players.find((p) => p.id === 'lewie');
-    expect(lewie).toEqual({ id: 'lewie', stick: 1, shoot: 0, dryland: 1, netplay: 0, cheers: 0 });
+    expect(lewie).toEqual({ id: 'lewie', stick: 1, shoot: 0, dryland: 1, netplay: 0, cheers: 0, fire: 0 });
   });
 
   it('folds each player cheer count into the GET response', async () => {
@@ -173,5 +173,89 @@ describe('board handler: POST ?action=cheer', () => {
     await handler({ method: 'POST', query: { action: 'bogus' }, headers: {}, body: {} }, res);
     expect(res.statusCode).toBe(400);
     expect(res.body.error).toBe('unknown action');
+  });
+});
+
+describe('board handler: GET folds in fire counts', () => {
+  it('folds each player fire count into the GET response, zeroed where unset', async () => {
+    fake._seed('fire:teddy', 4);
+    const res = makeRes();
+    await handler({ method: 'GET', query: {} }, res);
+    const teddy = res.body.players.find((p) => p.id === 'teddy');
+    expect(teddy.fire).toBe(4);
+    const lewie = res.body.players.find((p) => p.id === 'lewie');
+    expect(lewie.fire).toBe(0);
+  });
+});
+
+describe('board handler: POST ?action=fire', () => {
+  const fire = (to, token) => ({
+    method: 'POST',
+    query: { action: 'fire' },
+    headers: token ? { cookie: `thwapSession=${token}` } : {},
+    body: { to },
+  });
+
+  it('401s without a session', async () => {
+    const res = makeRes();
+    await handler(fire('william', null), res);
+    expect(res.statusCode).toBe(401);
+    expect(res.body.error).toBe('session required');
+    expect(fake.map.get('fire:william')).toBeUndefined();
+  });
+
+  it('400s when "to" is missing', async () => {
+    const res = makeRes();
+    const token = mintSession('lewie', 'p@e.com');
+    await handler(fire(undefined, token), res);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBe('bad target');
+  });
+
+  it('400s on a self-fire (to equals the session player)', async () => {
+    const res = makeRes();
+    const token = mintSession('lewie', 'p@e.com');
+    await handler(fire('lewie', token), res);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBe('bad target');
+    expect(fake.map.get('fire:lewie')).toBeUndefined();
+  });
+
+  it('400s on an off-roster target', async () => {
+    const res = makeRes();
+    const token = mintSession('lewie', 'p@e.com');
+    await handler(fire('nobody', token), res);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBe('bad target');
+  });
+
+  it('200 and increments on the first fire, with the sender taken from the session', async () => {
+    const res = makeRes();
+    const token = mintSession('lewie', 'p@e.com');
+    await handler(fire('william', token), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual({ ok: true, count: 1 });
+    expect(fake.map.get('fire:william')).toBe(1);
+  });
+
+  it('is idempotent: a same-day repeat returns already:true without double counting', async () => {
+    const token = mintSession('lewie', 'p@e.com');
+    await handler(fire('william', token), makeRes());
+    const res = makeRes();
+    await handler(fire('william', token), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual({ ok: true, already: true });
+    expect(fake.map.get('fire:william')).toBe(1);
+  });
+
+  it('a fire does NOT consume the same-day cheer slot (both land independently)', async () => {
+    const token = mintSession('lewie', 'p@e.com');
+    await handler({ method: 'POST', query: { action: 'cheer' }, headers: { cookie: `thwapSession=${token}` }, body: { to: 'william' } }, makeRes());
+    const res = makeRes();
+    await handler(fire('william', token), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual({ ok: true, count: 1 });
+    expect(fake.map.get('cheers:william')).toBe(1);
+    expect(fake.map.get('fire:william')).toBe(1);
   });
 });
