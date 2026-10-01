@@ -6325,6 +6325,42 @@ window.thwapUnmarkDone=function(drillId){
   }catch(e){ return Promise.resolve({ ok:false, status:0 }); }
 };
 
+/* TEMP DIAGNOSTIC (gated behind ?diag=1, invisible otherwise). When a drill is
+   marked, print on screen the full write chain: auth-cookie pid, derived code,
+   pre-ensure result, the /api/done POST status, and the GET read-back. This turns
+   the silent cross-device-sync failure into one screenshot. Remove once resolved. */
+(function(){
+  try{
+    if(!/[?&]diag=1\b/.test(location.search)) return;
+    var box=document.createElement('div');
+    box.id='thwapDiag';
+    box.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;z-index:99999;background:#0f1712;color:#9df08a;border:2px solid #4E9128;border-radius:10px;padding:10px 12px;font:12px/1.45 ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-word;max-height:52vh;overflow:auto;box-shadow:0 10px 30px rgba(0,0,0,.5)';
+    var log=function(s){ box.textContent=(box.textContent?box.textContent+'\n':'')+s; box.scrollTop=box.scrollHeight; };
+    var ready=function(){ document.body.appendChild(box); log('DIAG on. Tap a drill to log the write chain.'); };
+    if(document.body) ready(); else document.addEventListener('DOMContentLoaded',ready);
+    var cookieHas=function(n){ return new RegExp('(?:^|; )'+n+'=').test(document.cookie); };
+    var orig=window.thwapMarkDone;
+    window.thwapMarkDone=function(discipline, drillId, undo){
+      var a=null; try{ a=(typeof readAuth==='function')?readAuth():null; }catch(e){}
+      var pid=a&&a.pid, num=(a&&typeof NUMS!=='undefined')?NUMS[a.pid]:undefined;
+      log('--- tap '+discipline+(drillId?(' '+drillId):'')+' ---');
+      log('authCookie pid='+pid+' year='+(a&&a.year)+' email='+((a&&a.email)||'(none)'));
+      log('derived code='+(num?(String(num)+String((a&&a.year)||'')):'(NO JERSEY for '+pid+')')+'  thwapAuth cookie='+cookieHas('thwapAuth')+'  thwapSession cookie='+cookieHas('thwapSession'));
+      var ens=(window.thwapEnsureSession?window.thwapEnsureSession():Promise.resolve({reason:'no-ensure'}));
+      return Promise.resolve(ens).then(function(er){
+        log('pre-ensure -> '+(er?JSON.stringify(er):'(void)')+'  thwapSession now='+cookieHas('thwapSession'));
+        return orig(discipline, drillId, undo);
+      }).then(function(res){
+        log('POST /api/done -> '+(res?JSON.stringify(res):'(void)'));
+        return fetch('/api/done',{method:'GET',cache:'no-store',credentials:'include',headers:{'Accept':'application/json'}})
+          .then(function(r){ return r.json().then(function(j){ return {s:r.status,j:j}; }); })
+          .then(function(g){ log('GET /api/done -> '+g.s+' drills='+JSON.stringify(g.j&&g.j.drills)); return res; },
+                function(e){ log('GET /api/done -> ERR '+e); return res; });
+      }, function(e){ log('WRITE THREW: '+e); return {ok:false,status:0}; });
+    };
+  }catch(e){}
+})();
+
 /* Cross-device hydration. GET /api/done returns the signed-in player's completed
    drill ids for TODAY (keyed server-side off the session, Vancouver-local day).
    We mirror those ids into each discipline's LOCAL loadProg scheme + the unified
@@ -7501,15 +7537,16 @@ function maybeSplash(){
    or unconfigured we still let the player in on the client-side path below, so no
    one is ever locked out. Demo players (client-only, no backend) are skipped. */
 function mintServerSession(pid,code,email,keep){
-  if(!pid||pid==='demo'||!code) return Promise.resolve();
+  if(!pid||pid==='demo'||!code) return Promise.resolve({ok:false,status:0,reason:'no-credentials'});
   return new Promise(function(resolve){
-    var settled=false, fin=function(){ if(settled)return; settled=true; resolve(); };
-    var to=setTimeout(fin,3500);
+    var settled=false, fin=function(v){ if(settled)return; settled=true; resolve(v||{ok:false,status:0,reason:'timeout'}); };
+    var to=setTimeout(function(){ fin({ok:false,status:0,reason:'timeout'}); },3500);
     try{
       fetch('/api/login?action=code-signin',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',
         body:JSON.stringify({playerId:pid,code:String(code||''),email:String(email||''),keep:!!keep})})
-        .then(function(){ clearTimeout(to); fin(); },function(){ clearTimeout(to); fin(); });
-    }catch(e){ clearTimeout(to); fin(); }
+        .then(function(r){ clearTimeout(to); fin({ok:!!(r&&r.ok),status:(r?r.status:0),reason:(r&&r.ok)?'ok':'mint-failed'}); },
+              function(){ clearTimeout(to); fin({ok:false,status:0,reason:'network'}); });
+    }catch(e){ clearTimeout(to); fin({ok:false,status:0,reason:'threw'}); }
   });
 }
 function signIn(player,email,keep,code){
@@ -7606,10 +7643,10 @@ if(form){
    unknown players. Used by thwapMarkDone on a 401 from /api/done. */
 window.thwapEnsureSession=function(){
   try{
-    var a=readAuth(); if(!a||!a.pid||a.pid==='demo') return Promise.resolve();
-    var num=NUMS[a.pid]; if(!num) return Promise.resolve();
+    var a=readAuth(); if(!a||!a.pid||a.pid==='demo') return Promise.resolve({ok:false,status:0,reason:'no-auth-cookie'});
+    var num=NUMS[a.pid]; if(!num) return Promise.resolve({ok:false,status:0,reason:'no-jersey:'+a.pid});
     return mintServerSession(a.pid, String(num)+String(a.year||SEASON_YEAR), a.email||'', true);
-  }catch(e){ return Promise.resolve(); }
+  }catch(e){ return Promise.resolve({ok:false,status:0,reason:'threw'}); }
 };
 /* Already-signed-in players (from before server sessions existed) silently get a
    server session on their next visit, by re-verifying their own derivable code
