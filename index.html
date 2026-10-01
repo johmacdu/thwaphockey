@@ -3313,7 +3313,7 @@ function render(){
         row.classList.add('done');
         var _l=row.parentNode;
         if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('dryland');
-        if(window.thwapMarkDone)window.thwapMarkDone('dryland');
+        if(window.thwapMarkDone)window.thwapMarkDone('dryland','dryland:'+i);
         if(window.thwapStampToday)window.thwapStampToday('dryland',true); try{ if(window.thwapSfx)thwapSfx('drylandReward'); }catch(e){}
         btn.textContent='Done ✓';
       };
@@ -3321,6 +3321,7 @@ function render(){
         var p=loadProg(w.id); p[i]=false; saveProg(w.id,p);
         row.classList.remove('done');
         if(window.thwapStampToday)window.thwapStampToday('dryland',false);
+        if(window.thwapUnmarkDone)window.thwapUnmarkDone('dryland:'+i);
         btn.textContent='Start';
       };
       if(row.classList.contains('done')){ unMark(); return; }  /* tap a done row to un-mark it (no timer) */
@@ -3330,6 +3331,17 @@ function render(){
   });
 }
 
+/* Cross-device hydration hook: write the server's completed dryland indices into
+   this device's per-workout prog scheme, then re-render so the checkmarks show.
+   Registered on a shared registry the unified loader walks (see thwapApplyServerDone). */
+(window.__thwapDrillApply=window.__thwapDrillApply||{}).dryland=function(indices){
+  try{
+    var w=todaysWorkout(); var p=loadProg(w.id);
+    indices.forEach(function(i){ p[i]=true; });
+    saveProg(w.id,p);
+  }catch(e){}
+  try{ render(); }catch(e){}
+};
 render();
 window.addEventListener('hashchange',function(){ if(location.hash==='#dryland') render(); });
 })();</script>
@@ -4947,7 +4959,7 @@ function render(){
         row.classList.add('done');
         var _l=row.parentNode;
         if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('stick');
-        if(window.thwapMarkDone)window.thwapMarkDone('stick');
+        if(window.thwapMarkDone)window.thwapMarkDone('stick','stick:'+i);
         if(window.thwapStampToday)window.thwapStampToday('stick',true); try{ if(window.thwapSfx)thwapSfx('handsReward'); }catch(e){}
         btn.textContent='Done ✓';
       };
@@ -4955,6 +4967,7 @@ function render(){
         var p=loadProg(); p[i]=false; saveProg(p);
         row.classList.remove('done');
         if(window.thwapStampToday)window.thwapStampToday('stick',false);
+        if(window.thwapUnmarkDone)window.thwapUnmarkDone('stick:'+i);
         btn.textContent='Start';
       };
       if(row.classList.contains('done')){ unMark(); return; }  /* tap a done row to un-mark it (no timer) */
@@ -4963,6 +4976,14 @@ function render(){
     });
   });
 }
+(window.__thwapDrillApply=window.__thwapDrillApply||{}).stick=function(indices){
+  try{
+    var p=loadProg();
+    indices.forEach(function(i){ p[i]=true; });
+    saveProg(p);
+  }catch(e){}
+  try{ render(); }catch(e){}
+};
 render();
 window.addEventListener('hashchange',function(){ if(location.hash==='#stick') render(); });
 })();
@@ -5794,7 +5815,7 @@ function render(){
            today" for the daily celebration/streak, and the goalie's third page IS
            the shoot route. */
         if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('shoot');
-        if(window.thwapMarkDone)window.thwapMarkDone(goalie?'netplay':'shoot');
+        if(window.thwapMarkDone)window.thwapMarkDone(goalie?'netplay':'shoot','shoot:'+i);
         if(window.thwapStampToday)window.thwapStampToday('shoot',true); try{ if(window.thwapSfx)thwapSfx('shootReward'); }catch(e){}
         btn.textContent='Done ✓';
       };
@@ -5802,6 +5823,7 @@ function render(){
         var p=loadProg(); p[i]=false; saveProg(p);
         row.classList.remove('done');
         if(window.thwapStampToday)window.thwapStampToday('shoot',false);
+        if(window.thwapUnmarkDone)window.thwapUnmarkDone('shoot:'+i);
         btn.textContent='Start';
       };
       if(row.classList.contains('done')){ unMark(); return; }  /* tap a done row to un-mark it (no timer) */
@@ -5817,6 +5839,14 @@ function render(){
     });
   });
 }
+(window.__thwapDrillApply=window.__thwapDrillApply||{}).shoot=function(indices){
+  try{
+    var p=loadProg();
+    indices.forEach(function(i){ p[i]=true; });
+    saveProg(p);
+  }catch(e){}
+  try{ render(); }catch(e){}
+};
 render();
 window.addEventListener('hashchange',function(){ if(location.hash==='#shoot') render(); });
 })();</script>
@@ -5938,17 +5968,22 @@ window.thwapDoneNotSaved=function(){
     window.__thwapSaveNoteT=setTimeout(function(){ if(host) host.className='thwap-savenote'; },6000);
   }catch(e){}
 };
-window.thwapMarkDone=function(discipline){
+window.thwapMarkDone=function(discipline, drillId, undo){
   /* A logged-in player logs their own work. /api/done REQUIRES a server session;
      if this browser lacks one, a 401 (or a transient network error on the very
      first tap) triggers a transparent session mint and a SINGLE retry, so the
      write still lands and the player is never blocked. If it STILL fails after the
      retry, we surface a quiet "not saved" notice rather than silently losing the
-     completion. Returns a promise resolving to { ok, status } for testability. */
+     completion. Returns a promise resolving to { ok, status } for testability.
+     drillId (optional) is a stable '<disc>:<index>' id so a second device can
+     re-draw the checkmark; it is sent alongside the discipline bump and is fully
+     backward-compatible (omitting it posts the original { player, discipline }). */
   var send=function(){
+    var payload={player:PLAYER.toLowerCase(), discipline:discipline};
+    if(drillId) payload.drillId=drillId;
     return fetch('/api/done',{
       method:'POST', headers:{'Content-Type':'application/json'}, cache:'no-store',
-      body:JSON.stringify({player:PLAYER.toLowerCase(), discipline:discipline})
+      body:JSON.stringify(payload)
     });
   };
   /* Heal the session once, then retry. Shared by the 401 path and the
@@ -5980,6 +6015,50 @@ window.thwapMarkDone=function(discipline){
     return Promise.resolve({ ok:false, status:0 });
   }
   return attempt;
+};
+
+/* Un-mark one drill on the server: removes its id from today's per-day set so the
+   un-check syncs to other devices. Does NOT decrement the count or stickers (an
+   undo should not take back earned work). Best-effort + fail-open: a failure
+   leaves the device's local un-mark untouched (never crashes, never re-checks). */
+window.thwapUnmarkDone=function(drillId){
+  if(!drillId) return Promise.resolve({ ok:false, status:0 });
+  var send=function(){
+    return fetch('/api/done',{
+      method:'POST', headers:{'Content-Type':'application/json'}, cache:'no-store',
+      body:JSON.stringify({player:PLAYER.toLowerCase(), drillId:drillId, undo:true})
+    });
+  };
+  var healAndRetry=function(){
+    var heal=(window.thwapEnsureSession?window.thwapEnsureSession():Promise.resolve());
+    return Promise.resolve(heal).then(function(){ return send(); });
+  };
+  var settle=function(r){ return { ok:!!(r&&r.ok), status:(r?r.status:0) }; };
+  try{
+    return send().then(function(r){
+      if(r && r.status===401){ return healAndRetry().then(settle, function(){ return { ok:false, status:0 }; }); }
+      return settle(r);
+    }, function(){ return healAndRetry().then(settle, function(){ return { ok:false, status:0 }; }); });
+  }catch(e){ return Promise.resolve({ ok:false, status:0 }); }
+};
+
+/* Cross-device hydration. GET /api/done returns the signed-in player's completed
+   drill ids for TODAY (keyed server-side off the session, Vancouver-local day).
+   We mirror those ids into each discipline's LOCAL loadProg scheme + the unified
+   thwapDone|<today>|<disc> signal, then re-render the drill lists so a second
+   device shows the same checkmarks. FAIL OPEN: any error (offline, no session,
+   bad JSON) leaves local behaviour exactly as it was -- no crash, no wrongly
+   cleared boxes. Exposed as window.thwapHydrateDone so sign-in can re-run it. */
+window.thwapHydrateDone=function(){
+  try{
+    return fetch('/api/done',{method:'GET', cache:'no-store', headers:{'Accept':'application/json'}})
+      .then(function(r){ return (r&&r.ok)?r.json():null; }, function(){ return null; })
+      .then(function(data){
+        if(!data || !Array.isArray(data.drills)) return { ok:false };
+        try{ if(window.thwapApplyServerDone) window.thwapApplyServerDone(data.drills); }catch(e){}
+        return { ok:true, drills:data.drills };
+      }, function(){ return { ok:false }; });
+  }catch(e){ return Promise.resolve({ ok:false }); }
 };
 })();</script>
 
@@ -6059,6 +6138,58 @@ window.thwapCheckToday=function(){
 };
 var closeBtn=document.getElementById('todayDoneClose');
 if(closeBtn) closeBtn.addEventListener('click',function(){ var el=document.getElementById('todayDone'); if(el) el.hidden=true; });
+
+/* Signal-only setter: writes thwapDone|<today>|<disc> WITHOUT the earned/sticker
+   bump that thwapStampToday does. Used by cross-device hydration so a second
+   device re-shows the "done today" signal (and the all-three celebration) without
+   double-counting stickers the originating device already earned. */
+window.thwapSetDoneSignal=function(disc,done){
+  if(DISCS.indexOf(disc)<0) return;
+  try{ if(done){ localStorage.setItem(doneKey(disc),'1'); } else { localStorage.removeItem(doneKey(disc)); } }catch(e){}
+};
+
+/* Apply a server-returned list of completed drill ids ('<disc>:<index>') to this
+   device: route each discipline's indices to its registered render hook (which
+   writes that discipline's own per-day prog scheme and re-renders), then, for any
+   discipline whose rendered list is now fully checked, set the done signal so the
+   home hero + celebration reflect it. FAIL OPEN throughout: a malformed id or a
+   missing hook is skipped, never thrown. Does NOT bump earned/stickers. */
+window.thwapApplyServerDone=function(drillIds){
+  if(!Array.isArray(drillIds)) return;
+  var byDisc={};
+  drillIds.forEach(function(did){
+    var parts=String(did).split(':'); var disc=parts[0]; var idx=parseInt(parts[1],10);
+    if(DISCS.indexOf(disc)<0 || !(idx>=0)) return;
+    (byDisc[disc]=byDisc[disc]||[]).push(idx);
+  });
+  var reg=window.__thwapDrillApply||{};
+  Object.keys(byDisc).forEach(function(disc){
+    try{ if(typeof reg[disc]==='function') reg[disc](byDisc[disc]); }catch(e){}
+  });
+  /* After hydration + re-render, mark a discipline's signal done only when every
+     rendered row of its list is checked (so a partial sync does not falsely claim
+     the whole discipline). The list ids mirror the hash routes: #stick/#shoot/#dryland. */
+  var listIds={stick:'stickList', shoot:'shootList', dryland:'drylandList'};
+  Object.keys(byDisc).forEach(function(disc){
+    try{
+      var el=document.getElementById(listIds[disc]); if(!el) return;
+      var rows=el.querySelectorAll('.exrow'); var done=el.querySelectorAll('.exrow.done');
+      if(rows.length>0 && rows.length===done.length) window.thwapSetDoneSignal(disc,true);
+    }catch(e){}
+  });
+  try{ if(window.thwapCheckToday) window.thwapCheckToday(); }catch(e){}
+};
+
+/* Kick off cross-device hydration on load: pull this signed-in player's completed
+   drills for today from the server and re-draw them. Guarded so it runs only when
+   a player is signed in (bfPlayer + thwapAuth cookie), fails open on any error. */
+(function(){
+  try{
+    var authed=/(?:^|; )thwapAuth=/.test(document.cookie);
+    var p=''; try{ p=localStorage.getItem('bfPlayer')||''; }catch(e){}
+    if(authed && p && window.thwapHydrateDone){ window.thwapHydrateDone(); }
+  }catch(e){}
+})();
 })();</script>
 <style>
 /* ===== Category-completion celebrations. Finishing every drill in one discipline
