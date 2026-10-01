@@ -30,8 +30,18 @@ describe('Home hero do-summary', () => {
     expect(lead.textContent).toContain('Hands');
     expect(lead.textContent).toContain('Shooting');
     expect(lead.textContent).toContain('Dryland');
-    // the disciplines are flat status text, NOT tappable-looking (only "Today" is a button)
-    expect(lead.querySelectorAll('.disc button').length).toBe(0);
+    // each discipline is a LINK to its category page
+    const links = [...lead.querySelectorAll('a.disc')];
+    expect(links.length).toBe(3);
+    const hrefs = links.map(a => a.getAttribute('href'));
+    expect(hrefs).toEqual(['#stick', '#shoot', '#dryland']);
+    // the check mark is hidden until done, and the sentence's period follows the
+    // last link directly, so it renders "Dryland." with no stray space on screen.
+    const dryland = links[2];
+    const chk = dryland.querySelector('.chk');
+    expect(chk).toBeTruthy();
+    expect(lead.innerHTML).not.toContain('Dryland <span');   // no space between label and chk span
+    expect(lead.innerHTML).toMatch(/<\/a>\.<\/div>$|<\/a>\.$/); // period sits right after the closing link
   });
 
   it('open state reads as one sentence "Today\'s training is ... and ..." with an inline tappable "Today" that reveals the date', () => {

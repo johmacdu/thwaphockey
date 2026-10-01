@@ -276,7 +276,9 @@ body.login-locked .topbar{position:relative;z-index:120}
 .dolead{font-size:16px;color:var(--text);font-weight:800;line-height:1.5;letter-spacing:.01em;word-spacing:.06em}
 .dolead.alldone{color:var(--green2)}
 .discline{display:none}
-.disc{white-space:nowrap}
+.disc{white-space:nowrap;text-decoration:none;color:inherit;cursor:pointer;border-radius:6px;transition:opacity .12s ease}
+.disc:hover{text-decoration:underline;text-underline-offset:2px}
+.disc:active{opacity:.6}
 .disc .demo{font-weight:400;margin-left:5px}
 .disc .chk{display:none;font-weight:900}
 .disc.done{opacity:.5}
@@ -5280,12 +5282,17 @@ function fill(){
   var third=isGoalie
     ? (netLive?[{k:'netplay',label:'Net play',emo:'🧤',cls:'disc-shoot'}]:[])
     : [{k:'shoot',label:'Shooting',emo:'🥅',cls:'disc-shoot'}];
-  var DEFS=[{k:'stick',label:'Hands',emo:'🏒',cls:'disc-stick'}].concat(third,[{k:'dryland',label:'Dryland',emo:'⚡',cls:'disc-dryland'}]);
+  var DEFS=[{k:'stick',label:'Hands',emo:'🏒',cls:'disc-stick',href:'#stick'}].concat(third,[{k:'dryland',label:'Dryland',emo:'⚡',cls:'disc-dryland',href:'#dryland'}]);
+  /* goalie third discipline links to #shoot (its page) when net play is not live;
+     net play has no page yet, so it falls back to #shoot too. */
+  DEFS.forEach(function(d){ if(!d.href) d.href = (d.k==='netplay')?'#shoot':('#'+d.k); });
   var defs=weekend?DEFS.filter(function(d){return d.k!=='dryland';}):DEFS;   /* dryland rests on weekends */
-  /* Render one colored, non-tappable discipline chunk (emoji + name). */
+  /* Render one colored discipline chunk (emoji + name) as a LINK to its category
+     page. The trailing check sits tight to the label (its own leading space only
+     when shown) so the sentence closes "Dryland." with no stray space. */
   function discSpan(d){
     var done=isDone(d.k)?' done':'';
-    return "<span class='disc "+d.cls+done+"'><span class='demo'>"+d.emo+"</span> "+d.label+" <span class='chk'>✓</span></span>";
+    return "<a class='disc "+d.cls+done+"' href='"+d.href+"'><span class='demo'>"+d.emo+"</span> "+d.label+"<span class='chk'> ✓</span></a>";
   }
   /* Comma-join a list of defs, with "and" before the last when there is more than one. */
   function discSentenceList(arr){
