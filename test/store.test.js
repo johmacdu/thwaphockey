@@ -35,6 +35,7 @@ const {
   getCheers,
   listCheers,
   sendCheer,
+  getRecentCheerers,
   getFires,
   listFires,
   sendFire,
@@ -308,6 +309,31 @@ describe('cheers (teammate high-fives)', () => {
     expect(byId.teddy).toBe(1);
     expect(byId.lewie).toBe(0); // sender never gains cheers
     expect(byId.johnny).toBe(0); // untouched player
+  });
+
+  it('getRecentCheerers is empty for a player who has never been cheered', async () => {
+    expect(await getRecentCheerers('william')).toEqual([]);
+  });
+
+  it('records who cheered a player, newest first, with timestamps', async () => {
+    await sendCheer('lewie', 'william');
+    await sendCheer('maddux', 'william');
+    const givers = await getRecentCheerers('william');
+    expect(givers.map((g) => g.from)).toEqual(['maddux', 'lewie']); // newest first
+    expect(givers.every((g) => typeof g.at === 'number' && g.at > 0)).toBe(true);
+  });
+
+  it('a same-day duplicate cheer does NOT add a second giver entry', async () => {
+    await sendCheer('lewie', 'william');
+    await sendCheer('lewie', 'william'); // deduped, no-op
+    const givers = await getRecentCheerers('william');
+    expect(givers.filter((g) => g.from === 'lewie')).toHaveLength(1);
+  });
+
+  it('getRecentCheerers only returns real roster givers', async () => {
+    await sendCheer('lewie', 'william');
+    const givers = await getRecentCheerers('william');
+    expect(givers.every((g) => isRosterPlayer(g.from))).toBe(true);
   });
 });
 

@@ -181,3 +181,80 @@ describe('On fire copy respects the punctuation rules', () => {
     expect(slice.includes('\u2013')).toBe(false);
   });
 });
+
+describe('Own-card received-cheer count (flat, not a card)', () => {
+  it('has a read-only own-card line, shown only when NOT viewing a teammate', () => {
+    expect(doc.getElementById('cardCtlMine')).toBeTruthy();
+    expect(doc.getElementById('cbMineCount')).toBeTruthy();
+    // hidden on a teammate card, shown on your own card
+    expect(html).toMatch(/body\.viewing-teammate \.cardctl-mine\{display:none !important\}/);
+    expect(html).toMatch(/body:not\(\.viewing-teammate\) \.cardctl-mine:not\(\[hidden\]\)\{display:flex/);
+  });
+
+  it('is flat (theme text color), never a card (no border/fill/elevation)', () => {
+    const m = html.match(/\.cardctl-mine-count\{[^}]*\}/);
+    expect(m).toBeTruthy();
+    expect(m[0]).toMatch(/color:var\(--text\)/);
+    expect(m[0]).not.toMatch(/border|box-shadow|background/);
+  });
+
+  it('thwapRenderCheer paints the own count when not viewing a teammate', () => {
+    expect(html).toMatch(/cardCtlMine/);
+    expect(html).toMatch(/You\\u2019ve got '\+n\+\(n===1\?' cheer':' cheers'\)/);
+  });
+});
+
+describe('Home-screen Sass cheer notification', () => {
+  it('has the Sass bubble mount with a speaker image and a close control', () => {
+    const pop = doc.getElementById('cheerPop');
+    expect(pop).toBeTruthy();
+    expect(pop.hasAttribute('hidden')).toBe(true); // hidden until there is news
+    expect(doc.getElementById('cheerPopSass')).toBeTruthy();
+    expect(doc.getElementById('cheerPopLine')).toBeTruthy();
+    expect(doc.getElementById('cheerPopX')).toBeTruthy();
+  });
+
+  it('reads the signed-in player\'s own givers from the session-gated endpoint', () => {
+    expect(html).toMatch(/\/api\/board\?action=cheers-for/);
+    expect(html).toMatch(/window\.thwapCheerNotify *= *function/);
+    // players only, signed in, not a coach
+    expect(html).toMatch(/if\(!authed \|\| isCoach \|\| !me\) return;/);
+  });
+
+  it('rotates between 10 distinct kid-voice lines for a single cheerer', () => {
+    const m = html.match(/var LINES=\[([\s\S]*?)\];/);
+    expect(m).toBeTruthy();
+    const lines = m[1].match(/'[^']*'/g) || [];
+    expect(lines.length).toBe(10);
+    // every line carries the {name} slot so a giver is always named
+    expect(lines.every((l) => l.includes('{name}'))).toBe(true);
+    // picked at random so it is not stale
+    expect(html).toMatch(/LINES\[Math\.floor\(Math\.random\(\)\*LINES\.length\)\]/);
+  });
+
+  it('rolls up multiple cheerers (2 named, 3+ counted with names below)', () => {
+    expect(html).toMatch(/' and '\+names\[1\]\+' cheered you/);
+    expect(html).toMatch(/count\+' teammates cheered you/);
+  });
+
+  it('diffs against a per-device last-seen marker and does not replay a backlog on first visit', () => {
+    expect(html).toMatch(/thwapCheerSeen\|/);
+    expect(html).toMatch(/if\(since===0\)\{ markSeen\(me,newest\); return; \}/);
+  });
+
+  it('runs on load and on tab refocus', () => {
+    expect(html).toMatch(/visibilitychange/);
+    expect(html).toMatch(/setTimeout\(window\.thwapCheerNotify/);
+  });
+});
+
+describe('Cheer notification copy respects the punctuation rules', () => {
+  it('the home cheer-notify block has no middot or em/en dash', () => {
+    const start = html.indexOf('Home-screen cheer notification');
+    expect(start).toBeGreaterThan(-1);
+    const slice = html.slice(start, start + 4000);
+    expect(slice.includes('\u00b7')).toBe(false);
+    expect(slice.includes('\u2014')).toBe(false);
+    expect(slice.includes('\u2013')).toBe(false);
+  });
+});

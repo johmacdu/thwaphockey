@@ -17,7 +17,7 @@
 // store. The sender is NEVER taken from the body: it is the signed-in session, so
 // a kid cannot cheer as someone else.
 
-import { listPlayers, weekBoard, listCheers, sendCheer, listFires, sendFire, isRosterPlayer } from '../lib/store.js';
+import { listPlayers, weekBoard, listCheers, sendCheer, listFires, sendFire, isRosterPlayer, getRecentCheerers } from '../lib/store.js';
 import { verifySession, readSessionCookie } from '../lib/session_store.js';
 
 // Parse the request body whether Vercel already parsed it (object) or handed us
@@ -99,6 +99,22 @@ export default async function handler(req, res) {
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET, POST');
     return res.status(405).json({ error: 'method not allowed' });
+  }
+
+  // GET /api/board?action=cheers-for : the SIGNED-IN player's own recent cheer
+  // givers, newest first, for the home-screen "N teammates cheered you" roll-up.
+  // Gated to the session player: you can only read who cheered YOU, never anyone
+  // else's inbox. The client diffs this against its own per-device last-seen
+  // marker to decide what is "new since last visit".
+  if (req.query && req.query.action === 'cheers-for') {
+    const claims = verifySession(readSessionCookie(req));
+    if (!claims) {
+      return res.status(401).json({ error: 'session required' });
+    }
+    const me = String(claims.playerId || '').toLowerCase();
+    const givers = await getRecentCheerers(me);
+    res.setHeader('Cache-Control', 'no-store');
+    return res.status(200).json({ id: me, givers });
   }
 
   const tf = req.query && req.query.tf;
