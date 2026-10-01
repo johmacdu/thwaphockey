@@ -1811,21 +1811,58 @@ body.login-locked{overflow:hidden}
    defaults to Tue/Wed/Thu only (10U load management) so home is never empty. A
    coach plan for the day always wins over this default. */
 (function(){
+  /* The .nav-stick/.nav-shoot/.nav-dryland rows are declared LATER in the
+     document than this script, so at synchronous parse time they do not exist
+     yet. Run once the DOM is ready (or immediately if the rows are already
+     present) so the gate actually finds the rows instead of returning early. */
+  function run(){
   var rows={ stick:document.querySelector('.nav-stick'), shoot:document.querySelector('.nav-shoot'), dryland:document.querySelector('.nav-dryland') };
   if(!rows.stick&&!rows.shoot&&!rows.dryland) return;
   var wd=0; try{ wd=window.thwapWeekday?window.thwapWeekday():0; }catch(e){}
   var dayKey=['sun','mon','tue','wed','thu','fri','sat'][wd]||'mon';
+  var isWeekend=(wd===0||wd===6);
   /* Built-in default: dryland only Tue(2)/Wed(3)/Thu(4). */
   if(rows.dryland && [2,3,4].indexOf(wd)<0){ rows.dryland.style.display='none'; }
   fetch('/api/coach?action=get-plan').then(function(r){ return r.json(); }).then(function(j){
-    if(!j||!j.ok||!j.plan||!j.plan[dayKey]) return;
-    var onCats=j.plan[dayKey];
+    if(!j||!j.ok||!j.plan){
+      /* Fail open: leave the built-in default (and the weekend-optional default
+         applied elsewhere) in place. */
+      return;
+    }
+    var day=j.plan[dayKey];
+    /* The day plan supports BOTH shapes. Legacy: an array of category strings
+       (['shoot']). Current (server-normalized): an object keyed by category
+       ({shoot:['Wrist Shots',...]}) where a PRESENT key means that category is
+       ON for the day (an off category simply has no key; an empty array is still
+       ON). Build a total on-set either way, and never call .indexOf on an object
+       so a malformed day can never throw and silently show everything. */
+    var CATS=['stick','shoot','dryland'];
+    var on={};
+    var hasExplicit=false;
+    if(Array.isArray(day)){
+      day.forEach(function(c){ if(CATS.indexOf(c)>=0){ on[c]=true; hasExplicit=true; } });
+    } else if(day && typeof day==='object'){
+      CATS.forEach(function(c){ if(Object.prototype.hasOwnProperty.call(day,c)){ on[c]=true; hasExplicit=true; } });
+    }
+    /* Weekend catch-up: on Sat/Sun, when the coach has NOT explicitly turned any
+       category on for the day, keep the existing weekend-optional default (Hands
+       + Shooting stay available as optional catch-up, Dryland rests). Do not let
+       an empty or absent weekend plan hide stick + shoot. A coach plan that DOES
+       set categories for the weekend day is authoritative, same as a weekday. */
+    if(isWeekend && !hasExplicit) return;
+    /* Also fail open on a weekday with no usable day entry (missing/unrecognized
+       shape with nothing explicit): leave the built-in default in place. */
+    if(!hasExplicit) return;
     /* A coach plan for the day is authoritative: show exactly its categories. */
     Object.keys(rows).forEach(function(cat){
       if(!rows[cat]) return;
-      rows[cat].style.display = (onCats.indexOf(cat)<0) ? 'none' : '';
+      rows[cat].style.display = on[cat] ? '' : 'none';
     });
   }).catch(function(){});
+  }
+  if(document.querySelector('.nav-stick')||document.querySelector('.nav-shoot')||document.querySelector('.nav-dryland')){ run(); }
+  else if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', run); }
+  else { run(); }
 })();})();</script><div class='forrow'><div class='dowrap' id='doWrap'><div class='dolead' id='doLead'></div><div class='discline' id='discLine'></div></div></div>
 <div class='cheerpop' id='cheerPop' hidden><img class='cheerpop-sass' id='cheerPopSass' src='login/sass-welcome.webp' alt=''><div class='cheerpop-bubble'><button type='button' class='cheerpop-x' id='cheerPopX' aria-label='Close'>✕</button><span class='cheerpop-line' id='cheerPopLine'></span></div></div>
 <div class='cards'>
