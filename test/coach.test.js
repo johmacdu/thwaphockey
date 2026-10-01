@@ -121,6 +121,53 @@ describe('roster + participation + kid-owned identity', () => {
     await _handlers.roster(get({ code: _seed.SEED_TEAM_CODE }), list);
     expect(list.body.members.some((m) => m.playerId === 'testkid')).toBe(false);
   });
+
+  it('a second player with the same first name does NOT overwrite the first', async () => {
+    const login = await loginSeedCoach();
+    const token = login.body.token;
+
+    const add1 = makeRes();
+    await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, firstName: 'Dupe', number: 7, parentEmail: 'first@example.com' }), add1);
+    expect(add1.statusCode).toBe(200);
+    const id1 = add1.body.member.id;
+    expect(id1).toBe('dupe');
+
+    const add2 = makeRes();
+    await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, firstName: 'Dupe', number: 8, parentEmail: 'second@example.com' }), add2);
+    expect(add2.statusCode).toBe(200);
+    const id2 = add2.body.member.id;
+    // Second player gets a distinct id (jersey-number suffixed), not a clobber.
+    expect(id2).not.toBe(id1);
+    expect(id2).toBe('dupe8');
+
+    // Both members exist and keep their own data.
+    const list = makeRes();
+    await _handlers.roster(get({ code: _seed.SEED_TEAM_CODE }), list);
+    const first = list.body.members.find((m) => m.playerId === id1);
+    const second = list.body.members.find((m) => m.playerId === id2);
+    expect(first).toBeTruthy();
+    expect(second).toBeTruthy();
+    expect(first.number).toBe(7);
+    expect(second.number).toBe(8);
+
+    // Cleanup.
+    await _handlers.removePlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, playerId: id1 }), makeRes());
+    await _handlers.removePlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, playerId: id2 }), makeRes());
+  });
+
+  it('a third same-name collision with no free number-slug falls back to a numeric suffix', async () => {
+    const login = await loginSeedCoach();
+    const token = login.body.token;
+    // No number -> cannot use the jersey-suffix path, must use -N.
+    const a = makeRes();
+    await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, firstName: 'Trip', parentEmail: 'a@example.com' }), a);
+    const b = makeRes();
+    await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, firstName: 'Trip', parentEmail: 'b@example.com' }), b);
+    expect(a.body.member.id).toBe('trip');
+    expect(b.body.member.id).toBe('trip-2');
+    await _handlers.removePlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, playerId: 'trip' }), makeRes());
+    await _handlers.removePlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, playerId: 'trip-2' }), makeRes());
+  });
 });
 
 describe('IDP: monthly goal + game-goal log', () => {
