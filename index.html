@@ -3313,7 +3313,13 @@ function render(){
         if(window.thwapStampToday)window.thwapStampToday('dryland',true); try{ if(window.thwapSfx)thwapSfx('drylandReward'); }catch(e){}
         btn.textContent='Done ✓';
       };
-      if(row.classList.contains('done')){ return; }  /* already done: no-op */
+      var unMark=function(){
+        var p=loadProg(w.id); p[i]=false; saveProg(w.id,p);
+        row.classList.remove('done');
+        if(window.thwapStampToday)window.thwapStampToday('dryland',false);
+        btn.textContent='Start';
+      };
+      if(row.classList.contains('done')){ unMark(); return; }  /* tap a done row to un-mark it (no timer) */
       if(window.thwapDrillTimer){ window.thwapDrillTimer(drills[i].name, markDone, drills[i].audio, {cue:drills[i].cue, steps:drills[i].steps}); }
       else { markDone(); }  /* engine missing: fall back to immediate done */
     });
@@ -3396,7 +3402,7 @@ window.THWAP_DRILL_SCRIPT={
   'Z-Pattern Slalom':{type:'reps',reps:8,perRep:2.0,sides:2,sideLabels:['One way','Reverse'],sets:4,restSeconds:15},
   'The Square Box':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['One way','Reverse'],sets:4,restSeconds:15},
   'Top-Hand Only':{type:'reps',reps:15,perRep:1.5,sides:1,sets:4,restSeconds:15},
-  'Bottom-Hand Only':{type:'reps',reps:15,perRep:1.5,sides:1,sets:4,restSeconds:15},
+  'Figure-8 Roll':{type:'reps',reps:15,perRep:1.5,sides:1,sets:4,restSeconds:15},
   'Toe Drag & Rescue':{type:'reps',reps:10,perRep:2.0,sides:2,sideLabels:['Right','Left'],sets:4,restSeconds:15},
   'Heel-to-Toe Flips':{type:'reps',reps:10,perRep:1.5,sides:1,sets:4,restSeconds:15},
   'Flip Over Objects':{type:'reps',reps:10,perRep:2.0,sides:1,sets:4,restSeconds:15},
@@ -4775,8 +4781,8 @@ var DRILLS=window.DRILLS=[
    steps:['Front: Push the puck forward.','Side: Move it out to the side.','Back then side: Pull it back, then across. Trace the whole box.']},
   {cat:'Strength & Coordination', emoji:'☝️', name:'Top-Hand Only', cue:'Control the puck with only your top hand on the stick.', video:'https://www.youtube.com/watch?v=bF0t9F2OpAU', audio:'stick_11',
    steps:['One hand: Top hand only on the stick.','Control: Small, smooth moves.','Build strength: Feel your forearm work.']},
-  {cat:'Strength & Coordination', emoji:'👇', name:'Bottom-Hand Only', cue:'Control the puck with only your bottom hand on the stick.', video:'https://www.youtube.com/watch?v=gzfPlIE8EJ8', audio:'stick_12',
-   steps:['One hand: Bottom hand only.','Guide it: Steer the puck around.','Soft touch: Light grip, not stiff.']},
+  {cat:'Strength & Coordination', emoji:'🔄', name:'Figure-8 Roll', cue:'Roll the puck in a figure 8 with a loose, light grip.', video:'https://www.youtube.com/watch?v=gzfPlIE8EJ8', audio:'stick_12',
+   steps:['Make an 8: Weave the puck in a figure 8 shape.','Loose hands: Hold a PVC pipe or paper towel roll so you cannot squeeze.','Soft and smooth: Light touch, no death grip.']},
   {cat:'Strength & Coordination', emoji:'🪝', name:'Toe Drag & Rescue', cue:'Push the puck wide, then hook it back with the toe of your blade.', video:'https://www.youtube.com/watch?v=UlkAnet3d-A', audio:'stick_13',
    steps:['Push wide: Send the puck out to the side.','Toe hook: Use the toe of the blade to pull it back.','Rescue it: Reel it back under control.']},
   {cat:'Strength & Coordination', emoji:'🔃', name:'Heel-to-Toe Flips', cue:'Roll the puck from heel to toe and pop it up.', video:'https://www.youtube.com/watch?v=GbSaXtdiGpk', audio:'stick_14',
@@ -4848,7 +4854,13 @@ function render(){
         if(window.thwapStampToday)window.thwapStampToday('stick',true); try{ if(window.thwapSfx)thwapSfx('handsReward'); }catch(e){}
         btn.textContent='Done ✓';
       };
-      if(row.classList.contains('done')){ return; }
+      var unMark=function(){
+        var p=loadProg(); p[i]=false; saveProg(p);
+        row.classList.remove('done');
+        if(window.thwapStampToday)window.thwapStampToday('stick',false);
+        btn.textContent='Start';
+      };
+      if(row.classList.contains('done')){ unMark(); return; }  /* tap a done row to un-mark it (no timer) */
       if(window.thwapDrillTimer){ window.thwapDrillTimer(picks[i].name, markDone, picks[i].audio, {cue:picks[i].cue, steps:picks[i].steps}); }
       else { markDone(); }
     });
@@ -5689,7 +5701,13 @@ function render(){
         if(window.thwapStampToday)window.thwapStampToday('shoot',true); try{ if(window.thwapSfx)thwapSfx('shootReward'); }catch(e){}
         btn.textContent='Done ✓';
       };
-      if(row.classList.contains('done')){ return; }
+      var unMark=function(){
+        var p=loadProg(); p[i]=false; saveProg(p);
+        row.classList.remove('done');
+        if(window.thwapStampToday)window.thwapStampToday('shoot',false);
+        btn.textContent='Start';
+      };
+      if(row.classList.contains('done')){ unMark(); return; }  /* tap a done row to un-mark it (no timer) */
       if(window.thwapDrillTimer){
         /* Per-drill length adapts to how many drills the day shows so the whole
            session lands ~13.5 min: 3 drills -> 4:30 each, 4 -> 3:30 each,
@@ -5779,7 +5797,13 @@ function render(){
         if(window.thwapStampToday)window.thwapStampToday('pass',true);
         btn.textContent='Done ✓';
       };
-      if(row.classList.contains('done')){ return; }
+      var unMark=function(){
+        var p=loadP(); p[i]=false; saveP(p);
+        row.classList.remove('done');
+        if(window.thwapStampToday)window.thwapStampToday('pass',false);
+        btn.textContent='Start';
+      };
+      if(row.classList.contains('done')){ unMark(); return; }  /* tap a done row to un-mark it (no timer) */
       if(window.thwapDrillTimer){ window.thwapDrillTimer(PASS[i].name, markDone, PASS[i].audio, {cue:PASS[i].cue, steps:PASS[i].steps}); }
       else { markDone(); }
     });
