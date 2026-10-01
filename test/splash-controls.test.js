@@ -1,12 +1,16 @@
 // test/splash-controls.test.js
 //
-// The logged-out login SPLASH must surface a small controls cluster with a SOUND
-// toggle and a THEME toggle, reachable before sign-in (the footer copies of these
-// controls sit UNDER the splash overlay and are unreachable). The cluster must:
-//   - exist with #splashSfx (sound) + #splashTheme (theme) buttons,
-//   - be gated to the splash (body.login-locked) and sit above the overlay,
-//   - reuse the SAME shared state (localStorage thwapTheme / thwapSfxOn) as the
-//     footer buttons, so toggling one reflects live in the other.
+// The logged-out login SPLASH must let a player/parent reach the SOUND toggle and
+// the THEME toggle before sign-in. PR #299 wrongly added a DUPLICATE cluster
+// (#splashCtl / #splashSfx / #splashTheme) on top of the frost. The correct fix is
+// to surface the EXISTING footer controls (#sfxToggle + #themeToggle) above the
+// frost while body.login-locked is active, so there is exactly ONE set of controls.
+//
+// This suite asserts:
+//   (a) NO #splashCtl / #splashSfx / #splashTheme / .splashctl exist anywhere,
+//   (b) the REAL #sfxToggle + #themeToggle footer is lifted above the overlay
+//       (#loginOverlay z-130) on body.login-locked, reachable (pointer-events),
+//   (c) those real controls still drive thwapTheme / thwapSfxOn as before.
 //
 // @vitest-environment jsdom
 
@@ -19,56 +23,55 @@ import { JSDOM } from 'jsdom';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const html = readFileSync(resolve(__dirname, '../index.html'), 'utf8');
 
-describe('Splash controls: source structure', () => {
-  it('mounts a splash cluster with a sound button and a theme button', () => {
-    expect(html).toContain("class='splashctl' id='splashCtl'");
-    expect(html).toContain("id='splashSfx'");
-    expect(html).toContain("id='splashTheme'");
-    // reuses the footer pill classes (visual language), not a new look
-    expect(html).toMatch(/class='sfxtoggle' id='splashSfx'/);
-    expect(html).toMatch(/class='themetoggle' id='splashTheme'/);
+describe('Splash controls: the #299 duplicate is fully removed', () => {
+  it('has NO #splashCtl / #splashSfx / #splashTheme ids anywhere', () => {
+    expect(html).not.toContain('splashCtl');
+    expect(html).not.toContain('splashSfx');
+    expect(html).not.toContain('splashTheme');
   });
 
-  it('does NOT add the kebab menu (sign-out is meaningless logged out)', () => {
-    // the only footmenu/kebab in source is the footer one, not inside the splash cluster
-    const clusterStart = html.indexOf("id='splashCtl'");
-    const clusterEnd = html.indexOf('</div>', clusterStart);
-    const cluster = html.slice(clusterStart, clusterEnd);
-    expect(cluster).not.toContain('footkebab');
-    expect(cluster).not.toContain('menuSignout');
+  it('has NO .splashctl class, markup or CSS, and no splash ttico/ttlabel fork', () => {
+    expect(html).not.toContain('splashctl');
+    expect(html).not.toContain('splashTtico');
+    expect(html).not.toContain('splashTtlabel');
   });
 
-  it('is gated to the splash only (body.login-locked) and sits ABOVE the overlay (z>130)', () => {
-    expect(html).toContain('.splashctl{display:none}');
-    expect(html).toMatch(/body\.login-locked \.splashctl\{display:inline-flex;position:fixed/);
-    const m = html.match(/body\.login-locked \.splashctl\{[^}]*z-index:(\d+)/);
+  it('leaves the sfx wiring unforked (only #sfxToggle in the btns array and guard)', () => {
+    expect(html).toContain("var btns=[document.getElementById('sfxToggle')].filter(Boolean);");
+    expect(html).toContain("if(t.closest('#sfxToggle'))return null;");
+  });
+
+  it('leaves the theme IIFE unforked (only #themeToggle listener)', () => {
+    expect(html).toContain("var b=document.getElementById('themeToggle');if(b)b.addEventListener('click',toggle);})();");
+  });
+});
+
+describe('Splash controls: the REAL footer controls are surfaced above the frost', () => {
+  it('still ships the single real footer with #sfxToggle + #themeToggle', () => {
+    expect(html).toMatch(/class='sfxtoggle' id='sfxToggle'/);
+    expect(html).toMatch(/class='themetoggle' id='themeToggle'/);
+    // exactly one of each id
+    expect((html.match(/id='sfxToggle'/g) || []).length).toBe(1);
+    expect((html.match(/id='themeToggle'/g) || []).length).toBe(1);
+  });
+
+  it('lifts the real .footer above the overlay (z>130), fixed and pointer-reachable, on body.login-locked', () => {
+    const m = html.match(/body\.login-locked \.footer\{([^}]*)\}/);
     expect(m).toBeTruthy();
-    expect(Number(m[1])).toBeGreaterThan(130);
-    // interactive layer must take pointer events
-    expect(html).toMatch(/body\.login-locked \.splashctl\{[^}]*pointer-events:auto/);
+    const rule = m[1];
+    expect(rule).toMatch(/position:fixed/);
+    const z = rule.match(/z-index:(\d+)/);
+    expect(z).toBeTruthy();
+    expect(Number(z[1])).toBeGreaterThan(130);
+    expect(rule).toMatch(/pointer-events:auto/);
   });
 
-  it('keeps 44px+ tap targets on the splash controls', () => {
-    expect(html).toContain('.splashctl .sfxtoggle{width:44px;height:44px}');
-    expect(html).toContain('.splashctl .themetoggle{min-height:44px');
+  it('hides the slogan + kebab on the splash so the two toggles clear the sign-in card', () => {
+    expect(html).toMatch(/body\.login-locked \.footer \.slogan,body\.login-locked \.footer \.footmenu-wrap\{display:none\}/);
   });
 
-  it('wires BOTH sound buttons through the one wireMute() on the shared thwapSfxOn key', () => {
-    expect(html).toContain("[document.getElementById('sfxToggle'),document.getElementById('splashSfx')]");
-    expect(html).toContain("localStorage.getItem('thwapSfxOn')");
-    // splash sound button is in the universal-tap guard so it does not double-fire
-    expect(html).toContain("t.closest('#sfxToggle')||t.closest('#splashSfx')");
-  });
-
-  it('wires BOTH theme buttons through the one apply() IIFE on the shared thwapTheme key', () => {
-    expect(html).toContain("var sb=document.getElementById('splashTheme');if(sb)sb.addEventListener('click',toggle)");
-    // the splash theme button updates its own icon/label from the SAME apply()
-    expect(html).toContain("document.getElementById('splashTtico')");
-    expect(html).toContain("document.getElementById('splashTtlabel')");
-  });
-
-  it('adds no banned punctuation (middot / em-dash / en-dash) on the splash lines', () => {
-    const lines = html.split('\n').filter((l) => /splashctl|splashSfx|splashTheme|splashTtico|splashTtlabel|Splash controls/.test(l));
+  it('adds no banned punctuation (middot / em-dash / en-dash) on the surfacing lines', () => {
+    const lines = html.split('\n').filter((l) => /login-locked \.footer|login splash \(body\.login-locked\)/.test(l));
     expect(lines.length).toBeGreaterThan(0);
     for (const l of lines) {
       expect(/[\u00B7\u2014\u2013]/.test(l)).toBe(false);
@@ -76,7 +79,7 @@ describe('Splash controls: source structure', () => {
   });
 });
 
-describe('Splash controls: live behavior (jsdom)', () => {
+describe('Splash controls: live behavior via the real footer controls (jsdom)', () => {
   let win, doc;
   beforeAll(async () => {
     const dom = new JSDOM(html, {
@@ -89,42 +92,39 @@ describe('Splash controls: live behavior (jsdom)', () => {
       },
     });
     win = dom.window; doc = win.document;
-    await new Promise((r) => setTimeout(r, 80));
+    await new Promise((r) => setTimeout(r, 120));
   });
 
-  it('renders both toggle buttons in the DOM', () => {
-    expect(doc.getElementById('splashCtl')).toBeTruthy();
-    expect(doc.getElementById('splashSfx')).toBeTruthy();
-    expect(doc.getElementById('splashTheme')).toBeTruthy();
+  it('does NOT render any splash-duplicate nodes', () => {
+    expect(doc.getElementById('splashCtl')).toBeNull();
+    expect(doc.getElementById('splashSfx')).toBeNull();
+    expect(doc.getElementById('splashTheme')).toBeNull();
   });
 
-  it('toggling the splash theme button flips <html data-theme> and the footer button label in sync', () => {
-    const splashBtn = doc.getElementById('splashTheme');
-    const footerIco = doc.getElementById('ttico');
-    const splashIco = doc.getElementById('splashTtico');
+  it('renders the single real footer sound + theme toggles', () => {
+    expect(doc.getElementById('sfxToggle')).toBeTruthy();
+    expect(doc.getElementById('themeToggle')).toBeTruthy();
+  });
+
+  it('toggling the real theme button flips <html data-theme> and persists thwapTheme', () => {
+    const btn = doc.getElementById('themeToggle');
     const before = doc.documentElement.getAttribute('data-theme');
-    splashBtn.click();
+    btn.click();
     const after = doc.documentElement.getAttribute('data-theme');
     expect(after).not.toBe(before);
-    // both icons reflect the SAME new state (dark => sun on both)
-    expect(splashIco.textContent).toBe(footerIco.textContent);
     expect(win.localStorage.getItem('thwapTheme')).toBe(after);
-    splashBtn.click(); // leave state clean
+    btn.click(); // leave state clean
+    expect(doc.documentElement.getAttribute('data-theme')).toBe(before);
   });
 
-  it('muting via the splash sound button updates the footer sound button live (shared thwapSfxOn)', () => {
-    const splashSfx = doc.getElementById('splashSfx');
-    const footerSfx = doc.getElementById('sfxToggle');
-    // default ON
-    expect(splashSfx.getAttribute('aria-pressed')).toBe('true');
-    expect(footerSfx.getAttribute('aria-pressed')).toBe('true');
-    splashSfx.click(); // mute
+  it('muting via the real sound button persists thwapSfxOn and repaints aria-pressed', () => {
+    const sfx = doc.getElementById('sfxToggle');
+    expect(sfx.getAttribute('aria-pressed')).toBe('true'); // default ON
+    sfx.click(); // mute
     expect(win.localStorage.getItem('thwapSfxOn')).toBe('0');
-    expect(splashSfx.getAttribute('aria-pressed')).toBe('false');
-    // the footer button repaints to the same muted state via the shared paint()
-    expect(footerSfx.getAttribute('aria-pressed')).toBe('false');
-    expect(footerSfx.classList.contains('off')).toBe(true);
-    splashSfx.click(); // unmute, leave clean
-    expect(footerSfx.getAttribute('aria-pressed')).toBe('true');
+    expect(sfx.getAttribute('aria-pressed')).toBe('false');
+    expect(sfx.classList.contains('off')).toBe(true);
+    sfx.click(); // unmute, leave clean
+    expect(sfx.getAttribute('aria-pressed')).toBe('true');
   });
 });
