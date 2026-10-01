@@ -6250,6 +6250,7 @@ window.thwapMarkDone=function(discipline, drillId, undo){
     if(drillId) payload.drillId=drillId;
     return fetch('/api/done',{
       method:'POST', headers:{'Content-Type':'application/json'}, cache:'no-store',
+      credentials:'include',
       body:JSON.stringify(payload)
     });
   };
@@ -6307,6 +6308,7 @@ window.thwapUnmarkDone=function(drillId){
   var send=function(){
     return fetch('/api/done',{
       method:'POST', headers:{'Content-Type':'application/json'}, cache:'no-store',
+      credentials:'include',
       body:JSON.stringify({player:PLAYER.toLowerCase(), drillId:drillId, undo:true})
     });
   };
@@ -6333,7 +6335,7 @@ window.thwapUnmarkDone=function(drillId){
 window.thwapHydrateDone=function(){
   try{
     var get=function(){
-      return fetch('/api/done',{method:'GET', cache:'no-store', headers:{'Accept':'application/json'}});
+      return fetch('/api/done',{method:'GET', cache:'no-store', credentials:'include', headers:{'Accept':'application/json'}});
     };
     var apply=function(data){
       if(!data || !Array.isArray(data.drills)) return { ok:false };
@@ -7504,7 +7506,7 @@ function mintServerSession(pid,code,email,keep){
     var settled=false, fin=function(){ if(settled)return; settled=true; resolve(); };
     var to=setTimeout(fin,3500);
     try{
-      fetch('/api/login?action=code-signin',{method:'POST',headers:{'Content-Type':'application/json'},
+      fetch('/api/login?action=code-signin',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',
         body:JSON.stringify({playerId:pid,code:String(code||''),email:String(email||''),keep:!!keep})})
         .then(function(){ clearTimeout(to); fin(); },function(){ clearTimeout(to); fin(); });
     }catch(e){ clearTimeout(to); fin(); }
@@ -7672,7 +7674,7 @@ window.thwapEnsureSession=function(){
     var code=String(codeEl.value||'').trim();
     if(!/^\d{6}$/.test(code)){ msg.className='login-msg err'; msg.textContent='Enter the 6-digit code.'; codeEl.focus(); return; }
     verifyBtn.disabled=true; verifyBtn.textContent='Signing in...';
-    fetch('/api/login?action=verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({playerId:pid,code:code,keep:keepEl?keepEl.checked:true})})
+    fetch('/api/login?action=verify',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({playerId:pid,code:code,keep:keepEl?keepEl.checked:true})})
       .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
       .then(function(res){
         if(res.ok && res.j && res.j.player){
