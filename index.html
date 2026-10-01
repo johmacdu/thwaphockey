@@ -128,7 +128,7 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 /* Next-game status tag: a FLAT pill (NOT a card -- it does not navigate), shown
    above the Hands card more than 48h before a game. Inside 48h it is hidden and
    the game-day-goals card (.pnextgame) takes its place in the same slot. */
-.nextgame-tag{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;margin-bottom:14px;padding:7px 14px;border-radius:999px;background:var(--soft);color:var(--green2);font-size:13px;font-weight:800;letter-spacing:.01em}
+.nextgame-tag{display:inline-flex;align-items:center;gap:8px;justify-self:start;align-self:flex-start;width:auto;margin-bottom:14px;padding:10px 16px;border-radius:999px;background:var(--soft);color:var(--green2);font-size:13px;font-weight:700;letter-spacing:.01em}
 .nextgame-tag[hidden]{display:none}
 .ngt-ico{font-size:15px;line-height:1}
 .ngt-text{white-space:nowrap}
@@ -1800,7 +1800,7 @@ body.login-locked{overflow:hidden}
   }).catch(function(){});
 })();})();</script><div class='forrow'><div class='dowrap' id='doWrap'><div class='dolead' id='doLead'></div><div class='discline' id='discLine'></div></div></div>
 <div class='cards'>
-<div class='nextgame-tag' id='nextGameTag' hidden><span class='ngt-ico' role='img' aria-label='Hockey'>🏒</span><span class='ngt-text' id='ngtText'></span></div>
+<div class='nextgame-tag' id='nextGameTag' hidden><span class='ngt-ico' role='img' aria-label='Rink'>🏟️</span><span class='ngt-text' id='ngtText'></span></div>
 <a class='pnextgame' id='pNextGame' href='hockey_game_goals.html' hidden>
   <div class='png-top'>
     <div class='png-head'>
@@ -2894,7 +2894,9 @@ window.addEventListener('hashchange',function(){ if(location.hash===''||location
         if(card) card.hidden=true;
         if(tag&&tagText){
           var when=MON[dt.getMonth()]+' '+dt.getDate()+(g.time?(' '+ftime(g.time)):'');
-          tagText.textContent='Next game '+(days===1?'tomorrow':(days>1?('in '+days+' days'):when))+' '+(g.home?'vs ':'at ')+(g.opponent||'TBD');
+          var lead='Next game '+(days===1?'tomorrow':(days>1?('in '+days+' days'):when))+' '+(g.home?'vs ':'at ');
+          var opp=String(g.opponent||'TBD').replace(/[<>&]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c];});
+          tagText.innerHTML=lead.replace(/[<>&]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c];})+'<b>'+opp+'</b>';
           tag.hidden=false;
         }
         return;
