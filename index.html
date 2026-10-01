@@ -320,8 +320,17 @@ body.login-locked .topbar{position:relative;z-index:120}
 .cf-photo-btn{position:absolute;top:12px;right:12px;z-index:6;min-height:44px;padding:0 14px;border:0;border-radius:999px;background:rgba(15,23,18,.72);color:#fff;font-family:inherit;font-weight:800;font-size:13px;cursor:pointer;-webkit-tap-highlight-color:transparent;backdrop-filter:blur(6px)}
 .card3d.showing-back .cf-photo-btn{display:none}
 .cf-photo-btn:active{transform:scale(.96)}
-/* Teammate (read-only) card view: hide owner-only controls. */
-body.viewing-teammate .cardctl,body.viewing-teammate .cb-stats-layer,body.viewing-teammate .cf-photo-btn{display:none !important}
+/* Teammate (read-only) card view: hide owner-only controls, but KEEP the card's
+   control area so the Cheer row can live below the card (always visible, front or
+   back) -- the mirror of the own-card theme/photo controls. */
+body.viewing-teammate .cardctl-main,body.viewing-teammate #cardCtlMain,body.viewing-teammate .cardctl-theme,body.viewing-teammate .cb-stats-layer,body.viewing-teammate .cf-photo-btn{display:none !important}
+/* The Cheer row shows ONLY when viewing a teammate (never on your own card). */
+.cardctl-cheer[hidden]{display:none}
+body:not(.viewing-teammate) .cardctl-cheer{display:none !important}
+body.viewing-teammate .cardctl-cheer:not([hidden]){display:flex}
+.cardbtn-cheer.cheered{background:var(--soft, #22402f);color:var(--lime);box-shadow:none;cursor:default}
+.cardbtn-cheer.cheered:active{transform:none}
+.cardctl-cheer-count{font-family:'Nunito Sans',system-ui,sans-serif;font-weight:900;font-size:14px;color:rgba(255,255,255,.9)}
 /* holographic sheen driven by --sheen (0..1) */
 .cardface::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.28) 47%,rgba(185,240,107,.22) 52%,rgba(117,184,255,.22) 57%,transparent 72%);transform:translateX(calc((var(--sheen,.5) - .5) * 160%));mix-blend-mode:screen;opacity:.7}
 .cardhint{color:rgba(255,255,255,.72);font-size:13px;font-weight:700;letter-spacing:.02em}
@@ -362,22 +371,14 @@ body.viewing-teammate .cardctl,body.viewing-teammate .cb-stats-layer,body.viewin
 .cb-stats::before{content:'📊'}
 .cb-stats:hover{filter:brightness(1.05)}
 .cb-stats:active{transform:translateX(-50%) scale(.96)}
-/* Cheer (teammate high-five) layer. Same card-sized layer trick as the stats
-   layer: it spins in lockstep with the card (+180deg on Y, backface-visibility)
-   so the Cheer button + count read as printed on the BACK face. It is the mirror
-   of the stats layer: HIDDEN on your own card, shown ONLY when viewing a teammate
-   (body.viewing-teammate), so you can never cheer yourself. */
-.cb-cheer-layer{position:absolute;top:0;left:50%;width:min(380px,94vw);height:calc(min(380px,94vw) * 1.4);transform-origin:center center;transform:translateX(-50%) rotateY(180deg);backface-visibility:hidden;-webkit-backface-visibility:hidden;pointer-events:none;z-index:6;display:none}
-body.viewing-teammate .cb-cheer-layer{display:block}
-.cb-cheer-wrap{position:absolute;left:50%;bottom:40px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px}
-.cb-cheer-count{pointer-events:none;font-family:'Nunito Sans',system-ui,sans-serif;font-weight:900;font-size:13px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.5);letter-spacing:.01em}
-.cb-cheer{pointer-events:auto;display:inline-flex;align-items:center;gap:6px;background:var(--lime);color:#0f1712;font-family:'Nunito Sans',system-ui,sans-serif;font-weight:900;font-size:13px;border:0;border-radius:999px;padding:9px 18px;min-height:40px;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.4);-webkit-tap-highlight-color:transparent;transition:transform .12s ease,filter .12s ease}
-.cb-cheer:hover{filter:brightness(1.05)}
-.cb-cheer:active{transform:scale(.95)}
-.cb-cheer:disabled,.cb-cheer.cheered{cursor:default;background:var(--soft, #22402f);color:var(--lime);box-shadow:none;filter:none}
-.cb-cheer.cheered{animation:cheerPop .4s cubic-bezier(.2,1.1,.3,1)}
+/* Cheer (teammate high-five). The control lives in a row BELOW the card
+   (.cardctl-cheer), always visible front or back -- the mirror of the own-card
+   theme/photo controls. Shown ONLY when viewing a teammate (body.viewing-teammate),
+   so you can never cheer yourself. The button styling is .cardbtn / .cardbtn-cheer
+   defined with the other card controls above. */
+.cardbtn-cheer.cheered{animation:cheerPop .4s cubic-bezier(.2,1.1,.3,1)}
 @keyframes cheerPop{0%{transform:scale(1)}45%{transform:scale(1.14)}100%{transform:scale(1)}}
-@media (prefers-reduced-motion: reduce){.cb-cheer{transition:none}.cb-cheer.cheered{animation:none}}
+@media (prefers-reduced-motion: reduce){.cardbtn-cheer{transition:none}.cardbtn-cheer.cheered{animation:none}}
 .cb-disc{margin-top:14px}
 .cb-disc-top{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
 .cb-disc-name{font-size:15px;font-weight:800;color:#fff}
@@ -3900,9 +3901,12 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#progress')
       <div class='cardface cardback' id='cardBack'></div>
     </div>
     <div class='cb-stats-layer' id='cbStatsLayer'><button type='button' class='cb-stats' id='cbStats'>See my stats</button></div>
-    <div class='cb-cheer-layer' id='cbCheerLayer'><div class='cb-cheer-wrap'><div class='cb-cheer-count' id='cbCheerCount'></div><button type='button' class='cb-cheer' id='cbCheer'>👏 Cheer</button></div></div>
     <div class='cardhint' id='cardHint' hidden></div>
     <div class='cardctl' id='cardCtl'>
+      <div class='cardctl-row cardctl-cheer' id='cardCtlCheer' hidden>
+        <button type='button' class='cardbtn cardbtn-cheer' id='cbCheer'>👏 Cheer</button>
+        <span class='cardctl-cheer-count' id='cbCheerCount'></span>
+      </div>
       <div class='cardctl-row' id='cardCtlMain'>
         <button type='button' class='cardbtn' id='cardThemeBtn'></button>
         <button type='button' class='cardbtn' id='cardImageBtn'></button>
@@ -3974,14 +3978,14 @@ function setCheerable(){
   cheerBtn.classList.remove('cheered');
 }
 /* Prepare the Cheer button + count for the teammate now being viewed. Called by
-   openTeammateCard. Shows nothing (layer stays empty) when cheers are disabled,
-   when there is no valid teammate target, or when the target is yourself. */
+   openTeammateCard. The Cheer control lives in a row BELOW the card (always visible,
+   front or back) and is shown only when viewing a valid teammate who is not you. */
 window.thwapRenderCheer=function(){
   if(!cheerBtn||!cheerCountEl) return;
   var from=myCheerId(), to=viewedCheerId();
-  var layer=document.getElementById('cbCheerLayer');
+  var row=document.getElementById('cardCtlCheer');
   var ok=CHEERS_ENABLED && !!to && to!==from;
-  if(layer) layer.style.visibility=ok?'':'hidden';
+  if(row) row.hidden=!ok;
   if(!ok) return;
   paintCheerCount(cheerCountFor(to));
   if(alreadyCheeredToday(from,to)) setCheered(); else setCheerable();
@@ -4366,10 +4370,6 @@ function paint(){
      BACK face and spins with the card; backface-visibility hides it on the front. */
   var sl=document.getElementById('cbStatsLayer');
   if(sl){ sl.style.transform='translateX(-50%) rotateX('+rx+'deg) rotateY('+(ry+180)+'deg)'; }
-  /* The cheer layer (teammate view only) spins the same way so its Cheer button
-     and count read as printed on the BACK face, exactly like the stats layer. */
-  var cl=document.getElementById('cbCheerLayer');
-  if(cl){ cl.style.transform='translateX(-50%) rotateX('+rx+'deg) rotateY('+(ry+180)+'deg)'; }
 }
 function open(){
   /* If no player is chosen yet on this device, send them to pick one first. */
