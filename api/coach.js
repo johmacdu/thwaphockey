@@ -38,6 +38,7 @@ import {
   updateMember, parentEmailList, createResetToken, consumeResetToken,
   getAdmin, setAdmin, ensureTeamIndexed,
   listTeamCoaches, ensureHeadCoach, addAssistantCoach, removeAssistantCoach, MAX_ASSISTANTS,
+  backfillSeedBeta, getBetaUntil,
 } from '../lib/teams_store.js';
 import { ensureSchedule, getSchedule, addEvent as addScheduleEvent, nextEvent } from '../lib/schedule_store.js';
 
@@ -111,7 +112,10 @@ async function ensureSeed() {
   // Create any team that does not exist yet, with its members (idempotent).
   for (const t of DEMO_TEAMS) {
     if (!(await getTeam(t.code))) {
-      await setTeam(t.code, { name: t.name, association: 'Vancouver Jr. Rangers', ageGroup: t.ageGroup, coachEmail: SEED_COACH_EMAIL, createdAt: new Date().toISOString() });
+      // betaUntil:null defers the window to backfillSeedBeta below (now + 14d),
+      // the single source of the SEED team's window. The createdAt + 30d default
+      // in setTeam is for genuinely NEW coach-created teams, not the seed.
+      await setTeam(t.code, { name: t.name, association: 'Vancouver Jr. Rangers', ageGroup: t.ageGroup, coachEmail: SEED_COACH_EMAIL, createdAt: new Date().toISOString(), betaUntil: null });
       for (const m of t.members) {
         await addMember(t.code, {
           playerId: m.playerId, firstName: m.firstName,
@@ -127,6 +131,11 @@ async function ensureSeed() {
   // Backfill the team index for teams that predate the index (created before
   // teams:index existed), so admin views that scan the index still see them.
   for (const code of allCodes) { await ensureTeamIndexed(code); }
+  // Backfill the beta-banner window for the seed team ONCE. The seed carries an
+  // OLD createdAt (set the first time ensureSeed ran), so the banner must NOT key
+  // off createdAt or it would hide immediately; give it now + 14 days the first
+  // time, and never overwrite an existing betaUntil on later redeploys.
+  await backfillSeedBeta(SEED_TEAM_CODE);
   const existing = await getCoach(SEED_COACH_EMAIL);
   if (existing) {
     // Pin the seed coach to exactly the canonical team set (currently the one 10U
@@ -549,7 +558,7 @@ async function roster(req, res) {
   const trainedCount = members.filter((m) => m.trainedThisWeek).length;
   res.setHeader('Cache-Control', 'no-store');
   return res.status(200).json({
-    ok: true, team: { code: team.code, name: team.name, ageGroup: team.ageGroup },
+    ok: true, team: { code: team.code, name: team.name, ageGroup: team.ageGroup, betaUntil: (team.betaUntil === undefined ? null : team.betaUntil) },
     participation: { trained: trainedCount, total: members.length },
     members,
   });
@@ -856,6 +865,19 @@ async function gameGoalLogRead(req, res) {
   return res.status(200).json({ ok: true, log: (await getGameGoalLog(pid)).slice(-30).reverse() });
 }
 
+// PUBLIC, no-auth: the home "beta" banner reads this to decide whether to keep
+// showing itself for a team. Returns only { ok, betaUntil } (null when unset or
+// the team is unknown), which is non-sensitive. The player home cannot fetch the
+// coach-gated roster, so this is its data source. Defaults to the seed team;
+// accepts ?code=. no-store so a stale CDN copy never pins the banner on/off.
+async function beta(req, res) {
+  if (!methodGuard(req, res, 'GET')) return;
+  await ensureSeed();
+  const code = (req.query && req.query.code) || SEED_TEAM_CODE;
+  res.setHeader('Cache-Control', 'no-store');
+  return res.status(200).json({ ok: true, betaUntil: await getBetaUntil(code) });
+}
+
 export default async function handler(req, res) {
   const action = String((req.query && req.query.action) || '').toLowerCase();
   switch (action) {
@@ -896,6 +918,7 @@ export default async function handler(req, res) {
     case 'idp-goal': return idpGoal(req, res);
     case 'log-game-goal': return logGoal(req, res);
     case 'game-goal-log': return gameGoalLogRead(req, res);
+    case 'beta': return beta(req, res);
     default: return res.status(404).json({ error: 'unknown coach action' });
   }
 }
@@ -907,7 +930,7 @@ export const _handlers = {
   adminRoster, adminUpdatePlayer,
   adminLogin, adminSetPassword, adminStatus,
   join, schedule, setIdp, idpGoal, logGoal, gameGoalLogRead, setGamePosition,
-  getPlan, setPlan,
+  getPlan, setPlan, beta,
   teamGoal, setTeamGoal: setTeamGoalHandler,
   suggestDrill, drillSuggestions,
   reviewSuggestions, resolveSuggestion,
