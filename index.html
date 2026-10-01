@@ -7099,8 +7099,38 @@ document.getElementById('coachInfoScrim') && document.getElementById('coachInfoS
   function setSfxOn(v){ try{ localStorage.setItem('thwapSfxOn', v?'1':'0'); }catch(e){} }
   function ctx(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); MASTER=AC.createGain(); MASTER.gain.value=0.85; MASTER.connect(AC.destination); decodeAll(); }catch(e){ AC=null; } } if(AC&&AC.state==='suspended')AC.resume(); return AC; }
   function decodeAll(){ if(decoded||!AC)return; decoded=true; Object.keys(FILES).forEach(function(k){ try{ fetch(FILES[k]).then(function(r){return r.arrayBuffer();}).then(function(ab){ AC.decodeAudioData(ab,function(b){BUF[k]=b;},function(){}); }).catch(function(){}); }catch(e){} }); }
+  /* ---- mobile audio unlock ----------------------------------------------
+     iOS Safari and mobile Chrome start every AudioContext 'suspended' and
+     only let it resume inside a TRUSTED user gesture; a synthetic/late resume
+     stays suspended, so every sound is silent on phones while desktop (which
+     is lenient) works. Fix: on the FIRST real gesture (pointerdown / touchend
+     / click, capture phase so it runs before our own handlers), create the
+     context, resume it, and play one silent zero-gain buffer -- the canonical
+     iOS unlock. After that normal play() works on every tap. We also re-resume
+     on visibility regain, because iOS re-suspends the context when the tab is
+     backgrounded. */
+  var unlocked=false;
+  function unlock(){
+    try{ ctx(); }catch(e){}
+    if(!AC)return;
+    if(AC.state==='suspended'){ try{ AC.resume(); }catch(e){} }
+    /* silent buffer kick -- forces iOS to actually start the context */
+    try{ var b=AC.createBuffer(1,1,22050); var s=AC.createBufferSource(); s.buffer=b; s.connect(AC.destination); s.start(0); }catch(e){}
+    if(AC.state==='running') unlocked=true;
+  }
+  function primeOnce(){
+    /* keep trying until the context is genuinely running (some browsers need
+       a second gesture); detach only once unlocked */
+    if(!unlocked) unlock();
+    if(unlocked){
+      ['pointerdown','touchend','click','keydown'].forEach(function(ev){ document.removeEventListener(ev,primeOnce,true); });
+    }
+  }
+  ['pointerdown','touchend','click','keydown'].forEach(function(ev){ document.addEventListener(ev,primeOnce,true); });
+  /* iOS suspends the context when the page is hidden; resume on return */
+  document.addEventListener('visibilitychange',function(){ if(!document.hidden&&AC&&AC.state==='suspended'){ try{ AC.resume(); }catch(e){} } });
   function jit(){ return 1+(Math.random()*2-1)*0.05; }
-  function shot(clip,rate,gain,when){ var b=BUF[clip]; if(!b||!AC)return; var s=AC.createBufferSource(); s.buffer=b; s.playbackRate.value=(rate||1)*jit(); var g=AC.createGain(); g.gain.value=(gain==null?1:gain); s.connect(g); g.connect(MASTER); s.start(when||0); }
+  function shot(clip,rate,gain,when,_retry){ var b=BUF[clip]; if(!AC)return; if(!b){ if(!(_retry>4)){ setTimeout(function(){ shot(clip,rate,gain,0,(_retry||0)+1); },60); } return; } var s=AC.createBufferSource(); s.buffer=b; s.playbackRate.value=(rate||1)*jit(); var g=AC.createGain(); g.gain.value=(gain==null?1:gain); s.connect(g); g.connect(MASTER); s.start(when||0); }
   function play(name){
     if(!sfxOn())return; if(reduce&&CELEBRATE[name])return;
     var m=MAP[name]; if(!m)return; ctx(); if(!AC)return;
