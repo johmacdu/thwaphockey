@@ -122,6 +122,34 @@ describe('roster + participation + kid-owned identity', () => {
     expect(list.body.members.some((m) => m.playerId === 'testkid')).toBe(false);
   });
 
+  it('roster returns each member\'s parentEmails so the edit sheet can show them', async () => {
+    // Regression: the roster handler omitted parentEmails, so tapping Edit on a
+    // player in the Team page rendered an empty email list even though emails were
+    // stored. The edit sheet (coach AND player-self) reads m.parentEmails from this
+    // exact endpoint.
+    const login = await loginSeedCoach();
+    const token = login.body.token;
+
+    // single email
+    await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, firstName: 'Emailkid', number: 51, parentEmail: 'mom@example.com' }), makeRes());
+    // two emails via the flexible array
+    await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, firstName: 'Twomail', number: 52, parentEmails: ['dad@example.com', 'mum@example.com'] }), makeRes());
+
+    const list = makeRes();
+    await _handlers.roster(get({ code: _seed.SEED_TEAM_CODE }), list);
+
+    const one = list.body.members.find((m) => m.playerId === 'emailkid');
+    expect(one).toBeTruthy();
+    expect(Array.isArray(one.parentEmails)).toBe(true);
+    expect(one.parentEmails).toContain('mom@example.com');
+
+    const two = list.body.members.find((m) => m.playerId === 'twomail');
+    expect(two.parentEmails).toEqual(expect.arrayContaining(['dad@example.com', 'mum@example.com']));
+
+    // every member carries the array (never undefined), even those with no email
+    expect(list.body.members.every((m) => Array.isArray(m.parentEmails))).toBe(true);
+  });
+
   it('a second player with the same first name does NOT overwrite the first', async () => {
     const login = await loginSeedCoach();
     const token = login.body.token;
