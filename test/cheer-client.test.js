@@ -205,13 +205,35 @@ describe('Own-card received-cheer count (flat, not a card)', () => {
 });
 
 describe('Home-screen Sass cheer notification', () => {
-  it('has the Sass bubble mount with a speaker image and a close control', () => {
+  it('uses the REAL splash Sass (stride frames) + bubble art, not a flat tag', () => {
     const pop = doc.getElementById('cheerPop');
     expect(pop).toBeTruthy();
     expect(pop.hasAttribute('hidden')).toBe(true); // hidden until there is news
     expect(doc.getElementById('cheerPopSass')).toBeTruthy();
     expect(doc.getElementById('cheerPopLine')).toBeTruthy();
-    expect(doc.getElementById('cheerPopX')).toBeTruthy();
+    // the three splash stride frames are reused
+    expect(html).toMatch(/cheerpop-frame fa' src='login\/sass-stride-a\.webp'/);
+    expect(html).toMatch(/cheerpop-frame fm' src='login\/sass-stride-m\.webp'/);
+    expect(html).toMatch(/cheerpop-frame fb' src='login\/sass-stride-b\.webp'/);
+    // the real splash speech-bubble art, with live text overlaid
+    expect(html).toMatch(/cheerpop-bubble-img' src='login\/bubble\.webp'/);
+    // it is a full-screen fixed overlay, not an inline flat row/tag
+    expect(html).toMatch(/\.cheerpop\{position:fixed/);
+    // the old flat-tag close button is gone
+    expect(doc.getElementById('cheerPopX')).toBeNull();
+  });
+
+  it('skates Sass IN from the left, rests, then skates OUT to the right', () => {
+    expect(html).toMatch(/@keyframes cheerSkateIn\{0%\{transform:translateX\(-60vw\)\}/);
+    expect(html).toMatch(/@keyframes cheerSkateOut\{0%\{transform:translateX\(4vw\)\}100%\{transform:translateX\(120vw\)\}\}/);
+    // dismiss after 5s OR on a tap, then leave()
+    expect(html).toMatch(/setTimeout\(leave,5000\)/);
+    expect(html).toMatch(/document\.addEventListener\('pointerdown',onTap,true\)/);
+    // Sass does not come back: on leave the overlay unmounts
+    expect(html).toMatch(/pop\.classList\.add\('out'\)/);
+    expect(html).toMatch(/pop\.hidden=true; pop\.className='cheerpop';/);
+    // reduced-motion safe
+    expect(html).toMatch(/@media \(prefers-reduced-motion: reduce\)\{[\s\S]*cheerSkate/);
   });
 
   it('reads the signed-in player\'s own givers from the session-gated endpoint', () => {
