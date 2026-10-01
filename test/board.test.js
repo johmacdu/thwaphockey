@@ -259,3 +259,34 @@ describe('board handler: POST ?action=fire', () => {
     expect(fake.map.get('fire:william')).toBe(1);
   });
 });
+
+describe('board handler: GET ?action=cheers-for (home-screen roll-up source)', () => {
+  it('401 without a session (you can only read your own cheers)', async () => {
+    const res = makeRes();
+    await handler({ method: 'GET', query: { action: 'cheers-for' }, headers: {} }, res);
+    expect(res.statusCode).toBe(401);
+  });
+
+  it('returns the signed-in player\'s own recent givers, newest first', async () => {
+    // william received cheers from lewie then maddux (store writes newest-first).
+    fake._seed('cheerfrom:william', [
+      { from: 'maddux', at: 2000 },
+      { from: 'lewie', at: 1000 },
+    ]);
+    const token = mintSession('william', 'p@e.com');
+    const res = makeRes();
+    await handler({ method: 'GET', query: { action: 'cheers-for' }, headers: { cookie: `thwapSession=${token}` } }, res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.id).toBe('william');
+    expect(res.body.givers.map((g) => g.from)).toEqual(['maddux', 'lewie']);
+    expect(res.headers['Cache-Control']).toBe('no-store');
+  });
+
+  it('returns an empty list for a player nobody has cheered', async () => {
+    const token = mintSession('teddy', 'p@e.com');
+    const res = makeRes();
+    await handler({ method: 'GET', query: { action: 'cheers-for' }, headers: { cookie: `thwapSession=${token}` } }, res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.givers).toEqual([]);
+  });
+});
