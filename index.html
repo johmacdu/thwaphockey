@@ -7095,10 +7095,20 @@ document.getElementById('coachInfoScrim') && document.getElementById('coachInfoS
   var CELEBRATE={done:1,perfect:1,sticker:1,shootReward:1,handsReward:1,drylandReward:1,streak:1};
   var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var AC=null,MASTER=null,BUF={},decoded=false;
+  var DBG=/[?&]sfxdebug=1/.test(location.search);
+  function dlog(){ if(!DBG)return; try{ var p=document.getElementById('sfxdbg'); if(!p){ p=document.createElement('div'); p.id='sfxdbg'; p.style.cssText='position:fixed;left:6px;right:6px;bottom:6px;z-index:99999;max-height:42vh;overflow:auto;background:rgba(0,0,0,.86);color:#9EF59E;font:11px/1.35 ui-monospace,Menlo,monospace;padding:8px 10px;border-radius:8px;white-space:pre-wrap;-webkit-user-select:text;user-select:text'; document.body.appendChild(p); } var line=Array.prototype.slice.call(arguments).join(' '); p.textContent=(new Date().toLocaleTimeString()+'  '+line+'\n')+p.textContent; }catch(e){} }
   function sfxOn(){ try{ return localStorage.getItem('thwapSfxOn')!=='0'; }catch(e){ return true; } } /* default ON */
   function setSfxOn(v){ try{ localStorage.setItem('thwapSfxOn', v?'1':'0'); }catch(e){} }
-  function ctx(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); MASTER=AC.createGain(); MASTER.gain.value=0.85; MASTER.connect(AC.destination); decodeAll(); }catch(e){ AC=null; } } if(AC&&AC.state!=='running'){ try{ AC.resume(); }catch(e){} } return AC; }
-  function decodeAll(){ if(decoded||!AC)return; decoded=true; Object.keys(FILES).forEach(function(k){ try{ fetch(FILES[k]).then(function(r){return r.arrayBuffer();}).then(function(ab){ AC.decodeAudioData(ab,function(b){BUF[k]=b;},function(){}); }).catch(function(){}); }catch(e){} }); }
+  function ctx(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); MASTER=AC.createGain(); MASTER.gain.value=0.85; MASTER.connect(AC.destination); dlog('ctx created, state='+AC.state); decodeAll(); }catch(e){ AC=null; dlog('ctx FAILED: '+e.message); } } if(AC&&AC.state!=='running'){ try{ AC.resume().then(function(){dlog('resumed -> '+AC.state);},function(err){dlog('resume rejected: '+err);}); }catch(e){ dlog('resume threw: '+e.message); } } return AC; }
+  var bufCount=0;
+  function decodeAll(){ if(decoded||!AC)return; decoded=true; Object.keys(FILES).forEach(function(k){ try{ fetch(FILES[k]).then(function(r){return r.arrayBuffer();}).then(function(ab){ AC.decodeAudioData(ab,function(b){BUF[k]=b;bufCount++;dlog('decoded '+k+' ('+bufCount+'/'+Object.keys(FILES).length+')');},function(err){dlog('decode FAIL '+k);}); }).catch(function(err){dlog('fetch FAIL '+k+': '+err);}); }catch(e){ dlog('decodeAll err '+k); } }); }
+  /* Eagerly create the context + start decoding at LOAD (not waiting for the
+     first gesture) so the first synchronous in-gesture play already has ready
+     buffers. The context starts 'suspended' and is resumed by the first
+     gesture (primeOnce / soundFor pointerdown); decoding does not need a
+     running context. */
+  function warm(){ try{ ctx(); }catch(e){} }
+  if(document.readyState!=='loading') warm(); else document.addEventListener('DOMContentLoaded',warm);
   /* ---- mobile audio unlock ----------------------------------------------
      iOS Safari and mobile Chrome start every AudioContext 'suspended' and
      only let it resume inside a TRUSTED user gesture; a synthetic/late resume
@@ -7130,14 +7140,15 @@ document.getElementById('coachInfoScrim') && document.getElementById('coachInfoS
   /* iOS suspends the context when the page is hidden; resume on return */
   document.addEventListener('visibilitychange',function(){ if(!document.hidden&&AC&&AC.state==='suspended'){ try{ AC.resume(); }catch(e){} } });
   function jit(){ return 1+(Math.random()*2-1)*0.05; }
-  function shot(clip,rate,gain,when,_retry){ if(!AC)return; var b=BUF[clip];
+  function shot(clip,rate,gain,when,_retry){ if(!AC){dlog('shot '+clip+': no AC');return;} var b=BUF[clip];
     /* buffer not decoded yet, or context still resuming (async on Chrome
        Android): retry shortly instead of dropping the sound. */
-    if(!b || AC.state!=='running'){ if(AC.state!=='running'){ try{ AC.resume(); }catch(e){} } if(!(_retry>8)){ setTimeout(function(){ shot(clip,rate,gain,0,(_retry||0)+1); },50); } return; }
-    var s=AC.createBufferSource(); s.buffer=b; s.playbackRate.value=(rate||1)*jit(); var g=AC.createGain(); g.gain.value=(gain==null?1:gain); s.connect(g); g.connect(MASTER); s.start(when||0); }
+    if(!b || AC.state!=='running'){ if(AC.state!=='running'){ try{ AC.resume(); }catch(e){} } if(!(_retry>12)){ setTimeout(function(){ shot(clip,rate,gain,0,(_retry||0)+1); },50); } else { dlog('shot '+clip+' GAVE UP: buf='+(!!b)+' state='+AC.state); } return; }
+    try{ var s=AC.createBufferSource(); s.buffer=b; s.playbackRate.value=(rate||1)*jit(); var g=AC.createGain(); g.gain.value=(gain==null?1:gain); s.connect(g); g.connect(MASTER); s.start(when||0); dlog('PLAYED '+clip+' state='+AC.state+' master='+(MASTER?MASTER.gain.value:'?')); }catch(e){ dlog('shot '+clip+' threw: '+e.message); } }
   function play(name){
+    dlog('play("'+name+'") on='+sfxOn()+' reduce='+reduce);
     if(!sfxOn())return; if(reduce&&CELEBRATE[name])return;
-    var m=MAP[name]; if(!m)return; ctx(); if(!AC)return;
+    var m=MAP[name]; if(!m){dlog('no MAP for '+name);return;} ctx(); if(!AC)return;
     if(m.c==='__perfect__'){ var t=AC.currentTime; shot('buzzer',1,0.85,t); shot('goal-crowd',1,0.6,t+0.12); if(navigator.vibrate)navigator.vibrate(24); return; }
     shot(m.c,m.r,m.g);
     if(navigator.vibrate){ navigator.vibrate(CELEBRATE[name]?18:8); }
@@ -7213,7 +7224,8 @@ document.getElementById('coachInfoScrim') && document.getElementById('coachInfoS
      de-duped so a real tap doesn't double-sound. */
   var lastPd=0;
   document.addEventListener('pointerdown',function(e){
-    var n=soundFor(e.target); if(!n)return;
+    var n=soundFor(e.target); dlog('pointerdown '+(e.target&&e.target.tagName)+' -> '+(n||'(no match)'));
+    if(!n)return;
     if(!unlocked)unlock();
     lastPd=Date.now();
     play(n);
