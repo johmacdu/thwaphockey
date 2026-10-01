@@ -376,17 +376,16 @@ body:not(.viewing-teammate) .cardctl-mine:not([hidden]){display:flex;justify-con
 .cheerpop.out .cheerpop-frame.fb{animation:spFrB .6s steps(1,end) infinite}
 @keyframes cheerSkateIn{0%{transform:translateX(-60vw)}100%{transform:translateX(4vw)}}
 @keyframes cheerSkateOut{0%{transform:translateX(4vw)}100%{transform:translateX(120vw)}}
-/* Speech bubble: drawn in CSS to MATCH the bubble.webp art (cream fill, thick
-   dark comic outline, tail down-left) but with NO baked-in words -- so the only
-   text is the live cheer line, in the same bold italic comic lettering. */
-.cheerpop-bubble{position:absolute;left:clamp(150px,30vmin,300px);bottom:30%;width:clamp(230px,40vmin,370px);opacity:0;transform:translateY(-8px) scale(.96);transition:opacity .35s ease,transform .35s ease;z-index:2}
+/* Speech bubble: the EXACT splash speech-bubble art (bubble-blank.webp = the
+   splash bubble.webp with the baked words removed), so the shape, cream fill,
+   thick comic outline and down-left tail are IDENTICAL to the splash. The live
+   message is overlaid as text inside the oval. */
+.cheerpop-bubble{position:absolute;left:clamp(150px,30vmin,300px);bottom:28%;width:clamp(230px,42vmin,380px);opacity:0;transform:translateY(-8px) scale(.96);transition:opacity .35s ease,transform .35s ease;z-index:2}
 .cheerpop.rest .cheerpop-bubble{opacity:1;transform:translateY(0) scale(1)}
-.cheerpop-bubble-box{position:relative;background:#F3EFE4;border:4px solid #15221B;border-radius:48%/42%;padding:26px 30px;text-align:center;filter:drop-shadow(0 10px 20px rgba(0,0,0,.2))}
-/* tail: a dark-outlined wedge pointing down-left toward Sass, matching the art */
-.cheerpop-bubble-box::before{content:'';position:absolute;left:34px;bottom:-26px;width:34px;height:34px;background:#F3EFE4;border-left:4px solid #15221B;border-bottom:4px solid #15221B;border-radius:0 0 0 8px;transform:skewX(22deg) rotate(8deg)}
-.cheerpop-text{display:flex;flex-direction:column;align-items:center;justify-content:center}
-.cheerpop-line{font-family:'Luckiest Guy','Nunito Sans',system-ui,sans-serif;font-weight:400;font-style:normal;font-size:clamp(17px,3vmin,24px);line-height:1.15;letter-spacing:.02em;color:#15221B;text-transform:uppercase}
-.cheerpop-names{display:block;margin-top:6px;font-family:'Nunito Sans',system-ui,sans-serif;font-weight:800;font-style:italic;font-size:clamp(12px,1.9vmin,15px);color:#2F6B41;text-transform:uppercase}
+.cheerpop-bubble-img{display:block;width:100%;height:auto;-webkit-user-drag:none;filter:drop-shadow(0 10px 20px rgba(0,0,0,.2))}
+/* text sits inside the oval interior, clear of the outline and the bottom tail */
+.cheerpop-text{position:absolute;left:9%;right:9%;top:20%;bottom:20%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.cheerpop-line{font-family:'Luckiest Guy','Nunito Sans',system-ui,sans-serif;font-weight:400;font-style:normal;font-size:clamp(24px,6vmin,40px);line-height:1.08;letter-spacing:.02em;color:#15221B;text-transform:uppercase}
 @media (prefers-reduced-motion: reduce){
   .cheerpop.in .cheerpop-sass,.cheerpop.out .cheerpop-sass{animation:none}
   .cheerpop.in .cheerpop-sass{transform:translateX(4vw)}
@@ -1893,7 +1892,7 @@ body.login-locked{overflow:hidden}
   else if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', run); }
   else { run(); }
 })();})();</script><div class='forrow'><div class='dowrap' id='doWrap'><div class='dolead' id='doLead'></div><div class='discline' id='discLine'></div></div></div>
-<div class='cheerpop' id='cheerPop' hidden><div class='cheerpop-sass' id='cheerPopSass'><img class='cheerpop-frame fa' src='login/sass-stride-a.webp' alt=''><img class='cheerpop-frame fm' src='login/sass-stride-m.webp' alt=''><img class='cheerpop-frame fb' src='login/sass-stride-b.webp' alt=''></div><div class='cheerpop-bubble'><div class='cheerpop-bubble-box'><div class='cheerpop-text'><span class='cheerpop-line' id='cheerPopLine'></span></div></div></div></div>
+<div class='cheerpop' id='cheerPop' hidden><div class='cheerpop-sass' id='cheerPopSass'><img class='cheerpop-frame fa' src='login/sass-stride-a.webp' alt=''><img class='cheerpop-frame fm' src='login/sass-stride-m.webp' alt=''><img class='cheerpop-frame fb' src='login/sass-stride-b.webp' alt=''></div><div class='cheerpop-bubble'><img class='cheerpop-bubble-img' src='login/bubble-blank.webp' alt=''><div class='cheerpop-text'><span class='cheerpop-line' id='cheerPopLine'></span></div></div></div>
 <div class='cards'>
 <div class='nextgame-tag' id='nextGameTag' hidden><span class='ngt-ico' role='img' aria-label='Hockey net'>🥅</span><span class='ngt-text' id='ngtText'></span></div>
 <a class='pnextgame' id='pNextGame' href='hockey_game_goals.html' hidden>
@@ -4205,38 +4204,47 @@ if(cheerBtn){
     }catch(err){ return Promise.resolve(fail()); }
   });
 }
-/* ---- Home-screen cheer notification (Sass tells you who cheered you) --------
-   On home load / refresh, fetch the signed-in player's own recent cheer givers
-   (/api/board?action=cheers-for, session-gated server-side) and, if any arrived
-   SINCE this device last saw them, Sass announces it in a speech bubble, naming
-   the givers (rolled up when there are several). The "since last visit" diff is
-   per-device via a localStorage high-water mark of the newest cheer timestamp
-   seen, so refreshing does not re-announce the same cheers. Honours CHEERS_ENABLED. */
+/* ---- Home-screen reaction notification (Sass hypes you up) ------------------
+   On home load / refresh, the signed-in player's own recent CHEER and On-fire
+   givers are fetched (/api/board?action=cheers-for and fires-for, session-gated)
+   and, if either arrived SINCE this device last saw it, Sass skates in with a
+   short NAMELESS hype line in his speech bubble (we never say who sent it). The
+   "since last visit" diff is a per-device, per-kind localStorage high-water mark
+   of the newest timestamp seen, so a refresh never re-announces. Most-recent
+   reaction wins. Honours CHEERS_ENABLED / FIRE_ENABLED. */
 (function(){
   var pop=document.getElementById('cheerPop');
   var lineEl=document.getElementById('cheerPopLine');
   if(!pop||!lineEl) return;
   var reduceMo=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  /* 10 kid-voice (10-12yo) ways to say "{name} cheered you", rotated so it never
-     goes stale. {name} is the single most-recent giver. */
-  var LINES=[
-    '{name} said you\u2019re him \uD83D\uDD25',
-    '{name} cheered you. W \uD83D\uDE4C',
-    '{name} says you\u2019re cooking \uD83D\uDC4F',
-    '{name} gave you props \uD83D\uDCAA',
-    '{name} thinks you went crazy \uD83C\uDFD2',
-    'Big W from {name} \uD83D\uDE4C',
-    '{name} sees you grinding \uD83D\uDD25',
-    '{name} says keep it going \uD83D\uDC4F',
-    '{name} rates you \uD83D\uDCAF',
-    '{name} shouted you out \uD83D\uDCE3'
+  /* Short, NAMELESS kid-voice (10-12yo) hype lines, rotated so they never go
+     stale. One pool for cheers, one for On fire. Kept short so they always sit
+     cleanly inside the speech bubble. */
+  var CHEER_LINES=[
+    'You\u2019re him \uD83D\uDD25',
+    'That\u2019s a dub \uD83D\uDE4C',
+    'You\u2019re cooking \uD83D\uDC4F',
+    'Big props \uD83D\uDCAA',
+    'You went crazy \uD83C\uDFD2',
+    'They see you \uD83D\uDD25',
+    'Keep it going \uD83D\uDC4F',
+    'You\u2019re rated \uD83D\uDCAF',
+    'Snipe city \uD83D\uDEA8',
+    'Locked in \uD83D\uDD12'
   ];
-  function cap(s){ s=String(s||''); return s? s.charAt(0).toUpperCase()+s.slice(1) : s; }
-  function nameOf(id){ return cap(id); }
+  var FIRE_LINES=[
+    'You\u2019re on fire \uD83D\uDD25',
+    'You\u2019re heating up \uD83D\uDD25',
+    'Can\u2019t be stopped \uD83D\uDD25',
+    'Straight gas \uD83D\uDD25',
+    'On a heater \uD83D\uDD25',
+    'Lighting it up \uD83D\uDD25'
+  ];
+  function pick(pool){ return pool[Math.floor(Math.random()*pool.length)]; }
   function myId(){ try{ return (localStorage.getItem('bfPlayer')||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,''); }catch(e){ return ''; } }
-  function seenKey(me){ return 'thwapCheerSeen|'+me; }
-  function lastSeen(me){ try{ return Number(localStorage.getItem(seenKey(me)))||0; }catch(e){ return 0; } }
-  function markSeen(me,at){ try{ localStorage.setItem(seenKey(me),String(at)); }catch(e){} }
+  function seenKey(me,kind){ return 'thwap'+(kind==='fire'?'Fire':'Cheer')+'Seen|'+me; }
+  function lastSeen(me,kind){ try{ return Number(localStorage.getItem(seenKey(me,kind)))||0; }catch(e){ return 0; } }
+  function markSeen(me,kind,at){ try{ localStorage.setItem(seenKey(me,kind),String(at)); }catch(e){} }
   /* Choreography: skate IN from the left -> REST with the bubble (5s or a tap)
      -> skate OUT to the right, then unmount. Sass does not return. */
   var holdTimer=null, outTimer=null, dismissArmed=false;
@@ -4261,56 +4269,54 @@ if(cheerBtn){
     document.addEventListener('pointerdown',onTap,true);
     holdTimer=setTimeout(leave,5000);
   }
-  /* Build the rolled-up message from the NEW givers (newest first). */
-  function message(newG){
-    var names=[]; var seen={};
-    for(var i=0;i<newG.length;i++){ var id=newG[i].from; if(!seen[id]){ seen[id]=1; names.push(nameOf(id)); } }
-    var count=names.length;
-    if(count<=0) return null;
-    if(count===1){
-      var tmpl=LINES[Math.floor(Math.random()*LINES.length)];
-      return { line: tmpl.replace('{name}',names[0]), names:'' };
-    }
-    if(count===2){
-      return { line: names[0]+' and '+names[1]+' cheered you \uD83D\uDE4C', names:'' };
-    }
-    /* 3+: a count headline with the names below it so the bubble stays short. */
-    return { line: count+' teammates cheered you \uD83D\uDC4F', names: names.join(', ') };
+  /* Grow-to-fill: start big and shrink only until the (wrapping) line fits the
+     bubble's oval text box, so short lines fill the bubble like the splash and a
+     longer line steps down just enough to fit. */
+  function fitText(){
+    try{
+      var box=lineEl.parentNode; if(!box||!box.clientHeight) return;
+      var fs=Math.min(40, Math.round(box.clientHeight*0.62)), guard=0;
+      lineEl.style.fontSize=fs+'px';
+      while((lineEl.scrollWidth>box.clientWidth+1||lineEl.scrollHeight>box.clientHeight+1)&&fs>15&&guard<40){ fs-=1; lineEl.style.fontSize=fs+'px'; guard++; }
+    }catch(e){}
   }
-  function show(msg){
-    lineEl.textContent=msg.line;
-    var sub=pop.querySelector('.cheerpop-names');
-    if(msg.names){
-      if(!sub){ sub=document.createElement('span'); sub.className='cheerpop-names'; lineEl.parentNode.appendChild(sub); }
-      sub.textContent=msg.names; sub.hidden=false;
-    } else if(sub){ sub.hidden=true; sub.textContent=''; }
+  function show(text){
+    lineEl.textContent=text;
     /* start the skate-in; the bubble appears when Sass reaches the rest spot */
     pop.className='cheerpop in'; pop.hidden=false;
+    requestAnimationFrame(fitText);
     if(reduceMo){ enterRest(); }
     else { setTimeout(enterRest,1200); }  /* matches cheerSkateIn duration */
   }
+  /* Resolve one feed to { newest, fresh } against the per-kind last-seen marker.
+     On this device's FIRST sight of a feed, adopt the baseline silently (no
+     backlog announce), mirroring the original cheer behaviour. */
+  function feedState(j, me, kind){
+    if(!j||!Array.isArray(j.givers)||!j.givers.length) return { newest:0, fresh:false };
+    var since=lastSeen(me,kind), newest=j.givers[0].at||0;
+    if(since===0){ markSeen(me,kind,newest); return { newest:newest, fresh:false }; }
+    var fresh=j.givers.some(function(g){ return (g.at||0)>since; });
+    return { newest:newest, fresh:fresh };
+  }
+  function fetchFeed(action, enabled){
+    if(!enabled) return Promise.resolve(null);
+    return fetch('/api/board?action='+action,{ cache:'no-store', credentials:'include' })
+      .then(function(r){ return r.ok? r.json() : null; }).catch(function(){ return null; });
+  }
   window.thwapCheerNotify=function(){
-    if(window.CHEERS_ENABLED===false) return;
     var authed=false; try{ authed=/(?:^|; )thwapAuth=/.test(document.cookie); }catch(e){}
     var isCoach=false; try{ isCoach=document.body.classList.contains('is-coach'); }catch(e){}
     var me=myId();
     if(!authed || isCoach || !me) return;   /* players only, signed in */
-    fetch('/api/board?action=cheers-for',{ cache:'no-store', credentials:'include' })
-      .then(function(r){ return r.ok? r.json() : null; })
-      .then(function(j){
-        if(!j||!Array.isArray(j.givers)||!j.givers.length) return;
-        var since=lastSeen(me);
-        var newest=j.givers[0].at||0;
-        /* First ever visit on this device: adopt the current newest as the
-           baseline WITHOUT announcing a backlog of old cheers. */
-        if(since===0){ markSeen(me,newest); return; }
-        var fresh=j.givers.filter(function(g){ return (g.at||0)>since; });
-        if(!fresh.length) return;
-        var msg=message(fresh);
-        if(msg){ show(msg); }
-        markSeen(me,newest);
-      })
-      .catch(function(){});
+    var cheersOn=window.CHEERS_ENABLED!==false, fireOn=window.FIRE_ENABLED!==false;
+    if(!cheersOn && !fireOn) return;
+    Promise.all([ fetchFeed('cheers-for',cheersOn), fetchFeed('fires-for',fireOn) ]).then(function(res){
+      var cs=feedState(res[0], me, 'cheer'), fs=feedState(res[1], me, 'fire');
+      /* Show the MOST RECENT new reaction; leave the other kind unseen so it
+         announces on the next visit rather than being silently dropped. */
+      if(fs.fresh && (!cs.fresh || fs.newest>=cs.newest)){ show(pick(FIRE_LINES)); markSeen(me,'fire',fs.newest); }
+      else if(cs.fresh){ show(pick(CHEER_LINES)); markSeen(me,'cheer',cs.newest); }
+    });
   };
   /* Run on load, and again when the tab is refocused (a kid coming back). */
   if(document.readyState==='complete'||document.readyState==='interactive'){ setTimeout(window.thwapCheerNotify,400); }
