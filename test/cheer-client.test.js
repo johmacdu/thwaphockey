@@ -28,10 +28,17 @@ beforeAll(() => {
 });
 
 describe('Cheer button markup', () => {
-  it('has the cheer layer, count, and button elements in the card overlay', () => {
-    expect(doc.getElementById('cbCheerLayer')).toBeTruthy();
+  it('has the cheer row, count, and button BELOW the card (not on the spinning face)', () => {
+    // The Cheer control lives in a row under the card (like the own-card theme/photo
+    // controls), always visible front or back -- NOT on the card's back face.
+    expect(doc.getElementById('cardCtlCheer')).toBeTruthy();
     expect(doc.getElementById('cbCheer')).toBeTruthy();
     expect(doc.getElementById('cbCheerCount')).toBeTruthy();
+    // the old spinning back-face layer is gone
+    expect(doc.getElementById('cbCheerLayer')).toBeNull();
+    // the cheer row sits inside the card control block, below the card
+    const row = doc.getElementById('cardCtlCheer');
+    expect(row.closest('#cardCtl')).toBeTruthy();
   });
 
   it('the button renders the clap + Cheer label', () => {
@@ -42,21 +49,25 @@ describe('Cheer button markup', () => {
 });
 
 describe('Cheer only shows on a teammate card, never your own', () => {
-  it('the cheer layer is display:none by default', () => {
-    const m = html.match(/\.cb-cheer-layer\{([^}]*)\}/);
-    expect(m, '.cb-cheer-layer rule exists').not.toBeNull();
-    expect(m[1]).toContain('display:none');
+  it('the cheer row is hidden by default (hidden attribute)', () => {
+    const row = doc.getElementById('cardCtlCheer');
+    expect(row.hasAttribute('hidden')).toBe(true);
   });
 
-  it('the cheer layer is shown ONLY under body.viewing-teammate', () => {
-    expect(html).toMatch(/body\.viewing-teammate \.cb-cheer-layer\{display:block\}/);
+  it('the cheer row is never shown on your OWN card and shown ONLY under viewing-teammate', () => {
+    // own card: hard-hidden
+    expect(html).toMatch(/body:not\(\.viewing-teammate\) \.cardctl-cheer\{display:none !important\}/);
+    // teammate card: shown (when not carrying the hidden attribute)
+    expect(html).toMatch(/body\.viewing-teammate \.cardctl-cheer:not\(\[hidden\]\)\{display:flex\}/);
   });
 
   it('the client code guards the render to a valid teammate that is not yourself', () => {
-    // thwapRenderCheer hides the layer unless there is a real teammate target
+    // thwapRenderCheer hides the row unless there is a real teammate target
     // whose id differs from the signed-in player's id.
     expect(html).toMatch(/to!==from/);
     expect(html).toMatch(/window\.thwapRenderCheer *= *function/);
+    // the render toggles the below-card row via its hidden attribute
+    expect(html).toMatch(/row\.hidden *= *!ok/);
     // openTeammateCard triggers the cheer render.
     expect(html).toMatch(/if\(window\.thwapRenderCheer\) window\.thwapRenderCheer\(\);/);
   });
