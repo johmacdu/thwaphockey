@@ -205,41 +205,80 @@ describe('Own-card received-cheer count (flat, not a card)', () => {
 });
 
 describe('Home-screen Sass cheer notification', () => {
-  it('has the Sass bubble mount with a speaker image and a close control', () => {
+  it('uses the REAL splash Sass (stride frames) + bubble art, not a flat tag', () => {
     const pop = doc.getElementById('cheerPop');
     expect(pop).toBeTruthy();
     expect(pop.hasAttribute('hidden')).toBe(true); // hidden until there is news
     expect(doc.getElementById('cheerPopSass')).toBeTruthy();
     expect(doc.getElementById('cheerPopLine')).toBeTruthy();
-    expect(doc.getElementById('cheerPopX')).toBeTruthy();
+    // the three splash stride frames are reused
+    expect(html).toMatch(/cheerpop-frame fa' src='login\/sass-stride-a\.webp'/);
+    expect(html).toMatch(/cheerpop-frame fm' src='login\/sass-stride-m\.webp'/);
+    expect(html).toMatch(/cheerpop-frame fb' src='login\/sass-stride-b\.webp'/);
+    // the ACTUAL splash bubble art, text removed (bubble-blank.webp) so the shape,
+    // outline and tail are identical to the splash; NOT the old CSS-drawn box and
+    // NOT the text-baked splash bubble.webp
+    expect(html).toMatch(/cheerpop-bubble-img' src='login\/bubble-blank\.webp'/);
+    expect(html).not.toMatch(/cheerpop-bubble-box/);
+    expect(html).not.toMatch(/cheerpop-bubble-img' src='login\/bubble\.webp'/);
+    // it is a full-screen fixed overlay, not an inline flat row/tag
+    expect(html).toMatch(/\.cheerpop\{position:fixed/);
+    // the old flat-tag close button is gone
+    expect(doc.getElementById('cheerPopX')).toBeNull();
   });
 
-  it('reads the signed-in player\'s own givers from the session-gated endpoint', () => {
-    expect(html).toMatch(/\/api\/board\?action=cheers-for/);
+  it('skates Sass IN from the left, rests, then skates OUT to the right', () => {
+    expect(html).toMatch(/@keyframes cheerSkateIn\{0%\{transform:translateX\(-60vw\)\}/);
+    expect(html).toMatch(/@keyframes cheerSkateOut\{0%\{transform:translateX\(4vw\)\}100%\{transform:translateX\(120vw\)\}\}/);
+    // dismiss after 5s OR on a tap, then leave()
+    expect(html).toMatch(/setTimeout\(leave,5000\)/);
+    expect(html).toMatch(/document\.addEventListener\('pointerdown',onTap,true\)/);
+    // Sass does not come back: on leave the overlay unmounts
+    expect(html).toMatch(/pop\.classList\.add\('out'\)/);
+    expect(html).toMatch(/pop\.hidden=true; pop\.className='cheerpop';/);
+    // reduced-motion safe
+    expect(html).toMatch(/@media \(prefers-reduced-motion: reduce\)\{[\s\S]*cheerSkate/);
+  });
+
+  it('reads BOTH the cheer and fire feeds from the session-gated endpoints', () => {
+    expect(html).toMatch(/fetchFeed\('cheers-for'/);
+    expect(html).toMatch(/fetchFeed\('fires-for'/);
+    expect(html).toMatch(/\/api\/board\?action='\+action/);
     expect(html).toMatch(/window\.thwapCheerNotify *= *function/);
     // players only, signed in, not a coach
     expect(html).toMatch(/if\(!authed \|\| isCoach \|\| !me\) return;/);
   });
 
-  it('rotates between 10 distinct kid-voice lines for a single cheerer', () => {
-    const m = html.match(/var LINES=\[([\s\S]*?)\];/);
-    expect(m).toBeTruthy();
-    const lines = m[1].match(/'[^']*'/g) || [];
-    expect(lines.length).toBe(10);
-    // every line carries the {name} slot so a giver is always named
-    expect(lines.every((l) => l.includes('{name}'))).toBe(true);
-    // picked at random so it is not stale
-    expect(html).toMatch(/LINES\[Math\.floor\(Math\.random\(\)\*LINES\.length\)\]/);
+  it('shows NAMELESS hype lines for cheers and for On fire (no giver named)', () => {
+    const cm = html.match(/var CHEER_LINES=\[([\s\S]*?)\];/);
+    const fm = html.match(/var FIRE_LINES=\[([\s\S]*?)\];/);
+    expect(cm).toBeTruthy();
+    expect(fm).toBeTruthy();
+    const cheerLines = cm[1].match(/'[^']*'/g) || [];
+    const fireLines = fm[1].match(/'[^']*'/g) || [];
+    expect(cheerLines.length).toBeGreaterThanOrEqual(6);
+    expect(fireLines.length).toBeGreaterThanOrEqual(4);
+    // no line names a giver: the {name} slot is gone entirely
+    const all = cheerLines.concat(fireLines).join(' ');
+    expect(all.includes('{name}')).toBe(false);
+    // each kind is picked at random so it never goes stale
+    expect(html).toMatch(/pick\(CHEER_LINES\)/);
+    expect(html).toMatch(/pick\(FIRE_LINES\)/);
   });
 
-  it('rolls up multiple cheerers (2 named, 3+ counted with names below)', () => {
-    expect(html).toMatch(/' and '\+names\[1\]\+' cheered you/);
-    expect(html).toMatch(/count\+' teammates cheered you/);
+  it('never names who it came from (no roll-up, no "teammates cheered you")', () => {
+    expect(html).not.toMatch(/' and '\+names\[1\]\+' cheered you/);
+    expect(html).not.toMatch(/teammates cheered you/);
+    // the most-recent new reaction wins when both kinds are new
+    expect(html).toMatch(/fs\.fresh && \(!cs\.fresh \|\| fs\.newest>=cs\.newest\)/);
   });
 
-  it('diffs against a per-device last-seen marker and does not replay a backlog on first visit', () => {
-    expect(html).toMatch(/thwapCheerSeen\|/);
-    expect(html).toMatch(/if\(since===0\)\{ markSeen\(me,newest\); return; \}/);
+  it('diffs against a per-device, per-kind last-seen marker; no backlog on first visit', () => {
+    // separate high-water markers for cheers vs fire
+    expect(html).toMatch(/kind==='fire'\?'Fire':'Cheer'/);
+    expect(html).toMatch(/Seen\|'\+me/);
+    // first sight of a feed adopts the baseline silently
+    expect(html).toMatch(/if\(since===0\)\{ markSeen\(me,kind,newest\);/);
   });
 
   it('runs on load and on tab refocus', () => {
@@ -250,7 +289,7 @@ describe('Home-screen Sass cheer notification', () => {
 
 describe('Cheer notification copy respects the punctuation rules', () => {
   it('the home cheer-notify block has no middot or em/en dash', () => {
-    const start = html.indexOf('Home-screen cheer notification');
+    const start = html.indexOf('Home-screen reaction notification');
     expect(start).toBeGreaterThan(-1);
     const slice = html.slice(start, start + 4000);
     expect(slice.includes('\u00b7')).toBe(false);

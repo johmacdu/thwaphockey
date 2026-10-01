@@ -290,3 +290,33 @@ describe('board handler: GET ?action=cheers-for (home-screen roll-up source)', (
     expect(res.body.givers).toEqual([]);
   });
 });
+
+describe('board handler: GET ?action=fires-for (home-screen On-fire source)', () => {
+  it('401 without a session (you can only read your own fires)', async () => {
+    const res = makeRes();
+    await handler({ method: 'GET', query: { action: 'fires-for' }, headers: {} }, res);
+    expect(res.statusCode).toBe(401);
+  });
+
+  it('returns the signed-in player\'s own recent firers, newest first', async () => {
+    fake._seed('firefrom:william', [
+      { from: 'maddux', at: 2000 },
+      { from: 'lewie', at: 1000 },
+    ]);
+    const token = mintSession('william', 'p@e.com');
+    const res = makeRes();
+    await handler({ method: 'GET', query: { action: 'fires-for' }, headers: { cookie: `thwapSession=${token}` } }, res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.id).toBe('william');
+    expect(res.body.givers.map((g) => g.from)).toEqual(['maddux', 'lewie']);
+    expect(res.headers['Cache-Control']).toBe('no-store');
+  });
+
+  it('returns an empty list for a player nobody has fired', async () => {
+    const token = mintSession('teddy', 'p@e.com');
+    const res = makeRes();
+    await handler({ method: 'GET', query: { action: 'fires-for' }, headers: { cookie: `thwapSession=${token}` } }, res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.givers).toEqual([]);
+  });
+});

@@ -39,6 +39,7 @@ const {
   getFires,
   listFires,
   sendFire,
+  getRecentFirers,
   isRosterPlayer,
 } = await import('../lib/store.js');
 
@@ -395,6 +396,20 @@ describe('fire ("On fire" reactions)', () => {
     expect(byId.teddy).toBe(1);
     expect(byId.lewie).toBe(0); // sender never gains fires
     expect(byId.johnny).toBe(0); // untouched player
+  });
+
+  it('getRecentFirers records who fired a player, newest first, with timestamps', async () => {
+    expect(await getRecentFirers('william')).toEqual([]);
+    await sendFire('lewie', 'william');
+    await sendFire('maddux', 'william');
+    const firers = await getRecentFirers('william');
+    expect(firers.map((g) => g.from)).toEqual(['maddux', 'lewie']); // newest first
+    expect(firers.every((g) => typeof g.at === 'number' && g.at > 0)).toBe(true);
+    // only real roster givers, and a same-day duplicate does not double-add
+    await sendFire('lewie', 'william');
+    const again = await getRecentFirers('william');
+    expect(again.filter((g) => g.from === 'lewie')).toHaveLength(1);
+    expect(again.every((g) => isRosterPlayer(g.from))).toBe(true);
   });
 
   it('a fire does NOT consume the same-day cheer slot (independent dedup)', async () => {

@@ -17,7 +17,7 @@
 // store. The sender is NEVER taken from the body: it is the signed-in session, so
 // a kid cannot cheer as someone else.
 
-import { listPlayers, weekBoard, listCheers, sendCheer, listFires, sendFire, isRosterPlayer, getRecentCheerers } from '../lib/store.js';
+import { listPlayers, weekBoard, listCheers, sendCheer, listFires, sendFire, isRosterPlayer, getRecentCheerers, getRecentFirers } from '../lib/store.js';
 import { verifySession, readSessionCookie } from '../lib/session_store.js';
 
 // Parse the request body whether Vercel already parsed it (object) or handed us
@@ -113,6 +113,20 @@ export default async function handler(req, res) {
     }
     const me = String(claims.playerId || '').toLowerCase();
     const givers = await getRecentCheerers(me);
+    res.setHeader('Cache-Control', 'no-store');
+    return res.status(200).json({ id: me, givers });
+  }
+
+  // GET /api/board?action=fires-for : the SIGNED-IN player's own recent "On fire"
+  // givers, newest first. Same session gate and shape as cheers-for; the client
+  // diffs it against a per-device last-seen marker to announce a NEW fire (nameless).
+  if (req.query && req.query.action === 'fires-for') {
+    const claims = verifySession(readSessionCookie(req));
+    if (!claims) {
+      return res.status(401).json({ error: 'session required' });
+    }
+    const me = String(claims.playerId || '').toLowerCase();
+    const givers = await getRecentFirers(me);
     res.setHeader('Cache-Control', 'no-store');
     return res.status(200).json({ id: me, givers });
   }
