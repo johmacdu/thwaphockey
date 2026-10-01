@@ -1680,10 +1680,10 @@ body.login-locked{overflow:hidden}
 <div class='lb-teamzone'>
 <div class='lb-streak' id='lbStreak' style='display:none'><img class='plflame' src='login/flame.webp' alt=''> <span id='lbStreakN'>0</span> day streak</div>
 <div class='lb-goal'>
-<div class='lb-goal-lab' id='lbGoalLab'>Rangers vs 150
+<div class='lb-goal-lab' id='lbGoalLab'>Rangers vs&nbsp;
 <button type='button' class='lb-info' id='lbInfo' aria-label='How the bar works'>i<span class='lb-tip' id='lbTip'>Every drill anybody on the team does fills this bar 💪</span></button>
 </div>
-<div class='lb-goal-big' id='lbGoalBig'>0<small> of 150 workouts</small></div>
+<div class='lb-goal-big' id='lbGoalBig'>0<small> workouts</small></div>
 <div class='lb-goal-row' id='lbGoalRow'>
 <div class='lb-track' id='lbTrack'><div class='lb-trackfill' id='lbTrackFill'></div></div>
 <div class='lb-goal-togo' id='lbGoalTogo'>0 to go!</div>
@@ -3743,6 +3743,28 @@ function scoreOf(p){
   if(disc==='shoot') return thirdOf(p);
   return p[disc]||0;
 }
+/* Weekly team goal rises through the season, then eases off late winter.
+   Each entry is the first day its goal takes effect; the live goal is the last
+   entry whose date is on or before today. Edit this list to retune, not the
+   render below. Dates are the Monday the week starts (local time). */
+window.TEAM_GOAL_SCHEDULE=[
+  {from:'2026-01-01', goal:150},  /* season start / default */
+  {from:'2026-10-05', goal:160},
+  {from:'2026-10-19', goal:165},
+  {from:'2026-11-02', goal:170},
+  {from:'2026-12-01', goal:175},  /* all of December */
+  {from:'2027-01-01', goal:180},  /* all of January */
+  {from:'2027-02-01', goal:170},  /* February eases off */
+  {from:'2027-03-01', goal:165}   /* March */
+];
+function teamGoalFor(d){
+  d=d||new Date();
+  /* local YYYY-MM-DD so the switch happens at local midnight, not UTC */
+  var key=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+  var sched=window.TEAM_GOAL_SCHEDULE, goal=sched[0].goal;
+  for(var i=0;i<sched.length;i++){ if(sched[i].from<=key) goal=sched[i].goal; }
+  return goal;
+}
 function render(){
   var rows=rowsFor().map(function(p){ return {n:p.n, s:scoreOf(p)}; });
   rows.sort(function(a,b){ return b.s-a.s || a.n.localeCompare(b.n); });
@@ -3770,7 +3792,7 @@ function render(){
       info=document.getElementById('lbInfo');
   if(big){
     if(tf==='week'){
-      var goal=150, done=t.all, left=Math.max(0,goal-done);
+      var goal=teamGoalFor(), done=t.all, left=Math.max(0,goal-done);
       if(lab)lab.childNodes[0].nodeValue='Rangers vs '+goal+' ';
       big.innerHTML="<span id='lbWeekNum'>"+done+"</span><small> workouts together</small>";
       var wn=document.getElementById('lbWeekNum'); if(wn)countUp(wn,done);
