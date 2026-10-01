@@ -215,8 +215,9 @@ describe('Home-screen Sass cheer notification', () => {
     expect(html).toMatch(/cheerpop-frame fa' src='login\/sass-stride-a\.webp'/);
     expect(html).toMatch(/cheerpop-frame fm' src='login\/sass-stride-m\.webp'/);
     expect(html).toMatch(/cheerpop-frame fb' src='login\/sass-stride-b\.webp'/);
-    // the real splash speech-bubble art, with live text overlaid
-    expect(html).toMatch(/cheerpop-bubble-img' src='login\/bubble\.webp'/);
+    // a CSS-drawn speech bubble (NO baked-in welcome text), live cheer line only
+    expect(html).toMatch(/cheerpop-bubble-box/);
+    expect(html).not.toMatch(/cheerpop-bubble-img' src='login\/bubble\.webp'/);
     // it is a full-screen fixed overlay, not an inline flat row/tag
     expect(html).toMatch(/\.cheerpop\{position:fixed/);
     // the old flat-tag close button is gone

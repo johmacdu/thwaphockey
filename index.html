@@ -376,14 +376,16 @@ body:not(.viewing-teammate) .cardctl-mine:not([hidden]){display:flex;justify-con
 .cheerpop.out .cheerpop-frame.fb{animation:spFrB .6s steps(1,end) infinite}
 @keyframes cheerSkateIn{0%{transform:translateX(-60vw)}100%{transform:translateX(4vw)}}
 @keyframes cheerSkateOut{0%{transform:translateX(4vw)}100%{transform:translateX(120vw)}}
-/* Speech bubble: the splash bubble art with the live cheer line overlaid. */
-.cheerpop-bubble{position:absolute;left:clamp(150px,30vmin,300px);bottom:28%;width:clamp(240px,42vmin,380px);opacity:0;transform:translateY(-8px) scale(.96);transition:opacity .35s ease,transform .35s ease;z-index:2}
+/* Speech bubble: drawn in CSS (NO baked-in words) so the only text is the live
+   cheer line, styled to match the welcome bubble's Archivo Black lettering. */
+.cheerpop-bubble{position:absolute;left:clamp(150px,30vmin,300px);bottom:30%;width:clamp(220px,40vmin,360px);opacity:0;transform:translateY(-8px) scale(.96);transition:opacity .35s ease,transform .35s ease;z-index:2}
 .cheerpop.rest .cheerpop-bubble{opacity:1;transform:translateY(0) scale(1)}
-.cheerpop-bubble-img{display:block;width:100%;height:auto;-webkit-user-drag:none;filter:drop-shadow(0 10px 22px rgba(0,0,0,.28))}
-/* The cheer text sits inside the bubble art (bubble.webp has its tail bottom-left). */
-.cheerpop-text{position:absolute;left:10%;top:16%;right:12%;bottom:34%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
-.cheerpop-line{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(14px,2.4vmin,20px);line-height:1.15;color:#15221B}
-.cheerpop-names{display:block;margin-top:4px;font-family:'Nunito Sans',system-ui,sans-serif;font-size:clamp(11px,1.7vmin,13px);font-weight:800;color:#3a4a40}
+.cheerpop-bubble-box{position:relative;background:#fff;border-radius:22px;padding:18px 22px;box-shadow:0 10px 24px rgba(0,0,0,.22);text-align:center}
+/* tail pointing down-left toward Sass */
+.cheerpop-bubble-box::after{content:'';position:absolute;left:30px;bottom:-14px;width:0;height:0;border:14px solid transparent;border-top-color:#fff;border-bottom:0;filter:drop-shadow(0 6px 4px rgba(0,0,0,.08))}
+.cheerpop-text{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.cheerpop-line{font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;font-size:clamp(16px,2.6vmin,22px);line-height:1.12;color:#15221B}
+.cheerpop-names{display:block;margin-top:5px;font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;font-size:clamp(12px,1.9vmin,15px);color:#3a4a40}
 @media (prefers-reduced-motion: reduce){
   .cheerpop.in .cheerpop-sass,.cheerpop.out .cheerpop-sass{animation:none}
   .cheerpop.in .cheerpop-sass{transform:translateX(4vw)}
@@ -1853,7 +1855,7 @@ body.login-locked{overflow:hidden}
     });
   }).catch(function(){});
 })();})();</script><div class='forrow'><div class='dowrap' id='doWrap'><div class='dolead' id='doLead'></div><div class='discline' id='discLine'></div></div></div>
-<div class='cheerpop' id='cheerPop' hidden><div class='cheerpop-sass' id='cheerPopSass'><img class='cheerpop-frame fa' src='login/sass-stride-a.webp' alt=''><img class='cheerpop-frame fm' src='login/sass-stride-m.webp' alt=''><img class='cheerpop-frame fb' src='login/sass-stride-b.webp' alt=''></div><div class='cheerpop-bubble'><img class='cheerpop-bubble-img' src='login/bubble.webp' alt=''><div class='cheerpop-text'><span class='cheerpop-line' id='cheerPopLine'></span></div></div></div>
+<div class='cheerpop' id='cheerPop' hidden><div class='cheerpop-sass' id='cheerPopSass'><img class='cheerpop-frame fa' src='login/sass-stride-a.webp' alt=''><img class='cheerpop-frame fm' src='login/sass-stride-m.webp' alt=''><img class='cheerpop-frame fb' src='login/sass-stride-b.webp' alt=''></div><div class='cheerpop-bubble'><div class='cheerpop-bubble-box'><div class='cheerpop-text'><span class='cheerpop-line' id='cheerPopLine'></span></div></div></div></div>
 <div class='cards'>
 <div class='nextgame-tag' id='nextGameTag' hidden><span class='ngt-ico' role='img' aria-label='Hockey net'>🥅</span><span class='ngt-text' id='ngtText'></span></div>
 <a class='pnextgame' id='pNextGame' href='hockey_game_goals.html' hidden>
