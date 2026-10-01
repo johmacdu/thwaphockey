@@ -24,6 +24,7 @@ vi.mock('@upstash/redis', () => ({
 const {
   ROSTER,
   bumpPlayer,
+  adjustPlayer,
   computeStreak,
   weekCount,
   weekBoard,
@@ -160,6 +161,46 @@ describe('bumpPlayer', () => {
     await bumpPlayer('lewie', 'shoot');
     expect(await computeStreak('lewie')).toBe(2);
     expect(await weekCount('lewie')).toEqual({ stick: 1, shoot: 1, dryland: 0, netplay: 0 });
+  });
+});
+
+describe('adjustPlayer (corrections)', () => {
+  it('decrements aggregate counts, clamped at 0, and corrects the weekly split', async () => {
+    // Simulate double-counted work today: 6 stick, 6 shoot, 2 dryland.
+    for (let i = 0; i < 6; i += 1) await bumpPlayer('lewie', 'stick');
+    for (let i = 0; i < 6; i += 1) await bumpPlayer('lewie', 'shoot');
+    for (let i = 0; i < 2; i += 1) await bumpPlayer('lewie', 'dryland');
+    expect(await weekCount('lewie')).toEqual({ stick: 6, shoot: 6, dryland: 2, netplay: 0 });
+
+    const res = await adjustPlayer('lewie', { stick: -3, shoot: -3, dryland: -1 });
+    expect(res.stick).toBe(3);
+    expect(res.shoot).toBe(3);
+    expect(res.dryland).toBe(1);
+
+    const stored = await getPlayer('lewie');
+    expect(stored).toMatchObject({ stick: 3, shoot: 3, dryland: 1 });
+    // Weekly split must correct too (events removed, not just aggregate).
+    expect(await weekCount('lewie')).toEqual({ stick: 3, shoot: 3, dryland: 1, netplay: 0 });
+  });
+
+  it('never drives an aggregate count below zero', async () => {
+    await bumpPlayer('lewie', 'stick'); // stick = 1
+    const res = await adjustPlayer('lewie', { stick: -5 });
+    expect(res.stick).toBe(0);
+  });
+
+  it('only removes events on the target date, leaving earlier real days intact', async () => {
+    pinDate('2026-01-13');
+    await bumpPlayer('lewie', 'stick'); // a real earlier day
+    pinDate('2026-01-14');
+    await bumpPlayer('lewie', 'stick');
+    await bumpPlayer('lewie', 'stick'); // two duplicates today
+    // Remove 2 from today only.
+    await adjustPlayer('lewie', { stick: -2 }, '2026-01-14');
+    const events = fake.map.get(eventsKey('lewie'));
+    expect(events).toEqual([{ date: '2026-01-13', disc: 'stick' }]);
+    const stored = await getPlayer('lewie');
+    expect(stored.stick).toBe(1);
   });
 });
 

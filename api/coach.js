@@ -28,7 +28,7 @@
 import crypto from 'crypto';
 import { parseBody } from '../lib/photo_common.js';
 import { mintSession, verifySession } from '../lib/session_store.js';
-import { ROSTER, weekBoard, monthTrend } from '../lib/store.js';
+import { ROSTER, weekBoard, monthTrend, adjustPlayer } from '../lib/store.js';
 import {
   getTeam, setTeam, listMembers, addMember, getMember, removeMember,
   getCoach, setCoach, getIdpGoal, setIdpGoal, getGameGoalLog, logGameGoal,
@@ -738,6 +738,30 @@ async function resolveSuggestion(req, res) {
   return res.status(200).json({ ok: true, suggestion: rec });
 }
 
+// POST correct a player's discipline counts by a signed delta. Admin-only.
+// Body: { playerId, stick?, shoot?, dryland?, onDate? }  (deltas, usually negative)
+// Used for one-off data corrections (e.g. undoing double-counted completions from
+// a bug). Decrements the aggregate counts (clamped at 0) AND removes the matching
+// number of dated events for onDate (default today) so the weekly split corrects
+// too. Returns the updated player object.
+async function adjustCounts(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  if (!(await requireAdmin(req, res))) return;
+  const { playerId, stick, shoot, dryland, onDate } = parseBody(req);
+  const pid = String(playerId || '').toLowerCase();
+  if (!pid || !ROSTER.some((p) => p.id === pid)) {
+    return res.status(400).json({ error: 'unknown player' });
+  }
+  const deltas = {
+    stick: Number(stick) || 0,
+    shoot: Number(shoot) || 0,
+    dryland: Number(dryland) || 0,
+  };
+  const date = (typeof onDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(onDate)) ? onDate : undefined;
+  const updated = date ? await adjustPlayer(pid, deltas, date) : await adjustPlayer(pid, deltas);
+  return res.status(200).json({ ok: true, player: updated });
+}
+
 // GET the team's coach roster (head + assistants). Seeds the head from the team's
 // coachEmail on first read. Public read (coaches list is not sensitive).
 // Enrich a team's coach roster with each coach's name + photo (from coach:<email>).
@@ -910,6 +934,7 @@ export default async function handler(req, res) {
     case 'drill-suggestions': return drillSuggestions(req, res);
     case 'review-suggestions': return reviewSuggestions(req, res);
     case 'resolve-suggestion': return resolveSuggestion(req, res);
+    case 'adjust-counts': return adjustCounts(req, res);
     case 'team-coaches': return teamCoaches(req, res);
     case 'invite-coach': return inviteCoach(req, res);
     case 'remove-coach': return removeCoach(req, res);
@@ -933,7 +958,7 @@ export const _handlers = {
   getPlan, setPlan, beta,
   teamGoal, setTeamGoal: setTeamGoalHandler,
   suggestDrill, drillSuggestions,
-  reviewSuggestions, resolveSuggestion,
+  reviewSuggestions, resolveSuggestion, adjustCounts,
   teamCoaches, inviteCoach, removeCoach,
   addEvent, setCoachProfile,
 };
