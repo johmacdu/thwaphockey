@@ -3448,6 +3448,17 @@ function render(){
     var w=todaysWorkout(); var p=loadProg(w.id);
     indices.forEach(function(i){ p[i]=true; });
     saveProg(w.id,p);
+    /* Set the done signal from PROG vs TODAY'S exercise count, not from rendered
+       rows: render() returns early when #dryland is absent (home screen). Today's
+       set is trimDrills(todaysWorkout().drills); done when every one is marked.
+       Dryland rests on weekends, so skip on a rest day (nothing required). */
+    try{
+      if(!(window.thwapIsRestDay&&window.thwapIsRestDay())){
+        var drills=trimDrills(w.drills)||[];
+        var all=drills.length>0; for(var i=0;i<drills.length;i++){ if(!p[i]){ all=false; break; } }
+        if(all && window.thwapSetDoneSignal) window.thwapSetDoneSignal('dryland',true);
+      }
+    }catch(e){}
   }catch(e){}
   try{ render(); }catch(e){}
 };
@@ -5225,6 +5236,15 @@ function render(){
     var p=loadProg();
     indices.forEach(function(i){ p[i]=true; });
     saveProg(p);
+    /* Set the unified done signal from PROG vs TODAY'S PICKS, not from counting
+       rendered rows: on the home screen the #stick list is not in the DOM, so a
+       DOM-row rollup can never fire and the home hero would stay stale. Today's
+       picks are twoForToday(); the discipline is done when every one is marked. */
+    try{
+      var picks=twoForToday();
+      var all=picks.length>0 && picks.every(function(_,i){ return !!p[i]; });
+      if(all && window.thwapSetDoneSignal) window.thwapSetDoneSignal('stick',true);
+    }catch(e){}
   }catch(e){}
   try{ render(); }catch(e){}
 };
@@ -6088,6 +6108,18 @@ function render(){
     var p=loadProg();
     indices.forEach(function(i){ p[i]=true; });
     saveProg(p);
+    /* Set the done signal from PROG vs TODAY'S shoot count, not from rendered rows:
+       render() returns early when #shoot is absent (home screen), so a DOM rollup
+       never fires there. Re-derive today's set exactly as render() does. A goalie
+       with Net play not live has no markable shoot drills, so skip (count 0). */
+    try{
+      if(!(window.thwapIsGoalie&&window.thwapIsGoalie()&&!netplayLive())){
+        var DAYS=thirdDays(); var set=DAYS[shootDayI()%DAYS.length]||[];
+        var cnt=Math.max(1, set.length-2);
+        var all=cnt>0; for(var i=0;i<cnt;i++){ if(!p[i]){ all=false; break; } }
+        if(all && window.thwapSetDoneSignal) window.thwapSetDoneSignal('shoot',true);
+      }
+    }catch(e){}
   }catch(e){}
   try{ render(); }catch(e){}
 };
@@ -6295,13 +6327,33 @@ window.thwapUnmarkDone=function(drillId){
    cleared boxes. Exposed as window.thwapHydrateDone so sign-in can re-run it. */
 window.thwapHydrateDone=function(){
   try{
-    return fetch('/api/done',{method:'GET', cache:'no-store', headers:{'Accept':'application/json'}})
-      .then(function(r){ return (r&&r.ok)?r.json():null; }, function(){ return null; })
-      .then(function(data){
-        if(!data || !Array.isArray(data.drills)) return { ok:false };
-        try{ if(window.thwapApplyServerDone) window.thwapApplyServerDone(data.drills); }catch(e){}
-        return { ok:true, drills:data.drills };
-      }, function(){ return { ok:false }; });
+    var get=function(){
+      return fetch('/api/done',{method:'GET', cache:'no-store', headers:{'Accept':'application/json'}});
+    };
+    var apply=function(data){
+      if(!data || !Array.isArray(data.drills)) return { ok:false };
+      try{ if(window.thwapApplyServerDone) window.thwapApplyServerDone(data.drills); }catch(e){}
+      return { ok:true, drills:data.drills };
+    };
+    /* A second device can have the thwapAuth UI cookie but a MISSING or expired
+       server session (thwapSession is HttpOnly + dies on browser close when not
+       kept), so GET /api/done 401s and the home screen never hydrates. Mirror the
+       write path: on a non-ok response, mint/heal the session ONCE and retry, so
+       the laptop re-authenticates silently and still pulls its completions. Fully
+       fail-open: any error anywhere leaves local behaviour untouched. */
+    var healAndRetry=function(){
+      var heal=(window.thwapEnsureSession?window.thwapEnsureSession():Promise.resolve());
+      return Promise.resolve(heal)
+        .then(function(){ return get(); })
+        .then(function(r){ return (r&&r.ok)?r.json():null; }, function(){ return null; })
+        .then(apply, function(){ return { ok:false }; });
+    };
+    return get()
+      .then(function(r){
+        if(r && r.ok) return r.json().then(apply, function(){ return { ok:false }; });
+        return healAndRetry();            /* 401 / 5xx / anything not-ok: heal + retry once */
+      }, function(){ return healAndRetry(); })  /* network error: heal + retry once */
+      .catch(function(){ return { ok:false }; });
   }catch(e){ return Promise.resolve({ ok:false }); }
 };
 })();</script>
