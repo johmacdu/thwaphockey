@@ -386,6 +386,7 @@ body:not(.viewing-teammate) .cardctl-mine:not([hidden]){display:flex;justify-con
 /* text sits inside the oval interior, clear of the outline and the bottom tail */
 .cheerpop-text{position:absolute;left:9%;right:9%;top:20%;bottom:20%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
 .cheerpop-line{font-family:'Luckiest Guy','Nunito Sans',system-ui,sans-serif;font-weight:400;font-style:normal;font-size:clamp(24px,6vmin,40px);line-height:1.08;letter-spacing:.02em;color:#15221B;text-transform:uppercase}
+.cheerpop-accent{color:#408868}
 @media (prefers-reduced-motion: reduce){
   .cheerpop.in .cheerpop-sass,.cheerpop.out .cheerpop-sass{animation:none}
   .cheerpop.in .cheerpop-sass{transform:translateX(4vw)}
@@ -4220,25 +4221,27 @@ if(cheerBtn){
   /* Short, NAMELESS kid-voice (10-12yo) hype lines, rotated so they never go
      stale. One pool for cheers, one for On fire. Kept short so they always sit
      cleanly inside the speech bubble. */
+  /* [[...]] marks the word(s) rendered in the splash green accent (like THWAP
+     HOCKEY on the splash bubble); the rest stays navy. */
   var CHEER_LINES=[
-    'You\u2019re him \uD83D\uDD25',
-    'That\u2019s a dub \uD83D\uDE4C',
-    'You\u2019re cooking \uD83D\uDC4F',
-    'Big props \uD83D\uDCAA',
-    'You went crazy \uD83C\uDFD2',
-    'They see you \uD83D\uDD25',
-    'Keep it going \uD83D\uDC4F',
-    'You\u2019re rated \uD83D\uDCAF',
-    'Snipe city \uD83D\uDEA8',
-    'Locked in \uD83D\uDD12'
+    'You\u2019re [[him]] \uD83D\uDD25',
+    'That\u2019s a [[dub]] \uD83D\uDE4C',
+    'You\u2019re [[cooking]] \uD83D\uDC4F',
+    'Big [[props]] \uD83D\uDCAA',
+    'You went [[crazy]] \uD83C\uDFD2',
+    'They see [[you]] \uD83D\uDD25',
+    'Keep it [[going]] \uD83D\uDC4F',
+    'You\u2019re [[rated]] \uD83D\uDCAF',
+    '[[Snipe]] city \uD83D\uDEA8',
+    '[[Locked]] in \uD83D\uDD12'
   ];
   var FIRE_LINES=[
-    'You\u2019re on fire \uD83D\uDD25',
-    'You\u2019re heating up \uD83D\uDD25',
-    'Can\u2019t be stopped \uD83D\uDD25',
-    'Straight gas \uD83D\uDD25',
-    'On a heater \uD83D\uDD25',
-    'Lighting it up \uD83D\uDD25'
+    'You\u2019re [[on fire]] \uD83D\uDD25',
+    'You\u2019re [[heating up]] \uD83D\uDD25',
+    'Can\u2019t be [[stopped]] \uD83D\uDD25',
+    'Straight [[gas]] \uD83D\uDD25',
+    'On a [[heater]] \uD83D\uDD25',
+    '[[Lighting it up]] \uD83D\uDD25'
   ];
   function pick(pool){ return pool[Math.floor(Math.random()*pool.length)]; }
   function myId(){ try{ return (localStorage.getItem('bfPlayer')||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,''); }catch(e){ return ''; } }
@@ -4280,8 +4283,10 @@ if(cheerBtn){
       while((lineEl.scrollWidth>box.clientWidth+1||lineEl.scrollHeight>box.clientHeight+1)&&fs>15&&guard<40){ fs-=1; lineEl.style.fontSize=fs+'px'; guard++; }
     }catch(e){}
   }
+  function escH(s){ return String(s).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
   function show(text){
-    lineEl.textContent=text;
+    /* [[word]] -> a green accent span; the rest is escaped navy text. */
+    lineEl.innerHTML=escH(text).replace(/\[\[([\s\S]+?)\]\]/g,"<span class='cheerpop-accent'>$1</span>");
     /* start the skate-in; the bubble appears when Sass reaches the rest spot */
     pop.className='cheerpop in'; pop.hidden=false;
     requestAnimationFrame(fitText);
