@@ -96,7 +96,9 @@ describe('thwapMarkDone: 401 self-heals via ensureSession + one retry', () => {
     window.thwapEnsureSession = heal;
     loadInto(window);
     const out = await window.thwapMarkDone('shoot');
-    expect(heal).toHaveBeenCalledTimes(1);
+    // Pre-ensure heals once BEFORE the first send (the root-cause fix for the
+    // expired-session race), then the 401 path heals + retries once more.
+    expect(heal).toHaveBeenCalledTimes(2);
     expect(window.fetch).toHaveBeenCalledTimes(2);
     expect(out).toEqual({ ok: true, status: 200 });
     expect(noticeShown()).toBe(false);
@@ -140,14 +142,14 @@ describe('thwapMarkDone: first-tap network error retries once, then fails loud',
 });
 
 describe('thwapMarkDone: a non-401 server error fails loud (does not retry blindly)', () => {
-  it('a 500 shows the notice and does NOT attempt a heal/retry', async () => {
+  it('a 500 shows the notice and does NOT retry the send', async () => {
     window.fetch = vi.fn().mockResolvedValue(resp(500));
     const heal = vi.fn().mockResolvedValue();
     window.thwapEnsureSession = heal;
     loadInto(window);
     const out = await window.thwapMarkDone('shoot');
-    expect(window.fetch).toHaveBeenCalledTimes(1); // no blind retry on a server 500
-    expect(heal).not.toHaveBeenCalled();
+    expect(window.fetch).toHaveBeenCalledTimes(1); // no blind RETRY of the send on a 500
+    expect(heal).toHaveBeenCalledTimes(1); // pre-ensure runs once; a 500 is not a session problem so no second heal
     expect(out).toEqual({ ok: false, status: 500 });
     expect(noticeShown()).toBe(true);
   });

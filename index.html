@@ -6264,17 +6264,31 @@ window.thwapMarkDone=function(discipline, drillId, undo){
     if(!ok && window.thwapDoneNotSaved) window.thwapDoneNotSaved();
     return { ok:ok, status:(r?r.status:0) };
   };
+  /* ROOT-CAUSE FIX (cross-device sync): the previous flow sent the POST first and
+     only healed AFTER a 401. On a device whose thwapSession had expired (HttpOnly,
+     dies on browser close), that meant the first tap raced a not-yet-set session
+     cookie, the retry fired before mintServerSession's cookie landed, and the
+     write was silently lost -- the local checkmark showed Done while the server
+     set stayed EMPTY (the exact Chrome-shows-done / /api/done-empty bug). The
+     local prog write in markDone() is unconditional, so a lost POST never surfaced.
+     Fix: ENSURE a server session BEFORE the first POST, then send; if it still 401s
+     (session genuinely could not be minted), heal once more and retry; only then
+     give up loudly. mintServerSession is cheap/idempotent and no-ops when a valid
+     session already exists, so this adds no latency for an already-authed device. */
+  var ensure=function(){
+    var e=(window.thwapEnsureSession?window.thwapEnsureSession():Promise.resolve());
+    return Promise.resolve(e);
+  };
   var attempt;
   try{
-    attempt=send().then(function(r){
-      /* A missing/invalid session is the one recoverable case: mint + retry once. */
+    attempt=ensure().then(send).then(function(r){
+      /* Session still missing/invalid after a pre-ensure: one more heal + retry. */
       if(r && r.status===401){
         return healAndRetry().then(settle, function(){ if(window.thwapDoneNotSaved) window.thwapDoneNotSaved(); return { ok:false, status:0 }; });
       }
       return settle(r);
     }, function(){
-      /* First tap hit a network error (offline, or the server session cookie was
-         not yet in flight). Try one heal+retry before giving up loudly. */
+      /* Network error on the ensured send: one heal + retry before giving up loud. */
       return healAndRetry().then(settle, function(){ if(window.thwapDoneNotSaved) window.thwapDoneNotSaved(); return { ok:false, status:0 }; });
     });
   }catch(e){
