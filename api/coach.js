@@ -541,6 +541,7 @@ async function roster(req, res) {
       firstName: (m && m.firstName) || '', lastName: (m && m.lastName) || '',
       number: m ? m.number : null, position: (m && m.position) || '',
       status: (m && m.status) || 'active',
+      parentEmails: parentEmailList(m),
       week: { stick: wk.stick, shoot: wk.shoot, dryland: wk.dryland }, trainedThisWeek: trained,
       idpGoal: goal ? goal.text : '',
     });
