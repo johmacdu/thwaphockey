@@ -1,15 +1,16 @@
 // test/game-goals-prep-window.test.js
 //
-// Source guards for the player next-game (Game Day Goals) card's visibility
-// window in index.html. jsdom cannot run index.html (its drill YouTube iframes
-// crash it under resources:'usable'), so these are plain string assertions on
-// the card's state machine, matching the approach in game-goals.test.js.
+// Source guards for the player next-game card's visibility window in index.html.
+// jsdom cannot run index.html (its drill YouTube iframes crash it under
+// resources:'usable'), so these are plain string assertions on the card's state
+// machine, matching the approach in game-goals.test.js.
 //
-// Rule under test: the card is HIDDEN until 2 days before the game.
-//  - days > 2  -> card.hidden = true (no card at all, no "opens soon" text)
-//  - 0..2 days -> card shown, "Set your game goals" prompt
-//  - days < 0  -> card shown, post-game "How did it go? Log your goals"
-//  - goals set -> "Your game goals are set" done-state wins regardless
+// Rule under test: a flat next-game TAG shows above the Hands card more than 48
+// hours before the game; inside 48 hours it becomes the Game Day Goals card.
+//  - hours > 48  -> tag shown ("Next game ..."), goals card hidden
+//  - hours <= 48 -> tag hidden, goals card shown ("Set your game goals")
+//  - days < 0    -> card shown, post-game "How did it go? Log your goals"
+//  - goals set   -> "Your game goals are set" done-state wins regardless
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -19,19 +20,28 @@ import { dirname, resolve } from 'node:path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const html = readFileSync(resolve(__dirname, '../index.html'), 'utf8');
 
-describe('Player Game Day Goals card 2-day visibility window', () => {
-  it('is hidden by default so it never flashes before the window is confirmed', () => {
+describe('Player next-game tag + Game Day Goals 48h window', () => {
+  it('both the tag and the card start hidden so neither flashes before the window is confirmed', () => {
+    expect(html).toMatch(/id='nextGameTag'[^>]*hidden/);
     expect(html).toMatch(/id='pNextGame'[^>]*hidden/);
     expect(html).toMatch(/\.pnextgame\[hidden\]\{display:none\}/);
+    expect(html).toMatch(/\.nextgame-tag\[hidden\]\{display:none\}/);
   });
 
-  it('hides the card entirely when the game is more than 2 days out', () => {
-    expect(html).toMatch(/if\(days>2\)\{\s*card\.hidden=true;\s*return;\s*\}/);
-    expect(html).toMatch(/card\.hidden=false;/);
+  it('gates on EXACT hours to game start, not calendar days', () => {
+    // hoursUntil uses the game date + time (noon fallback)
+    expect(html).toMatch(/function hoursUntil\(g\)\{[^}]*g\.date[^}]*g\.time/);
   });
 
-  it('no longer shows the "Goals open 2 days before the game" preview text', () => {
-    expect(html).not.toContain('Goals open 2 days before the game');
+  it('more than 48h out: show the flat tag, hide the goals card', () => {
+    expect(html).toMatch(/if\(hrs>48\)\{\s*if\(card\) card\.hidden=true;/);
+    expect(html).toMatch(/tag\.hidden=false;/);
+    // the tag is a FLAT pill, not a card (Woody's no-cards-without-navigation rule)
+    expect(html).toMatch(/\.nextgame-tag\{[^}]*border-radius:999px/);
+  });
+
+  it('inside 48h: hide the tag, show the goals card', () => {
+    expect(html).toMatch(/if\(tag\) tag\.hidden=true;\s*card\.hidden=false;/);
   });
 
   it('within the window, prompts to set goals', () => {
