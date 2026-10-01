@@ -43,7 +43,11 @@ describe('UI sound layer', () => {
     expect(html).toContain('thwapSfxGlideStop()');
     // Universal: every interactive element makes a sound (default tap),
     // with back / close x mapped to the nav glide and player-name to card open.
-    expect(html).toContain("play('tap')");
+    // Driven off pointerdown (reliable on mobile) via a soundFor() classifier
+    // that returns 'tap' for any interactive element.
+    expect(html).toContain("return 'tap'");
+    expect(html).toContain('function soundFor');
+    expect(html).toMatch(/addEventListener\('pointerdown'/);
     expect(html).toContain('.backlink');
     expect(html).toContain('.cardclose');
     expect(html).toContain('.pl-name');
