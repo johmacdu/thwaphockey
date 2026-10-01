@@ -74,6 +74,7 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 .cardaway{margin:0 auto 12px;min-height:44px;padding:0 20px;border:1px solid var(--line2);border-radius:999px;background:var(--soft);color:var(--text);font-family:inherit;font-weight:900;font-size:15px;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .cardaway:active{transform:scale(.97)}
 .deck-tip{color:var(--muted);font-size:13px;font-weight:700;line-height:1.4;max-width:300px;margin:24px auto 36px}
+.deck-tip.deck-tip-pick{color:var(--green2)}
 @keyframes cardPop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
 .deck-wrap:not([hidden]) .deck-scene{animation:cardPop .28s ease}
 .deck-scene{width:100%;max-width:min(380px,94vw);margin:0 auto;aspect-ratio:5/7;perspective:1400px}
@@ -4439,10 +4440,29 @@ fetch('stickers/stickers.json').then(function(r){return r.json();}).then(functio
       cell.setAttribute('title','Keep training to unlock');
     }
     if(earned){
+      cell.setAttribute('aria-label','Sticker. Tap to pick it, then tap your card. Or drag it onto your card.');
       cell.addEventListener('pointerdown',function(e){
         if(!reduce){ var img=cell.querySelector('img'); if(img){img.style.setProperty('--slap-rot',(Math.random()*10-5)+'deg'); img.classList.remove('slapped'); void img.offsetWidth; img.classList.add('slapped');}
           cell.classList.remove('shine'); void cell.offsetWidth; cell.classList.add('shine'); }
-        if(window.thwapStartTrayDrag) window.thwapStartTrayDrag(f, e);
+        /* Tap vs drag: watch for movement past a threshold. Movement = drag (existing
+           behavior). Release without moving = tap-to-pick. */
+        var sx=e.clientX, sy=e.clientY, became=false, pid=e.pointerId;
+        function onMove(ev){
+          if(ev.pointerId!==pid) return;
+          if(!became && (Math.abs(ev.clientX-sx)+Math.abs(ev.clientY-sy))>8){
+            became=true; cleanup();
+            if(window.thwapStartTrayDrag) window.thwapStartTrayDrag(f, ev);
+          }
+        }
+        function onUp(ev){
+          if(ev.pointerId!==pid) return;
+          cleanup();
+          if(!became){ if(window.thwapPickSticker) window.thwapPickSticker(f, cell); }
+        }
+        function cleanup(){ document.removeEventListener('pointermove',onMove,true); document.removeEventListener('pointerup',onUp,true); document.removeEventListener('pointercancel',onUp,true); }
+        document.addEventListener('pointermove',onMove,true);
+        document.addEventListener('pointerup',onUp,true);
+        document.addEventListener('pointercancel',onUp,true);
       });
     }
     grid.appendChild(cell);
@@ -5977,7 +5997,46 @@ window.thwapDecorateDeck=function(faces, getVisible, onchange){
   DECK={ faces:faces, getVisible:(getVisible||function(){return faces[0];}), onchange:onchange };
   window.thwapDeckRedraw=function(){ faces.forEach(function(fc){ window.thwapRenderPlaced(fc.surface, fc.container, {editable:true, onchange:onchange}); }); };
   window.thwapDeckRedraw();
+  /* Tap-to-place: when a tray sticker is picked (tapped, not dragged), a tap on the
+     visible card face drops it there. This makes a bottom-of-list sticker as easy to
+     place as a top one (no long drag). Drag still works and is unchanged. */
+  faces.forEach(function(fc){
+    if(fc.container._tapWired) return; fc.container._tapWired=1;
+    fc.container.addEventListener('click',function(ev){
+      if(!PICK.file) return;                       /* nothing picked = normal rotate/noop */
+      var vf=DECK.getVisible()||faces[0];
+      if(vf.container!==fc.container) return;        /* only the face you can see */
+      var q=pct(fc.container, ev.clientX, ev.clientY);
+      window.thwapPlaced.add(vf.surface, PICK.file, q.x, q.y);
+      window.thwapDeckRedraw(); if(DECK.onchange) DECK.onchange();
+      if(!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)){ var ws=fc.container.querySelectorAll('.pl-decalwrap'); var last=ws[ws.length-1]; if(last){ last.classList.add('placed-pop'); setTimeout(function(){ last.classList.remove('placed-pop'); },420); } }
+      window.thwapClearPick();
+    });
+  });
 };
+/* The currently picked tray sticker (tap-to-place). PICK.cell is the grid cell so we
+   can toggle its ring. Picking a second sticker swaps; tapping the same one again, or
+   placing it, or Escape, clears. */
+var PICK={ file:null, cell:null };
+function pickTip(on){
+  try{ var tip=document.querySelector('.deck-tip'); if(!tip) return;
+    if(on){ if(tip._base==null) tip._base=tip.textContent; tip.textContent='Now tap your card to place it.'; tip.classList.add('deck-tip-pick'); }
+    else { if(tip._base!=null) tip.textContent=tip._base; tip.classList.remove('deck-tip-pick'); }
+  }catch(_){}
+}
+window.thwapPickSticker=function(file, cell){
+  if(PICK.file===file && PICK.cell===cell){ window.thwapClearPick(); return; }  /* tap again to deselect */
+  window.thwapClearPick();
+  PICK.file=file; PICK.cell=cell||null;
+  if(PICK.cell) PICK.cell.classList.add('picked');
+  pickTip(true);
+};
+window.thwapClearPick=function(){
+  if(PICK.cell) PICK.cell.classList.remove('picked');
+  var had=!!PICK.file; PICK={ file:null, cell:null };
+  if(had) pickTip(false);
+};
+document.addEventListener('keydown',function(e){ if(e.key==='Escape') window.thwapClearPick(); });
 /* Start dragging a sticker FROM the tray. Called on a tray cell's pointerdown.
    A ghost follows the finger; on release over the card it is placed there.
    Works on touch and mouse (pointer events, no HTML5 drag-and-drop). */
