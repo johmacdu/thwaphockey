@@ -7097,7 +7097,7 @@ document.getElementById('coachInfoScrim') && document.getElementById('coachInfoS
   var AC=null,MASTER=null,BUF={},decoded=false;
   function sfxOn(){ try{ return localStorage.getItem('thwapSfxOn')!=='0'; }catch(e){ return true; } } /* default ON */
   function setSfxOn(v){ try{ localStorage.setItem('thwapSfxOn', v?'1':'0'); }catch(e){} }
-  function ctx(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); MASTER=AC.createGain(); MASTER.gain.value=0.85; MASTER.connect(AC.destination); decodeAll(); }catch(e){ AC=null; } } if(AC&&AC.state==='suspended')AC.resume(); return AC; }
+  function ctx(){ if(!AC){ try{ AC=new (window.AudioContext||window.webkitAudioContext)(); MASTER=AC.createGain(); MASTER.gain.value=0.85; MASTER.connect(AC.destination); decodeAll(); }catch(e){ AC=null; } } if(AC&&AC.state!=='running'){ try{ AC.resume(); }catch(e){} } return AC; }
   function decodeAll(){ if(decoded||!AC)return; decoded=true; Object.keys(FILES).forEach(function(k){ try{ fetch(FILES[k]).then(function(r){return r.arrayBuffer();}).then(function(ab){ AC.decodeAudioData(ab,function(b){BUF[k]=b;},function(){}); }).catch(function(){}); }catch(e){} }); }
   /* ---- mobile audio unlock ----------------------------------------------
      iOS Safari and mobile Chrome start every AudioContext 'suspended' and
@@ -7130,7 +7130,11 @@ document.getElementById('coachInfoScrim') && document.getElementById('coachInfoS
   /* iOS suspends the context when the page is hidden; resume on return */
   document.addEventListener('visibilitychange',function(){ if(!document.hidden&&AC&&AC.state==='suspended'){ try{ AC.resume(); }catch(e){} } });
   function jit(){ return 1+(Math.random()*2-1)*0.05; }
-  function shot(clip,rate,gain,when,_retry){ var b=BUF[clip]; if(!AC)return; if(!b){ if(!(_retry>4)){ setTimeout(function(){ shot(clip,rate,gain,0,(_retry||0)+1); },60); } return; } var s=AC.createBufferSource(); s.buffer=b; s.playbackRate.value=(rate||1)*jit(); var g=AC.createGain(); g.gain.value=(gain==null?1:gain); s.connect(g); g.connect(MASTER); s.start(when||0); }
+  function shot(clip,rate,gain,when,_retry){ if(!AC)return; var b=BUF[clip];
+    /* buffer not decoded yet, or context still resuming (async on Chrome
+       Android): retry shortly instead of dropping the sound. */
+    if(!b || AC.state!=='running'){ if(AC.state!=='running'){ try{ AC.resume(); }catch(e){} } if(!(_retry>8)){ setTimeout(function(){ shot(clip,rate,gain,0,(_retry||0)+1); },50); } return; }
+    var s=AC.createBufferSource(); s.buffer=b; s.playbackRate.value=(rate||1)*jit(); var g=AC.createGain(); g.gain.value=(gain==null?1:gain); s.connect(g); g.connect(MASTER); s.start(when||0); }
   function play(name){
     if(!sfxOn())return; if(reduce&&CELEBRATE[name])return;
     var m=MAP[name]; if(!m)return; ctx(); if(!AC)return;
@@ -7189,18 +7193,36 @@ document.getElementById('coachInfoScrim') && document.getElementById('coachInfoS
   var BACK_SEL='.backlink,.gdr-back,.glassback,.login-back,.cardaway,.back';
   var CLOSE_SEL='.cardclose,.glassclose,.sugg-close,[aria-label=\'Close\'],[data-close]';
   var CARDOPEN_SEL='.cb-stats,.pl-name,.pcard,.cardthumb,.cardctl-open,.stickerbook-head';
-  function hit(el){ return el&&el.closest?el:null; }
+  var INTERACTIVE='button, a[href], [role=\'button\'], .exchev, .chev, input[type=\'checkbox\'], input[type=\'radio\'], label, select, .seg, .toggle';
+  /* Decide which sound a tapped element gets. Returns a sound name or null. */
+  function soundFor(t){
+    if(!t||!t.closest)return null;
+    if(t.closest('#sfxToggle'))return null;             /* mute button plays its own confirm */
+    if(t.closest('.exdone')){ var row=t.closest('.exrow'); return (row&&!row.classList.contains('done'))?'done':null; }
+    if(t.closest(BACK_SEL)||t.closest(CLOSE_SEL))return 'navBack';
+    if(t.closest(CARDOPEN_SEL))return 'navOpen';
+    if(t.closest(INTERACTIVE))return 'tap';
+    return null;
+  }
+  /* Fire on POINTERDOWN -- the earliest, always-trusted gesture on mobile.
+     Chrome Android frequently drops audio started from a late synthetic
+     'click' (user activation has expired by then); pointerdown never has that
+     problem and also makes the tap feel instant. We also unlock the context
+     here (defense in depth beyond primeOnce). A 'click' fallback covers
+     keyboard activation (Enter on a focused button fires click, not pointer),
+     de-duped so a real tap doesn't double-sound. */
+  var lastPd=0;
+  document.addEventListener('pointerdown',function(e){
+    var n=soundFor(e.target); if(!n)return;
+    if(!unlocked)unlock();
+    lastPd=Date.now();
+    play(n);
+  }, true);
   document.addEventListener('click',function(e){
-    var t=e.target; if(!t||!t.closest)return;
-    /* never sound the sound toggle itself (it plays its own confirm) */
-    if(t.closest('#sfxToggle'))return;
-    /* Mark drill done -> the THWAP (only when it actually transitions to done) */
-    if(t.closest('.exdone')){ var row=t.closest('.exrow'); if(row&&!row.classList.contains('done')) play('done'); return; }
-    /* Back, close (x), open-card, and player-name all use the open-card glide */
-    if(t.closest(BACK_SEL)||t.closest(CLOSE_SEL)){ play('navBack'); return; }
-    if(t.closest(CARDOPEN_SEL)){ play('navOpen'); return; }
-    /* Everything else interactive gets the default tap */
-    if(t.closest('button, a[href], [role=\'button\'], .exchev, .chev, input[type=\'checkbox\'], input[type=\'radio\'], label, select, .seg, .toggle')){ play('tap'); }
+    /* a pointerdown within the last 700ms already sounded this interaction */
+    if(Date.now()-lastPd<700)return;
+    var n=soundFor(e.target); if(!n)return;
+    play(n);
   }, true);
 })();
 </script>

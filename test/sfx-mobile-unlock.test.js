@@ -31,4 +31,16 @@ describe('mobile audio unlock', () => {
     // shot() re-schedules itself briefly instead of silently returning
     expect(html).toMatch(/shot\(clip,rate,gain,0,\(_retry\|\|0\)\+1\)/);
   });
+
+  it('drives UI sound from pointerdown with a de-duped click fallback (Chrome Android)', () => {
+    // pointerdown is the always-trusted mobile gesture; a late click can be
+    // dropped by Chrome's autoplay policy, so pointerdown is primary.
+    expect(html).toMatch(/addEventListener\('pointerdown',function\(e\)\{\s*var n=soundFor/);
+    // click fallback for keyboard activation, de-duped against a recent pointerdown
+    expect(html).toMatch(/Date\.now\(\)-lastPd<700/);
+  });
+
+  it('shot() is resume-aware: waits for the context to be running before start()', () => {
+    expect(html).toMatch(/AC\.state!=='running'/);
+  });
 });
