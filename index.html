@@ -5968,7 +5968,7 @@ window.NETPLAY_DAYS=[[{"emoji":"🧎","name":"Ready Stance","theme":"Set your ba
 function shootDayI(){ var s=window.thwapWeekdaySlot(); if(s<0) s=0; return s%SHOOT_DAYS.length; }
 var SHOOT=SHOOT_DAYS[shootDayI()];
 /* Progress keyed by which rotation day it is, so finishing today does not mark another day. */
-function shootKey(){ return 'thwapShootProg|day'+shootDayI(); }
+function shootKey(){ var pl='guest'; try{ pl=localStorage.getItem('bfPlayer')||'guest'; }catch(e){} var d=new Date(); var dk=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); return 'thwapShootProg|'+pl+'|'+dk+'|day'+shootDayI(); }
 function loadProg(){try{return JSON.parse(localStorage.getItem(shootKey())||'{}');}catch(e){return {};}}
 function saveProg(p){try{localStorage.setItem(shootKey(),JSON.stringify(p));}catch(e){}}
 /* A goalie (Johnny) trains Net play instead of Shooting. Same page, same
