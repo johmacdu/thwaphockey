@@ -1856,6 +1856,7 @@ body.login-locked{overflow:hidden}
   var isWeekend=(wd===0||wd===6);
   /* Built-in default: dryland only Tue(2)/Wed(3)/Thu(4). */
   if(rows.dryland && [2,3,4].indexOf(wd)<0){ rows.dryland.style.display='none'; }
+  try{ if(window.thwapRefreshHero) window.thwapRefreshHero(); }catch(e){}
   fetch('/api/coach?action=get-plan').then(function(r){ return r.json(); }).then(function(j){
     if(!j||!j.ok||!j.plan){
       /* Fail open: leave the built-in default (and the weekend-optional default
@@ -1891,6 +1892,9 @@ body.login-locked{overflow:hidden}
       if(!rows[cat]) return;
       rows[cat].style.display = on[cat] ? '' : 'none';
     });
+    /* The hero sentence derives today's disciplines from these cards, so
+       repaint it now that the plan has resolved. */
+    try{ if(window.thwapRefreshHero) window.thwapRefreshHero(); }catch(e){}
   }).catch(function(){});
   }
   if(document.querySelector('.nav-stick')||document.querySelector('.nav-shoot')||document.querySelector('.nav-dryland')){ run(); }
@@ -2963,7 +2967,7 @@ window.thwapActiveTeam=function(coach){
   if(document.readyState==='complete'){ init(); } else { window.addEventListener('load', init); }
 })();
 showHomePlayer();
-window.addEventListener('hashchange',function(){ if(location.hash===''||location.hash==='#home') showHomePlayer(); });
+window.addEventListener('hashchange',function(){ if(location.hash===''||location.hash==='#home'){ showHomePlayer(); try{ if(window.thwapRefreshHero) window.thwapRefreshHero(); }catch(e){} } });
 /* Player Home "next game" card: opponent + countdown from the schedule, the
    coach's team goal as the focus line, and a goals-set state. Whole card links
    to the game-day goals page. Coaches never see #home. */
@@ -5670,6 +5674,16 @@ function fill(){
      net play has no page yet, so it falls back to #shoot too. */
   DEFS.forEach(function(d){ if(!d.href) d.href = (d.k==='netplay')?'#shoot':('#'+d.k); });
   var defs=weekend?DEFS.filter(function(d){return d.k!=='dryland';}):DEFS;   /* dryland rests on weekends */
+  /* Respect the coach plan + dryland Tue/Wed/Thu default: the gating IIFE hides
+     the .nav-<disc> card for any discipline NOT scheduled today. Mirror that in
+     the hero sentence so it never lists a discipline the player has no card for
+     (e.g. \"Dryland to do today\" on a day with no dryland). A card still in the
+     DOM flow (display !== none) is scheduled; a hidden one is not. Fail open: if
+     a card is missing entirely, keep the discipline (do not silently drop it). */
+  defs=defs.filter(function(d){
+    try{ var card=document.querySelector('.nav-'+d.k); if(card && card.style.display==='none') return false; }catch(e){}
+    return true;
+  });
   /* Render one colored discipline chunk (emoji + name) as a LINK to its category
      page. The trailing check sits tight to the label (its own leading space only
      when shown) so the sentence closes "Dryland." with no stray space. */
@@ -5709,8 +5723,11 @@ function fill(){
     var tw=document.getElementById('todayReveal');
     if(tw){ tw.addEventListener('click',function(e){ e.preventDefault(); tw.classList.toggle('show'); }); }
   }
-  /* Weekend: dryland (load) rests, so hide its card. Skills stay available. */
-  var dl=document.querySelector('.nav-dryland'); if(dl) dl.style.display=weekend?'none':'';
+  /* Card visibility (weekend rest, the Tue/Wed/Thu default, and the coach plan)
+     is owned entirely by the plan-gating IIFE near the top of the file. fill()
+     only READS .nav-<disc> visibility to build the sentence -- it must NOT write
+     .nav-dryland display here, or it would overwrite the gating's decision (set
+     dryland back to visible on a weekday the plan hid it). */
   /* The weekday+date live only in the inline "today" reveal, never shown twice. */
 }
 fill();
@@ -6069,6 +6086,7 @@ function render(){
         if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('shoot');
         if(window.thwapMarkDone)window.thwapMarkDone(goalie?'netplay':'shoot','shoot:'+i);
         if(window.thwapStampToday)window.thwapStampToday('shoot',true); try{ if(window.thwapSfx)thwapSfx('shootReward'); }catch(e){}
+        try{ if(window.thwapRefreshHero) window.thwapRefreshHero(); }catch(e){}
         btn.textContent='Done ✓';
       };
       var unMark=function(){
@@ -6076,6 +6094,7 @@ function render(){
         row.classList.remove('done');
         if(window.thwapStampToday)window.thwapStampToday('shoot',false);
         if(window.thwapUnmarkDone)window.thwapUnmarkDone('shoot:'+i);
+        try{ if(window.thwapRefreshHero) window.thwapRefreshHero(); }catch(e){}
         btn.textContent='Start';
       };
       if(row.classList.contains('done')){ unMark(); return; }  /* tap a done row to un-mark it (no timer) */
