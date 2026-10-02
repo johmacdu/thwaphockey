@@ -92,6 +92,49 @@ describe('Home hero do-summary', () => {
 });
 
 
+function renderGated() {
+  // Mirror render()'s weekday mock, then simulate the plan-gating hiding the
+  // dryland card AFTER load and repainting the hero (what the gating IIFE does).
+  const inject = "<script>window.__wk=false;" +
+    "Object.defineProperty(window,'thwapIsWeekend',{configurable:true,value:function(){return false;}});" +
+    "window.thwapToday=function(){return new Date(2026,8,28);};<\/script>";
+  let doc = html.replace('<head>', '<head>' + inject);
+  doc = doc.replace('</body>',
+    "<script>var c=document.querySelector('.nav-dryland'); if(c) c.style.display='none';" +
+    "if(typeof window.thwapRefreshHero==='function') window.thwapRefreshHero();<\/script></body>");
+  const dom = new JSDOM(doc, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'http://localhost/' });
+  return dom.window.document;
+}
+
+describe('Home hero do-summary — plan gating (no dryland today)', () => {
+  // The coach plan / weekday default hides the .nav-<disc> card for a discipline
+  // not scheduled today. The hero sentence must mirror that and NOT list a
+  // discipline whose card is hidden (the "Dryland to do today" bug when there is
+  // no dryland).
+  it('drops Dryland from the sentence when its nav card is hidden', () => {
+    const d = renderGated();
+    const lead = d.getElementById('doLead');
+    expect(lead).toBeTruthy();
+    const names = [...lead.querySelectorAll('.disc')].map(s => s.className.match(/disc-(\w+)/)[1]);
+    expect(names).toEqual(['stick', 'shoot']); // dryland dropped
+    expect(lead.textContent).toContain('Hands');
+    expect(lead.textContent).toContain('Shooting');
+    expect(lead.textContent).not.toContain('Dryland');
+  });
+
+  it('the hero refreshes on return to #home and after a shoot drill is marked', () => {
+    // Guard the wiring that keeps the hero from going stale after finishing a drill.
+    expect(html).toContain("if(location.hash===''||location.hash==='#home'){ showHomePlayer();");
+    // markDone + unMark + both gating hooks repaint the hero.
+    const refreshCount = (html.match(/if\(window\.thwapRefreshHero\) window\.thwapRefreshHero\(\);/g) || []).length;
+    expect(refreshCount).toBeGreaterThanOrEqual(4);
+  });
+
+  it('fill() no longer writes the dryland nav card display (gating owns it)', () => {
+    expect(html).not.toContain("var dl=document.querySelector('.nav-dryland'); if(dl) dl.style.display=weekend?'none':'';");
+  });
+});
+
 describe('Home hero do-summary — goalie', () => {
   it('a gated goalie (Net play coming-soon) sees Hands and Dryland only, never Shooting or Net play', () => {
     const d = render(false, [], true);
