@@ -9,7 +9,9 @@
 // This suite asserts:
 //   (a) NO #splashCtl / #splashSfx / #splashTheme / .splashctl exist anywhere,
 //   (b) the REAL #sfxToggle + #themeToggle footer is lifted above the overlay
-//       (#loginOverlay z-130) on body.login-locked, reachable (pointer-events),
+//       (#loginOverlay z-130) on body.login-locked by z-index ALONE, kept in its
+//       exact home-screen position (position:relative, nothing moved or hidden --
+//       PR #304 reverted #300's relocate + slogan/kebab hide),
 //   (c) those real controls still drive thwapTheme / thwapSfxOn as before.
 //
 // @vitest-environment jsdom
@@ -55,19 +57,26 @@ describe('Splash controls: the REAL footer controls are surfaced above the frost
     expect((html.match(/id='themeToggle'/g) || []).length).toBe(1);
   });
 
-  it('lifts the real .footer above the overlay (z>130), fixed and pointer-reachable, on body.login-locked', () => {
+  it('lifts the real .footer above the overlay (z>130) in place (not relocated), pointer-reachable, on body.login-locked', () => {
     const m = html.match(/body\.login-locked \.footer\{([^}]*)\}/);
     expect(m).toBeTruthy();
     const rule = m[1];
-    expect(rule).toMatch(/position:fixed/);
+    // PR #304: keep the footer in its EXACT home-screen position -- only raise its
+    // stacking above the frost. position:relative (in flow), NOT fixed (relocated).
+    expect(rule).toMatch(/position:relative/);
+    expect(rule).not.toMatch(/position:fixed/);
     const z = rule.match(/z-index:(\d+)/);
     expect(z).toBeTruthy();
-    expect(Number(z[1])).toBeGreaterThan(130);
+    expect(Number(z[1])).toBeGreaterThan(130); // above #loginOverlay z-130
     expect(rule).toMatch(/pointer-events:auto/);
   });
 
-  it('hides the slogan + kebab on the splash so the two toggles clear the sign-in card', () => {
-    expect(html).toMatch(/body\.login-locked \.footer \.slogan,body\.login-locked \.footer \.footmenu-wrap\{display:none\}/);
+  it('does NOT relocate or hide any footer part on the splash (whole footer stays, per PR #304)', () => {
+    // The reverted #300 behaviour hid the slogan + kebab and moved the footer
+    // bottom-center. PR #304 keeps the footer exactly as on the home screen and
+    // only lifts z-index. Assert the old hide rule is gone.
+    expect(html).not.toMatch(/body\.login-locked \.footer \.slogan,body\.login-locked \.footer \.footmenu-wrap\{display:none\}/);
+    expect(html).not.toMatch(/body\.login-locked \.footer\{[^}]*position:fixed/);
   });
 
   it('adds no banned punctuation (middot / em-dash / en-dash) on the surfacing lines', () => {
