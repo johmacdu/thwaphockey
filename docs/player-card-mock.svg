@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="300" viewBox="0 0 240 300" role="img" aria-label="Player card: Lewie MacDuffie, number 72, Defense">
+  <defs>
+    <linearGradient id="cardBg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1b281f"/>
+      <stop offset="1" stop-color="#131d17"/>
+    </linearGradient>
+    <linearGradient id="crest" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9ed3a8"/>
+      <stop offset="1" stop-color="#6fae7c"/>
+    </linearGradient>
+    <clipPath id="avClip"><circle cx="120" cy="150" r="40"/></clipPath>
+  </defs>
+
+  <!-- card body -->
+  <rect x="4" y="4" width="232" height="292" rx="26" fill="url(#cardBg)" stroke="#2b3b31" stroke-width="2"/>
+
+  <!-- top jersey crest with big number -->
+  <path d="M120 34
+           c-22 0 -34 6 -46 10
+           c4 20 2 40 -2 56
+           c14 10 30 14 48 14
+           c18 0 34 -4 48 -14
+           c-4 -16 -6 -36 -2 -56
+           c-12 -4 -24 -10 -44 -10 Z"
+        fill="url(#crest)" stroke="#4f7d5a" stroke-width="1.5"/>
+  <text x="120" y="92" text-anchor="middle" font-family="'Fredoka','Baloo 2',sans-serif"
+        font-weight="700" font-size="46" fill="#102016" letter-spacing="1">72</text>
+
+  <!-- avatar -->
+  <circle cx="120" cy="150" r="43" fill="#223027" stroke="#131d17" stroke-width="4"/>
+  <!-- placeholder head silhouette (swap for a photo in the app) -->
+  <g clip-path="url(#avClip)">
+    <rect x="80" y="110" width="80" height="80" fill="#2f4237"/>
+    <circle cx="120" cy="140" r="16" fill="#9eaca2"/>
+    <circle cx="120" cy="196" r="30" fill="#9eaca2"/>
+  </g>
+
+  <!-- name -->
+  <text x="120" y="222" text-anchor="middle" font-family="'Fredoka','Baloo 2',sans-serif"
+        font-weight="600" font-size="22" fill="#f4f7f3" letter-spacing="0.3">Lewie</text>
+
+  <!-- position chip -->
+  <g>
+    <rect x="62" y="238" width="116" height="30" rx="15" fill="#22302722" stroke="#354239" stroke-width="1.5"/>
+    <circle cx="82" cy="253" r="5" fill="#5aa9e6"/>
+    <text x="94" y="258" text-anchor="start" font-family="'Poppins',sans-serif"
+          font-weight="600" font-size="13" fill="#c8d1ca">🛡️ Defense</text>
+  </g>
+</svg>
