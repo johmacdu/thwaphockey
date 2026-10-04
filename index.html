@@ -982,18 +982,17 @@ button.row:active{background:var(--soft)}
 .pl-name{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;line-height:1.05}
 .pl-pos{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
 .pl-streak{font-family:'Archivo Black',system-ui,sans-serif;font-size:18px;color:var(--text);margin:40px 0 24px}
-.pl-disc{margin:0 0 34px}
-.pl-disc-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:12px}
-.pl-disc-name{font-size:18px;font-weight:900}
-.pl-disc-count{font-size:14px;font-weight:800;color:var(--green2)}
+.pl-disc{margin:0 0 14px;border:1px solid var(--line);border-radius:14px;background:var(--card2);overflow:hidden}
+/* Stat-page discipline sections reuse the home .exrow card; inner drill rows: */
+.pl-exrow .exbody{padding-top:4px}
 .pl-ex{display:flex;align-items:center;gap:14px;padding:14px;margin-bottom:10px;border:1px solid var(--line);border-radius:16px;background:var(--card);font-size:17px;font-weight:800;animation:plexin .4s ease both}
-.pl-exicon{width:48px;height:48px;flex:0 0 auto;border-radius:14px;display:grid;place-items:center;font-size:26px;background:color-mix(in srgb,var(--dacc) 20%,transparent)}
+.pl-exicon{width:48px;height:48px;flex:0 0 auto;border-radius:14px;display:grid;place-items:center;font-size:26px;background:color-mix(in srgb,var(--exacc) 20%,transparent)}
 .pl-exname{flex:1 1 auto;min-width:0}
 .pl-exdot{width:22px;height:22px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;font-size:15px;font-weight:900;background:var(--soft);color:transparent}
 .pl-ex:not(.done){opacity:.62}
-.pl-ex.done{border-color:var(--dacc);background:color-mix(in srgb,var(--dacc) 12%,var(--card))}
-.pl-ex.done .pl-exicon{background:var(--dacc)}
-.pl-ex.done .pl-exdot{width:28px;height:28px;background:var(--dacc);border-color:var(--dacc);color:#0f1712}
+.pl-ex.done{border-color:var(--exacc);background:color-mix(in srgb,var(--exacc) 12%,var(--card))}
+.pl-ex.done .pl-exicon{background:var(--exacc)}
+.pl-ex.done .pl-exdot{width:28px;height:28px;background:var(--exacc);border-color:var(--exacc);color:#0f1712}
 @keyframes plexin{0%{opacity:0;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
 .pl-ex:nth-child(2){animation-delay:.03s}.pl-ex:nth-child(3){animation-delay:.06s}.pl-ex:nth-child(4){animation-delay:.09s}.pl-ex:nth-child(5){animation-delay:.12s}.pl-ex:nth-child(6){animation-delay:.15s}
 @media (prefers-reduced-motion: reduce){.pl-ex{animation:none}}
@@ -1073,6 +1072,19 @@ img.plflame{width:1.15em;height:auto;vertical-align:-.22em}
 .idpdev-goal .g-date{color:var(--muted);font-weight:800;font-size:11px}
 .idpdev-goal .g-note{color:var(--muted);display:block;margin-top:2px}
 .idpdev-empty{font-size:13px;color:var(--muted);font-style:italic;margin-top:8px}
+/* Player-facing goal history: a quiet disclosure inside the IDP block, under the current goal. */
+.idphist{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
+.idphist-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;background:none;border:0;padding:4px 0;cursor:pointer;font-family:inherit;font-weight:800;font-size:13px;color:var(--text);-webkit-tap-highlight-color:transparent}
+.idphist-toggle .idphist-chev{color:var(--muted);transition:transform .18s ease;font-size:18px;line-height:1}
+.idphist.open .idphist-chev{transform:rotate(90deg)}
+.idphist-body{display:none;margin-top:10px}
+.idphist.open .idphist-body{display:block}
+.idphist-group-h{font-weight:800;font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);margin:10px 0 6px}
+.idphist-group-h:first-child{margin-top:0}
+.idphist-item{padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:13px;color:var(--text);margin-bottom:6px}
+.idphist-item .ih-date{color:var(--muted);font-weight:800;font-size:11px}
+.idphist-item .ih-note{color:var(--muted);display:block;margin-top:3px;font-style:italic}
+.idphist-empty{font-size:13px;color:var(--muted);font-style:italic;margin-bottom:6px}
 .pl-tot{background:var(--card2);border:1px solid var(--line);border-radius:16px;padding:12px 4px;text-align:center;cursor:pointer;font-family:inherit;transition:transform .08s ease,border-color .12s ease;-webkit-tap-highlight-color:transparent}
 .pl-tot:active{transform:scale(.95)}
 .pl-tot.on{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink) inset}
@@ -5394,6 +5406,39 @@ window.thwapStatsRefresh=function(){ if(current && location.hash==='#player') bu
     if(view.tagName==='BUTTON') view.disabled=!isCoach;
     view.hidden=false; editRow.hidden=true;
   }
+  /* Player-facing "Game and Individual Goals" card (fourth category, below Dryland):
+     the kid's own game-day goal check-offs plus the goals they taught mom and dad,
+     over time. Read-only. The coach's monthly focus stays in its own block on top. */
+  function esc(s){ var d=document.createElement('div'); d.textContent=(s==null?'':String(s)); return d.innerHTML; }
+  window.thwapRenderGIG=function(slug){
+    var body=document.getElementById('gigBody'); var dose=document.getElementById('gigDose');
+    if(!body) return;
+    fetch('/api/coach?action=history&playerId='+encodeURIComponent(slug))
+      .then(function(r){ return r.json(); })
+      .then(function(j){
+        if(!j||!j.ok){ return; }
+        var all=(j.gameGoals||[]);
+        var teach=all.filter(function(g){ return g&&g.goalId==='teach'&&g.note; });
+        var gday=all.filter(function(g){ return g&&g.goalId!=='teach'&&g.done; });
+        var n=gday.length+teach.length;
+        if(dose) dose.textContent = n? (n+" logged") : "Nothing logged yet";
+        var html='';
+        html+="<div class='idphist-group-h'>Game-day goals you worked on</div>";
+        if(gday.length){
+          gday.slice(0,20).forEach(function(g){
+            html+="<div class='idphist-item'><span class='ih-date'>"+esc(g.date||'')+"</span> "+esc(g.goalTitle||'')+"</div>";
+          });
+        } else { html+="<div class='idphist-empty'>Pick your game-day goals and they will show here.</div>"; }
+        html+="<div class='idphist-group-h'>What you taught mom and dad</div>";
+        if(teach.length){
+          teach.slice(0,20).forEach(function(g){
+            html+="<div class='idphist-item'><span class='ih-date'>"+esc(g.date||'')+"</span><span class='ih-note'>"+esc(g.note)+"</span></div>";
+          });
+        } else { html+="<div class='idphist-empty'>Teach mom and dad a goal and it will show here.</div>"; }
+        body.innerHTML=html;
+      })
+      .catch(function(){ body.innerHTML="<div class='idphist-empty'>Could not load your goals right now.</div>"; });
+  };
   window.thwapRenderIdp=function(slug){
     curSlug=slug; block.hidden=false; showText('');
     fetch('/api/coach?action=idp-goal&playerId='+encodeURIComponent(slug))
@@ -5587,7 +5632,7 @@ function build(){
     /* tappable totals act as the legend + filter control */
     var totals="<div class='pl-totals'>"+
       "<button type='button' class='pl-tot"+(plFilter==='all'?' on':'')+"' data-disc='all'><div class='te'>🏆</div><div class='tn'>"+(val[0]+val[1]+val[2])+"</div><div class='tl'>All</div></button>"+
-      discs.map(function(disc,i){return "<button type='button' class='pl-tot"+(plFilter===disc?' on':'')+"' data-disc='"+disc+"' style='--totacc:"+DCOL[disc]+"'><div class='te'>"+DEMO[disc]+"</div><div class='tn' style='color:"+DCOL[disc]+"'>"+val[i]+"</div><div class='tl'>"+disc+"</div></button>";}).join('')+
+      discs.map(function(disc,i){return "<button type='button' class='pl-tot"+(plFilter===disc?' on':'')+"' data-disc='"+disc+"' style='--totacc:"+DCOL[disc]+"'><div class='te'>"+DEMO[disc]+"</div><div class='tn' style='color:"+DCOL[disc]+"'>"+val[i]+"</div><div class='tl'>"+dLabel(disc)+"</div></button>";}).join('')+
       "</div>";
     visual="<div class='pl-panel'><div class='pl-panel-h'>The bigger your triangle, the more you have trained!</div>"+radar+totals+"</div>";
   }
@@ -5597,6 +5642,8 @@ function build(){
      category. (plFilter is 'all' | 'Stickhandling' | 'Shooting' | 'Dryland'.) */
   var showDiscs=(plFilter!=='all' && discs.indexOf(plFilter)>=0)?[plFilter]:discs;
   var DACC={Stickhandling:'#8fd65e',Shooting:'#75B8FF',Dryland:'#FF9D4D'};
+  /* contrast-safe text variants for the name (vivid DACC fails as text on near-white) */
+  var DNAMECOL={Stickhandling:'#4E9128',Shooting:'#3E88D8',Dryland:'#E07A1F'};
   var list=showDiscs.map(function(disc){
     var exs=buildCatalog()[disc]; var done=demoDone(first,disc,tf);
     var rows=exs.map(function(name,i){var isDone=i<done;
@@ -5605,9 +5652,31 @@ function build(){
         "<span class='pl-exname'>"+esc(name)+"</span>"+
         "<span class='pl-exdot'>"+(isDone?'✓':'')+"</span></div>";
     }).join('');
-    return "<div class='pl-disc' style='--dacc:"+DACC[disc]+"'><div class='pl-disc-h'><span class='pl-disc-name'>"+disc+"</span><span class='pl-disc-count'>"+done+" of "+exs.length+" done</span></div>"+rows+"</div>";
+    /* Reuse the home/drill-page expand/collapse card pattern (.exrow/.exhead/.exbody),
+       default collapsed, so the stat-page discipline sections match the rest of the app. */
+    return "<div class='exrow pl-exrow' style='--exacc:"+DACC[disc]+"'>"+
+      "<div class='exhead'><div class='exem'>"+DEMO[disc]+"</div>"+
+      "<div><h3>"+dLabel(disc)+"</h3><div class='exdose'>"+done+" of "+exs.length+" done</div></div>"+
+      "<div class='exchev'>›</div></div>"+
+      "<div class='exbody'>"+rows+"</div></div>";
   }).join('');
-  wrap.innerHTML=visual+"<div class='pl-list'>"+list+"</div>";
+  /* Fourth category card, below Dryland: the player's Game and Individual Goals
+     over time (game-day goal check-offs + their individual-goal picks + teach notes).
+     Uses the same .exrow expand/collapse card as the discipline sections. */
+  var gigCard="<div class='exrow pl-exrow pl-gig' style='--exacc:#C58BF0'>"+
+    "<div class='exhead'><div class='exem'>🎯</div>"+
+    "<div><h3>Game and Individual Goals</h3><div class='exdose' id='gigDose'>Tap to see your goals</div></div>"+
+    "<div class='exchev'>›</div></div>"+
+    "<div class='exbody'><div id='gigBody'><div class='idphist-empty'>Loading your goals...</div></div></div></div>";
+  wrap.innerHTML=visual+"<div class='pl-list'>"+list+gigCard+"</div>";
+  if(window.thwapRenderGIG) window.thwapRenderGIG(slug);
+
+  /* collapse/expand each discipline card (default collapsed), home-page .exrow pattern */
+  wrap.querySelectorAll('.pl-exrow .exhead').forEach(function(h){
+    h.addEventListener('click',function(){
+      h.parentElement.classList.toggle('open');
+    });
+  });
 
   /* wire the tappable totals (all-time only) */
   wrap.querySelectorAll('.pl-tot[data-disc]').forEach(function(b){

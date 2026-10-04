@@ -31,7 +31,7 @@ import { mintSession, verifySession } from '../lib/session_store.js';
 import { ROSTER, weekBoard, monthTrend, adjustPlayer } from '../lib/store.js';
 import {
   getTeam, setTeam, listMembers, addMember, getMember, removeMember,
-  getCoach, setCoach, getIdpGoal, setIdpGoal, getGameGoalLog, logGameGoal,
+  getCoach, setCoach, getIdpGoal, setIdpGoal, getGameGoalLog, logGameGoal, getIdpGoalLog,
   getTeamPlan, setTeamPlan,
   getTeamGoal, setTeamGoal,
   addDrillSuggestion, listDrillSuggestions, setSuggestionStatus, listAllTeamCodes,
@@ -889,6 +889,24 @@ async function gameGoalLogRead(req, res) {
   return res.status(200).json({ ok: true, log: (await getGameGoalLog(pid)).slice(-30).reverse() });
 }
 
+// GET ?action=history&playerId=<pid>  -> the player's own review history:
+// their game-day goal + teach check-offs AND the full coach/player goal history.
+// Read-only and non-sensitive (a player's own goals), so no code is required to
+// read; writes stay gated. Both logs come back newest-first.
+async function historyRead(req, res) {
+  if (!methodGuard(req, res, 'GET')) return;
+  const pid = String((req.query && req.query.playerId) || '').toLowerCase();
+  if (!pid) return res.status(400).json({ error: 'playerId required' });
+  const [goals, idp] = await Promise.all([getGameGoalLog(pid), getIdpGoalLog(pid)]);
+  res.setHeader('Cache-Control', 'no-store');
+  return res.status(200).json({
+    ok: true,
+    playerId: pid,
+    gameGoals: goals.slice(-60).reverse(),
+    idpGoals: idp.slice().reverse(),
+  });
+}
+
 // PUBLIC, no-auth: the home "beta" banner reads this to decide whether to keep
 // showing itself for a team. Returns only { ok, betaUntil } (null when unset or
 // the team is unknown), which is non-sensitive. The player home cannot fetch the
@@ -943,6 +961,7 @@ export default async function handler(req, res) {
     case 'idp-goal': return idpGoal(req, res);
     case 'log-game-goal': return logGoal(req, res);
     case 'game-goal-log': return gameGoalLogRead(req, res);
+    case 'history': return historyRead(req, res);
     case 'beta': return beta(req, res);
     default: return res.status(404).json({ error: 'unknown coach action' });
   }
@@ -954,7 +973,7 @@ export const _handlers = {
   updatePlayer, setPassword, requestPassword, resetPassword, requestCode,
   adminRoster, adminUpdatePlayer,
   adminLogin, adminSetPassword, adminStatus,
-  join, schedule, setIdp, idpGoal, logGoal, gameGoalLogRead, setGamePosition,
+  join, schedule, setIdp, idpGoal, logGoal, gameGoalLogRead, historyRead, setGamePosition,
   getPlan, setPlan, beta,
   teamGoal, setTeamGoal: setTeamGoalHandler,
   suggestDrill, drillSuggestions,
