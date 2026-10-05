@@ -1502,6 +1502,31 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
   var selfCap = TARGET;   // how many the kid picks; drops to TARGET-1 when a coach team goal exists
   function recomputeCap(){ selfCap = TARGET - (hasTeamGoal ? 1 : 0); }
 
+  /* The game this plan is for: ?game=<schedule event id> when the home card
+     targets a specific (often just-passed) game; empty means the no-param path
+     identical to before (header falls back to next.nextGame). */
+  var targetGameId=''; try{ targetGameId=(new URLSearchParams(location.search).get('game')||'').trim(); }catch(e){ targetGameId=''; }
+  /* Signed-in player id: bfPlayer first word, lowercased, a-z only (matches the
+     game-goals log POST derivation). */
+  function pgPlayerId(){ try{ return (localStorage.getItem('bfPlayer')||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,''); }catch(e){ return ''; } }
+  function gameDoneKey(pid,gid){ return 'thwapGameDone|'+String(pid||'')+'|'+String(gid||''); }
+  /* Per-player + per-game completion: written when the plan is finalized for a
+     known game, read by the home card to drop that game's card for THIS player.
+     No-op without both a player and a target game id (the no-param path keeps the
+     old behavior and sets no per-game key). */
+  function markGameDone(){ var pid=pgPlayerId(); if(!pid||!targetGameId) return; try{ localStorage.setItem(gameDoneKey(pid,targetGameId),'1'); }catch(e){} }
+  function clearGameDone(){ var pid=pgPlayerId(); if(!pid||!targetGameId) return; try{ localStorage.removeItem(gameDoneKey(pid,targetGameId)); }catch(e){} }
+  /* Pick the game this page is planning: the ?game=<id> event from the schedule
+     when present, otherwise next.nextGame (the no-param path, unchanged). */
+  function resolveTargetGame(j){
+    if(targetGameId){
+      var evs=(j&&j.schedule&&j.schedule.events)||[];
+      for(var i=0;i<evs.length;i++){ if(evs[i]&&evs[i].id===targetGameId) return evs[i]; }
+    }
+    return (j&&j.next&&j.next.nextGame)||null;
+  }
+  window.__thwapTargetGameId=targetGameId;
+
   var boxes = Array.prototype.slice.call(document.querySelectorAll('.choice-input'));
   var finalMode = document.getElementById('finalMode');
   var helper = document.getElementById('helper');
@@ -1661,7 +1686,8 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
     fetch('/api/coach?action=schedule&code=RANGERS72')
       .then(function(r){ return r.json(); })
       .then(function(j){
-        var g=j&&j.ok&&j.next&&j.next.nextGame; if(!g) return;
+        if(!j||!j.ok) return;
+        var g=resolveTargetGame(j); if(!g) return;
         var dt=new Date(g.date+'T12:00:00');
         var gEl=document.getElementById('gpGame');
         if(gEl){ gEl.textContent=(g.home?'':'at ')+(g.opponent||'TBD')+' | '+DOW[dt.getDay()]+' '+MON[dt.getMonth()]+' '+dt.getDate(); }
@@ -1715,7 +1741,8 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
     fetch('/api/coach?action=schedule')
       .then(function(r){ return r.json(); })
       .then(function(j){
-        var g = j && j.ok && j.next && j.next.nextGame;
+        if(!j||!j.ok) return;
+        var g = resolveTargetGame(j);
         if(!g || !g.date) return;
         var d = new Date(g.date + 'T12:00:00');
         if(isNaN(d.getTime())) return;
@@ -1726,7 +1753,7 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
   })();
 
   for(var i=0;i<boxes.length;i++){ boxes[i].addEventListener('change', function(){ save(); updateUI(); }); }
-  if(finalMode) finalMode.addEventListener('change', saveFinal);
+  if(finalMode) finalMode.addEventListener('change', function(){ saveFinal(); if(finalMode.checked && checkedCount() >= selfCap){ markGameDone(); } });
 
   // Reset (grid): clear picks and saved state; position stays remembered.
   if(resetBtn){
@@ -1734,6 +1761,7 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
       for(var j=0;j<boxes.length;j++){ boxes[j].checked = false; }
       if(finalMode) finalMode.checked = false;
       try{ localStorage.removeItem(KEY); localStorage.removeItem(FKEY); }catch(e){}
+      clearGameDone();
       updateUI();
     });
   }
@@ -1744,12 +1772,16 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
       for(var j=0;j<boxes.length;j++){ boxes[j].checked = false; }
       if(finalMode) finalMode.checked = false;
       try{ localStorage.removeItem(KEY); localStorage.removeItem(FKEY); }catch(e){}
+      clearGameDone();
       updateUI();
     });
   }
 
   restore();
   updateUI();
+  /* If the plan was already finalized for this game on this device, re-affirm the
+     per-game done key (covers a return visit after the picks were restored). */
+  if(finalMode && finalMode.checked && checkedCount() >= selfCap){ markGameDone(); }
 
   // ---- Collapsible categories (first category open by default; a picked section also auto-opens) ----
   var sectionEls = document.querySelectorAll('section.section');

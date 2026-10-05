@@ -2988,29 +2988,127 @@ window.addEventListener('hashchange',function(){ if(location.hash===''||location
 /* Player Home "next game" card: opponent + countdown from the schedule, the
    coach's team goal as the focus line, and a goals-set state. Whole card links
    to the game-day goals page. Coaches never see #home. */
+/* Pure, testable date + game-pick helpers for the player next-game card.
+   Exposed on window.ThwapGameDay so test/game-goals-keep-until-thursday.test.js
+   can exercise the Vancouver cutoff and the pick logic without booting the page. */
+(function(){
+  var VTZ='America/Vancouver';
+  /* The Vancouver wall-clock parts for a given instant: {y,m,d,dow} where dow is
+     0=Sun..6=Sat. Uses Intl so it is correct regardless of the host timezone. */
+  function vancouverParts(nowMs){
+    var d=new Date(typeof nowMs==='number'?nowMs:Date.now());
+    var parts=new Intl.DateTimeFormat('en-US',{timeZone:VTZ,year:'numeric',month:'2-digit',day:'2-digit',weekday:'short'}).formatToParts(d);
+    var o={}; for(var i=0;i<parts.length;i++){ o[parts[i].type]=parts[i].value; }
+    var dowMap={Sun:0,Mon:1,Tue:2,Wed:3,Thu:4,Fri:5,Sat:6};
+    return { y:parseInt(o.year,10), m:parseInt(o.month,10), d:parseInt(o.day,10), dow:dowMap[o.weekday] };
+  }
+  /* Vancouver's current UTC offset in minutes (handles PST/PDT) at a given instant. */
+  function vancouverOffsetMin(ms){
+    var d=new Date(ms);
+    var parts=new Intl.DateTimeFormat('en-US',{timeZone:VTZ,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}).formatToParts(d);
+    var o={}; for(var i=0;i<parts.length;i++){ o[parts[i].type]=parts[i].value; }
+    var asUTC=Date.UTC(parseInt(o.year,10),parseInt(o.month,10)-1,parseInt(o.day,10),parseInt(o.hour,10)%24,parseInt(o.minute,10),parseInt(o.second,10));
+    return Math.round((asUTC-d.getTime())/60000);
+  }
+  /* The epoch-ms of a Vancouver wall-clock time {y,m,d,h,mi}, DST-correct. */
+  function vancouverWallMs(y,m,d,h,mi){
+    var guess=Date.UTC(y,m-1,d,h,mi,0);
+    var off=vancouverOffsetMin(guess);
+    var ms=guess-off*60000;
+    /* One correction pass covers a DST transition that straddles the guess. */
+    var off2=vancouverOffsetMin(ms);
+    if(off2!==off) ms=guess-off2*60000;
+    return ms;
+  }
+  /* Thursday 06:00 America/Vancouver of the current week. "Week" is anchored so
+     the cutoff is the NEXT Thursday-6am on/after Monday of this Vancouver week:
+     for any day Mon..Thu it is this week's Thursday; Fri..Sun it is the coming
+     Thursday. A game that just passed on the weekend stays available through the
+     following Thursday 6am. */
+  function thursday6amCutoffMs(nowMs){
+    var p=vancouverParts(nowMs);
+    /* Days from today's Vancouver weekday to Thursday(4). Sunday(0) -> +4,
+       Mon(1)->+3, Tue->+2, Wed->+1, Thu(4)->0, Fri(5)->+6, Sat(6)->+5. */
+    var delta=(4 - p.dow + 7) % 7;           // 0..6, days until the coming Thursday
+    /* On Thursday itself keep today's 6am as the cutoff (delta 0). */
+    var cutUTC=Date.UTC(p.y,p.m-1,p.d);       // midnight Vancouver-date in UTC terms
+    var base=new Date(cutUTC);
+    var ty=base.getUTCFullYear(), tm=base.getUTCMonth()+1, td=base.getUTCDate()+delta;
+    return vancouverWallMs(ty,tm,td,6,0);
+  }
+  /* Today's Vancouver date as 'YYYY-MM-DD'. */
+  function vancouverToday(nowMs){
+    var p=vancouverParts(nowMs);
+    return p.y+'-'+(p.m<10?'0':'')+p.m+'-'+(p.d<10?'0':'')+p.d;
+  }
+  /* The most recent past game: kind==='game', date < today, latest date wins. */
+  function mostRecentPastGame(events, todayStr){
+    var past=(events||[]).filter(function(e){ return e&&e.kind==='game'&&e.date&&e.date<todayStr; });
+    past.sort(function(a,b){ return (a.date+(a.time||'')).localeCompare(b.date+(b.time||'')); });
+    return past.length?past[past.length-1]:null;
+  }
+  /* Decide which game the card should surface.
+     opts: { events, nextGame, nowMs, isDone(gameId) }
+     Returns { game, passed } or null. A just-passed game that the player has NOT
+     completed, and whose keep-until-Thursday window has not elapsed, wins over the
+     upcoming nextGame; otherwise fall through to nextGame. */
+  function pickGameToShow(opts){
+    opts=opts||{};
+    var now=typeof opts.nowMs==='number'?opts.nowMs:Date.now();
+    var today=vancouverToday(now);
+    var isDone=typeof opts.isDone==='function'?opts.isDone:function(){ return false; };
+    var past=mostRecentPastGame(opts.events, today);
+    if(past && now < thursday6amCutoffMs(now) && !isDone(past.id)){
+      return { game:past, passed:true };
+    }
+    if(opts.nextGame) return { game:opts.nextGame, passed:false };
+    return null;
+  }
+  function gameDoneKey(pid,gid){ return 'thwapGameDone|'+String(pid||'')+'|'+String(gid||''); }
+  window.ThwapGameDay={ vancouverParts:vancouverParts, thursday6amCutoffMs:thursday6amCutoffMs, vancouverToday:vancouverToday, mostRecentPastGame:mostRecentPastGame, pickGameToShow:pickGameToShow, gameDoneKey:gameDoneKey, vancouverWallMs:vancouverWallMs };
+})();
 (function(){
   var card=document.getElementById('pNextGame'); if(!card) return;
   var tag=document.getElementById('nextGameTag'), tagText=document.getElementById('ngtText');
   var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   var DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var GD=window.ThwapGameDay||{};
   function pd(d){ return new Date((d||'')+'T12:00:00'); }
   function ftime(t){ if(!t) return ''; var p=String(t).split(':'); var h=parseInt(p[0],10); var m=p[1]||'00'; var ap=h<12?'AM':'PM'; var h12=h%12||12; return h12+':'+m+' '+ap; }
   function daysUntil(d){ var t=new Date(); t.setHours(12,0,0,0); return Math.round((pd(d)-t)/86400000); }
   /* Exact hours from NOW to the game's start (date + time, noon if no time set),
      so the game-day-goals card unlocks precisely 48h before, not a whole calendar day. */
   function hoursUntil(g){ var gt=new Date((g.date||'')+'T'+(g.time||'12:00')+':00'); return (gt.getTime()-Date.now())/3600000; }
+  /* Signed-in player id: bfPlayer first word, lowercased, a-z only (matches the
+     derivation used everywhere else, incl. the game-goals log POST). */
+  function playerId(){ try{ return (localStorage.getItem('bfPlayer')||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,''); }catch(e){ return ''; } }
+  /* Per-player + per-game completion: the goals page writes this on finalize. */
+  function gameDone(pid,gid){ if(!pid||!gid||!GD.gameDoneKey) return false; try{ return localStorage.getItem(GD.gameDoneKey(pid,gid))==='1'; }catch(e){ return false; } }
+  /* Point the whole-card link at the chosen game so the plan page targets it. */
+  function linkToGame(gid){ try{ card.setAttribute('href','hockey_game_goals.html'+(gid?('?game='+encodeURIComponent(gid)):'')); }catch(e){} }
   var CODE='RANGERS72';
+  var set=false;
   fetch('/api/coach?action=schedule&code='+encodeURIComponent(CODE))
     .then(function(r){ return r.json(); })
     .then(function(j){
-      var g=j&&j.ok&&j.next&&j.next.nextGame; if(!g) return;
+      if(!j||!j.ok) return;
+      var sched=j.schedule||{};
+      var pid=playerId();
+      /* Choose the game to surface: a just-passed, not-yet-completed game stays
+         until Thursday 06:00 Vancouver; otherwise the upcoming nextGame. */
+      var pick=GD.pickGameToShow?GD.pickGameToShow({ events:sched.events||[], nextGame:(j.next&&j.next.nextGame)||null, nowMs:Date.now(), isDone:function(gid){ return gameDone(pid,gid); } }):(j.next&&j.next.nextGame?{game:j.next.nextGame,passed:false}:null);
+      if(!pick||!pick.game) return;
+      var g=pick.game, passed=pick.passed;
+      /* This game's own completion state wins the CTA regardless. */
+      set=gameDone(pid,g.id);
+      linkToGame(g.id);
       var days=daysUntil(g.date);
       var hrs=hoursUntil(g);
       var dt=pd(g.date);
-      /* More than 48h out: show the flat next-game TAG above the cards, hide the
-         goals card. Inside 48h (and on/after game day): hide the tag, show the
-         game-day-goals card. */
-      if(hrs>48){
+      /* More than 48h out AND still upcoming: show the flat next-game TAG above
+         the cards, hide the goals card. A just-passed game in its keep-window
+         always shows the card (never the "next game in N days" tag). */
+      if(!passed && hrs>48){
         if(card) card.hidden=true;
         if(tag&&tagText){
           var when=MON[dt.getMonth()]+' '+dt.getDate()+(g.time?(' '+ftime(g.time)):'');
@@ -3029,19 +3127,18 @@ window.addEventListener('hashchange',function(){ if(location.hash===''||location
       var cnt=document.getElementById('pngCount'), dn=document.getElementById('pngDays');
       if(cnt&&dn&&days>=0){ dn.textContent=days===0?'today':days; if(days===0) cnt.querySelector('span').textContent=''; cnt.hidden=false; }
       /* Within the window: prompt to set goals (or, once the game has passed, to log them).
-         Once set, the done-state below wins regardless. */
+         Once this game's goals are set, the done-state below wins regardless. */
       var cta=document.getElementById('pngCta');
       if(cta&&!set){
         if(days>=0){ cta.textContent='Set your game goals'; cta.classList.remove('png-cta-soon'); }
         else { cta.textContent='How did it go? Log your goals'; cta.classList.remove('png-cta-soon'); }
       }
+      if(set){ var ctaDone=document.getElementById('pngCta'); if(ctaDone){ ctaDone.textContent='Your game goals are set'; ctaDone.classList.add('png-cta-done'); ctaDone.classList.remove('png-cta-soon'); } }
     }).catch(function(){});
   /* Coach's team goal (the shared focus) as the card's focus line. */
   fetch('/api/coach?action=team-goal&code='+encodeURIComponent(CODE))
     .then(function(r){ return r.json(); })
     .then(function(j){ if(j&&j.ok&&j.teamGoal&&j.teamGoal.text){ var fg=document.getElementById('pngFocusGoal'), fw=document.getElementById('pngFocus'); if(fg) fg.textContent=j.teamGoal.text; if(fw) fw.hidden=false; } }).catch(function(){});
-  var set=false; try{ var picks=JSON.parse(localStorage.getItem('thwapGameGoals')||'[]'); set=Array.isArray(picks)&&picks.length>0; }catch(_){}
-  if(set){ var ctaDone=document.getElementById('pngCta'); if(ctaDone){ ctaDone.textContent='Your game goals are set'; ctaDone.classList.add('png-cta-done'); ctaDone.classList.remove('png-cta-soon'); } }
 })();
 /* A coach must never land on #home: it is display:none!important for coaches, so
    landing there shows a blank/stuck page (this is why the Team X looked like it
