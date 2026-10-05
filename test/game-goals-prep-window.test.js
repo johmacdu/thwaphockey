@@ -34,7 +34,7 @@ describe('Player next-game tag + Game Day Goals 48h window', () => {
   });
 
   it('more than 48h out: show the flat tag, hide the goals card', () => {
-    expect(html).toMatch(/if\(hrs>48\)\{\s*if\(card\) card\.hidden=true;/);
+    expect(html).toMatch(/if\(!passed && hrs>48\)\{\s*if\(card\) card\.hidden=true;/);
     expect(html).toMatch(/tag\.hidden=false;/);
     // the tag is a FLAT pill, not a card (Woody's no-cards-without-navigation rule)
     expect(html).toMatch(/\.nextgame-tag\{[^}]*border-radius:999px/);
