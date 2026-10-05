@@ -988,6 +988,11 @@ button.row:active{background:var(--soft)}
 .pl-ex{display:flex;align-items:center;gap:14px;padding:14px;margin-bottom:10px;border:1px solid var(--line);border-radius:16px;background:var(--card);font-size:17px;font-weight:800;animation:plexin .4s ease both}
 .pl-exicon{width:48px;height:48px;flex:0 0 auto;border-radius:14px;display:grid;place-items:center;font-size:26px;background:color-mix(in srgb,var(--exacc) 20%,transparent)}
 .pl-exname{flex:1 1 auto;min-width:0}
+/* GIG card rows hold longer text than a drill name: allow wrap + a small muted
+   date/month line under the name. (Discipline rows never set these.) */
+.pl-ex-meta{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-top:2px}
+#gigBody .pl-ex{font-size:15px;align-items:flex-start}
+#gigBody .pl-exname{line-height:1.3;padding-top:3px}
 .pl-exdot{width:22px;height:22px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;font-size:15px;font-weight:900;background:var(--soft);color:transparent}
 .pl-ex:not(.done){opacity:.62}
 .pl-ex.done{border-color:var(--exacc);background:color-mix(in srgb,var(--exacc) 12%,var(--card))}
@@ -5413,6 +5418,19 @@ window.thwapStatsRefresh=function(){ if(current && location.hash==='#player') bu
   window.thwapRenderGIG=function(slug){
     var body=document.getElementById('gigBody'); var dose=document.getElementById('gigDose');
     if(!body) return;
+    /* Render a history entry as the SAME .pl-ex row used inside the discipline
+       cards (icon chip + name + check dot), so the GIG card matches the rest of
+       the stat page. These are logged/achieved items, so they render .done.
+       meta is a small muted line under the name (date or month). */
+    function gigRow(icon,name,meta){
+      return "<div class='pl-ex done'>"+
+        "<span class='pl-exicon'>"+icon+"</span>"+
+        "<span class='pl-exname'>"+esc(name)+(meta?"<span class='pl-ex-meta'>"+esc(meta)+"</span>":"")+"</span>"+
+        "<span class='pl-exdot'>\u2713</span></div>";
+    }
+    /* Month code 'YYYY-MM' -> friendly 'Sep 2026' for the coach-goal meta line. */
+    var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    function monLabel(m){ if(!m) return ''; var p=String(m).split('-'); if(p.length<2) return m; var mi=parseInt(p[1],10)-1; return (MON[mi]||p[1])+' '+p[0]; }
     fetch('/api/coach?action=history&playerId='+encodeURIComponent(slug))
       .then(function(r){ return r.json(); })
       .then(function(j){
@@ -5420,20 +5438,25 @@ window.thwapStatsRefresh=function(){ if(current && location.hash==='#player') bu
         var all=(j.gameGoals||[]);
         var teach=all.filter(function(g){ return g&&g.goalId==='teach'&&g.note; });
         var gday=all.filter(function(g){ return g&&g.goalId!=='teach'&&g.done; });
-        var n=gday.length+teach.length;
+        /* Past coach goals: coach-set IDP goals, newest-first, with the single
+           newest coach entry dropped (that one is the CURRENT goal shown in its
+           own block on top). Players see where they have been over the season. */
+        var coach=(j.idpGoals||[]).filter(function(g){ return g&&g.setBy==='coach'&&g.text; });
+        var pastCoach=coach.slice(1);
+        var n=pastCoach.length+gday.length+teach.length;
         if(dose) dose.textContent = n? (n+" logged") : "Nothing logged yet";
         var html='';
+        html+="<div class='idphist-group-h'>Past goals from your coach</div>";
+        if(pastCoach.length){
+          pastCoach.slice(0,20).forEach(function(g){ html+=gigRow('\uD83E\uDDE0',g.text,monLabel(g.month)); });
+        } else { html+="<div class='idphist-empty'>Your past coach goals will show here as the season goes on.</div>"; }
         html+="<div class='idphist-group-h'>Game-day goals you worked on</div>";
         if(gday.length){
-          gday.slice(0,20).forEach(function(g){
-            html+="<div class='idphist-item'><span class='ih-date'>"+esc(g.date||'')+"</span> "+esc(g.goalTitle||'')+"</div>";
-          });
+          gday.slice(0,20).forEach(function(g){ html+=gigRow('\uD83E\uDD45',g.goalTitle||'',g.date||''); });
         } else { html+="<div class='idphist-empty'>Pick your game-day goals and they will show here.</div>"; }
         html+="<div class='idphist-group-h'>What you taught mom and dad</div>";
         if(teach.length){
-          teach.slice(0,20).forEach(function(g){
-            html+="<div class='idphist-item'><span class='ih-date'>"+esc(g.date||'')+"</span><span class='ih-note'>"+esc(g.note)+"</span></div>";
-          });
+          teach.slice(0,20).forEach(function(g){ html+=gigRow('\uD83D\uDC68\u200D\uD83D\uDC69\u200D\uD83D\uDC66',g.note,g.date||''); });
         } else { html+="<div class='idphist-empty'>Teach mom and dad a goal and it will show here.</div>"; }
         body.innerHTML=html;
       })
