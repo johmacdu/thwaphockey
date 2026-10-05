@@ -60,13 +60,15 @@ describe('Drill lists actually render (no cross-IIFE ReferenceError)', () => {
 
 describe('Drill intensity reduced (shooting -2, dryland cap 4)', () => {
   it('dryland caps at 4 drills and shooting renders 2 fewer than the day list', () => {
-    // dryland cap
-    expect(html).toMatch(/var CAP=4;/);
+    // dryland cap: 4 by default, 5 on a conditioning day that carries the
+    // 20-Minute Run (so the run is anchored AND a rotating Speed drill still shows)
+    expect(html).toMatch(/var CAP=hasRun\?5:4;/);
+    expect(html).toMatch(/var hasRun=dr\.some\(function\(x\)\{ return x\.key==='run20'; \}\);/);
     // shooting render-time slice
     expect(html).toMatch(/SHOOT=SHOOT\.slice\(0, Math\.max\(1, SHOOT\.length-2\)\)/);
   });
-  it('renders the reduced counts (dryland <= 4; shooting = day length - 2)', () => {
-    // uses the win from the earlier beforeAll in this file
+  it('renders the reduced counts (dryland cap 4 on a non-run day; shooting = day length - 2)', () => {
+    // uses the win from the earlier beforeAll in this file (?day=0 -> w2wed, a Power day: no run20, cap 4)
     const dryland = win.document.getElementById('drylandList').querySelectorAll('.exrow').length;
     const shoot = win.document.getElementById('shootList').querySelectorAll('.exrow').length;
     expect(dryland).toBeLessThanOrEqual(4);
