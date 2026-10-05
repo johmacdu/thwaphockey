@@ -24,6 +24,23 @@
   var D = window.THWAP_DEMO;
   if (!D) return;
 
+  /* Embeddable demo entry: ?demo=1 activates the Demo Team and signs in as the
+     demo player this early (before the home renders), so the About page can embed
+     the real app on the home screen, named, with no splash. The main app's gate()
+     then sees an authed session and skips the login splash entirely. */
+  try {
+    if (/[?&]demo=1\b/.test(location.search) && !D.isActive()) {
+      D.activate();
+      try { localStorage.removeItem('thwapCoach'); } catch (e) {}
+      try { localStorage.setItem('bfPlayer', 'Mario Lemieux'); } catch (e) {}
+      try {
+        document.cookie = 'thwapAuth=' + encodeURIComponent(JSON.stringify(
+          { pid: 'demo', name: 'Mario Lemieux', email: 'demo@thwaphockey.com', year: 2027, ts: Date.now() }
+        )) + ';path=/';
+      } catch (e) {}
+    }
+  } catch (e) {}
+
   /* Coach view: the coach home reads roster / schedule / team-coaches from
      /api/coach, which has no DEMO team. Intercept those GETs when demo is active
      and answer from THWAP_DEMO so the coach home shows the NHLers, the USSR next
@@ -296,6 +313,14 @@
     if (big) big.innerHTML = "<span>" + t.all.toLocaleString() + "</span><small> workouts and counting</small>";
     if (row) row.style.display = 'none';
     if (info) info.style.display = 'none';
+    /* The demo only carries all-time numbers, so show the All time tab as the
+       selected one. That keeps the toggle matched to the "all time" totals and
+       means the default view never sits on This week showing all-time data. */
+    document.querySelectorAll(".segbtn[data-tf]").forEach(function (b) {
+      var isAll = b.getAttribute('data-tf') === 'all';
+      b.classList.toggle('on', isAll);
+      b.setAttribute('aria-selected', isAll ? 'true' : 'false');
+    });
   }
 
   /* helpers */
@@ -342,6 +367,15 @@
       if (h === '#progress') { setTimeout(renderStandings, 0); }
     });
     window.addEventListener('resize', function () { if (D.isActive()) rescaleRoster(); });
+    /* The Standings timeframe toggle (This week / All time) and the discipline
+       filter re-render the real #board on click, which would otherwise show the
+       real roster. Re-apply the demo board after any such click so real players
+       never leak into demo mode. */
+    document.addEventListener('click', function (e) {
+      if (!D.isActive() || location.hash !== '#progress') return;
+      var t = e.target && e.target.closest && e.target.closest(".segbtn[data-tf], .metric[data-total]");
+      if (t) setTimeout(renderStandings, 0);
+    }, false);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
