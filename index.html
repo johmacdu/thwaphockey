@@ -3306,6 +3306,50 @@ window.thwapWeekday=function(){ return ((((dayIndex()%7)+7)%7)+4)%7; };  /* 0=Su
 window.thwapIsRestDay=function(){ var w=window.thwapWeekday(); return w===0||w===6; };
 window.thwapWeekdaySlot=function(){ var w=window.thwapWeekday(); return (w>=1&&w<=5)?(w-1):-1; };  /* Mon0..Fri4, weekend -1 */
 window.thwapIsWeekend=function(){ var w=window.thwapWeekday(); return w===0||w===6; };
+/* ---- Coach-picked drills (shared across disciplines) ----
+   The coach plan (editor at #plan) stores, per weekday per category, the EXACT
+   drill names the coach chose: plan[day] = { dryland:['20-Minute Run', ...] }.
+   The player side historically read only WHETHER a category was on (to gate the
+   nav cards) and ignored the names. These helpers expose today's picked names so
+   a discipline page can show exactly the coach's drills. The plan is fetched once
+   and cached on window; thwapCoachDrillNames(cat) returns [] until it resolves,
+   then the registered re-render hook repaints. We MUST follow the coach when he
+   picked drills; the built-in rotation is only the fallback for a category he
+   left unspecified. */
+window.__thwapCoachPlan=window.__thwapCoachPlan||{loaded:false,plan:null,hooks:[]};
+window.thwapOnCoachPlan=function(fn){ try{ var c=window.__thwapCoachPlan; if(c.loaded){ try{fn();}catch(e){} } else { c.hooks.push(fn); } }catch(e){} };
+window.thwapCoachDayKey=function(){ try{ var w=window.thwapWeekday?window.thwapWeekday():0; return ['sun','mon','tue','wed','thu','fri','sat'][w]||''; }catch(e){ return ''; } };
+/* Today's coach-chosen drill NAMES for a category (stick/shoot/dryland), honoring
+   both plan shapes. Legacy array-of-categories carries no names, so returns [].
+   An empty array (category on, no specific drills) also returns [] -> fallback. */
+window.thwapCoachDrillNames=function(cat){
+  try{
+    var c=window.__thwapCoachPlan; if(!c.loaded||!c.plan) return [];
+    var day=c.plan[window.thwapCoachDayKey()]; if(!day||typeof day!=='object'||Array.isArray(day)) return [];
+    var arr=day[cat]; if(!Array.isArray(arr)) return [];
+    return arr.filter(function(x){ return x && x!=='__all__'; });
+  }catch(e){ return []; }
+};
+(function(){
+  var c=window.__thwapCoachPlan; if(c.loaded||c.fetching) return; c.fetching=true;
+  function done(plan){ c.plan=plan||null; c.loaded=true; c.fetching=false; var hs=c.hooks.slice(); c.hooks.length=0; hs.forEach(function(fn){ try{fn();}catch(e){} }); }
+  try{
+    fetch('/api/coach?action=get-plan',{cache:'no-store'})
+      .then(function(r){ return r.json(); })
+      .then(function(j){ done(j&&j.ok&&j.plan?j.plan:null); })
+      .catch(function(){ done(null); });
+  }catch(e){ done(null); }
+})();
+/* Map an array of coach-picked dryland drill NAMES back to full drill objects
+   from the WORKOUTS library (so cue/steps/video/emoji/noTimer all come along).
+   Dose is pulled from the first WORKOUTS occurrence of that name when present. */
+window.thwapDrylandFromNames=function(names){
+  if(!names||!names.length) return [];
+  var byName={};
+  (window.WORKOUTS||[]).forEach(function(wk){ (wk.drills||[]).forEach(function(x){ if(x&&x.name&&!byName[x.name]) byName[x.name]=x; }); });
+  var out=[]; names.forEach(function(nm){ var dr=byName[nm]; if(dr) out.push(dr); });
+  return out;
+};
 window.thwapRestCard=function(){
   return "<div class='restday'><div class='restday-msg'>No training today. Rest up and come back Monday.</div></div>";
 };
@@ -3460,19 +3504,42 @@ function todaysWorkout(){var s=window.thwapWeekdaySlot();return WORKOUTS[(s<0?0:
    capped at 6, in a sensible order. Which ones (when a category has several) rotates by day. */
 var CAT_ORDER=['Agility','Power','Speed','Strength','Core'];
 function trimDrills(dr){
-  var CAP=4;   /* dryland shows up to 4 drills/day (reduced from 6 so it's less intense) */
+  /* Dryland shows up to 4 drills/day (reduced from 6 so it is less intense).
+     On a conditioning (Speed) day that includes the 20-Minute Run we allow a 5th
+     slot so the run is guaranteed AND a rotating Speed sibling (Sprints / Stair
+     Sprints / Sprint Starts / Reaction Start) still shows and varies day to day,
+     instead of the anchored run squeezing every other Speed drill out. */
+  var hasRun=dr.some(function(x){ return x.key==='run20'; });
+  var CAP=hasRun?5:4;
   if(dr.length<=CAP) return dr;
   var di=dayIndex();
   var byCat={};
   dr.forEach(function(x){ (byCat[x.cat]=byCat[x.cat]||[]).push(x); });
   var cats=CAT_ORDER.filter(function(c){return byCat[c];});
   var pick=[];
-  /* first pass: one per category (rotating which one by day) */
-  cats.forEach(function(c){ var g=byCat[c]; pick.push(g[di%g.length]); });
-  /* second pass: add a 2nd from categories that have more, until we hit the cap */
-  for(var r=0; r<cats.length && pick.length<CAP; r++){
-    var g=byCat[cats[r]];
-    if(g.length>1){ var second=g[(di+1)%g.length]; if(pick.indexOf(second)<0) pick.push(second); }
+  /* first pass: one per category. The rotation offset is multiplied by the
+     category position so EVERY category advances a different amount each day
+     (di*k), not all stepping by the same +1, which is what made consecutive
+     days look identical. The 20-Minute Run (run20) is a fixed anchor of its
+     Speed day: when it is present it is always the first Speed pick, so a
+     scheduled run day ALWAYS shows the run instead of it competing one-in-five
+     in the rotation. */
+  cats.forEach(function(c,ci){
+    var g=byCat[c];
+    var run=null; for(var ri=0;ri<g.length;ri++){ if(g[ri].key==='run20'){ run=g[ri]; break; } }
+    if(run){ pick.push(run); return; }
+    pick.push(g[(di*(ci+1))%g.length]);
+  });
+  /* second pass: fill remaining slots with a rotating 2nd drill from the
+     categories that have more. Speed goes FIRST so that on a run day the second
+     Speed drill (Sprints / Stair Sprints / Sprint Starts / Reaction Start) still
+     surfaces alongside the anchored run and rotates day to day, instead of the
+     run squeezing every other Speed drill out. The run itself is skipped as a
+     candidate so it is never doubled. */
+  var order=cats.slice().sort(function(a,b){ return (a==='Speed'?-1:0)-(b==='Speed'?-1:0); });
+  for(var r=0; r<order.length && pick.length<CAP; r++){
+    var g=byCat[order[r]].filter(function(x){ return x.key!=='run20'; });
+    if(g.length){ var second=g[(di*(r+1)+1)%g.length]; if(pick.indexOf(second)<0) pick.push(second); }
   }
   /* the first pass can already exceed the cap when there are many categories; trim */
   pick=pick.slice(0,CAP);
@@ -3482,7 +3549,12 @@ function trimDrills(dr){
 
 function render(){
   var w=todaysWorkout(), prog=loadProg(w.id);
-  var drills=trimDrills(w.drills);
+  /* Follow the coach: if he picked specific dryland drills for today, show
+     exactly those (no trim). Otherwise fall back to the built-in WORKOUTS day
+     through trimDrills (which anchors the run and varies day to day). */
+  var coachNames=(window.thwapCoachDrillNames&&window.thwapCoachDrillNames('dryland'))||[];
+  var coachDrills=coachNames.length?(window.thwapDrylandFromNames?window.thwapDrylandFromNames(coachNames):[]):[];
+  var drills=coachDrills.length?coachDrills:trimDrills(w.drills);
   var dateEl=document.getElementById('drylandDate');
   if(dateEl){var ov=(window.thwapDateOverride&&window.thwapDateOverride());var d=(window.thwapToday?window.thwapToday():new Date());var o={weekday:'long',month:'long',day:'numeric'};if(ov!==null&&ov!==undefined)o.timeZone='UTC';dateEl.textContent=d.toLocaleDateString(undefined,o);}
   var t=document.getElementById('drylandTime'); if(t)t.textContent='15 min';
@@ -3560,7 +3632,9 @@ function render(){
        Dryland rests on weekends, so skip on a rest day (nothing required). */
     try{
       if(!(window.thwapIsRestDay&&window.thwapIsRestDay())){
-        var drills=trimDrills(w.drills)||[];
+        var _cn=(window.thwapCoachDrillNames&&window.thwapCoachDrillNames('dryland'))||[];
+        var _cd=_cn.length?(window.thwapDrylandFromNames?window.thwapDrylandFromNames(_cn):[]):[];
+        var drills=_cd.length?_cd:(trimDrills(w.drills)||[]);
         var all=drills.length>0; for(var i=0;i<drills.length;i++){ if(!p[i]){ all=false; break; } }
         if(all && window.thwapSetDoneSignal) window.thwapSetDoneSignal('dryland',true);
       }
@@ -3569,6 +3643,7 @@ function render(){
   try{ render(); }catch(e){}
 };
 render();
+try{ if(window.thwapOnCoachPlan) window.thwapOnCoachPlan(function(){ try{ render(); }catch(e){} }); }catch(e){}
 window.addEventListener('hashchange',function(){ if(location.hash==='#dryland') render(); });
 })();</script>
 <style>
