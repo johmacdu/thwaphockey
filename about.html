@@ -11,6 +11,7 @@
   --bg:#F3F7F4;--bg2:#E9EFEA;--panel:#FFFFFF;--line:#DCE5DE;--text:#15221B;--muted:#5F6F64;
   --green:#2F6B41;--green2:#2F6B41;--lime:#B9F06B;--soft:#E7EEE8;--card:#FFFFFF;--onaccent:#FFFFFF;
   --card2:#F7FAF7;--line2:#C9D5CC;
+  --sc-bg:#17251D;--sc-text:#F3F7F4;--sc-muted:#A9BAAE;--sc-line:#33433A;--sc-eyebrow:#B9F06B;
   --shadow:rgba(20,40,25,.10);
   --accent:var(--green);--accent-on:var(--onaccent);
 }
@@ -18,12 +19,14 @@
   --bg:#101A14;--bg2:#0B130E;--panel:#182420;--line:#2A3831;--text:#F3F7F4;--muted:#9DACA2;
   --green:#B9F06B;--green2:#CDEFA0;--lime:#B9F06B;--soft:#1F2C24;--card:#182420;--onaccent:#15221B;
   --card2:#1E2B24;--line2:#3A4A40;
+  --sc-bg:#1E2C24;--sc-text:#F3F7F4;--sc-muted:#9DACA2;--sc-line:#3A4A40;--sc-eyebrow:#B9F06B;
   --shadow:rgba(0,0,0,.35);--accent:var(--lime);--accent-on:#15221B;
 }}
 :root[data-theme='dark']{
   --bg:#101A14;--bg2:#0B130E;--panel:#182420;--line:#2A3831;--text:#F3F7F4;--muted:#9DACA2;
   --green:#B9F06B;--green2:#CDEFA0;--lime:#B9F06B;--soft:#1F2C24;--card:#182420;--onaccent:#15221B;
   --card2:#1E2B24;--line2:#3A4A40;
+  --sc-bg:#1E2C24;--sc-text:#F3F7F4;--sc-muted:#9DACA2;--sc-line:#3A4A40;--sc-eyebrow:#B9F06B;
   --shadow:rgba(0,0,0,.35);--accent:var(--lime);--accent-on:#15221B;
 }
 *{box-sizing:border-box}
@@ -83,19 +86,57 @@ h2.sec{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:clamp(26
 .phone::before{content:'';position:absolute;left:-3px;top:116px;width:3px;height:38px;background:#2a2a2e;border-radius:2px 0 0 2px;box-shadow:0 52px 0 #2a2a2e}
 @media(min-width:760px){.kid-grid{grid-template-columns:1fr 1fr;gap:48px}}
 
-/* team band */
+/* team + coach showcase: a card holding a sticky heading and scrolling media */
 .band{background:var(--panel)}
-.teampart{display:grid;grid-template-columns:1fr;gap:28px;align-items:center;margin-top:34px}
-.teampart-visual{justify-self:center}
-.shot{width:100%;max-width:280px;border-radius:30px;overflow:hidden;box-shadow:0 22px 48px var(--shadow);border:1px solid var(--line);background:#F3F7F4}
+.showcase-sec{background:var(--bg2)}
+.showcase{background:var(--sc-bg);color:var(--sc-text);--text:var(--sc-text);--muted:var(--sc-muted);--line:var(--sc-line);--green:var(--sc-eyebrow);border:1px solid var(--sc-line);border-radius:28px;padding:clamp(24px,4.4vw,52px);box-shadow:0 30px 72px var(--shadow);margin-top:30px}
+.showcase-grid{display:grid;grid-template-columns:1fr;gap:30px}
+.showcase-head{align-self:start}
+.showcase-head .lead{margin-top:14px}
+.showcase-body{display:flex;flex-direction:column;gap:clamp(34px,6vw,60px)}
+.showcase-item{display:flex;flex-direction:column;align-items:center;text-align:center}
+.shot{width:100%;max-width:278px;border-radius:30px;overflow:hidden;box-shadow:0 22px 48px var(--shadow);border:1px solid var(--line);background:#F3F7F4}
 .shot img{width:100%;display:block}
-.shot-cap{margin:12px auto 0;max-width:280px;text-align:center;font-size:13px;font-weight:700;color:var(--muted)}
+.shot-cap{margin:12px auto 0;max-width:278px;text-align:center;font-size:13px;font-weight:700;color:var(--muted)}
 .teamh3{font-size:21px;font-weight:900;margin:0 0 10px}
-.teamcheer{font-size:17px;color:var(--muted);max-width:46ch;line-height:1.5;margin:0}
-@media(min-width:760px){
-  .teampart{grid-template-columns:1fr 1fr;gap:52px}
-  .teampart.reverse .teampart-text{order:2}
-  .teampart.reverse .teampart-visual{order:1}
+.teamcheer{font-size:17px;color:var(--muted);max-width:40ch;line-height:1.5;margin:0 0 22px}
+.showcase-body .coachlist{margin-top:28px}
+.showcase-body .coachnote{margin-top:22px}
+@media(min-width:860px){
+  .showcase-grid{grid-template-columns:.92fr 1.08fr;gap:56px;align-items:start}
+  .showcase-head{position:sticky;top:84px}
+  .showcase.flip .showcase-head{order:2}
+  .showcase.flip .showcase-body{order:1}
+}
+
+/* scrollytelling: a sticky heading + phone; the phone screen swaps through each
+   feature as the step text scrolls past (beatflyfishing "built for the water"). */
+.scrolly-grid{display:grid;grid-template-columns:1fr;gap:24px}
+.scrolly-stage{display:flex;flex-direction:column;align-items:flex-start}
+.scphone{position:relative;width:min(248px,72vw);margin:22px auto 0;background:#0c0e0d;border-radius:38px;padding:8px;box-shadow:0 26px 54px rgba(0,0,0,.5),0 0 0 2px #39423c}
+.scphone-screen{position:relative;width:100%;aspect-ratio:242/512;border-radius:30px;overflow:hidden;background:#F3F7F4}
+.scphone-island{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:76px;height:21px;background:#000;border-radius:999px;z-index:3}
+.scphone-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center;transition:opacity .28s ease}
+.scphone-img.swapping{opacity:0}
+.scrolly-steps{display:flex;flex-direction:column;gap:22px}
+.scrolly-step h3{font-size:20px;font-weight:900;margin:0 0 8px}
+.scrolly-step p{font-size:17px;color:var(--muted);line-height:1.5;margin:0;max-width:42ch}
+.step-media{margin-top:16px}
+@media(min-width:860px){
+  .scrolly-grid{grid-template-columns:.98fr 1.02fr;gap:58px;align-items:start}
+  .scrolly-stage{position:sticky;top:80px}
+  .scphone{margin:22px 0 0}
+  .step-media{display:none}
+  .scrolly-steps{gap:0}
+  .scrolly-step{min-height:58vh;display:flex;flex-direction:column;justify-content:center;opacity:.34;transition:opacity .3s ease}
+  .scrolly-step.is-active{opacity:1}
+  .scrolly-step:first-child{min-height:46vh}
+  .scrolly-step:last-child{min-height:52vh;padding-bottom:4vh}
+  .showcase.flip .scrolly-stage{order:2}
+  .showcase.flip .scrolly-steps{order:1}
+}
+@media(max-width:859px){
+  .scrolly-stage .scphone{display:none}
 }
 
 /* safety list */
@@ -115,7 +156,7 @@ h2.sec{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:clamp(26
 .coachnote b{font-weight:900;color:var(--text)}
 
 /* footer (matches the app footer) */
-footer{border-top:1px solid color-mix(in srgb,var(--line) 45%,transparent)}
+footer{background:var(--panel);border-top:1px solid color-mix(in srgb,var(--line) 45%,transparent)}
 .footer{display:flex;align-items:center;justify-content:space-between;gap:14px;color:var(--muted);font-size:12px;padding:30px 0 20px;flex-wrap:wrap}
 .footer .slogan{font-family:'Nunito Sans',sans-serif;font-weight:800;font-size:13px;letter-spacing:.01em;color:var(--text)}
 .footer-actions{display:inline-flex;align-items:center;gap:8px}
@@ -130,7 +171,7 @@ footer{border-top:1px solid color-mix(in srgb,var(--line) 45%,transparent)}
 .footmenu-item{display:block;padding:10px 12px;border-radius:9px;color:var(--text);font-size:14px;font-weight:800;cursor:pointer;text-align:left;text-decoration:none}
 .footmenu-item:hover{background:var(--bg2)}
 .trademark{text-align:center;padding:6px 4px 30px}
-.trademark-mark{height:72px;width:auto;object-fit:contain;display:inline-block;opacity:.9}
+.trademark-mark{height:72px;width:auto;object-fit:contain;display:block;margin:0 auto;opacity:.9}
 .light-only{display:block}
 .dark-only{display:none}
 @media (prefers-color-scheme: dark){:root:not([data-theme='light']) .light-only{display:none}:root:not([data-theme='light']) .dark-only{display:block}}
@@ -179,46 +220,51 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
 </div></div></section>
 
 <!-- TEAM -->
-<section class='band'><div class='wrap'>
-  <p class='eyebrow'>How the team wins together</p>
-  <h2 class='sec'>Everybody fills the same bar.</h2>
-  <div class='teampart'>
-    <div class='teampart-text'>
-      <p class='lead'>Every drill anybody on the team does adds to one team total. The more everyone trains, the higher the whole team climbs together.</p>
-    </div>
-    <div class='teampart-visual'>
-      <div class='shot'><img src='about-shots/standings-demo.jpg' alt='Team Standings: one shared total with every player adding to it'></div>
-      <p class='shot-cap'>One team total. Everyone adds to it.</p>
-    </div>
-  </div>
-  <div class='teampart reverse'>
-    <div class='teampart-text'>
-      <h3 class='teamh3'>Teammates hype each other up.</h3>
-      <p class='teamcheer'>Send a cheer when somebody puts in the work, or call a teammate on fire when they are rolling. Support, never a ranking.</p>
-    </div>
-    <div class='teampart-visual'>
-      <div class='shot'><img src='about-shots/cheer-demo.jpg' alt='Sass pops in with a speech bubble cheering a teammate on'></div>
-      <p class='shot-cap'>A cheer lands like this.</p>
+<section class='showcase-sec'><div class='wrap'>
+  <div class='showcase scrolly'>
+    <div class='scrolly-grid'>
+      <div class='scrolly-stage'>
+        <p class='eyebrow'>How the team wins together</p>
+        <h2 class='sec'>Everybody fills the same bar.</h2>
+        <div class='scphone'><div class='scphone-screen'><div class='scphone-island'></div><img class='scphone-img' id='teamScreen' src='about-shots/standings-demo.jpg' alt='The Thwap app on a phone'></div></div>
+      </div>
+      <div class='scrolly-steps' data-screen='teamScreen'>
+        <div class='scrolly-step is-active' data-src='about-shots/standings-demo.jpg'>
+          <h3>One team total.</h3>
+          <p>Every drill anybody on the team does adds to one team total. The more everyone trains, the higher the whole team climbs together.</p>
+          <div class='step-media'><div class='scphone'><div class='scphone-screen'><div class='scphone-island'></div><img class='scphone-img' src='about-shots/standings-demo.jpg' alt='Team Standings: one shared total with every player adding to it'></div></div></div>
+        </div>
+        <div class='scrolly-step' data-src='about-shots/cheer-demo.jpg'>
+          <h3>Teammates hype each other up.</h3>
+          <p>Send a cheer when somebody puts in the work, or call a teammate on fire when they are rolling. Support, never a ranking.</p>
+          <div class='step-media'><div class='scphone'><div class='scphone-screen'><div class='scphone-island'></div><img class='scphone-img' src='about-shots/cheer-demo.jpg' alt='Sass pops in with a speech bubble cheering a teammate on'></div></div></div>
+        </div>
+      </div>
     </div>
   </div>
 </div></section>
 
 <!-- COACHES -->
-<section><div class='wrap'>
-  <p class='eyebrow'>For coaches</p>
-  <h2 class='sec'>Run it from your phone.</h2>
-  <div class='teampart'>
-    <div class='teampart-text'>
-      <p class='lead'>You set what the team works on. Thwap runs it for everyone and shows you who is training and who needs a nudge.</p>
-      <ul class='coachlist'>
-        <li><b>Pick the drills and the weekly cadence.</b> Choose what the team trains and which days are on, rest, or game day.</li>
-        <li><b>Build each player an IDP.</b> An Individual Development Plan, one focus to work on, set from the 10U skill presets.</li>
-      </ul>
-      <p class='coachnote'><b>The team plan is yours. The game-day goals are theirs.</b> Built for a 10U team, dead simple, not a spreadsheet.</p>
-    </div>
-    <div class='teampart-visual'>
-      <div class='shot'><img src='about-shots/coach-demo.jpg' alt='The coach view: the whole team at a glance, who trained this week'></div>
-      <p class='shot-cap'>Your team at a glance.</p>
+<section class='showcase-sec'><div class='wrap'>
+  <div class='showcase scrolly'>
+    <div class='scrolly-grid'>
+      <div class='scrolly-stage'>
+        <p class='eyebrow'>For coaches</p>
+        <h2 class='sec'>Run it from your phone.</h2>
+        <div class='scphone'><div class='scphone-screen'><div class='scphone-island'></div><img class='scphone-img' id='coachScreen' src='about-shots/coach-demo.jpg' alt='The Thwap coach view on a phone'></div></div>
+      </div>
+      <div class='scrolly-steps' data-screen='coachScreen'>
+        <div class='scrolly-step is-active' data-src='about-shots/coach-demo.jpg'>
+          <h3>Your team at a glance.</h3>
+          <p>See who trained this week and who needs a nudge. You set what the team works on, and Thwap runs it for everyone.</p>
+          <div class='step-media'><div class='scphone'><div class='scphone-screen'><div class='scphone-island'></div><img class='scphone-img' src='about-shots/coach-demo.jpg' alt='The coach view: the whole team at a glance, who trained this week'></div></div></div>
+        </div>
+        <div class='scrolly-step' data-src='about-shots/coach-plan.jpg'>
+          <h3>Set the week in a tap.</h3>
+          <p>Pick the drills and the cadence, and mark each skill required or optional. Build every player an IDP, an Individual Development Plan, one focus from the 10U presets. The team plan is yours; the game-day goals are theirs.</p>
+          <div class='step-media'><div class='scphone'><div class='scphone-screen'><div class='scphone-island'></div><img class='scphone-img' src='about-shots/coach-plan.jpg' alt='The coach Weekly Plan: each day set to the drills the team trains'></div></div></div>
+        </div>
+      </div>
     </div>
   </div>
 </div></section>
@@ -275,6 +321,30 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
     document.addEventListener('click',function(e){if(!menu.hidden&&!menu.contains(e.target)&&e.target!==kebab)closeM();});
     document.addEventListener('keydown',function(e){if(e.key==='Escape')closeM();});
   }
+})();
+</script>
+<script>/* Scrollytelling: swap the sticky phone screen as each feature step scrolls through. */
+(function(){
+  var groups=document.querySelectorAll('.scrolly-steps');
+  if(!groups.length||!('IntersectionObserver' in window)) return;
+  groups.forEach(function(steps){
+    var img=document.getElementById(steps.getAttribute('data-screen'));
+    var stepEls=[].slice.call(steps.querySelectorAll('.scrolly-step'));
+    if(!img||!stepEls.length) return;
+    function activate(step){
+      if(step.classList.contains('is-active')) return;
+      stepEls.forEach(function(s){ s.classList.toggle('is-active', s===step); });
+      var src=step.getAttribute('data-src');
+      if(src && img.getAttribute('src')!==src){
+        img.classList.add('swapping');
+        setTimeout(function(){ img.setAttribute('src',src); img.classList.remove('swapping'); },150);
+      }
+    }
+    var io=new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if(e.isIntersecting) activate(e.target); });
+    },{rootMargin:'-45% 0px -45% 0px',threshold:0});
+    stepEls.forEach(function(s){ io.observe(s); });
+  });
 })();
 </script>
 </body></html>
