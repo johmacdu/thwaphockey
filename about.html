@@ -48,7 +48,9 @@ header{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 8
 .btn-primary{background:var(--accent);color:var(--accent-on)}
 .btn-primary:hover{filter:brightness(1.04)}
 .btn-sm{min-height:40px;padding:9px 14px;font-size:13px;border-radius:11px}
-@media(max-width:600px){ .hdr-mark{display:none} .navlink{padding:8px 8px} }
+.navlink,.btn{white-space:nowrap}
+@media(max-width:680px){ .hdr-left .hdr-mark{display:none} .hdr{gap:8px} .navlink{padding:8px 10px} }
+@media(max-width:430px){ .hdr-nav .navlink{display:none} }
 
 /* section rhythm (one consistent background; whitespace separates) */
 section{padding:clamp(56px,9vw,92px) 0}
@@ -75,6 +77,8 @@ h2.sec{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:clamp(26
 .block .ic{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;font-size:22px;background:var(--soft)}
 .block h3{margin:2px 0 4px;font-size:18px;font-weight:900}
 .block p{margin:0;color:var(--muted);font-size:15.5px}
+.kid-extra{margin:24px 0 0;font-size:16px;color:var(--muted);max-width:46ch;line-height:1.55}
+.kid-extra b{color:var(--text);font-weight:900}
 .kid-media{display:flex;flex-direction:column;align-items:center}
 .phone{position:relative;width:300px;max-width:92vw;background:#101012;border-radius:48px;padding:11px;box-shadow:0 30px 60px var(--shadow),0 0 0 2px #2a2a2e,0 0 0 3px #000}
 .phone-screen{position:relative;width:278px;max-width:calc(92vw - 22px);height:592px;border-radius:38px;overflow:hidden;background:#F3F7F4}
@@ -87,7 +91,9 @@ h2.sec{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:clamp(26
 @media(min-width:760px){.kid-grid{grid-template-columns:1fr 1fr;gap:48px}}
 
 /* a phone that holds a still screenshot (scrollytelling) */
-.sphone{width:100%;max-width:290px;margin:0 auto;background:#101012;border-radius:42px;padding:10px;box-shadow:0 28px 56px var(--shadow),0 0 0 2px #2a2a2e,0 0 0 3px #000}
+.sphone{position:relative;width:100%;max-width:290px;margin:0 auto;background:#101012;border-radius:42px;padding:10px;box-shadow:0 28px 56px var(--shadow),0 0 0 2px #2a2a2e,0 0 0 3px #000}
+.sphone::after{content:'';position:absolute;right:-3px;top:27%;width:3px;height:54px;background:#2a2a2e;border-radius:0 2px 2px 0}
+.sphone::before{content:'';position:absolute;left:-3px;top:19%;width:3px;height:34px;background:#2a2a2e;border-radius:2px 0 0 2px;box-shadow:0 46px 0 #2a2a2e}
 .sphone-screen{position:relative;border-radius:32px;overflow:hidden;background:#F3F7F4;aspect-ratio:375/812}
 .sphone-screen img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;display:block;transition:opacity .25s ease}
 .sphone-island{position:absolute;top:3.1%;left:50%;transform:translateX(-50%);width:30%;height:3%;background:#000;border-radius:999px;z-index:2}
@@ -162,9 +168,9 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
 <!-- HERO -->
 <section class='hero'><div class='wrap'><div class='hero-grid'>
   <div>
-    <p class='eyebrow'>Vancouver Jr. Rangers 10U</p>
-    <h1>Train at home. <span class='acc'>Be a problem to play against.</span></h1>
-    <p class='sub'>Thwap is a young player's hockey world, with the whole team pulling the same way.</p>
+    <p class='eyebrow'>Train at home</p>
+    <h1>A young player's <span class='acc'>whole hockey world.</span></h1>
+    <p class='sub'>Players push each other and hold each other accountable, the whole team pulls the same way, and the coach gently guides them all.</p>
   </div>
   <img class='hero-sass' src='about-shots/mascot-hero.webp?v=3' alt='Sass, the Thwap Hockey mascot'>
 </div></div></section>
@@ -175,10 +181,11 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
     <p class='eyebrow'>What a kid does</p>
     <h2 class='sec'>Three things, about 30 minutes.</h2>
     <div class='blocks'>
-      <div class='block'><div class='ic'>🏒</div><div><h3>Train today</h3><p>Stickhandling, shooting, and dryland, picked for today. Check them off and build your streak.</p></div></div>
-      <div class='block'><div class='ic'>🎯</div><div><h3>Set your Game Day Goals</h3><p>Before each game you pick your own couple of things to work on, goals you can actually remember on the ice.</p></div></div>
-      <div class='block'><div class='ic'>⭐</div><div><h3>Build your card</h3><p>Every bit of training fills your player card and earns stickers. Your hockey, your card.</p></div></div>
+      <div class='block'><div class='ic'>🏒</div><div><h3>Hands</h3><p>Stickhandling and puck control, picked for today. About 10 to 15 minutes.</p></div></div>
+      <div class='block'><div class='ic'>🥅</div><div><h3>Shooting</h3><p>Accuracy and a quicker release. About 15 minutes.</p></div></div>
+      <div class='block'><div class='ic'>⚡</div><div><h3>Dryland</h3><p>Speed, power, and balance. About 15 minutes.</p></div></div>
     </div>
+    <p class='kid-extra'>Then before a game, you set your own <b>Game Day Goals</b>, and you can always see the one <b>focus your coach set</b> for you.</p>
   </div>
   <div class='kid-media'>
     <div class='phone'><div class='phone-screen'><div class='phone-status'></div><iframe class='phone-frame' src='/?demo=1' title='Live Thwap demo on the Demo Team' loading='lazy'></iframe><div class='phone-island'></div></div></div>
