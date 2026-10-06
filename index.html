@@ -2762,6 +2762,7 @@ window.thwapActiveTeam=function(coach){
     if(modeHint) modeHint.textContent = pkOptional
       ? 'Optional is a bonus. Players can do it, but it never blocks "all done".'
       : 'Required counts toward "all done" today.';
+    try{ updateBar(); }catch(e){}   /* refresh the Save hint for the current mode */
   }
   if(modeReq) modeReq.addEventListener('click',function(){ pkOptional=false; reflectMode(); });
   if(modeOpt) modeOpt.addEventListener('click',function(){ pkOptional=true; reflectMode(); });
@@ -2791,6 +2792,21 @@ window.thwapActiveTeam=function(coach){
   var DAY_COUNT={stick:3, shoot:5, dryland:6};
   function perDrillMin(cat){ var n=DAY_COUNT[cat]||6; return DAY_MIN/n; }
   function estMin(cat,count){ return Math.round(count*perDrillMin(cat)); }
+  /* Largest number of drills that still fits the ~15 min/category day budget. */
+  function maxDrillsFor(cat){ var n=0; while(estMin(cat,n+1)<=DAY_MIN){ n++; } return n>0?n:1; }
+  /* Auto-pick a sensible random set for a category when the coach marks it optional
+     and saves without choosing drills: random drills from the library, never more
+     than the 15 min/category budget. */
+  function autoPickDrills(cat){
+    var lib=(window.thwapDrillCatalog&&window.thwapDrillCatalog(cat))||[];
+    var names=lib.map(function(d){ return d.name; }).filter(Boolean);
+    if(!names.length) return [];
+    var maxN=Math.min(maxDrillsFor(cat), names.length);
+    var floor=Math.min(2, maxN);
+    var count=floor + Math.floor(Math.random()*(maxN-floor+1));   /* floor..maxN inclusive */
+    for(var i=names.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=names[i]; names[i]=names[j]; names[j]=t; }
+    return names.slice(0,count);
+  }
   var pkStaged=[]; /* staged drill names for the open day/category (committed on Save) */
   function renderPicker(){
     if(!pickList) return;
@@ -2843,7 +2859,7 @@ window.thwapActiveTeam=function(coach){
     barEl.hidden=false;
     var n=pkStaged.length, mins=estMin(pkCat,n);
     if(!n){
-      if(barN) barN.textContent='Nothing picked yet';
+      if(barN) barN.textContent = pkOptional ? ('Save to auto-pick bonus drills (up to ~'+DAY_MIN+' mins)') : 'Nothing picked yet';
       if(barT) barT.textContent='';
     } else {
       var drillWord=(n===1?'drill':'drills');
@@ -2858,8 +2874,12 @@ window.thwapActiveTeam=function(coach){
   function flashOver(){ if(barN){ barN.textContent='~'+DAY_MIN+' mins is a full day for one category'; } if(barT){ barT.textContent=''; } if(barEl) barEl.classList.add('over'); }
   if(resetBtn) resetBtn.addEventListener('click',function(){ pkStaged=[]; renderPicker(); });
   if(pkSaveBtn) pkSaveBtn.addEventListener('click',function(){
-    setDrills(pkDay,pkCat,pkStaged.slice()); /* commit to plan (marks dirty for Save plan) */
-    setOptional(pkDay,pkCat, pkStaged.length>0 && pkOptional); /* optional only applies when the day has drills */
+    var staged=pkStaged.slice();
+    /* Optional + nothing picked = "just tap Save": auto-pick a sensible bonus set
+       (random drills within the ~15 min/category budget). */
+    if(pkOptional && staged.length===0){ staged=autoPickDrills(pkCat); }
+    setDrills(pkDay,pkCat,staged); /* commit to plan (marks dirty for Save plan) */
+    setOptional(pkDay,pkCat, staged.length>0 && pkOptional); /* optional only applies when the day has drills */
     render();
     location.hash='#plan';
   });
