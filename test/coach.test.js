@@ -296,6 +296,26 @@ describe('team weekly plan', () => {
     expect(getRes.body.plan.wed.shoot).toEqual(['Wrist Shots', 'Snap Shots']);
   });
 
+  it('coach marks categories optional; the opt flag round-trips and drops off categories', async () => {
+    const login = await loginSeedCoach();
+    const token = login.body.token;
+    const setRes = makeRes();
+    await _handlers.setPlan(post({
+      code: _seed.SEED_TEAM_CODE, coachToken: token,
+      // Hands + Shooting are bonus on Saturday; Dryland is off. opt lists a cat (dryland)
+      // that is NOT present -> it must be sanitized away.
+      plan: { sat: { stick: ['Toe Drag & Rescue'], shoot: ['Wrist Shots'], opt: ['stick', 'shoot', 'dryland'] } },
+    }), setRes);
+    expect(setRes.statusCode).toBe(200);
+    expect(setRes.body.plan.sat.opt.sort()).toEqual(['shoot', 'stick']); // dryland dropped (not present)
+    expect(setRes.body.plan.sat.stick).toEqual(['Toe Drag & Rescue']);
+
+    const getRes = makeRes();
+    await _handlers.getPlan(get({ code: _seed.SEED_TEAM_CODE }), getRes);
+    expect(getRes.body.plan.sat.opt.sort()).toEqual(['shoot', 'stick']);
+    expect(getRes.body.plan.sat.shoot).toEqual(['Wrist Shots']);
+  });
+
   it('blocks set-plan without a coach token', async () => {
     await loginSeedCoach();
     const res = makeRes();

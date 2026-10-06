@@ -78,11 +78,14 @@ describe('Home hero do-summary', () => {
     expect(lead.className).toContain('alldone');
   });
 
-  it('weekend is a sentence and drops dryland', () => {
+  it('weekend is a sentence that names the bonus skills and drops dryland', () => {
     const d = render(true, []);
     const lead = d.getElementById('doLead');
-    expect(lead.textContent).toContain('No training');
-    expect(lead.textContent).toContain('bonus skills');
+    // Weekend is bonus-only: Hands + Shooting are available (optional), Dryland rests.
+    // The sentence now names them instead of a vague "bonus skills only".
+    expect(lead.textContent).toContain('Bonus skills');
+    expect(lead.textContent).toContain('Hands');
+    expect(lead.textContent).toContain('Shooting');
     expect(lead.textContent).not.toContain('Dryland');
   });
 
