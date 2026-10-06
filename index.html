@@ -1400,7 +1400,7 @@ body.login-locked{overflow:hidden}
       <label class='login-field'>
         <span class='login-lab'>Code</span>
         <span class='login-pwwrap'>
-          <input class='login-in' id='loginPw' type='password' autocomplete='current-password' placeholder='&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;' required>
+          <input class='login-in' id='loginPw' type='password' name='thwapCode' autocomplete='one-time-code' inputmode='numeric' autocapitalize='off' autocorrect='off' spellcheck='false' data-1p-ignore data-lpignore='true' placeholder='&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;' required>
           <button type='button' class='login-eye' id='loginEye' aria-label='Show code'>Show</button>
         </span>
       </label>
@@ -7812,6 +7812,11 @@ function credentials(){
 }
 function playerForPassword(pw){
   var p=String(pw||'').trim();
+  /* Mobile Safari / password managers can inject whitespace or invisible chars
+     into an autofilled field; the team code is always digits, so strip anything
+     that is not a digit before matching (desktop typed input is unaffected). */
+  var digits=p.replace(/\D+/g,'');
+  if(digits) p=digits;
   /* Accept the jersey number plus either season year (2026 or 2027). */
   var years=['2027','2026'];
   for(var i=0;i<years.length;i++){
@@ -7999,6 +8004,9 @@ if(form){
       errEl.textContent="Demo code is 'player' or 'coach'."; pwEl.focus(); pwEl.select(); return;
     }
     errEl.textContent='Signing in...';
+    /* The team code is always digits; strip any whitespace/invisible chars a mobile
+       autofill may have injected, so both the resolver and the server mint see it clean. */
+    var codeClean=(code.replace(/\D+/g,'')||code);
     /* 1) Try coach first. A 200 with a token = coach. */
     fetch('/api/coach?action=coach-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:code})})
       .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
@@ -8006,16 +8014,16 @@ if(form){
         if(res.ok&&res.j&&res.j.token){ completeCoachLogin(email,res.j.coach,res.j.token); return; }
         /* 2) Not a coach: fall back to the player-code check. */
         errEl.textContent='';
-        var player=playerForPassword(code);
+        var player=playerForPassword(codeClean);
         if(!player){ errEl.textContent='That code did not match.'; pwEl.focus(); pwEl.select(); return; }
-        signIn(player,email,keepEl.checked,code);
+        signIn(player,email,keepEl.checked,codeClean);
       })
       .catch(function(){
         /* Network/API down: still allow player sign in (client-side check). */
         errEl.textContent='';
-        var player=playerForPassword(code);
+        var player=playerForPassword(codeClean);
         if(!player){ errEl.textContent='That code did not match.'; pwEl.focus(); pwEl.select(); return; }
-        signIn(player,email,keepEl.checked,code);
+        signIn(player,email,keepEl.checked,codeClean);
       });
   });
 }
