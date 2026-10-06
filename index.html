@@ -854,10 +854,13 @@ body.roster-selfediting #roster-grid .pcard.pcard-you-card::after{content:'\270E
 .plancats{display:flex;gap:8px;flex-wrap:wrap}
 .plancat{font-family:inherit;font-size:13px;font-weight:800;padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:var(--soft);color:var(--muted);cursor:pointer}
 .plancat.on{background:var(--lime);color:var(--ink);border-color:transparent}
-.plancat.on.optional{background:var(--soft);color:var(--green);border:1px dashed color-mix(in srgb,var(--lime) 72%,var(--line))}
+/* Three distinct chip states: OFF = soft grey (not scheduled), REQUIRED = solid lime
+   (counts toward "all done"), OPTIONAL = solid blue (a bonus, clearly a different
+   state at a glance, not a washed-out lime). */
+.plancat.on.optional{background:var(--blue);color:var(--ink);border-color:transparent}
 .plancat-n{display:inline-block;margin-left:6px;min-width:16px;padding:0 5px;border-radius:999px;background:var(--ink);color:var(--lime);font-size:11px;line-height:16px;text-align:center}
 .plancat:not(.on) .plancat-n{background:var(--line);color:var(--muted)}
-.plancat.on.optional .plancat-n{background:color-mix(in srgb,var(--lime) 26%,var(--soft));color:var(--green)}
+.plancat.on.optional .plancat-n{background:var(--ink);color:var(--blue)}
 .plancat-opt{display:inline-block;margin-left:6px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;opacity:.9}
 .dpk-mode{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 10px}
 .dpk-mode-lbl{font-size:13px;font-weight:800;color:var(--muted)}
