@@ -39,6 +39,7 @@ import {
   getAdmin, setAdmin, ensureTeamIndexed,
   listTeamCoaches, ensureHeadCoach, addAssistantCoach, removeAssistantCoach, MAX_ASSISTANTS,
   backfillSeedBeta, getBetaUntil,
+  savePushToken,
 } from '../lib/teams_store.js';
 import { ensureSchedule, getSchedule, addEvent as addScheduleEvent, nextEvent } from '../lib/schedule_store.js';
 
@@ -920,6 +921,18 @@ async function beta(req, res) {
   return res.status(200).json({ ok: true, betaUntil: await getBetaUntil(code) });
 }
 
+// Register a device push token (from the Capacitor native shell). Keyed to the
+// signed-in player when known so a later server-side push can target their
+// devices. No auth gate: a token alone is not sensitive and the native shell
+// only ever posts its own device's token.
+async function pushRegister(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  const { token, platform, player } = parseBody(req);
+  const result = await savePushToken({ token, platform, player });
+  if (!result.ok) return res.status(400).json({ error: result.error || 'token required' });
+  return res.status(200).json({ ok: true });
+}
+
 export default async function handler(req, res) {
   const action = String((req.query && req.query.action) || '').toLowerCase();
   switch (action) {
@@ -962,6 +975,7 @@ export default async function handler(req, res) {
     case 'log-game-goal': return logGoal(req, res);
     case 'game-goal-log': return gameGoalLogRead(req, res);
     case 'history': return historyRead(req, res);
+    case 'push-register': return pushRegister(req, res);
     case 'beta': return beta(req, res);
     default: return res.status(404).json({ error: 'unknown coach action' });
   }
@@ -980,5 +994,6 @@ export const _handlers = {
   reviewSuggestions, resolveSuggestion, adjustCounts,
   teamCoaches, inviteCoach, removeCoach,
   addEvent, setCoachProfile,
+  pushRegister,
 };
 export const _seed = { SEED_TEAM_CODE, SEED_COACH_EMAIL, SEED_COACH_PASSWORD, SEED_CHILD_PLAYER_ID, ensureSeed, mintCoachToken };

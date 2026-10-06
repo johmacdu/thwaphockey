@@ -7,3 +7,19 @@ coverage/
 .env
 .env.local
 .env.*.local
+
+# Capacitor native build artifacts (keep ios/ and android/ SOURCE, ignore builds)
+ios/App/Pods/
+ios/App/App/public/
+ios/App/output/
+ios/App/build/
+ios/DerivedData/
+android/.gradle/
+android/build/
+android/app/build/
+android/app/src/main/assets/public/
+android/local.properties
+android/.idea/
+android/app/release/
+*.xcuserstate
+
