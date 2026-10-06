@@ -8,8 +8,10 @@
 //
 // This suite asserts:
 //   (a) NO #splashCtl / #splashSfx / #splashTheme / .splashctl exist anywhere,
-//   (b) the REAL #sfxToggle + #themeToggle footer is lifted above the overlay
-//       (#loginOverlay z-130) on body.login-locked by z-index ALONE, kept in its
+//   (b) the REAL #sfxToggle + #themeToggle footer is lifted above the frost
+//       (#loginBackdrop z-90) but kept BELOW the sheet (#loginOverlay z-130) on
+//       body.login-locked by z-index ALONE, so the sheet always covers the footer
+//       (no overlap with the Sign In button on tall mobile sheets). Kept in its
 //       exact home-screen position (position:relative, nothing moved or hidden --
 //       PR #304 reverted #300's relocate + slogan/kebab hide),
 //   (c) those real controls still drive thwapTheme / thwapSfxOn as before.
@@ -57,17 +59,22 @@ describe('Splash controls: the REAL footer controls are surfaced above the frost
     expect((html.match(/id='themeToggle'/g) || []).length).toBe(1);
   });
 
-  it('lifts the real .footer above the overlay (z>130) in place (not relocated), pointer-reachable, on body.login-locked', () => {
+  it('lifts the real .footer above the frost but BELOW the sheet (90 < z < 130) in place, pointer-reachable, on body.login-locked', () => {
     const m = html.match(/body\.login-locked \.footer\{([^}]*)\}/);
     expect(m).toBeTruthy();
     const rule = m[1];
-    // PR #304: keep the footer in its EXACT home-screen position -- only raise its
-    // stacking above the frost. position:relative (in flow), NOT fixed (relocated).
+    // Keep the footer in its EXACT home-screen position -- only raise its stacking.
+    // position:relative (in flow), NOT fixed (relocated).
     expect(rule).toMatch(/position:relative/);
     expect(rule).not.toMatch(/position:fixed/);
     const z = rule.match(/z-index:(\d+)/);
     expect(z).toBeTruthy();
-    expect(Number(z[1])).toBeGreaterThan(130); // above #loginOverlay z-130
+    // Must sit ABOVE the frost (#loginBackdrop z-90) so the toggles are tappable on
+    // the bare splash, but BELOW the sign-in sheet (#loginOverlay z-130) so the sheet
+    // always covers the footer -- otherwise the footer controls render ON TOP of the
+    // Sign In button on tall mobile sheets (the overlap bug this guards against).
+    expect(Number(z[1])).toBeGreaterThan(90);
+    expect(Number(z[1])).toBeLessThan(130);
     expect(rule).toMatch(/pointer-events:auto/);
   });
 
