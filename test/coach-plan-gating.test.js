@@ -151,3 +151,44 @@ describe('Coach Weekly Training Plan gates the player home', () => {
     });
   });
 });
+
+function optAttr(win, cls) {
+  const el = win.document.querySelector(cls);
+  return el ? el.getAttribute('data-opt') : '(missing)';
+}
+
+describe('Optional ("bonus") disciplines gate the home as bonus, not required', () => {
+  it('an optional category is shown and tagged data-opt; a required one is shown untagged', async () => {
+    // Monday: Hands required, Shooting optional (bonus), Dryland off.
+    const win = await boot({
+      planResponse: { ok: true, plan: { mon: { stick: [], shoot: [], opt: ['shoot'] } } },
+      day: 'mon',
+    });
+    expect(disp(win, '.nav-stick')).toBe(''); // required -> shown
+    expect(optAttr(win, '.nav-stick')).toBe(null); // required -> not tagged
+    expect(disp(win, '.nav-shoot')).toBe(''); // optional -> still shown
+    expect(optAttr(win, '.nav-shoot')).toBe('1'); // optional -> tagged bonus
+    expect(disp(win, '.nav-dryland')).toBe('none'); // absent -> off
+  });
+
+  it('thwapTrainingToday() splits required from optional off the card state', async () => {
+    const win = await boot({
+      planResponse: { ok: true, plan: { mon: { stick: [], shoot: [], opt: ['shoot'] } } },
+      day: 'mon',
+    });
+    const t = win.thwapTrainingToday();
+    expect(t.required).toEqual(['stick']);
+    expect(t.optional).toEqual(['shoot']);
+  });
+
+  it('weekend catch-up tags Hands + Shooting as bonus (data-opt), never required', async () => {
+    const win = await boot({ planResponse: { ok: true, plan: {} }, day: 'sat' });
+    expect(disp(win, '.nav-stick')).toBe('');
+    expect(disp(win, '.nav-shoot')).toBe('');
+    expect(optAttr(win, '.nav-stick')).toBe('1'); // weekend bonus
+    expect(optAttr(win, '.nav-shoot')).toBe('1'); // weekend bonus
+    const t = win.thwapTrainingToday();
+    expect(t.required).toEqual([]); // nothing required on the weekend
+    expect(t.optional.sort()).toEqual(['shoot', 'stick']);
+  });
+});

@@ -854,8 +854,17 @@ body.roster-selfediting #roster-grid .pcard.pcard-you-card::after{content:'\270E
 .plancats{display:flex;gap:8px;flex-wrap:wrap}
 .plancat{font-family:inherit;font-size:13px;font-weight:800;padding:8px 12px;border-radius:999px;border:1px solid var(--line);background:var(--soft);color:var(--muted);cursor:pointer}
 .plancat.on{background:var(--lime);color:var(--ink);border-color:transparent}
+.plancat.on.optional{background:var(--soft);color:var(--green);border:1px dashed color-mix(in srgb,var(--lime) 72%,var(--line))}
 .plancat-n{display:inline-block;margin-left:6px;min-width:16px;padding:0 5px;border-radius:999px;background:var(--ink);color:var(--lime);font-size:11px;line-height:16px;text-align:center}
 .plancat:not(.on) .plancat-n{background:var(--line);color:var(--muted)}
+.plancat.on.optional .plancat-n{background:color-mix(in srgb,var(--lime) 26%,var(--soft));color:var(--green)}
+.plancat-opt{display:inline-block;margin-left:6px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;opacity:.9}
+.dpk-mode{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:2px 0 10px}
+.dpk-mode-lbl{font-size:13px;font-weight:800;color:var(--muted)}
+.dpk-seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.dpk-seg-btn{font-family:inherit;font-size:13px;font-weight:800;padding:7px 15px;background:transparent;color:var(--muted);border:0;cursor:pointer}
+.dpk-seg-btn.on{background:var(--lime);color:var(--ink)}
+.dpk-mode-hint{flex-basis:100%;font-size:12px;color:var(--muted);margin:2px 0 0}
 .plan-hint{margin:10px 2px 0;font-size:12px;color:var(--muted)}
 /* Drill picker (coach): inline X-close page. A category's full drill list from the
    same buildCatalog() the players use; tap a row to include it in the plan, tap the
@@ -1745,6 +1754,14 @@ body.login-locked{overflow:hidden}
 <section id='drillpick' class='page'>
 <a class='glassclose' href='#plan' aria-label='Close'>✕</a>
 <div class='hero'><div class='kicker' id='dpkKicker'>Coach</div><h1 id='dpkTitle'>Pick drills</h1></div>
+<div class='dpk-mode' id='dpkMode'>
+  <span class='dpk-mode-lbl'>This day</span>
+  <div class='dpk-seg' role='group' aria-label='Required or optional'>
+    <button type='button' class='dpk-seg-btn on' id='dpkModeReq' data-mode='req'>Required</button>
+    <button type='button' class='dpk-seg-btn' id='dpkModeOpt' data-mode='opt'>Optional</button>
+  </div>
+  <p class='dpk-mode-hint' id='dpkModeHint'>Required counts toward "all done" today.</p>
+</div>
 <div class='dpk-list' id='dpkList'></div>
 <div class='actionbar' id='dpkBar' hidden>
   <div class='action-inner'>
@@ -1895,19 +1912,34 @@ body.login-locked{overflow:hidden}
     } else if(day && typeof day==='object'){
       CATS.forEach(function(c){ if(Object.prototype.hasOwnProperty.call(day,c)){ on[c]=true; hasExplicit=true; } });
     }
+    /* Optional ("bonus") categories the coach marked for the day: shown to players
+       but never required to finish the day. Tag the card with data-opt so the hero
+       sentence and the completion check can tell required from bonus. */
+    var optset={};
+    if(day && typeof day==='object' && !Array.isArray(day) && Array.isArray(day.opt)){
+      day.opt.forEach(function(c){ if(CATS.indexOf(c)>=0) optset[c]=true; });
+    }
     /* Weekend catch-up: on Sat/Sun, when the coach has NOT explicitly turned any
        category on for the day, keep the existing weekend-optional default (Hands
        + Shooting stay available as optional catch-up, Dryland rests). Do not let
        an empty or absent weekend plan hide stick + shoot. A coach plan that DOES
        set categories for the weekend day is authoritative, same as a weekday. */
-    if(isWeekend && !hasExplicit) return;
+    if(isWeekend && !hasExplicit){
+      /* Those catch-up skills are bonus, not required: mark them so the hero and
+         the completion check treat finishing them as optional. */
+      ['stick','shoot'].forEach(function(cat){ if(rows[cat] && rows[cat].style.display!=='none') rows[cat].setAttribute('data-opt','1'); });
+      try{ if(window.thwapRefreshHero) window.thwapRefreshHero(); }catch(e){}
+      return;
+    }
     /* Also fail open on a weekday with no usable day entry (missing/unrecognized
        shape with nothing explicit): leave the built-in default in place. */
     if(!hasExplicit) return;
-    /* A coach plan for the day is authoritative: show exactly its categories. */
+    /* A coach plan for the day is authoritative: show exactly its categories, and
+       flag which of the shown categories are optional. */
     Object.keys(rows).forEach(function(cat){
       if(!rows[cat]) return;
       rows[cat].style.display = on[cat] ? '' : 'none';
+      if(on[cat] && optset[cat]) rows[cat].setAttribute('data-opt','1'); else rows[cat].removeAttribute('data-opt');
     });
     /* The hero sentence derives today's disciplines from these cards, so
        repaint it now that the plan has resolved. */
@@ -1917,7 +1949,23 @@ body.login-locked{overflow:hidden}
   if(document.querySelector('.nav-stick')||document.querySelector('.nav-shoot')||document.querySelector('.nav-dryland')){ run(); }
   else if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded', run); }
   else { run(); }
-})();})();</script><div class='forrow'><div class='dowrap' id='doWrap'><div class='dolead' id='doLead'></div><div class='discline' id='discLine'></div></div></div>
+})();})();</script>
+<script>
+/* Today's training split, read from the discipline cards (the plan gating is the
+   single source of truth for card state): a visible card is scheduled; a visible
+   card tagged data-opt is a bonus (optional); a hidden card is off. Both the home
+   hero and the "all done" celebration read this so required vs optional stays in
+   one place. Fail-open: a missing card is skipped. */
+window.thwapTrainingToday=function(){
+  var ks=['stick','shoot','dryland']; var req=[], opt=[];
+  ks.forEach(function(k){
+    var c=null; try{ c=document.querySelector('.nav-'+k); }catch(e){}
+    if(!c || c.style.display==='none') return;
+    if(c.getAttribute('data-opt')==='1') opt.push(k); else req.push(k);
+  });
+  return {required:req, optional:opt};
+};
+</script><div class='forrow'><div class='dowrap' id='doWrap'><div class='dolead' id='doLead'></div><div class='discline' id='discLine'></div></div></div>
 <div class='cheerpop' id='cheerPop' hidden><div class='cheerpop-sass' id='cheerPopSass'><img class='cheerpop-frame fa' src='login/sass-stride-a.webp' alt=''><img class='cheerpop-frame fm' src='login/sass-stride-m.webp' alt=''><img class='cheerpop-frame fb' src='login/sass-stride-b.webp' alt=''></div><div class='cheerpop-bubble'><img class='cheerpop-bubble-img' src='login/bubble-blank.webp' alt=''><div class='cheerpop-text'><span class='cheerpop-line' id='cheerPopLine'></span></div></div></div>
 <div class='cards'>
 <div class='nextgame-tag' id='nextGameTag' hidden><span class='ngt-ico' role='img' aria-label='Hockey net'>🥅</span><span class='ngt-text' id='ngtText'></span></div>
@@ -2640,7 +2688,25 @@ window.thwapActiveTeam=function(coach){
       var obj={}; if(Array.isArray(v)) v.forEach(function(c){ obj[c]=obj[c]||[]; });
       plan[day]=v=obj;
     }
-    if(arr&&arr.length) v[cat]=arr; else delete v[cat];
+    if(arr&&arr.length){ v[cat]=arr; }
+    else {
+      delete v[cat];
+      /* An off category can't be optional -- drop any stale flag. */
+      if(Array.isArray(v.opt)){ var oi=v.opt.indexOf(cat); if(oi>=0) v.opt.splice(oi,1); if(!v.opt.length) delete v.opt; }
+    }
+    setDirty(true);
+  }
+  /* Optional ("bonus") flag per day/category: stored as plan[day].opt = [cat,...].
+     An optional category is shown to players but never required to finish the day. */
+  function optArr(day){ var v=plan[day]; if(!v||Array.isArray(v)) return []; return Array.isArray(v.opt)?v.opt:[]; }
+  function isOptional(day,cat){ return optArr(day).indexOf(cat)>=0; }
+  function setOptional(day,cat,on){
+    var v=plan[day];
+    if(!v||Array.isArray(v)){ var obj={}; if(Array.isArray(v)) v.forEach(function(c){ obj[c]=obj[c]||[]; }); plan[day]=v=obj; }
+    var arr=Array.isArray(v.opt)?v.opt.slice():[];
+    var i=arr.indexOf(cat);
+    if(on && i<0) arr.push(cat); else if(!on && i>=0) arr.splice(i,1);
+    if(arr.length) v.opt=arr; else delete v.opt;
     setDirty(true);
   }
   function render(){
@@ -2651,8 +2717,9 @@ window.thwapActiveTeam=function(coach){
       var day='<div class="planrow-day">'+d[1]+(d[0]===todayKey?'<span class="todaytag">Today</span>':'')+'</div>';
       var cats='<div class="plancats">'+CATS.map(function(c){
         var n=drillsFor(d[0],c[0]).filter(function(x){return x!=='__all__';}).length;
-        return '<button type="button" class="plancat'+(n>0?' on':'')+'" data-day="'+d[0]+'" data-cat="'+c[0]+'">'+c[1]+
-          '<span class="plancat-n">'+n+'</span></button>';
+        var opt=(n>0&&isOptional(d[0],c[0]));
+        return '<button type="button" class="plancat'+(n>0?(opt?' on optional':' on'):'')+'" data-day="'+d[0]+'" data-cat="'+c[0]+'">'+c[1]+
+          '<span class="plancat-n">'+n+'</span>'+(opt?'<span class="plancat-opt">optional</span>':'')+'</button>';
       }).join('')+'</div>';
       row.innerHTML=day+cats;
       grid.appendChild(row);
@@ -2678,13 +2745,24 @@ window.thwapActiveTeam=function(coach){
     if(!p||typeof p!=='object') return false;
     return Object.keys(p).some(function(d){
       var day=p[d]; if(!day||typeof day!=='object') return false;
-      return Object.keys(day).some(function(c){ return Array.isArray(day[c]) && day[c].filter(function(x){return x!=='__all__';}).length>0; });
+      return CATS.some(function(c){ return Array.isArray(day[c[0]]) && day[c[0]].filter(function(x){return x!=='__all__';}).length>0; });
     });
   }
   /* --- Drill picker page (#drillpick) --- */
   var pickList=document.getElementById('dpkList'), pkTitle=document.getElementById('dpkTitle'), pkKicker=document.getElementById('dpkKicker');
   var barEl=document.getElementById('dpkBar'), barN=document.getElementById('dpkBarN'), barT=document.getElementById('dpkBarT'),
       resetBtn=document.getElementById('dpkReset'), pkSaveBtn=document.getElementById('dpkSave');
+  var modeReq=document.getElementById('dpkModeReq'), modeOpt=document.getElementById('dpkModeOpt'), modeHint=document.getElementById('dpkModeHint');
+  var pkOptional=false;
+  function reflectMode(){
+    if(modeReq) modeReq.classList.toggle('on',!pkOptional);
+    if(modeOpt) modeOpt.classList.toggle('on',pkOptional);
+    if(modeHint) modeHint.textContent = pkOptional
+      ? 'Optional is a bonus. Players can do it, but it never blocks "all done".'
+      : 'Required counts toward "all done" today.';
+  }
+  if(modeReq) modeReq.addEventListener('click',function(){ pkOptional=false; reflectMode(); });
+  if(modeOpt) modeOpt.addEventListener('click',function(){ pkOptional=true; reflectMode(); });
   var pkDay='', pkCat='';
   var CATLABEL={stick:'Hands',shoot:'Shoot',dryland:'Dryland'};
   var DAYLABEL={mon:'Monday',tue:'Tuesday',wed:'Wednesday',thu:'Thursday',fri:'Friday',sat:'Saturday',sun:'Sunday'};
@@ -2692,6 +2770,7 @@ window.thwapActiveTeam=function(coach){
     pkDay=day; pkCat=cat;
     /* Stage a copy of the current real drill names (drop the legacy __all__ marker). */
     pkStaged=drillsFor(day,cat).filter(function(x){return x!=='__all__';}).slice();
+    pkOptional=isOptional(day,cat); reflectMode();
     if(pkKicker) pkKicker.textContent=DAYLABEL[day]||'Coach';
     if(pkTitle) pkTitle.textContent=(CATLABEL[cat]||cat)+' drills';
     renderPicker();
@@ -2778,6 +2857,7 @@ window.thwapActiveTeam=function(coach){
   if(resetBtn) resetBtn.addEventListener('click',function(){ pkStaged=[]; renderPicker(); });
   if(pkSaveBtn) pkSaveBtn.addEventListener('click',function(){
     setDrills(pkDay,pkCat,pkStaged.slice()); /* commit to plan (marks dirty for Save plan) */
+    setOptional(pkDay,pkCat, pkStaged.length>0 && pkOptional); /* optional only applies when the day has drills */
     render();
     location.hash='#plan';
   });
@@ -5966,21 +6046,35 @@ function fill(){
      date reveal lives on "Today" (open) or "today" (in-progress). */
   var todayCap="<button type='button' class='todayword' id='todayReveal'>Today<span class='todaydate' id='dayDate'>"+full+"</span></button>";
   var todayLow="<button type='button' class='todayword' id='todayReveal'>today<span class='todaydate' id='dayDate'>"+full+"</span></button>";
+  /* A visible card tagged data-opt is a bonus (optional): it shows and is tappable,
+     but it never counts toward "all done". Split today's disciplines accordingly. */
+  function isOpt(d){ try{ var c=document.querySelector('.nav-'+d.k); return !!(c&&c.getAttribute('data-opt')==='1'); }catch(e){ return false; } }
   if(lead){
     if(weekend){
       lead.className='dolead';
-      lead.innerHTML="No training "+todayLow+", bonus skills only.";
+      if(defs.length){ lead.innerHTML="Bonus skills "+todayLow+": "+discSentenceList(defs)+"."; }
+      else { lead.innerHTML="No training "+todayLow+", bonus skills only."; }
     } else {
-      var left=defs.filter(function(d){return !isDone(d.k);});
-      if(left.length===0){
+      var req=defs.filter(function(d){return !isOpt(d);});
+      var bonus=defs.filter(isOpt);
+      var reqLeft=req.filter(function(d){return !isDone(d.k);});
+      var bonusLeft=bonus.filter(function(d){return !isDone(d.k);});
+      if(req.length===0){
+        /* Only bonus scheduled today (no required discipline). */
+        if(bonusLeft.length){ lead.className='dolead'; lead.innerHTML="Bonus skills "+todayLow+": "+discSentenceList(bonusLeft)+"."; }
+        else { lead.className='dolead alldone'; lead.innerHTML="All done "+todayLow+". 🎉"; }
+      } else if(reqLeft.length===0){
+        /* Everything required is done: celebrate, and nudge any bonus that is left. */
         lead.className='dolead alldone';
-        lead.innerHTML="All done "+todayLow+". 🎉";
-      } else if(left.length===defs.length){
+        lead.innerHTML = bonusLeft.length
+          ? ("All done "+todayLow+". 🎉 Bonus left: "+discSentenceList(bonusLeft)+".")
+          : ("All done "+todayLow+". 🎉");
+      } else if(reqLeft.length===req.length){
         lead.className='dolead';
-        lead.innerHTML=todayCap+"'s training is "+discSentenceList(defs)+".";
+        lead.innerHTML=todayCap+"'s training is "+discSentenceList(req)+".";
       } else {
         lead.className='dolead';
-        lead.innerHTML="You still have "+discSentenceList(left)+" to do "+todayLow+".";
+        lead.innerHTML="You still have "+discSentenceList(reqLeft)+" to do "+todayLow+".";
       }
     }
     /* tap toggles the date tooltip (hover/focus already handle desktop) */
@@ -6746,7 +6840,13 @@ window.thwapStampToday=function(disc,done){
 };
 window.thwapCheckToday=function(){
   if(window.thwapIsRestDay&&window.thwapIsRestDay()) return;   /* weekend: rest day, nothing required */
-  if(!DISCS.every(isDone)) return;                 /* not all three yet */
+  /* "All done" means every REQUIRED discipline is done. Optional (bonus) ones never
+     gate the celebration, and a day with nothing required never fires it. Fail open
+     to all three if the plan has not resolved (helper missing/throws). */
+  var req=DISCS.slice();
+  try{ if(window.thwapTrainingToday){ var tt=window.thwapTrainingToday(); if(tt&&tt.required) req=tt.required; } }catch(e){}
+  if(!req.length) return;                          /* nothing required today */
+  if(!req.every(isDone)) return;                   /* not every required discipline done yet */
   var ck=celebratedKey(); try{ if(localStorage.getItem(ck)==='1') return; }catch(e){}  /* once per day */
   try{ localStorage.setItem(ck,'1'); }catch(e){}
   var pid=window.thwapPlayerId(); var name=pid? pid.charAt(0).toUpperCase()+pid.slice(1) : 'friend';
