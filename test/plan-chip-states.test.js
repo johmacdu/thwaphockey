@@ -27,9 +27,11 @@ describe('Plan chip states are three distinct, non-washed-out colors', () => {
   it('REQUIRED chip is a solid lime fill', () => {
     expect(html).toMatch(/\.plancat\.on\{background:var\(--lime\);color:var\(--ink\)/);
   });
-  it('OPTIONAL chip is a solid blue fill (a confident third state, not a dashed/soft lime)', () => {
-    expect(html).toMatch(/\.plancat\.on\.optional\{background:var\(--blue\);color:var\(--ink\)/);
-    // must NOT be the old washed-out soft+dashed treatment that read like OFF
+  it('OPTIONAL chip is a lighter same-family lime (soft tint + lime border + green text), clearly on but secondary', () => {
+    expect(html).toMatch(/\.plancat\.on\.optional\{background:color-mix\(in srgb,var\(--lime\) 30%,var\(--card\)\);color:var\(--green\);border:1px solid var\(--lime\)/);
+    // must NOT be a solid blue (reads as a different kind of thing, too intense)
+    expect(html).not.toMatch(/\.plancat\.on\.optional\{background:var\(--blue\)/);
+    // and must NOT be the old washed-out soft+dashed treatment that read like OFF
     expect(html).not.toMatch(/\.plancat\.on\.optional\{background:var\(--soft\)/);
   });
   it('OFF chip (base .plancat) is the soft/muted grey state', () => {
