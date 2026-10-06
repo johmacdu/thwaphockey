@@ -31,6 +31,7 @@ process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test';
 process.env.STRIPE_PRICE_FW = 'price_fw';
 process.env.STRIPE_PRICE_SP = 'price_sp';
 process.env.STRIPE_PRICE_OS = 'price_os';
+process.env.BILLING_ADMIN_SECRET = 'adm_s';
 
 const handler = (await import('../api/billing.js')).default;
 const { getTeamBilling, hasPaidSeason, recordPayment } = await import('../lib/billing_store.js');
@@ -108,5 +109,22 @@ describe('api/billing', () => {
   it('unknown action -> 400', async () => {
     const res = await call({ method: 'GET', query: { action: 'nope' }, headers: {} });
     expect(res.statusCode).toBe(400);
+  });
+
+  it('set-free: comps a team with the admin secret, rejects a bad one', async () => {
+    const ok = await call({ method: 'POST', query: { action: 'set-free' }, headers: {}, body: JSON.stringify({ code: 'LEWIE1', free: true, secret: 'adm_s' }) });
+    expect(ok.statusCode).toBe(200);
+    expect(ok.body).toMatchObject({ ok: true, free: true });
+    expect((await getTeamBilling('LEWIE1')).free).toBe(true);
+    const bad = await call({ method: 'POST', query: { action: 'set-free' }, headers: {}, body: JSON.stringify({ code: 'LEWIE1', free: false, secret: 'WRONG' }) });
+    expect(bad.statusCode).toBe(401);
+    expect((await getTeamBilling('LEWIE1')).free).toBe(true); // unchanged
+  });
+
+  it('status: BILLING_ENFORCED gates an unpaid team', async () => {
+    process.env.BILLING_ENFORCED = '1';
+    const res = await call({ method: 'GET', query: { action: 'status', code: 'UNPAID9' }, headers: {} });
+    delete process.env.BILLING_ENFORCED;
+    expect(res.body).toMatchObject({ enforced: true, active: false, gated: true });
   });
 });

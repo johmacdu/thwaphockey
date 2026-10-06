@@ -12,7 +12,7 @@
 // needs the exact bytes Stripe sent.
 
 import { getTeam } from '../lib/teams_store.js';
-import { recordPayment, billingStatus } from '../lib/billing_store.js';
+import { recordPayment, billingStatus, setTeamFree } from '../lib/billing_store.js';
 import { parseSeasonKey, isSeasonKey, priceCentsForKey } from '../lib/seasons.js';
 
 export const config = { api: { bodyParser: false } };
@@ -139,6 +139,24 @@ async function status(req, res) {
   return res.status(200).json({ ok: true, ...(await billingStatus(code)) });
 }
 
+// Admin-only: comp a team (free) or un-comp it. Gated by a shared env secret so
+// it needs no coach/admin token plumbing. Used to keep Lewie's team free.
+async function setFree(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  const secret = process.env.BILLING_ADMIN_SECRET;
+  let body = {};
+  try {
+    body = JSON.parse((await readRaw(req)) || '{}');
+  } catch {
+    return res.status(400).json({ error: 'bad json' });
+  }
+  if (!secret || body.secret !== secret) return res.status(401).json({ error: 'unauthorized' });
+  const code = String(body.code || '').trim();
+  if (!code) return res.status(400).json({ error: 'code required' });
+  const b = await setTeamFree(code, body.free === true);
+  return res.status(200).json({ ok: true, code, free: b ? b.free : false });
+}
+
 export default async function handler(req, res) {
   const action = String((req.query && req.query.action) || '').toLowerCase();
   switch (action) {
@@ -148,6 +166,8 @@ export default async function handler(req, res) {
       return webhook(req, res);
     case 'status':
       return status(req, res);
+    case 'set-free':
+      return setFree(req, res);
     default:
       return res.status(400).json({ error: 'unknown action' });
   }
