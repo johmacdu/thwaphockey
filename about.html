@@ -89,9 +89,10 @@ h2.sec{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:clamp(26
 .phone::before{content:'';position:absolute;left:-3px;top:116px;width:3px;height:38px;background:#2a2a2e;border-radius:2px 0 0 2px;box-shadow:0 52px 0 #2a2a2e}
 @media(min-width:760px){.kid-grid{grid-template-columns:1fr 1fr;gap:48px}}
 
-/* section backgrounds: each major section gets its own tone */
+/* section backgrounds: each major section gets its own tone.
+   The hero keeps the page background so the mascot's blended edges stay seamless
+   (it was tuned to --bg, and a white hero made a halo appear around it). */
 .band{background:var(--panel)}
-.hero{background:var(--panel)}
 .sec-kid{background:var(--sec-kid)}
 .sec-team{background:var(--sec-team)}
 .sec-coach{background:var(--sec-coach)}
