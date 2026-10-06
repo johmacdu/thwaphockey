@@ -53,6 +53,15 @@ header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 8
 .btn-ghost{background:transparent;color:var(--text);border:1.5px solid var(--line)}
 .btn-ghost:hover{border-color:var(--green)}
 .btn-sm{min-height:40px;padding:9px 14px;font-size:13px;border-radius:11px}
+/* iOS-glass back button (replaces the wordmark in the header) */
+.backglass{display:inline-flex;align-items:center;gap:3px;height:40px;padding:0 16px 0 11px;border-radius:999px;font-size:15px;font-weight:800;color:var(--text);text-decoration:none;cursor:pointer;background:color-mix(in srgb,var(--panel) 60%,transparent);border:1px solid color-mix(in srgb,var(--text) 12%,transparent);backdrop-filter:saturate(180%) blur(14px);-webkit-backdrop-filter:saturate(180%) blur(14px);white-space:nowrap}
+.backglass:hover{background:color-mix(in srgb,var(--panel) 82%,transparent)}
+.backglass svg{margin-top:0}
+/* footer sound toggle (matches the app) */
+.sfxtoggle{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:999px;cursor:pointer;font-family:inherit;padding:0}
+.sfxtoggle:hover{border-color:var(--line2)}
+.sfxtoggle:active{transform:scale(.95)}
+.sfxtoggle.off{color:var(--muted)}
 
 /* section rhythm */
 section{padding:clamp(60px,10vw,96px) 0}
@@ -89,26 +98,30 @@ h2.sec{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:clamp(26
 .phone::before{content:'';position:absolute;left:-3px;top:116px;width:3px;height:38px;background:#2a2a2e;border-radius:2px 0 0 2px;box-shadow:0 52px 0 #2a2a2e}
 @media(min-width:760px){.kid-grid{grid-template-columns:1fr 1fr;gap:48px}}
 
-/* section backgrounds: each major section gets its own tone */
+/* section backgrounds: each major section gets its own tone.
+   The hero keeps the page background so the mascot's blended edges stay seamless
+   (it was tuned to --bg, and a white hero made a halo appear around it). */
 .band{background:var(--panel)}
-.hero{background:var(--panel)}
 .sec-kid{background:var(--sec-kid)}
 .sec-team{background:var(--sec-team)}
 .sec-coach{background:var(--sec-coach)}
 
-/* shared phone frame */
-.scphone{position:relative;width:min(244px,74vw);background:#0c0e0d;border-radius:38px;padding:8px;box-shadow:0 26px 54px rgba(0,0,0,.5),0 0 0 2px #39423c}
+/* shared phone frame (tap to enlarge) */
+.scphone{position:relative;width:min(252px,76vw);background:#0c0e0d;border-radius:38px;padding:8px;box-shadow:0 26px 54px rgba(0,0,0,.5),0 0 0 2px #39423c;cursor:zoom-in}
 .scphone-screen{position:relative;width:100%;aspect-ratio:242/512;border-radius:30px;overflow:hidden;background:#F3F7F4}
 .scphone-island{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:76px;height:21px;background:#000;border-radius:999px;z-index:4}
-.scphone-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center}
+/* captured screens have no status bar, so start the app UI BELOW the island */
+.scphone-img{position:absolute;left:0;right:0;top:7%;height:93%;width:100%;object-fit:cover;object-position:top center}
+.scphone::after{content:'\2922';position:absolute;bottom:13px;right:13px;z-index:5;width:30px;height:30px;border-radius:999px;background:rgba(12,16,13,.66);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;line-height:1;pointer-events:none}
 
-/* pinned crossfade showcase (beatflyfishing "built for the water"): a tall section
-   whose dark card pins while the heading stays, the phone screen crossfades, and the
-   step text crossfades -- all by scroll progress. Mobile falls back to a stacked card. */
-.pin-card{background:var(--sc-bg);color:var(--sc-text);--text:var(--sc-text);--muted:var(--sc-muted);--line:var(--sc-line);--green:var(--sc-eyebrow);border:1px solid var(--sc-line);border-radius:28px;box-shadow:0 30px 72px var(--shadow);padding:clamp(24px,6vw,32px);margin-top:28px}
-.pin.coach .pin-card{background:var(--sc-bg2)}
+/* pinned crossfade showcase (beatflyfishing "built for the water"): the eyebrow +
+   heading sit OUTSIDE the card; a tall section pins the heading and the dark card
+   while the phone screen and step text crossfade by scroll progress. Mobile stacks
+   each step with its own phone. */
 .pin-head .eyebrow{margin-bottom:10px}
-.pin-body{margin-top:10px}
+.pin-head h2.sec{margin-bottom:0}
+.pin-card{background:var(--sc-bg);color:var(--sc-text);--text:var(--sc-text);--muted:var(--sc-muted);--line:var(--sc-line);--green:var(--sc-eyebrow);border:1px solid var(--sc-line);border-radius:28px;box-shadow:0 30px 72px var(--shadow);padding:clamp(22px,6vw,30px);margin-top:18px}
+.pin.coach .pin-card{background:var(--sc-bg2)}
 .pin-phone{display:none}
 .pin-step{padding-top:28px}
 .pin-step .pin-num{display:inline-block;font-size:12px;font-weight:900;letter-spacing:.14em;color:var(--sc-eyebrow);margin-bottom:10px}
@@ -117,13 +130,14 @@ h2.sec{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:clamp(26
 .pin-step .step-media{margin-top:18px}
 .pin-step .step-media .scphone{margin:0 auto}
 @media(min-width:900px){
-  .pin{position:relative;height:calc(var(--steps,3) * 92vh)}
-  .pin-card{position:sticky;top:74px;height:min(84vh,690px);margin-top:30px;padding:clamp(28px,3vw,42px);display:flex;flex-direction:column}
-  .pin-stage{display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
-  .pin-head{flex:0 0 auto}
-  .pin-body{position:relative;flex:1 1 auto;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:clamp(28px,4vw,60px);align-items:center;margin-top:18px}
+  .pin{position:relative;height:calc(var(--steps,3) * 96vh)}
+  .pin-sticky{position:sticky;top:92px}
+  .pin-head{margin-bottom:16px}
+  .pin-card{height:clamp(420px, calc(100vh - 248px), 640px);padding:clamp(24px,2.4vw,36px);display:flex;flex-direction:column;overflow:hidden}
+  .pin-body{position:relative;flex:1 1 auto;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:clamp(28px,4vw,56px);align-items:center;margin-top:0}
   .pin-phone{display:flex;align-items:center;justify-content:center;height:100%}
-  .pin-phone .scphone{width:min(208px,90%)}
+  .pin-phone .scphone{height:min(100%,600px);width:auto;aspect-ratio:258/560}
+  .pin-phone .scphone-screen{aspect-ratio:auto;height:100%}
   .pin:not(.coach) .pin-phone{order:2}   /* team: phone on the right */
   .pin:not(.coach) .pin-text{order:1}
   .pin.coach .pin-phone{order:0}         /* coaches: phone on the left */
@@ -135,6 +149,18 @@ h2.sec{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:clamp(26
   .scphone-img{opacity:0;transition:opacity .45s ease}
   .scphone-img.on{opacity:1}
 }
+/* tap-to-enlarge lightbox */
+.lb{position:fixed;inset:0;z-index:120;background:rgba(10,16,12,.9);display:flex;align-items:center;justify-content:center;padding:28px;cursor:zoom-out}
+.lb[hidden]{display:none}
+.lb-img{max-width:min(90vw,440px);max-height:92vh;width:auto;border-radius:36px;box-shadow:0 40px 90px rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.14)}
+.lb-close{position:absolute;top:20px;right:20px;width:46px;height:46px;border-radius:999px;background:#fff;color:#15221B;border:0;font-size:22px;line-height:1;cursor:pointer;font-family:inherit}
+/* origin / closer: a centered, text-only sign-off (the footer wordmark finishes it) */
+.origin{text-align:center}
+.origin .wrap{max-width:780px}
+.origin-rule{width:46px;height:4px;border-radius:999px;background:var(--lime);margin:0 auto 24px}
+.origin .eyebrow{margin-bottom:14px}
+.origin .sec{font-size:clamp(30px,6vw,48px);line-height:1.04;margin:0 auto 18px;max-width:18ch}
+.origin .lead{max-width:56ch;margin:0 auto}
 
 /* safety list */
 .safe{display:grid;grid-template-columns:1fr;gap:16px;margin-top:8px}
@@ -181,8 +207,7 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
 <body>
 
 <header><div class='wrap hdr'>
-  <img class='hdr-mark light-only' src='wordmark-tm-light.svg' alt='Thwap Hockey'>
-  <img class='hdr-mark dark-only' src='wordmark-tm-dark.svg' alt='Thwap Hockey'>
+  <a class='backglass' id='backBtn' href='/' aria-label='Back to Thwap'><svg width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M15 18l-6-6 6-6'/></svg> Back</a>
   <nav class='hdr-nav'>
     <a class='navlink' href='/'>Sign in</a>
     <a class='btn btn-primary btn-sm' href='/'>Join waitlist</a>
@@ -192,11 +217,10 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
 <!-- HERO -->
 <section class='hero'><div class='wrap'><div class='hero-grid'>
   <div>
-    <p class='eyebrow'>Vancouver Jr. Rangers 10U</p>
-    <h1>Train at home. <span class='acc'>Be a problem to play against.</span></h1>
-    <p class='sub'>Thwap is a young player's hockey world, with the whole team pulling the same way.</p>
+    <h1>Great players are made <span class='acc'>at home.</span></h1>
+    <p class='sub'>Hands. Shooting. Dryland. A few minutes a day. Every rep on their own, every rep for the team. The work that makes them.</p>
   </div>
-  <img class='hero-sass' src='about-shots/mascot-hero.webp?v=2' alt='Sass, the Thwap Hockey mascot'>
+  <img class='hero-sass' src='about-shots/mascot-hero.webp?v=3' alt='Sass, the Thwap Hockey mascot'>
 </div></div></section>
 
 <!-- WHAT A KID DOES -->
@@ -220,12 +244,12 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
 <!-- TEAM -->
 <section class='sec-team'><div class='wrap'>
   <div class='pin' style='--steps:4'>
-    <div class='pin-card'>
-      <div class='pin-stage'>
-        <div class='pin-head'>
-          <p class='eyebrow'>How the team trains together</p>
-          <h2 class='sec'>Everybody fills the same bar.</h2>
-        </div>
+    <div class='pin-sticky'>
+      <div class='pin-head'>
+        <p class='eyebrow'>How the team trains together</p>
+        <h2 class='sec'>Everybody fills the same bar.</h2>
+      </div>
+      <div class='pin-card'>
         <div class='pin-body'>
           <div class='pin-phone'>
             <div class='scphone'><div class='scphone-screen'><div class='scphone-island'></div>
@@ -266,12 +290,12 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
 <!-- COACHES -->
 <section class='sec-coach'><div class='wrap'>
   <div class='pin coach' style='--steps:3'>
-    <div class='pin-card'>
-      <div class='pin-stage'>
-        <div class='pin-head'>
-          <p class='eyebrow'>For coaches</p>
-          <h2 class='sec'>Run it from your phone.</h2>
-        </div>
+    <div class='pin-sticky'>
+      <div class='pin-head'>
+        <p class='eyebrow'>For coaches</p>
+        <h2 class='sec'>Run it from your phone.</h2>
+      </div>
+      <div class='pin-card'>
         <div class='pin-body'>
           <div class='pin-phone'>
             <div class='scphone'><div class='scphone-screen'><div class='scphone-island'></div>
@@ -304,10 +328,11 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
 </div></section>
 
 <!-- ORIGIN -->
-<section class='band'><div class='wrap'>
+<section class='band origin'><div class='wrap'>
+  <div class='origin-rule' aria-hidden='true'></div>
   <p class='eyebrow'>Who made it</p>
-  <h2 class='sec'>Built by a player. Not by crazy hockey parents.</h2>
-  <p class='lead'>A kid on the Jr. Rangers 10U helped design it, build it, and test it. Made by someone who plays, for everyone who does.</p>
+  <h2 class='sec'>Built by a kid who's still chasing it.</h2>
+  <p class='lead'>A player on the Jr. Rangers 10U helped design, build, and test every drill, every detail. The idea was simple: home training a kid actually wants to use. Made by someone who plays, for everyone who does.</p>
 </div></section>
 
 <!-- FOOTER (matches the app footer) -->
@@ -315,6 +340,7 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
   <div class='footer'>
     <span class='slogan'>Compete. Improve. Have fun.</span>
     <div class='footer-actions'>
+      <button class='sfxtoggle' id='sfxToggle' type='button' aria-label='Mute sounds' title='Mute sounds'></button>
       <button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button>
       <div class='footmenu-wrap'>
         <button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button>
@@ -390,6 +416,39 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
   window.addEventListener('resize', onScroll);
   if(mq.addEventListener) mq.addEventListener('change', onScroll);
   update();
+})();
+</script>
+<div class='lb' id='lb' hidden><button class='lb-close' id='lbClose' type='button' aria-label='Close'>&times;</button><img class='lb-img' id='lbImg' src='' alt=''></div>
+<script>/* Tap the phone to enlarge the current feature screen. */
+(function(){
+  var lb=document.getElementById('lb'), lbImg=document.getElementById('lbImg'), lbClose=document.getElementById('lbClose');
+  if(!lb) return;
+  function openLB(src,alt){ if(!src) return; lbImg.setAttribute('src',src); lbImg.setAttribute('alt',alt||''); lb.hidden=false; try{document.body.style.overflow='hidden';}catch(e){} }
+  function closeLB(){ lb.hidden=true; lbImg.setAttribute('src',''); try{document.body.style.overflow='';}catch(e){} }
+  document.addEventListener('click',function(e){
+    var ph=e.target.closest?e.target.closest('.scphone'):null;
+    if(ph){ var img=ph.querySelector('.scphone-img.on')||ph.querySelector('.scphone-img'); if(img) openLB(img.getAttribute('src'), img.getAttribute('alt')); }
+  });
+  lbClose.addEventListener('click',closeLB);
+  lb.addEventListener('click',function(e){ if(e.target===lb) closeLB(); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!lb.hidden) closeLB(); });
+})();
+</script>
+<script>/* Back button (to the splash / previous screen) + footer sound toggle (shared thwapSfxOn). */
+(function(){
+  var b=document.getElementById('backBtn');
+  if(b){ b.addEventListener('click',function(e){
+    try{ var ref=document.referrer||''; if(history.length>1 && ref && new URL(ref).origin===location.origin){ e.preventDefault(); history.back(); } }catch(err){}
+  }); }
+  var sfx=document.getElementById('sfxToggle');
+  if(sfx){
+    var SPK="<svg viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M11 5 6 9H2v6h4l5 4V5z'/><path d='M15.5 8.5a5 5 0 0 1 0 7'/><path d='M18.5 5.5a9 9 0 0 1 0 13'/></svg>";
+    var OFF="<svg viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M11 5 6 9H2v6h4l5 4V5z'/><line x1='23' y1='9' x2='17' y2='15'/><line x1='17' y1='9' x2='23' y2='15'/></svg>";
+    function on(){ try{ return localStorage.getItem('thwapSfxOn')!=='0'; }catch(e){ return true; } }
+    function paint(){ var o=on(); sfx.innerHTML=o?SPK:OFF; sfx.setAttribute('aria-pressed',o?'true':'false'); sfx.setAttribute('aria-label',o?'Mute sounds':'Unmute sounds'); sfx.title=o?'Mute sounds':'Unmute sounds'; sfx.classList.toggle('off',!o); }
+    sfx.addEventListener('click',function(e){ e.stopPropagation(); var next=!on(); try{ localStorage.setItem('thwapSfxOn', next?'1':'0'); }catch(err){} paint(); });
+    paint();
+  }
 })();
 </script>
 </body></html>
