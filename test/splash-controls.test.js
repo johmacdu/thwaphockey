@@ -40,13 +40,20 @@ describe('Splash controls: the #299 duplicate is fully removed', () => {
     expect(html).not.toContain('splashTtlabel');
   });
 
-  it('leaves the sfx wiring unforked (only #sfxToggle in the btns array and guard)', () => {
-    expect(html).toContain("var btns=[document.getElementById('sfxToggle')].filter(Boolean);");
+  it('leaves the sfx wiring unforked by the SPLASH duplicate (only #sfxToggle + the native Profile mirror in the btns array)', () => {
+    // The #299 splash duplicate (#splashSfx) must stay gone. The native Profile
+    // tab (#profSfxToggle, Capacitor-gated) is a legitimate second surface, so the
+    // btns array carries exactly those two real controls and no splash fork.
+    expect(html).toContain("var btns=[document.getElementById('sfxToggle'),document.getElementById('profSfxToggle')].filter(Boolean);");
+    expect(html).not.toContain('splashSfx');
     expect(html).toContain("if(t.closest('#sfxToggle'))return null;");
   });
 
-  it('leaves the theme IIFE unforked (only #themeToggle listener)', () => {
-    expect(html).toContain("var b=document.getElementById('themeToggle');if(b)b.addEventListener('click',toggle);})();");
+  it('leaves the theme IIFE unforked by the SPLASH duplicate (only #themeToggle + the native Profile mirror listener)', () => {
+    // Same contract for the theme toggle: no #splashTheme fork; the Profile tab
+    // mirror (#profThemeToggle) is wired alongside the real footer toggle.
+    expect(html).toContain("var b=document.getElementById('themeToggle');if(b)b.addEventListener('click',toggle);var pb=document.getElementById('profThemeToggle');if(pb)pb.addEventListener('click',toggle);})();");
+    expect(html).not.toContain('splashTheme');
   });
 });
 
