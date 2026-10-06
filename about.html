@@ -11,6 +11,8 @@
   --bg:#F3F7F4;--bg2:#E9EFEA;--panel:#FFFFFF;--line:#DCE5DE;--text:#15221B;--muted:#5F6F64;
   --green:#2F6B41;--green2:#2F6B41;--lime:#B9F06B;--soft:#E7EEE8;--card:#FFFFFF;--onaccent:#FFFFFF;
   --card2:#F7FAF7;--line2:#C9D5CC;
+  --sc-bg:#17251D;--sc-bg2:#1B2730;--sc-text:#F3F7F4;--sc-muted:#A9BAAE;--sc-line:#33433A;--sc-eyebrow:#B9F06B;
+  --sec-kid:#EAF1E6;--sec-team:#F1EDE5;--sec-coach:#E7ECF1;
   --shadow:rgba(20,40,25,.10);
   --accent:var(--green);--accent-on:var(--onaccent);
 }
@@ -18,12 +20,16 @@
   --bg:#101A14;--bg2:#0B130E;--panel:#182420;--line:#2A3831;--text:#F3F7F4;--muted:#9DACA2;
   --green:#B9F06B;--green2:#CDEFA0;--lime:#B9F06B;--soft:#1F2C24;--card:#182420;--onaccent:#15221B;
   --card2:#1E2B24;--line2:#3A4A40;
+  --sc-bg:#1E2C24;--sc-bg2:#1E2830;--sc-text:#F3F7F4;--sc-muted:#9DACA2;--sc-line:#3A4A40;--sc-eyebrow:#B9F06B;
+  --sec-kid:#13201A;--sec-team:#191D15;--sec-coach:#121B20;
   --shadow:rgba(0,0,0,.35);--accent:var(--lime);--accent-on:#15221B;
 }}
 :root[data-theme='dark']{
   --bg:#101A14;--bg2:#0B130E;--panel:#182420;--line:#2A3831;--text:#F3F7F4;--muted:#9DACA2;
   --green:#B9F06B;--green2:#CDEFA0;--lime:#B9F06B;--soft:#1F2C24;--card:#182420;--onaccent:#15221B;
   --card2:#1E2B24;--line2:#3A4A40;
+  --sc-bg:#1E2C24;--sc-bg2:#1E2830;--sc-text:#F3F7F4;--sc-muted:#9DACA2;--sc-line:#3A4A40;--sc-eyebrow:#B9F06B;
+  --sec-kid:#13201A;--sec-team:#191D15;--sec-coach:#121B20;
   --shadow:rgba(0,0,0,.35);--accent:var(--lime);--accent-on:#15221B;
 }
 *{box-sizing:border-box}
@@ -83,19 +89,51 @@ h2.sec{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:clamp(26
 .phone::before{content:'';position:absolute;left:-3px;top:116px;width:3px;height:38px;background:#2a2a2e;border-radius:2px 0 0 2px;box-shadow:0 52px 0 #2a2a2e}
 @media(min-width:760px){.kid-grid{grid-template-columns:1fr 1fr;gap:48px}}
 
-/* team band */
+/* section backgrounds: each major section gets its own tone */
 .band{background:var(--panel)}
-.teampart{display:grid;grid-template-columns:1fr;gap:28px;align-items:center;margin-top:34px}
-.teampart-visual{justify-self:center}
-.shot{width:100%;max-width:280px;border-radius:30px;overflow:hidden;box-shadow:0 22px 48px var(--shadow);border:1px solid var(--line);background:#F3F7F4}
-.shot img{width:100%;display:block}
-.shot-cap{margin:12px auto 0;max-width:280px;text-align:center;font-size:13px;font-weight:700;color:var(--muted)}
-.teamh3{font-size:21px;font-weight:900;margin:0 0 10px}
-.teamcheer{font-size:17px;color:var(--muted);max-width:46ch;line-height:1.5;margin:0}
-@media(min-width:760px){
-  .teampart{grid-template-columns:1fr 1fr;gap:52px}
-  .teampart.reverse .teampart-text{order:2}
-  .teampart.reverse .teampart-visual{order:1}
+.hero{background:var(--panel)}
+.sec-kid{background:var(--sec-kid)}
+.sec-team{background:var(--sec-team)}
+.sec-coach{background:var(--sec-coach)}
+
+/* shared phone frame */
+.scphone{position:relative;width:min(244px,74vw);background:#0c0e0d;border-radius:38px;padding:8px;box-shadow:0 26px 54px rgba(0,0,0,.5),0 0 0 2px #39423c}
+.scphone-screen{position:relative;width:100%;aspect-ratio:242/512;border-radius:30px;overflow:hidden;background:#F3F7F4}
+.scphone-island{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:76px;height:21px;background:#000;border-radius:999px;z-index:4}
+.scphone-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center}
+
+/* pinned crossfade showcase (beatflyfishing "built for the water"): a tall section
+   whose dark card pins while the heading stays, the phone screen crossfades, and the
+   step text crossfades -- all by scroll progress. Mobile falls back to a stacked card. */
+.pin-card{background:var(--sc-bg);color:var(--sc-text);--text:var(--sc-text);--muted:var(--sc-muted);--line:var(--sc-line);--green:var(--sc-eyebrow);border:1px solid var(--sc-line);border-radius:28px;box-shadow:0 30px 72px var(--shadow);padding:clamp(24px,6vw,32px);margin-top:28px}
+.pin.coach .pin-card{background:var(--sc-bg2)}
+.pin-head .eyebrow{margin-bottom:10px}
+.pin-body{margin-top:10px}
+.pin-phone{display:none}
+.pin-step{padding-top:28px}
+.pin-step .pin-num{display:inline-block;font-size:12px;font-weight:900;letter-spacing:.14em;color:var(--sc-eyebrow);margin-bottom:10px}
+.pin-step h3{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:clamp(20px,3vw,26px);margin:0 0 10px;line-height:1.1}
+.pin-step p{font-size:17px;color:var(--muted);line-height:1.55;margin:0;max-width:42ch}
+.pin-step .step-media{margin-top:18px}
+.pin-step .step-media .scphone{margin:0 auto}
+@media(min-width:900px){
+  .pin{position:relative;height:calc(var(--steps,3) * 92vh)}
+  .pin-card{position:sticky;top:74px;height:min(84vh,690px);margin-top:30px;padding:clamp(28px,3vw,42px);display:flex;flex-direction:column}
+  .pin-stage{display:flex;flex-direction:column;flex:1 1 auto;min-height:0}
+  .pin-head{flex:0 0 auto}
+  .pin-body{position:relative;flex:1 1 auto;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:clamp(28px,4vw,60px);align-items:center;margin-top:18px}
+  .pin-phone{display:flex;align-items:center;justify-content:center;height:100%}
+  .pin-phone .scphone{width:min(208px,90%)}
+  .pin:not(.coach) .pin-phone{order:2}   /* team: phone on the right */
+  .pin:not(.coach) .pin-text{order:1}
+  .pin.coach .pin-phone{order:0}         /* coaches: phone on the left */
+  .pin-text{position:relative;height:100%}
+  .pin-steps{position:relative;height:100%}
+  .pin-step{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;opacity:0;transition:opacity .45s ease;padding:0}
+  .pin-step.on{opacity:1}
+  .pin-step .step-media{display:none}
+  .scphone-img{opacity:0;transition:opacity .45s ease}
+  .scphone-img.on{opacity:1}
 }
 
 /* safety list */
@@ -115,7 +153,7 @@ h2.sec{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:clamp(26
 .coachnote b{font-weight:900;color:var(--text)}
 
 /* footer (matches the app footer) */
-footer{border-top:1px solid color-mix(in srgb,var(--line) 45%,transparent)}
+footer{background:var(--panel);border-top:1px solid color-mix(in srgb,var(--line) 45%,transparent)}
 .footer{display:flex;align-items:center;justify-content:space-between;gap:14px;color:var(--muted);font-size:12px;padding:30px 0 20px;flex-wrap:wrap}
 .footer .slogan{font-family:'Nunito Sans',sans-serif;font-weight:800;font-size:13px;letter-spacing:.01em;color:var(--text)}
 .footer-actions{display:inline-flex;align-items:center;gap:8px}
@@ -130,7 +168,7 @@ footer{border-top:1px solid color-mix(in srgb,var(--line) 45%,transparent)}
 .footmenu-item{display:block;padding:10px 12px;border-radius:9px;color:var(--text);font-size:14px;font-weight:800;cursor:pointer;text-align:left;text-decoration:none}
 .footmenu-item:hover{background:var(--bg2)}
 .trademark{text-align:center;padding:6px 4px 30px}
-.trademark-mark{height:72px;width:auto;object-fit:contain;display:inline-block;opacity:.9}
+.trademark-mark{height:72px;width:auto;object-fit:contain;display:block;margin:0 auto;opacity:.9}
 .light-only{display:block}
 .dark-only{display:none}
 @media (prefers-color-scheme: dark){:root:not([data-theme='light']) .light-only{display:none}:root:not([data-theme='light']) .dark-only{display:block}}
@@ -162,14 +200,15 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
 </div></div></section>
 
 <!-- WHAT A KID DOES -->
-<section><div class='wrap'><div class='kid-grid'>
+<section class='sec-kid'><div class='wrap'><div class='kid-grid'>
   <div>
     <p class='eyebrow'>What a kid does</p>
-    <h2 class='sec'>Three things, about 30 minutes.</h2>
+    <h2 class='sec'>Three skills a day, plus their own goals.</h2>
     <div class='blocks'>
-      <div class='block'><div class='ic'>🏒</div><div><h3>Train today</h3><p>Stickhandling, shooting, and dryland, picked for today. Check them off and build your streak.</p></div></div>
-      <div class='block'><div class='ic'>🎯</div><div><h3>Set your Game Day Goals</h3><p>Before each game you pick your own couple of things to work on, goals you can actually remember on the ice.</p></div></div>
-      <div class='block'><div class='ic'>⭐</div><div><h3>Build your card</h3><p>Every bit of training fills your player card and earns stickers. Your hockey, your card.</p></div></div>
+      <div class='block'><div class='ic'>🏒</div><div><h3>Hands</h3><p>Stickhandling reps picked for the day. Check them off and build a streak.</p></div></div>
+      <div class='block'><div class='ic'>🥅</div><div><h3>Shooting</h3><p>Shooting reps to sharpen accuracy and a quicker release.</p></div></div>
+      <div class='block'><div class='ic'>⚡</div><div><h3>Dryland</h3><p>Off-ice footwork and conditioning so they move better on the ice.</p></div></div>
+      <div class='block'><div class='ic'>🎯</div><div><h3>Game Day Goals</h3><p>Before each game the kid picks a couple of their own things to work on, goals they can actually remember on the ice.</p></div></div>
     </div>
   </div>
   <div>
@@ -179,46 +218,87 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
 </div></div></section>
 
 <!-- TEAM -->
-<section class='band'><div class='wrap'>
-  <p class='eyebrow'>How the team wins together</p>
-  <h2 class='sec'>Everybody fills the same bar.</h2>
-  <div class='teampart'>
-    <div class='teampart-text'>
-      <p class='lead'>Every drill anybody on the team does adds to one team total. The more everyone trains, the higher the whole team climbs together.</p>
-    </div>
-    <div class='teampart-visual'>
-      <div class='shot'><img src='about-shots/standings-demo.jpg' alt='Team Standings: one shared total with every player adding to it'></div>
-      <p class='shot-cap'>One team total. Everyone adds to it.</p>
-    </div>
-  </div>
-  <div class='teampart reverse'>
-    <div class='teampart-text'>
-      <h3 class='teamh3'>Teammates hype each other up.</h3>
-      <p class='teamcheer'>Send a cheer when somebody puts in the work, or call a teammate on fire when they are rolling. Support, never a ranking.</p>
-    </div>
-    <div class='teampart-visual'>
-      <div class='shot'><img src='about-shots/cheer-demo.jpg' alt='Sass pops in with a speech bubble cheering a teammate on'></div>
-      <p class='shot-cap'>A cheer lands like this.</p>
+<section class='sec-team'><div class='wrap'>
+  <div class='pin' style='--steps:4'>
+    <div class='pin-card'>
+      <div class='pin-stage'>
+        <div class='pin-head'>
+          <p class='eyebrow'>How the team trains together</p>
+          <h2 class='sec'>Everybody fills the same bar.</h2>
+        </div>
+        <div class='pin-body'>
+          <div class='pin-phone'>
+            <div class='scphone'><div class='scphone-screen'><div class='scphone-island'></div>
+              <img class='scphone-img on' src='about-shots/standings-demo.jpg' alt=''>
+              <img class='scphone-img' src='about-shots/cheer-demo.jpg' alt=''>
+              <img class='scphone-img' src='about-shots/team-demo.jpg' alt=''>
+              <img class='scphone-img' src='about-shots/streak-demo.jpg' alt=''>
+            </div></div>
+          </div>
+          <div class='pin-text'><div class='pin-steps'>
+            <div class='pin-step on'>
+              <span class='pin-num'>01 / 04</span><h3>One shared total.</h3>
+              <p>Every rep anybody on the team does adds to one team total. The more everyone trains, the higher the whole team climbs.</p>
+              <div class='step-media'><div class='scphone'><div class='scphone-screen'><div class='scphone-island'></div><img class='scphone-img on' src='about-shots/standings-demo.jpg' alt='Team Standings: one shared total everyone adds to'></div></div></div>
+            </div>
+            <div class='pin-step'>
+              <span class='pin-num'>02 / 04</span><h3>Pick each other up.</h3>
+              <p>Send a cheer when a teammate puts in the work, or call them on fire when they are rolling. Support, never a ranking.</p>
+              <div class='step-media'><div class='scphone'><div class='scphone-screen'><div class='scphone-island'></div><img class='scphone-img on' src='about-shots/cheer-demo.jpg' alt='Sass cheering a teammate on'></div></div></div>
+            </div>
+            <div class='pin-step'>
+              <span class='pin-num'>03 / 04</span><h3>The whole team, one place.</h3>
+              <p>Everybody on one roster, each player with their own card. You always know who is in it with you.</p>
+              <div class='step-media'><div class='scphone'><div class='scphone-screen'><div class='scphone-island'></div><img class='scphone-img on' src='about-shots/team-demo.jpg' alt='The team page: every player on one roster'></div></div></div>
+            </div>
+            <div class='pin-step'>
+              <span class='pin-num'>04 / 04</span><h3>Streaks keep it rolling.</h3>
+              <p>Train day after day and the streak climbs. Get hot enough and you are on fire, and the whole team feels it.</p>
+              <div class='step-media'><div class='scphone'><div class='scphone-screen'><div class='scphone-island'></div><img class='scphone-img on' src='about-shots/streak-demo.jpg' alt='A player on a 21 day streak, on fire'></div></div></div>
+            </div>
+          </div></div>
+        </div>
+      </div>
     </div>
   </div>
 </div></section>
 
 <!-- COACHES -->
-<section><div class='wrap'>
-  <p class='eyebrow'>For coaches</p>
-  <h2 class='sec'>Run it from your phone.</h2>
-  <div class='teampart'>
-    <div class='teampart-text'>
-      <p class='lead'>You set what the team works on. Thwap runs it for everyone and shows you who is training and who needs a nudge.</p>
-      <ul class='coachlist'>
-        <li><b>Pick the drills and the weekly cadence.</b> Choose what the team trains and which days are on, rest, or game day.</li>
-        <li><b>Build each player an IDP.</b> An Individual Development Plan, one focus to work on, set from the 10U skill presets.</li>
-      </ul>
-      <p class='coachnote'><b>The team plan is yours. The game-day goals are theirs.</b> Built for a 10U team, dead simple, not a spreadsheet.</p>
-    </div>
-    <div class='teampart-visual'>
-      <div class='shot'><img src='about-shots/coach-demo.jpg' alt='The coach view: the whole team at a glance, who trained this week'></div>
-      <p class='shot-cap'>Your team at a glance.</p>
+<section class='sec-coach'><div class='wrap'>
+  <div class='pin coach' style='--steps:3'>
+    <div class='pin-card'>
+      <div class='pin-stage'>
+        <div class='pin-head'>
+          <p class='eyebrow'>For coaches</p>
+          <h2 class='sec'>Run it from your phone.</h2>
+        </div>
+        <div class='pin-body'>
+          <div class='pin-phone'>
+            <div class='scphone'><div class='scphone-screen'><div class='scphone-island'></div>
+              <img class='scphone-img on' src='about-shots/coach-demo.jpg' alt=''>
+              <img class='scphone-img' src='about-shots/coach-plan.jpg' alt=''>
+              <img class='scphone-img' src='about-shots/coach-focus.jpg' alt=''>
+            </div></div>
+          </div>
+          <div class='pin-text'><div class='pin-steps'>
+            <div class='pin-step on'>
+              <span class='pin-num'>01 / 03</span><h3>See who trained.</h3>
+              <p>Your team at a glance: who put in the work this week and who needs a nudge.</p>
+              <div class='step-media'><div class='scphone'><div class='scphone-screen'><div class='scphone-island'></div><img class='scphone-img on' src='about-shots/coach-demo.jpg' alt='The coach home, the team at a glance'></div></div></div>
+            </div>
+            <div class='pin-step'>
+              <span class='pin-num'>02 / 03</span><h3>Set the week.</h3>
+              <p>Pick the drills and the cadence, and mark each skill required or optional. The plan runs itself for every player.</p>
+              <div class='step-media'><div class='scphone'><div class='scphone-screen'><div class='scphone-island'></div><img class='scphone-img on' src='about-shots/coach-plan.jpg' alt='The coach Weekly Plan, each day set to the drills the team trains'></div></div></div>
+            </div>
+            <div class='pin-step'>
+              <span class='pin-num'>03 / 03</span><h3>Give every player a focus.</h3>
+              <p>Build each kid an IDP, one focus to work on, set from the 10U skill presets. The team plan is yours; the game-day goals are theirs.</p>
+              <div class='step-media'><div class='scphone'><div class='scphone-screen'><div class='scphone-island'></div><img class='scphone-img on' src='about-shots/coach-focus.jpg' alt='A player focus, the coach sets one IDP per player'></div></div></div>
+            </div>
+          </div></div>
+        </div>
+      </div>
     </div>
   </div>
 </div></section>
@@ -275,6 +355,41 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
     document.addEventListener('click',function(e){if(!menu.hidden&&!menu.contains(e.target)&&e.target!==kebab)closeM();});
     document.addEventListener('keydown',function(e){if(e.key==='Escape')closeM();});
   }
+})();
+</script>
+<script>/* Pinned crossfade (beatflyfishing "built for the water"): the dark card pins while
+   the heading stays; scroll progress through the tall section crossfades the phone
+   screen and the step text. Desktop only -- mobile stacks each step with its phone. */
+(function(){
+  var pins=[].slice.call(document.querySelectorAll('.pin'));
+  if(!pins.length) return;
+  var mq=window.matchMedia('(min-width:900px)');
+  function setActive(pin, idx){
+    var steps=pin.querySelectorAll('.pin-text .pin-step');
+    var imgs=pin.querySelectorAll('.pin-phone .scphone-img');
+    var i;
+    for(i=0;i<steps.length;i++) steps[i].classList.toggle('on', i===idx);
+    for(i=0;i<imgs.length;i++) imgs[i].classList.toggle('on', i===idx);
+  }
+  function update(){
+    var desktop=mq.matches, vh=window.innerHeight;
+    pins.forEach(function(pin){
+      var n=parseInt(pin.style.getPropertyValue('--steps'),10)||pin.querySelectorAll('.pin-text .pin-step').length;
+      if(!desktop){ setActive(pin, 0); return; }
+      var rect=pin.getBoundingClientRect();
+      var total=pin.offsetHeight - vh;
+      var p = total>0 ? (-rect.top)/total : 0;
+      if(p<0)p=0; if(p>0.99999)p=0.99999;
+      var idx=Math.floor(p*n); if(idx<0)idx=0; if(idx>n-1)idx=n-1;
+      setActive(pin, idx);
+    });
+  }
+  var ticking=false;
+  function onScroll(){ if(!ticking){ ticking=true; requestAnimationFrame(function(){ update(); ticking=false; }); } }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('resize', onScroll);
+  if(mq.addEventListener) mq.addEventListener('change', onScroll);
+  update();
 })();
 </script>
 </body></html>
