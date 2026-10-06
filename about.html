@@ -53,6 +53,15 @@ header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 8
 .btn-ghost{background:transparent;color:var(--text);border:1.5px solid var(--line)}
 .btn-ghost:hover{border-color:var(--green)}
 .btn-sm{min-height:40px;padding:9px 14px;font-size:13px;border-radius:11px}
+/* iOS-glass back button (replaces the wordmark in the header) */
+.backglass{display:inline-flex;align-items:center;gap:3px;height:40px;padding:0 16px 0 11px;border-radius:999px;font-size:15px;font-weight:800;color:var(--text);text-decoration:none;cursor:pointer;background:color-mix(in srgb,var(--panel) 60%,transparent);border:1px solid color-mix(in srgb,var(--text) 12%,transparent);backdrop-filter:saturate(180%) blur(14px);-webkit-backdrop-filter:saturate(180%) blur(14px);white-space:nowrap}
+.backglass:hover{background:color-mix(in srgb,var(--panel) 82%,transparent)}
+.backglass svg{margin-top:0}
+/* footer sound toggle (matches the app) */
+.sfxtoggle{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:999px;cursor:pointer;font-family:inherit;padding:0}
+.sfxtoggle:hover{border-color:var(--line2)}
+.sfxtoggle:active{transform:scale(.95)}
+.sfxtoggle.off{color:var(--muted)}
 
 /* section rhythm */
 section{padding:clamp(60px,10vw,96px) 0}
@@ -145,6 +154,13 @@ h2.sec{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:clamp(26
 .lb[hidden]{display:none}
 .lb-img{max-width:min(90vw,440px);max-height:92vh;width:auto;border-radius:36px;box-shadow:0 40px 90px rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.14)}
 .lb-close{position:absolute;top:20px;right:20px;width:46px;height:46px;border-radius:999px;background:#fff;color:#15221B;border:0;font-size:22px;line-height:1;cursor:pointer;font-family:inherit}
+/* origin / closer: a centered, text-only sign-off (the footer wordmark finishes it) */
+.origin{text-align:center}
+.origin .wrap{max-width:780px}
+.origin-rule{width:46px;height:4px;border-radius:999px;background:var(--lime);margin:0 auto 24px}
+.origin .eyebrow{margin-bottom:14px}
+.origin .sec{font-size:clamp(30px,6vw,48px);line-height:1.04;margin:0 auto 18px;max-width:18ch}
+.origin .lead{max-width:56ch;margin:0 auto}
 
 /* safety list */
 .safe{display:grid;grid-template-columns:1fr;gap:16px;margin-top:8px}
@@ -191,8 +207,7 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
 <body>
 
 <header><div class='wrap hdr'>
-  <img class='hdr-mark light-only' src='wordmark-tm-light.svg' alt='Thwap Hockey'>
-  <img class='hdr-mark dark-only' src='wordmark-tm-dark.svg' alt='Thwap Hockey'>
+  <a class='backglass' id='backBtn' href='/' aria-label='Back to Thwap'><svg width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M15 18l-6-6 6-6'/></svg> Back</a>
   <nav class='hdr-nav'>
     <a class='navlink' href='/'>Sign in</a>
     <a class='btn btn-primary btn-sm' href='/'>Join waitlist</a>
@@ -202,9 +217,8 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
 <!-- HERO -->
 <section class='hero'><div class='wrap'><div class='hero-grid'>
   <div>
-    <p class='eyebrow'>Vancouver Jr. Rangers 10U</p>
-    <h1>Train at home. <span class='acc'>Be a problem to play against.</span></h1>
-    <p class='sub'>Thwap is a young player's hockey world, with the whole team pulling the same way.</p>
+    <h1>Great players are made <span class='acc'>at home.</span></h1>
+    <p class='sub'>Thwap turns hands, shooting, and dryland into a few minutes a day a kid actually wants to do, with the whole team in it together.</p>
   </div>
   <img class='hero-sass' src='about-shots/mascot-hero.webp?v=3' alt='Sass, the Thwap Hockey mascot'>
 </div></div></section>
@@ -314,7 +328,8 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
 </div></section>
 
 <!-- ORIGIN -->
-<section class='band'><div class='wrap'>
+<section class='band origin'><div class='wrap'>
+  <div class='origin-rule' aria-hidden='true'></div>
   <p class='eyebrow'>Who made it</p>
   <h2 class='sec'>Built by a kid who actually plays.</h2>
   <p class='lead'>A player on the Jr. Rangers 10U helped design, build, and test every drill, every detail. The idea was simple: home training a kid actually wants to use. Made by someone who plays, for everyone who does.</p>
@@ -325,6 +340,7 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
   <div class='footer'>
     <span class='slogan'>Compete. Improve. Have fun.</span>
     <div class='footer-actions'>
+      <button class='sfxtoggle' id='sfxToggle' type='button' aria-label='Mute sounds' title='Mute sounds'></button>
       <button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button>
       <div class='footmenu-wrap'>
         <button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button>
@@ -416,6 +432,23 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
   lbClose.addEventListener('click',closeLB);
   lb.addEventListener('click',function(e){ if(e.target===lb) closeLB(); });
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!lb.hidden) closeLB(); });
+})();
+</script>
+<script>/* Back button (to the splash / previous screen) + footer sound toggle (shared thwapSfxOn). */
+(function(){
+  var b=document.getElementById('backBtn');
+  if(b){ b.addEventListener('click',function(e){
+    try{ var ref=document.referrer||''; if(history.length>1 && ref && new URL(ref).origin===location.origin){ e.preventDefault(); history.back(); } }catch(err){}
+  }); }
+  var sfx=document.getElementById('sfxToggle');
+  if(sfx){
+    var SPK="<svg viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M11 5 6 9H2v6h4l5 4V5z'/><path d='M15.5 8.5a5 5 0 0 1 0 7'/><path d='M18.5 5.5a9 9 0 0 1 0 13'/></svg>";
+    var OFF="<svg viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M11 5 6 9H2v6h4l5 4V5z'/><line x1='23' y1='9' x2='17' y2='15'/><line x1='17' y1='9' x2='23' y2='15'/></svg>";
+    function on(){ try{ return localStorage.getItem('thwapSfxOn')!=='0'; }catch(e){ return true; } }
+    function paint(){ var o=on(); sfx.innerHTML=o?SPK:OFF; sfx.setAttribute('aria-pressed',o?'true':'false'); sfx.setAttribute('aria-label',o?'Mute sounds':'Unmute sounds'); sfx.title=o?'Mute sounds':'Unmute sounds'; sfx.classList.toggle('off',!o); }
+    sfx.addEventListener('click',function(e){ e.stopPropagation(); var next=!on(); try{ localStorage.setItem('thwapSfxOn', next?'1':'0'); }catch(err){} paint(); });
+    paint();
+  }
 })();
 </script>
 </body></html>
