@@ -25,7 +25,7 @@
       ]
     },
     {
-      "source": "/(index|admin|hockey_game_goals).html",
+      "source": "/(index|admin|hockey_game_goals|about).html",
       "headers": [
         { "key": "Cache-Control", "value": "no-store" }
       ]
