@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Thwap Hockey</string>
+    <string name="title_activity_main">Thwap Hockey</string>
+    <string name="package_name">com.thwaphockey.app</string>
+    <string name="custom_url_scheme">com.thwaphockey.app</string>
+</resources>
