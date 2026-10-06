@@ -28,91 +28,95 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0}
+html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:'Nunito Sans',system-ui,sans-serif;font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased}
 .wrap{max-width:1100px;margin:0 auto;padding:0 20px}
 a{color:var(--green)}
-.display{font-family:'Archivo Black',system-ui,sans-serif;font-weight:400;line-height:1.02;letter-spacing:-.01em}
 .acc{color:var(--accent)}
 
 /* header */
-header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid color-mix(in srgb,var(--line) 45%,transparent)}
-.hdr{display:flex;align-items:center;justify-content:space-between;min-height:62px;gap:12px}
-.hdr-mark{height:40px;width:auto;display:block}
+header{position:sticky;top:0;z-index:30;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid color-mix(in srgb,var(--line) 45%,transparent)}
+.hdr{display:flex;align-items:center;justify-content:space-between;min-height:62px;gap:10px}
+.hdr-left{display:flex;align-items:center;gap:12px;min-width:0}
+.hdr-mark{height:34px;width:auto;display:block}
+.backbtn{display:inline-flex;align-items:center;gap:6px;font-weight:800;font-size:14px;color:var(--text);text-decoration:none;padding:8px 14px;border-radius:999px;border:1.5px solid var(--line);min-height:40px;white-space:nowrap}
+.backbtn:hover{border-color:var(--green);background:var(--soft)}
 .hdr-nav{display:flex;align-items:center;gap:8px}
 .navlink{font-weight:800;font-size:14px;color:var(--text);text-decoration:none;padding:10px 12px;border-radius:10px;min-height:44px;display:inline-flex;align-items:center}
 .navlink:hover{background:var(--soft)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:13px 20px;border-radius:14px;font-family:'Nunito Sans',sans-serif;font-weight:900;font-size:15px;text-decoration:none;cursor:pointer;border:0}
 .btn-primary{background:var(--accent);color:var(--accent-on)}
 .btn-primary:hover{filter:brightness(1.04)}
-.btn-ghost{background:transparent;color:var(--text);border:1.5px solid var(--line)}
-.btn-ghost:hover{border-color:var(--green)}
 .btn-sm{min-height:40px;padding:9px 14px;font-size:13px;border-radius:11px}
+@media(max-width:600px){ .hdr-mark{display:none} .navlink{padding:8px 8px} }
 
-/* section rhythm */
-section{padding:clamp(60px,10vw,96px) 0}
+/* section rhythm (one consistent background; whitespace separates) */
+section{padding:clamp(56px,9vw,92px) 0}
 .eyebrow{font-weight:900;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--green);margin:0 0 12px}
 .lead{font-size:19px;color:var(--muted);max-width:46ch;margin:0}
-h2.sec{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:clamp(26px,5vw,38px);margin:0 0 18px;line-height:1.05}
+h2.sec{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:clamp(26px,5vw,38px);margin:0 0 16px;line-height:1.05}
+.secintro{max-width:620px}
 
 /* hero */
-.hero{padding:clamp(34px,6vw,56px) 0 clamp(46px,9vw,76px)}
-.hero-grid{display:grid;grid-template-columns:1fr;gap:18px;align-items:center}
-.hero-sass{width:clamp(180px,52vw,300px);height:auto;display:block}
+.hero{padding:clamp(30px,6vw,52px) 0 clamp(40px,8vw,68px)}
+.hero-grid{display:grid;grid-template-columns:1fr;gap:16px;align-items:center}
+.hero-sass{width:clamp(200px,56vw,320px);height:auto;display:block}
 .hero h1{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:clamp(34px,8.5vw,64px);line-height:1.0;margin:6px 0 16px;letter-spacing:-.01em}
-.hero .sub{font-size:18px;color:var(--muted);max-width:40ch;margin:0 0 24px}
-.hero-cta{display:flex;flex-wrap:wrap;gap:12px}
+.hero .sub{font-size:18px;color:var(--muted);max-width:40ch;margin:0}
 @media(min-width:760px){
   .hero-grid{grid-template-columns:1.1fr .9fr;gap:40px}
-  .hero-sass{width:min(380px,40vw);margin-left:auto}
+  .hero-sass{width:min(400px,42vw);margin-left:auto}
 }
 
-/* "what a kid does" blocks + phone */
+/* "what a kid does" */
 .kid-grid{display:grid;grid-template-columns:1fr;gap:34px;align-items:center}
 .blocks{display:flex;flex-direction:column;gap:22px}
 .block{display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:start}
 .block .ic{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;font-size:22px;background:var(--soft)}
 .block h3{margin:2px 0 4px;font-size:18px;font-weight:900}
 .block p{margin:0;color:var(--muted);font-size:15.5px}
-.phone{position:relative;justify-self:center;width:300px;max-width:92vw;background:#101012;border-radius:48px;padding:11px;box-shadow:0 30px 60px var(--shadow),0 0 0 2px #2a2a2e,0 0 0 3px #000}
-.phone-screen{position:relative;width:278px;height:592px;border-radius:38px;overflow:hidden;background:#F3F7F4}
+.kid-media{display:flex;flex-direction:column;align-items:center}
+.phone{position:relative;width:300px;max-width:92vw;background:#101012;border-radius:48px;padding:11px;box-shadow:0 30px 60px var(--shadow),0 0 0 2px #2a2a2e,0 0 0 3px #000}
+.phone-screen{position:relative;width:278px;max-width:calc(92vw - 22px);height:592px;border-radius:38px;overflow:hidden;background:#F3F7F4}
 .phone-status{position:absolute;top:0;left:0;right:0;height:32px;background:#F3F7F4;z-index:2}
 .phone-island{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:92px;height:26px;background:#000;border-radius:999px;z-index:3;pointer-events:none}
 .phone-frame{position:absolute;top:32px;left:0;width:375px;height:755px;border:0;transform:scale(.7413);transform-origin:top left;background:#F3F7F4}
-.phone-cap{margin-top:14px;text-align:center;font-size:13px;font-weight:800;color:var(--muted)}
+.phone-cap{margin-top:16px;text-align:center;font-size:13px;font-weight:800;color:var(--muted)}
 .phone::after{content:'';position:absolute;right:-3px;top:150px;width:3px;height:58px;background:#2a2a2e;border-radius:0 2px 2px 0}
 .phone::before{content:'';position:absolute;left:-3px;top:116px;width:3px;height:38px;background:#2a2a2e;border-radius:2px 0 0 2px;box-shadow:0 52px 0 #2a2a2e}
 @media(min-width:760px){.kid-grid{grid-template-columns:1fr 1fr;gap:48px}}
 
-/* team band */
-.band{background:var(--panel)}
-.teampart{display:grid;grid-template-columns:1fr;gap:28px;align-items:center;margin-top:34px}
-.teampart-visual{justify-self:center}
-.shot{width:100%;max-width:280px;border-radius:30px;overflow:hidden;box-shadow:0 22px 48px var(--shadow);border:1px solid var(--line);background:#F3F7F4}
-.shot img{width:100%;display:block}
-.shot-cap{margin:12px auto 0;max-width:280px;text-align:center;font-size:13px;font-weight:700;color:var(--muted)}
-.teamh3{font-size:21px;font-weight:900;margin:0 0 10px}
-.teamcheer{font-size:17px;color:var(--muted);max-width:46ch;line-height:1.5;margin:0}
-@media(min-width:760px){
-  .teampart{grid-template-columns:1fr 1fr;gap:52px}
-  .teampart.reverse .teampart-text{order:2}
-  .teampart.reverse .teampart-visual{order:1}
+/* a phone that holds a still screenshot (scrollytelling) */
+.sphone{width:100%;max-width:290px;margin:0 auto;background:#101012;border-radius:42px;padding:10px;box-shadow:0 28px 56px var(--shadow),0 0 0 2px #2a2a2e,0 0 0 3px #000}
+.sphone-screen{position:relative;border-radius:32px;overflow:hidden;background:#F3F7F4;aspect-ratio:375/812}
+.sphone-screen img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;display:block;transition:opacity .25s ease}
+.sphone-island{position:absolute;top:3.1%;left:50%;transform:translateX(-50%);width:30%;height:3%;background:#000;border-radius:999px;z-index:2}
+
+/* scrollytelling feature sections */
+.scrolly-intro{margin-bottom:8px}
+.scrolly-grid{display:grid;grid-template-columns:1fr;gap:20px}
+.scrolly-media{display:none}
+.scrolly-steps{display:flex;flex-direction:column;gap:46px}
+.scrolly-step{display:flex;flex-direction:column;gap:18px}
+.scrolly-step .step-media{display:block}
+.scrolly-step h3{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:clamp(22px,4.4vw,30px);line-height:1.08;margin:0}
+.scrolly-step p{font-size:17px;color:var(--muted);max-width:42ch;margin:0;line-height:1.5}
+.scrolly-step .step-media .sphone{max-width:270px}
+@media(min-width:880px){
+  .scrolly-grid{grid-template-columns:clamp(260px,30vw,300px) 1fr;gap:clamp(48px,6vw,88px);align-items:start}
+  .scrolly-media{display:block;position:sticky;top:calc(50vh - 300px);align-self:start}
+  .scrolly-steps{gap:0}
+  .scrolly-step{min-height:78vh;justify-content:center;opacity:.35;transition:opacity .4s ease}
+  .scrolly-step.is-active{opacity:1}
+  .scrolly-step .step-media{display:none}
 }
 
-/* safety list */
-.safe{display:grid;grid-template-columns:1fr;gap:16px;margin-top:8px}
-.safe .item{display:grid;grid-template-columns:26px 1fr;gap:12px;align-items:start}
-.safe .ck{color:var(--green);font-weight:900;font-size:18px;line-height:1.3}
-.safe p{margin:0;font-size:16px}
-.safe b{font-weight:900}
-@media(min-width:680px){.safe{grid-template-columns:1fr 1fr;gap:18px 32px}}
-
-/* coach / origin */
-.coachlist{list-style:none;margin:22px 0 0;padding:0;display:flex;flex-direction:column;gap:18px;max-width:640px}
-.coachlist li{position:relative;padding-left:26px;font-size:16px;color:var(--muted);line-height:1.5}
-.coachlist li b{display:block;color:var(--text);font-weight:900;font-size:17px;margin-bottom:2px}
-.coachlist li::before{content:'';position:absolute;left:0;top:7px;width:11px;height:11px;border-radius:50%;background:var(--accent)}
-.coachnote{margin-top:24px;font-size:16px}
-.coachnote b{font-weight:900;color:var(--text)}
+/* who made it (centered closer) */
+.closer{text-align:center}
+.closer .rule{width:46px;height:4px;border-radius:999px;background:var(--accent);margin:0 auto 20px}
+.closer h2{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:clamp(28px,6vw,46px);line-height:1.04;margin:0 auto 18px;max-width:16ch}
+.closer p{font-size:19px;color:var(--muted);max-width:52ch;margin:0 auto}
+.closer-sass{width:clamp(130px,30vw,180px);height:auto;display:block;margin:28px auto 0}
 
 /* footer (matches the app footer) */
 footer{border-top:1px solid color-mix(in srgb,var(--line) 45%,transparent)}
@@ -129,13 +133,14 @@ footer{border-top:1px solid color-mix(in srgb,var(--line) 45%,transparent)}
 .footmenu[hidden]{display:none}
 .footmenu-item{display:block;padding:10px 12px;border-radius:9px;color:var(--text);font-size:14px;font-weight:800;cursor:pointer;text-align:left;text-decoration:none}
 .footmenu-item:hover{background:var(--bg2)}
-.trademark{text-align:center;padding:6px 4px 30px}
-.trademark-mark{height:72px;width:auto;object-fit:contain;display:inline-block;opacity:.9}
+.trademark{text-align:center;padding:10px 4px 32px}
+.trademark-mark{height:72px;width:auto;object-fit:contain;display:block;margin:0 auto;opacity:.92}
 .light-only{display:block}
 .dark-only{display:none}
 @media (prefers-color-scheme: dark){:root:not([data-theme='light']) .light-only{display:none}:root:not([data-theme='light']) .dark-only{display:block}}
 :root[data-theme='dark'] .light-only{display:none}
 :root[data-theme='dark'] .dark-only{display:block}
+@media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto} .sphone-screen img{transition:none} .scrolly-step{transition:none} }
 </style>
 <script>/* Apply saved theme early (no flash), same key as the app. */
 try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thwapTheme')||'light');}catch(e){document.documentElement.setAttribute('data-theme','light');}</script>
@@ -143,8 +148,11 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
 <body>
 
 <header><div class='wrap hdr'>
-  <img class='hdr-mark light-only' src='wordmark-tm-light.svg' alt='Thwap Hockey'>
-  <img class='hdr-mark dark-only' src='wordmark-tm-dark.svg' alt='Thwap Hockey'>
+  <div class='hdr-left'>
+    <a class='backbtn' href='/'><span aria-hidden='true'>&#8592;</span> Back</a>
+    <img class='hdr-mark light-only' src='wordmark-tm-light.svg' alt='Thwap Hockey'>
+    <img class='hdr-mark dark-only' src='wordmark-tm-dark.svg' alt='Thwap Hockey'>
+  </div>
   <nav class='hdr-nav'>
     <a class='navlink' href='/'>Sign in</a>
     <a class='btn btn-primary btn-sm' href='/'>Join waitlist</a>
@@ -158,7 +166,7 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
     <h1>Train at home. <span class='acc'>Be a problem to play against.</span></h1>
     <p class='sub'>Thwap is a young player's hockey world, with the whole team pulling the same way.</p>
   </div>
-  <img class='hero-sass' src='about-shots/mascot-hero.webp?v=2' alt='Sass, the Thwap Hockey mascot'>
+  <img class='hero-sass' src='about-shots/mascot-hero.webp?v=3' alt='Sass, the Thwap Hockey mascot'>
 </div></div></section>
 
 <!-- WHAT A KID DOES -->
@@ -172,63 +180,78 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
       <div class='block'><div class='ic'>⭐</div><div><h3>Build your card</h3><p>Every bit of training fills your player card and earns stickers. Your hockey, your card.</p></div></div>
     </div>
   </div>
-  <div>
+  <div class='kid-media'>
     <div class='phone'><div class='phone-screen'><div class='phone-status'></div><iframe class='phone-frame' src='/?demo=1' title='Live Thwap demo on the Demo Team' loading='lazy'></iframe><div class='phone-island'></div></div></div>
     <p class='phone-cap'>Live demo. Tap around, it really works.</p>
   </div>
 </div></div></section>
 
-<!-- TEAM -->
-<section class='band'><div class='wrap'>
-  <p class='eyebrow'>How the team wins together</p>
-  <h2 class='sec'>Everybody fills the same bar.</h2>
-  <div class='teampart'>
-    <div class='teampart-text'>
-      <p class='lead'>Every drill anybody on the team does adds to one team total. The more everyone trains, the higher the whole team climbs together.</p>
-    </div>
-    <div class='teampart-visual'>
-      <div class='shot'><img src='about-shots/standings-demo.jpg' alt='Team Standings: one shared total with every player adding to it'></div>
-      <p class='shot-cap'>One team total. Everyone adds to it.</p>
-    </div>
+<!-- TEAM (scrollytelling) -->
+<section class='scrolly'><div class='wrap'>
+  <div class='scrolly-intro secintro'>
+    <p class='eyebrow'>How the team wins together</p>
+    <h2 class='sec'>The whole team pulls the same way.</h2>
   </div>
-  <div class='teampart reverse'>
-    <div class='teampart-text'>
-      <h3 class='teamh3'>Teammates hype each other up.</h3>
-      <p class='teamcheer'>Send a cheer when somebody puts in the work, or call a teammate on fire when they are rolling. Support, never a ranking.</p>
+  <div class='scrolly-grid'>
+    <div class='scrolly-media'>
+      <div class='sphone'><div class='sphone-screen'><img class='scrolly-shot' src='about-shots/standings-demo.jpg' alt=''><div class='sphone-island'></div></div></div>
     </div>
-    <div class='teampart-visual'>
-      <div class='shot'><img src='about-shots/cheer-demo.jpg' alt='Sass pops in with a speech bubble cheering a teammate on'></div>
-      <p class='shot-cap'>A cheer lands like this.</p>
-    </div>
-  </div>
-</div></section>
-
-<!-- COACHES -->
-<section><div class='wrap'>
-  <p class='eyebrow'>For coaches</p>
-  <h2 class='sec'>Run it from your phone.</h2>
-  <div class='teampart'>
-    <div class='teampart-text'>
-      <p class='lead'>You set what the team works on. Thwap runs it for everyone and shows you who is training and who needs a nudge.</p>
-      <ul class='coachlist'>
-        <li><b>Pick the drills and the weekly cadence.</b> Choose what the team trains and which days are on, rest, or game day.</li>
-        <li><b>Build each player an IDP.</b> An Individual Development Plan, one focus to work on, set from the 10U skill presets.</li>
-      </ul>
-      <p class='coachnote'><b>The team plan is yours. The game-day goals are theirs.</b> Built for a 10U team, dead simple, not a spreadsheet.</p>
-    </div>
-    <div class='teampart-visual'>
-      <div class='shot'><img src='about-shots/coach-demo.jpg' alt='The coach view: the whole team at a glance, who trained this week'></div>
-      <p class='shot-cap'>Your team at a glance.</p>
+    <div class='scrolly-steps'>
+      <div class='scrolly-step is-active' data-src='about-shots/standings-demo.jpg'>
+        <div class='step-media'><div class='sphone'><div class='sphone-screen'><img src='about-shots/standings-demo.jpg' alt='Team Standings: one shared total everyone adds to'><div class='sphone-island'></div></div></div></div>
+        <div>
+          <h3>Everybody fills the same bar.</h3>
+          <p>Every drill anybody on the team does adds to one team total. The more everyone trains, the higher the whole team climbs together.</p>
+        </div>
+      </div>
+      <div class='scrolly-step' data-src='about-shots/cheer-demo.jpg'>
+        <div class='step-media'><div class='sphone'><div class='sphone-screen'><img src='about-shots/cheer-demo.jpg' alt='Sass pops in with a speech bubble cheering a teammate on'><div class='sphone-island'></div></div></div></div>
+        <div>
+          <h3>Teammates hype each other up.</h3>
+          <p>Send a cheer when somebody puts in the work, or call a teammate on fire when they are rolling. Support, never a ranking.</p>
+        </div>
+      </div>
     </div>
   </div>
 </div></section>
 
-<!-- ORIGIN -->
-<section class='band'><div class='wrap'>
+<!-- COACHES (scrollytelling) -->
+<section class='scrolly'><div class='wrap'>
+  <div class='scrolly-intro secintro'>
+    <p class='eyebrow'>For coaches</p>
+    <h2 class='sec'>Run it from your phone.</h2>
+  </div>
+  <div class='scrolly-grid'>
+    <div class='scrolly-media'>
+      <div class='sphone'><div class='sphone-screen'><img class='scrolly-shot' src='about-shots/coach-demo.jpg' alt=''><div class='sphone-island'></div></div></div>
+    </div>
+    <div class='scrolly-steps'>
+      <div class='scrolly-step is-active' data-src='about-shots/coach-demo.jpg'>
+        <div class='step-media'><div class='sphone'><div class='sphone-screen'><img src='about-shots/coach-demo.jpg' alt='The coach view: the whole team at a glance'><div class='sphone-island'></div></div></div></div>
+        <div>
+          <h3>See your whole team at a glance.</h3>
+          <p>Who trained this week, who is leading, and who needs a nudge. The whole roster on one screen, straight from your phone.</p>
+        </div>
+      </div>
+      <div class='scrolly-step' data-src='about-shots/coach-plan.jpg'>
+        <div class='step-media'><div class='sphone'><div class='sphone-screen'><img src='about-shots/coach-plan.jpg' alt='The coach weekly plan: pick drills, cadence, and the team goal'><div class='sphone-island'></div></div></div></div>
+        <div>
+          <h3>Set the plan and each player's focus.</h3>
+          <p>Pick the drills and the weekly cadence, set the team's game-day goal, and give each player an IDP, their one focus to work on. Built for a 10U team, not a spreadsheet.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<!-- WHO MADE IT (closer) -->
+<section><div class='wrap'><div class='closer'>
   <p class='eyebrow'>Who made it</p>
-  <h2 class='sec'>Built by a player. Not by crazy hockey parents.</h2>
-  <p class='lead'>A kid on the Jr. Rangers 10U helped design it, build it, and test it. Made by someone who plays, for everyone who does.</p>
-</div></section>
+  <div class='rule'></div>
+  <h2>Built by a player. <span class='acc'>Not by crazy hockey parents.</span></h2>
+  <p>A kid on the Jr. Rangers 10U helped design it, build it, and test it. Made by someone who plays, for everyone who does.</p>
+  <img class='closer-sass' src='about-shots/mascot-hero.webp?v=3' alt=''>
+</div></div></section>
 
 <!-- FOOTER (matches the app footer) -->
 <footer><div class='wrap'>
@@ -249,6 +272,24 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
 </div></footer>
 
 <script>
+/* Scrollytelling: as each step crosses the middle, pin-swap the sticky phone
+   and highlight that step. Graceful fallback: first step is active, its shot
+   shows, and on mobile each step carries its own inline phone. */
+(function(){
+  var steps=[].slice.call(document.querySelectorAll('.scrolly-step'));
+  if(!steps.length||!('IntersectionObserver' in window)) return;
+  var io=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      var step=e.target, sec=step.closest('.scrolly'); if(!sec) return;
+      sec.querySelectorAll('.scrolly-step').forEach(function(s){ s.classList.toggle('is-active', s===step); });
+      var img=sec.querySelector('.scrolly-media .scrolly-shot'), src=step.getAttribute('data-src');
+      if(img&&src&&img.getAttribute('src')!==src) img.setAttribute('src',src);
+    });
+  },{rootMargin:'-48% 0px -48% 0px',threshold:0});
+  steps.forEach(function(s){ io.observe(s); });
+})();
+
 /* Footer theme toggle + overflow menu, matching the app footer. */
 (function(){
   var KEY='thwapTheme';
