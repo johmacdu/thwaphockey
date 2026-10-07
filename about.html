@@ -149,6 +149,35 @@ h2.sec{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:clamp(26
   .scphone-img{opacity:0;transition:opacity .45s ease}
   .scphone-img.on{opacity:1}
 }
+/* MOBILE pinned-crossfade parallax (beatflyfishing "built for the water" on phones):
+   below 900px the section becomes a tall scroll track whose inner card PINS to the top
+   (position:sticky; height:100svh) and the phone screen + step text crossfade by scroll
+   progress, exactly like desktop but stacked (text under the phone). The per-step
+   .step-media phones are hidden; the shared .pin-phone crossfades instead. */
+@media(max-width:899px) and (min-height:600px){
+  /* tall scroll track; the sticky card pins to the top for 100svh per step */
+  .pin:not(.reduce){height:calc(var(--steps,3) * 100vh)}
+  .pin:not(.reduce) .pin-sticky{position:sticky;top:0;height:100svh;display:flex;flex-direction:column;justify-content:center;padding:76px 0 18px}
+  .pin:not(.reduce) .pin-head{margin-bottom:12px;flex:0 0 auto}
+  .pin:not(.reduce) .pin-card{margin-top:0;flex:1 1 auto;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+  /* phone (top, large fixed share) + text (bottom, compact fixed share) */
+  .pin:not(.reduce) .pin-body{position:relative;display:flex;flex-direction:column;align-items:stretch;gap:14px;min-height:0;flex:1 1 auto}
+  .pin:not(.reduce) .pin-phone{display:flex;align-items:center;justify-content:center;flex:1 1 auto;min-height:0;width:100%}
+  .pin:not(.reduce) .pin-phone .scphone{height:100%;max-height:100%;width:auto;aspect-ratio:258/560;cursor:zoom-in}
+  .pin:not(.reduce) .pin-phone .scphone-screen{aspect-ratio:auto;height:100%}
+  .pin:not(.reduce) .pin-phone .scphone-img{opacity:0;transition:opacity .45s ease}
+  .pin:not(.reduce) .pin-phone .scphone-img.on{opacity:1}
+  /* each step crossfades in place; a FIXED height block keeps the two mid-fade
+     steps from bleeding into each other and reserves room for the longest copy */
+  .pin:not(.reduce) .pin-text{position:relative;width:100%;flex:0 0 auto;height:168px}
+  .pin:not(.reduce) .pin-steps{position:relative;height:100%}
+  .pin:not(.reduce) .pin-step{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-start;opacity:0;transition:opacity .45s ease;padding:0;overflow:hidden}
+  .pin:not(.reduce) .pin-step.on{opacity:1}
+  .pin:not(.reduce) .pin-step .pin-num{margin-bottom:6px}
+  .pin:not(.reduce) .pin-step h3{font-size:clamp(19px,5.6vw,24px);margin-bottom:7px}
+  .pin:not(.reduce) .pin-step p{max-width:none;font-size:15px;line-height:1.42}
+  .pin:not(.reduce) .pin-step .step-media{display:none}   /* use the shared crossfading phone */
+}
 /* tap-to-enlarge lightbox */
 .lb{position:fixed;inset:0;z-index:120;background:rgba(10,16,12,.9);display:flex;align-items:center;justify-content:center;padding:28px;cursor:zoom-out}
 .lb[hidden]{display:none}
@@ -383,13 +412,23 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
   }
 })();
 </script>
-<script>/* Pinned crossfade (beatflyfishing "built for the water"): the dark card pins while
-   the heading stays; scroll progress through the tall section crossfades the phone
-   screen and the step text. Desktop only -- mobile stacks each step with its phone. */
+<script>/* Pinned crossfade (beatflyfishing "built for the water"): a tall scroll track pins
+   the card (position:sticky; height:100svh) while the phone screen and the step text
+   crossfade by scroll progress. Runs on BOTH mobile and desktop; the only difference
+   is layout (desktop side-by-side, mobile stacked). prefers-reduced-motion falls back
+   to the static stacked list (each step shows its own phone). */
 (function(){
   var pins=[].slice.call(document.querySelectorAll('.pin'));
   if(!pins.length) return;
-  var mq=window.matchMedia('(min-width:900px)');
+  var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  if(reduce){
+    // static fallback: tag each pin so the CSS drops the pinned track, show every step/phone.
+    pins.forEach(function(pin){
+      pin.classList.add('reduce');
+      [].forEach.call(pin.querySelectorAll('.pin-text .pin-step'),function(st){st.classList.add('on');});
+    });
+    return;
+  }
   function setActive(pin, idx){
     var steps=pin.querySelectorAll('.pin-text .pin-step');
     var imgs=pin.querySelectorAll('.pin-phone .scphone-img');
@@ -398,13 +437,15 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
     for(i=0;i<imgs.length;i++) imgs[i].classList.toggle('on', i===idx);
   }
   function update(){
-    var desktop=mq.matches, vh=window.innerHeight;
+    var vh=window.innerHeight;
     pins.forEach(function(pin){
       var n=parseInt(pin.style.getPropertyValue('--steps'),10)||pin.querySelectorAll('.pin-text .pin-step').length;
-      if(!desktop){ setActive(pin, 0); return; }
       var rect=pin.getBoundingClientRect();
       var total=pin.offsetHeight - vh;
-      var p = total>0 ? (-rect.top)/total : 0;
+      // When the track isn't taller than the viewport (very short screens), the CSS
+      // media query also bails, so just show the first step.
+      if(total<=0){ setActive(pin, 0); return; }
+      var p = (-rect.top)/total;
       if(p<0)p=0; if(p>0.99999)p=0.99999;
       var idx=Math.floor(p*n); if(idx<0)idx=0; if(idx>n-1)idx=n-1;
       setActive(pin, idx);
@@ -414,7 +455,6 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
   function onScroll(){ if(!ticking){ ticking=true; requestAnimationFrame(function(){ update(); ticking=false; }); } }
   window.addEventListener('scroll', onScroll, {passive:true});
   window.addEventListener('resize', onScroll);
-  if(mq.addEventListener) mq.addEventListener('change', onScroll);
   update();
 })();
 </script>
