@@ -8247,7 +8247,17 @@ function gate(){
   /* A coach has no kid home (today's plan). Land them on Team instead. */
   if(hasCoach && (location.hash===''||location.hash==='#home')){ location.hash='#coachhome'; return; }
   if(location.hash==='#login'){ show(); maybeSplash(); return; }
-  if(isAuthed() || hasCoach){ hide(); } else { show(); maybeSplash(); }
+  /* The About-page demo embed (an iframe) renders signed-in without writing the
+     shared auth cookie, so it skips ITS splash via this frame-scoped flag. The
+     top-level tab never sets it, so a Back-navigation out of /about correctly
+     shows the splash instead of inheriting the embed's demo session. */
+  var demoEmbed=false; try{ demoEmbed=!!window.__thwapDemoEmbed && window.THWAP_DEMO && window.THWAP_DEMO.isActive(); }catch(_){}
+  if(isAuthed() || hasCoach || demoEmbed){ hide(); return; }
+  /* Showing the splash at top level: clear any demo state the About-page embed
+     leaked into shared storage (thwapDemo flag + bfPlayer), so the splash is clean
+     and a later REAL sign-in does not inherit the demo team's cosmetics. */
+  try{ if(!demoEmbed && window.THWAP_DEMO && window.THWAP_DEMO.isActive()){ window.THWAP_DEMO.deactivate(); try{ localStorage.removeItem('bfPlayer'); }catch(_){} } }catch(_){}
+  show(); maybeSplash();
 }
 /* Header guest nav (shown when logged out): Sign In and Join Waitlist both play
    the THWAP! animation first, then open the requested sheet. */
