@@ -214,4 +214,42 @@ describe('api/billing', () => {
     const miss = await call({ method: 'POST', query: { action: 'portal' }, headers: {}, body: JSON.stringify({ code: 'NOSUB' }) });
     expect(miss.statusCode).toBe(404);
   });
+
+  it('webhook: invoice.upcoming emails a renewal heads-up via Resend', async () => {
+    const prevFetch = global.fetch;
+    const calls = [];
+    global.fetch = async (url, opts) => { calls.push({ url: String(url), opts }); return { ok: true, json: async () => ({ id: 'email_1' }) }; };
+    process.env.RESEND_API_KEY = 're_test';
+    process.env.PHOTO_FROM_EMAIL = 'hi@thwaphockey.com';
+    try {
+      const event = { type: 'invoice.upcoming', data: { object: { customer_email: 'coach@team.com', amount_due: 50000, next_payment_attempt: 1790000000 } } };
+      const res = await call({ method: 'POST', query: { action: 'webhook' }, headers: { 'stripe-signature': 'x' }, body: JSON.stringify(event) });
+      expect(res.statusCode).toBe(200);
+      const sent = calls.find((c) => c.url.indexOf('api.resend.com') >= 0);
+      expect(sent).toBeTruthy();
+      const body = JSON.parse(sent.opts.body);
+      expect(body.to).toEqual(['coach@team.com']);
+      expect(body.text).toContain('$500');
+      expect(body.subject).toMatch(/renews/i);
+    } finally {
+      global.fetch = prevFetch;
+      delete process.env.RESEND_API_KEY;
+      delete process.env.PHOTO_FROM_EMAIL;
+    }
+  });
+
+  it('webhook: invoice.upcoming is a no-op (still 200) when Resend is not configured', async () => {
+    const prevFetch = global.fetch;
+    const calls = [];
+    global.fetch = async (url, opts) => { calls.push(String(url)); return { ok: true, json: async () => ({}) }; };
+    delete process.env.RESEND_API_KEY; // not configured
+    try {
+      const event = { type: 'invoice.upcoming', data: { object: { customer_email: 'coach@team.com', amount_due: 50000 } } };
+      const res = await call({ method: 'POST', query: { action: 'webhook' }, headers: { 'stripe-signature': 'x' }, body: JSON.stringify(event) });
+      expect(res.statusCode).toBe(200);
+      expect(calls.find((u) => u.indexOf('api.resend.com') >= 0)).toBeFalsy();
+    } finally {
+      global.fetch = prevFetch;
+    }
+  });
 });
