@@ -2974,7 +2974,7 @@ window.thwapActiveTeam=function(coach){
   var code=(window.thwapActiveTeam?window.thwapActiveTeam(coach):((coach.teams&&coach.teams[0])||'RANGERS72'));
   var saveBtn=document.getElementById('planSave'), doneEl=document.getElementById('planDone');
   var DAYS=[['mon','Mon'],['tue','Tue'],['wed','Wed'],['thu','Thu'],['fri','Fri'],['sat','Sat'],['sun','Sun']];
-  var CATS=[['stick','Hands'],['shoot','Shoot'],['dryland','Dryland']];
+  var CATS=[['stick','Hands'],['shoot','Shoot'],['dryland','Dryland'],['iq','Hockey IQ']];
   var todayKey=(function(){ try{ var w=window.thwapWeekday&&window.thwapWeekday(); var map=['sun','mon','tue','wed','thu','fri','sat']; return map[w]||''; }catch(e){ return ''; } })();
   var plan={}, dirty=false;
   function setDirty(d){ dirty=d; if(saveBtn){ saveBtn.disabled=!d; } if(d&&doneEl) doneEl.hidden=true; }
@@ -3068,7 +3068,7 @@ window.thwapActiveTeam=function(coach){
   if(modeReq) modeReq.addEventListener('click',function(){ pkOptional=false; reflectMode(); });
   if(modeOpt) modeOpt.addEventListener('click',function(){ pkOptional=true; reflectMode(); });
   var pkDay='', pkCat='';
-  var CATLABEL={stick:'Hands',shoot:'Shoot',dryland:'Dryland'};
+  var CATLABEL={stick:'Hands',shoot:'Shoot',dryland:'Dryland',iq:'Hockey IQ'};
   var DAYLABEL={mon:'Monday',tue:'Tuesday',wed:'Wednesday',thu:'Thursday',fri:'Friday',sat:'Saturday',sun:'Sunday'};
   function openPicker(day,cat){
     pkDay=day; pkCat=cat;
@@ -3090,7 +3090,7 @@ window.thwapActiveTeam=function(coach){
      each category, so per-drill time = DAY_MIN / DAY_COUNT[cat] (the player's day
      set is ~DAY_MIN total). Coach stays under DAY_MIN for the day/category. */
   var DAY_MIN=15;
-  var DAY_COUNT={stick:3, shoot:5, dryland:6};
+  var DAY_COUNT={stick:3, shoot:5, dryland:6, iq:1};
   function perDrillMin(cat){ var n=DAY_COUNT[cat]||6; return DAY_MIN/n; }
   function estMin(cat,count){ return Math.round(count*perDrillMin(cat)); }
   /* Largest number of drills that still fits the ~15 min/category day budget. */
@@ -5913,6 +5913,18 @@ window.thwapDrillCatalog=function(cat){
   if(cat==='stick') return collect(window.DRILLS);
   if(cat==='shoot'){ var s=[]; (window.SHOOT_DAYS||[]).forEach(function(day){ (day||[]).forEach(function(x){ s.push(x); }); }); return collect(s); }
   if(cat==='dryland'){ var w=[]; (window.WORKOUTS||[]).forEach(function(wk){ (wk.drills||[]).forEach(function(x){ w.push(x); }); }); return collect(w); }
+  if(cat==='iq'){
+    /* IQ 'drills' are read-the-play videos: offense + defense pools, surfaced as
+       drill-like objects (name = clip title, video = youtube id) so the coach
+       drill-picker lists real content. The pool a player actually sees is still
+       chosen by position + weekday on the IQ page; this is the coach library. */
+    var iq=[]; var seen={};
+    (window.IQ_OFFENSE||[]).concat(window.IQ_DEFENSE||[]).forEach(function(v){
+      if(!v||!v.title) return; var nm=v.title; if(seen[v.id]) return; seen[v.id]=1;
+      iq.push({name:nm, emoji:'\uD83E\uDDE0', cue:'', steps:[], video:v.id});
+    });
+    return iq;
+  }
   return [];
 };
 /* Real per-player completion counts, read from the same live board the leaderboard
