@@ -29,11 +29,11 @@ describe('index.html structure', () => {
     expect(doc.querySelector('title')?.textContent).toContain('Thwap Hockey');
   });
 
-  it('has balanced <section> tags (open === close === 11)', () => {
+  it('has balanced <section> tags (open === close === 13)', () => {
     const open = (html.match(/<section id=/g) || []).length;
     const close = (html.match(/<\/section>/g) || []).length;
     expect(open).toBe(close);
-    expect(open).toBe(12); // + #pass (Passing shell); #addplayer is a .sheet side panel, not a page section
+    expect(open).toBe(13); // + #profile (native settings/account tab); #addplayer is a .sheet side panel, not a page section
   });
 
   it('#home is the last section (required for :target hash nav)', () => {

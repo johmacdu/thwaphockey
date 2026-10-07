@@ -1180,6 +1180,120 @@ body.login-locked .footer{position:relative;z-index:100;pointer-events:auto}
 .eggpassflight.go{animation:eggPassSaucer 1.7s cubic-bezier(.45,.02,.5,1) forwards}
 @keyframes eggPassSaucer{0%{transform:translate(0,0) rotate(0);opacity:0}6%{opacity:1}18%{transform:translate(40vw,-58px) rotate(340deg)}33%{transform:translate(82vw,0) rotate(680deg)}48%{transform:translate(38vw,-58px) rotate(1020deg)}64%{transform:translate(-5vw,0) rotate(1360deg)}82%{transform:translate(0,-30px) rotate(1680deg)}95%{transform:translate(0,0) rotate(2000deg);opacity:1}100%{transform:translate(0,0) rotate(2000deg);opacity:0}}
 @media (prefers-reduced-motion: reduce){.eggstick.egg-go,.eggdangle.weave,.eggbolt.egg-surge,.eggshock.go,.eggshot.fly,.eggnet.egg-hit,.eggnet .egghole.punch,.eggpassflight.go{animation:none}}</style>
+<style id='native-css'>
+/* =====================================================================
+   NATIVE ADAPTATIONS (Capacitor iOS + Android), v1.
+   EVERY rule in this block is scoped to body.is-native, which is set ONLY
+   inside the Capacitor shell. The plain website at thwaphockey.com never
+   carries that class, so none of this applies there: the web is untouched.
+   ===================================================================== */
+
+/* --- 1. Safe areas: clear the notch / Dynamic Island at the top and the home
+   indicator at the bottom. The tab bar owns its own bottom inset below. --- */
+body.is-native .app{padding-top:env(safe-area-inset-top,0px)}
+body.is-native .topbar{padding-top:calc(6px + env(safe-area-inset-top,0px))}
+
+/* --- 2. Native gesture suppression. Kill the web affordances that read as a
+   browser, but KEEP touch-action on the sticker deck / drag surfaces so the
+   sticker long-press-drag still works (those set touch-action:none themselves,
+   and this never overrides an explicit element value). --- */
+body.is-native{
+  -webkit-tap-highlight-color:transparent;
+  -webkit-touch-callout:none;
+  overscroll-behavior:none;            /* no overscroll bounce / pull-to-refresh */
+  -webkit-user-select:none;
+  user-select:none;
+}
+/* Labels, headings and chrome are not selectable in a native app... */
+body.is-native .topbar,
+body.is-native .tabbar,
+body.is-native .hero,
+body.is-native h1,body.is-native h2,body.is-native h3,
+body.is-native .nav,body.is-native .link,body.is-native .slogan{
+  -webkit-user-select:none;user-select:none;
+}
+/* ...but keep real text content and inputs selectable/editable. */
+body.is-native input,body.is-native textarea,body.is-native [contenteditable],
+body.is-native p,body.is-native .exbody,body.is-native .policy-page{
+  -webkit-user-select:text;user-select:text;
+}
+/* Disable the double-tap-to-zoom / pinch default on the app chrome, but NOT on
+   the sticker deck or drag ghosts, which declare their own touch-action. */
+body.is-native .topbar,body.is-native .tabbar,body.is-native .hero,
+body.is-native .nav,body.is-native .footer{touch-action:manipulation}
+
+/* --- 3. Role-aware bottom tab bar. Shown ONLY in the app, ONLY once signed in
+   (is-authed), never on the login splash. The top brand header stays; this
+   becomes the primary nav. --- */
+.tabbar{display:none}
+body.is-native.is-authed:not(.login-locked) .tabbar{
+  position:fixed;left:0;right:0;bottom:0;z-index:70;
+  display:flex;align-items:stretch;justify-content:space-around;
+  background:var(--panel);
+  border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  box-shadow:0 -8px 24px var(--shadow);
+}
+/* Make room so page content never hides behind the bar. */
+body.is-native.is-authed:not(.login-locked) .app{
+  padding-bottom:calc(64px + env(safe-area-inset-bottom,0px) + 16px);
+}
+.tabbar-btn{
+  flex:1 1 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  min-height:56px;padding:7px 2px 6px;
+  background:none;border:0;font-family:inherit;cursor:pointer;
+  color:var(--muted);text-decoration:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.tabbar-btn:active{transform:scale(.94)}
+.tabbar-ico{font-size:22px;line-height:1;filter:grayscale(1);opacity:.72}
+.tabbar-lab{font-size:11px;font-weight:800;letter-spacing:.01em}
+.tabbar-btn.on{color:var(--green2)}
+.tabbar-btn.on .tabbar-ico{filter:none;opacity:1}
+/* Role split: player tabs vs coach tabs, mirrors the existing nav spans. Each
+   group uses display:contents so its buttons lay out directly across the bar. */
+.tabbar .tab-player,.tabbar .tab-coach{display:none}
+body.is-native:not(.is-coach) .tabbar .tab-player{display:contents}
+body.is-native.is-coach .tabbar .tab-coach{display:contents}
+
+/* --- 4. Profile tab page. In the app the sound/theme/footmenu items move here;
+   on the web they stay in the footer. These are flat rows (no card styling on a
+   non-navigating element), grouped under plain labels. --- */
+body:not(.is-native) #profile.page:target{display:none}  /* web: never routable */
+#profile .prof-wrap{max-width:520px;margin:0 auto}
+#profile .prof-group{margin:0 0 22px}
+#profile .prof-grouplab{font-size:var(--fs-eyebrow);font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;padding:0 2px}
+#profile .prof-row{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  min-height:52px;padding:12px 2px;border-bottom:1px solid var(--line);
+}
+#profile .prof-row:last-child{border-bottom:0}
+#profile .prof-rowlab{font-size:var(--fs-body);font-weight:800;color:var(--text)}
+#profile a.prof-row,#profile button.prof-row{
+  width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);
+  font-family:inherit;cursor:pointer;color:var(--text);-webkit-tap-highlight-color:transparent;
+}
+#profile a.prof-row:last-child,#profile button.prof-row:last-child{border-bottom:0}
+#profile .prof-rowchev{color:var(--chev);font-size:20px;font-weight:700}
+#profile .prof-card-btn{
+  display:flex;align-items:center;gap:14px;width:100%;text-align:left;
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);
+  padding:14px;font-family:inherit;cursor:pointer;color:var(--text);
+  -webkit-tap-highlight-color:transparent;
+}
+#profile .prof-card-art{width:48px;height:48px;border-radius:10px;object-fit:cover;flex:0 0 auto;background:var(--soft)}
+#profile .prof-card-txt{display:flex;flex-direction:column;gap:2px}
+#profile .prof-card-nm{font-size:var(--fs-cardtitle);font-weight:900}
+#profile .prof-card-sub{font-size:var(--fs-support);color:var(--muted)}
+#profile .prof-signout{color:var(--alert);font-weight:900}
+/* In the app, the web footer action cluster (sound/theme/menu) is redundant with
+   the Profile tab, so hide it. The slogan + trademark stay. */
+body.is-native .footer-actions{display:none}
+/* Primary nav moves to the bottom tab bar, so the header's top links AND the
+   mobile kebab are redundant in-app. The brand (logo + wordmark) stays. */
+body.is-native .topbar .toplinks,
+body.is-native .topbar .kebab{display:none}
+</style>
 <style id='login-splash-css'>
 /* ---- Break the Ice: login splash overlay (Pass 1 foundation) ----
    A full-screen frosted layer that sits OVER the real homepage. #home renders
@@ -1361,7 +1475,12 @@ body.login-locked{overflow:hidden}
   #loginStage.shake,.login-modal{animation:none}
 }
 </style><script>try{if(localStorage.getItem('thwapTheme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script></head><body><script>/* Thwap native bridge (Capacitor) - no-op in a plain browser; see native-bridge.js */
-(function(){'use strict';var Cap=window.Capacitor;var isNative=!!(Cap&&typeof Cap.isNativePlatform==='function'&&Cap.isNativePlatform());function webVibrate(ms){try{if(navigator.vibrate)navigator.vibrate(ms);}catch(e){}}window.thwapHaptic=function(kind){if(!isNative){webVibrate(kind==='streak'?[12,40,12]:12);return;}try{var H=Cap.Plugins&&Cap.Plugins.Haptics;if(!H)return;if(kind==='streak'){H.notification({type:'SUCCESS'});}else if(kind==='done'){H.impact({style:'MEDIUM'});}else{H.impact({style:'LIGHT'});}}catch(e){}};if(!isNative)return;function curSlug(){try{var p=localStorage.getItem('bfPlayer');if(!p)return'';return p.trim().split(/\s+/)[0].toLowerCase();}catch(e){return'';}}function registerPush(){var P=Cap.Plugins&&Cap.Plugins.PushNotifications;if(!P)return;P.checkPermissions().then(function(res){if(res.receive==='prompt'||res.receive==='prompt-with-rationale'){return P.requestPermissions();}return res;}).then(function(res){if(res&&res.receive==='granted'){P.register();}}).catch(function(){});P.addListener('registration',function(token){try{fetch('https://thwaphockey.com/api/coach?action=push-register',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({token:token.value,platform:(Cap.getPlatform&&Cap.getPlatform())||'unknown',player:curSlug()})}).catch(function(){});}catch(e){}});P.addListener('registrationError',function(){});P.addListener('pushNotificationActionPerformed',function(){});}document.addEventListener('DOMContentLoaded',registerPush);if(document.readyState!=='loading')registerPush();})();</script><script src='demo/demo-data.js'></script><script src='demo/demo-mode.js'></script><div class='app'>
+(function(){'use strict';var Cap=window.Capacitor;var isNative=!!(Cap&&typeof Cap.isNativePlatform==='function'&&Cap.isNativePlatform());function webVibrate(ms){try{if(navigator.vibrate)navigator.vibrate(ms);}catch(e){}}window.thwapHaptic=function(kind){if(!isNative){webVibrate(kind==='streak'?[12,40,12]:12);return;}try{var H=Cap.Plugins&&Cap.Plugins.Haptics;if(!H)return;if(kind==='streak'){H.notification({type:'SUCCESS'});}else if(kind==='done'){H.impact({style:'MEDIUM'});}else{H.impact({style:'LIGHT'});}}catch(e){}};if(!isNative)return;function curSlug(){try{var p=localStorage.getItem('bfPlayer');if(!p)return'';return p.trim().split(/\s+/)[0].toLowerCase();}catch(e){return'';}}function registerPush(){var P=Cap.Plugins&&Cap.Plugins.PushNotifications;if(!P)return;P.checkPermissions().then(function(res){if(res.receive==='prompt'||res.receive==='prompt-with-rationale'){return P.requestPermissions();}return res;}).then(function(res){if(res&&res.receive==='granted'){P.register();}}).catch(function(){});P.addListener('registration',function(token){try{fetch('https://thwaphockey.com/api/coach?action=push-register',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({token:token.value,platform:(Cap.getPlatform&&Cap.getPlatform())||'unknown',player:curSlug()})}).catch(function(){});}catch(e){}});P.addListener('registrationError',function(){});P.addListener('pushNotificationActionPerformed',function(){});}document.addEventListener('DOMContentLoaded',registerPush);if(document.readyState!=='loading')registerPush();})();</script><script>/* Native-shell flag. The ONLY switch for every native adaptation (bottom tab bar,
+   Profile tab, safe areas, gesture suppression, Android back). It is gated on the
+   same window.Capacitor?.isNativePlatform() check as the bridge, so the plain
+   website at thwaphockey.com never gets body.is-native and is completely unchanged.
+   Set on <html> AND <body> as early as possible so the first paint already has it. */
+(function(){try{var C=window.Capacitor;if(C&&typeof C.isNativePlatform==='function'&&C.isNativePlatform()){document.documentElement.classList.add('is-native');var add=function(){if(document.body)document.body.classList.add('is-native');};add();if(!document.body)document.addEventListener('DOMContentLoaded',add);}}catch(e){}})();</script><script src='demo/demo-data.js'></script><script src='demo/demo-mode.js'></script><div class='app'>
 <!-- Break the Ice login splash: two fixed layers over the real homepage.
      #loginBackdrop (frost + Sass/THWAP stage) sits BELOW the site header so its
      Sign In / Join Waitlist links stay visible and tappable; #loginOverlay (the
@@ -1879,6 +1998,40 @@ body.login-locked{overflow:hidden}
 <div class='pl-thwap' id='plThwap'>THWAP!</div>
 </section>
 
+<section id='profile' class='page'>
+<a class='glassclose js-home-close' href='#home' aria-label='Close'>✕</a>
+<div class='topbar'><div class='brand'><img class='brandlogo' src='sass-logo.svg' alt='Thwap Hockey' width='80' height='68'><img class='brandmark' src='wordmark-light.svg' alt='Thwap Hockey'></div></div>
+<div class='hero'><h1>Profile</h1></div>
+<div class='prof-wrap'>
+  <div class='prof-group'>
+    <div class='prof-grouplab'>Your card</div>
+    <button type='button' class='prof-card-btn' id='profCardBtn'>
+      <img class='prof-card-art' id='profCardArt' src='logo-64.png' alt=''>
+      <span class='prof-card-txt'><span class='prof-card-nm' id='profCardNm'>Your player card</span><span class='prof-card-sub'>Open your card</span></span>
+    </button>
+  </div>
+  <div class='prof-group'>
+    <div class='prof-grouplab'>Settings</div>
+    <div class='prof-row'>
+      <span class='prof-rowlab'>Sound</span>
+      <button class='sfxtoggle' id='profSfxToggle' type='button' aria-label='Mute sounds' title='Mute sounds' aria-pressed='true'></button>
+    </div>
+    <div class='prof-row'>
+      <span class='prof-rowlab'>Appearance</span>
+      <button class='themetoggle' id='profThemeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='profTtico'>🌙</span><span class='ttlabel' id='profTtlabel'>Dark</span></button>
+    </div>
+  </div>
+  <div class='prof-group'>
+    <div class='prof-grouplab'>About</div>
+    <a class='prof-row' href='/about'><span class='prof-rowlab'>About Thwap</span><span class='prof-rowchev'>&rsaquo;</span></a>
+    <a class='prof-row' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report'><span class='prof-rowlab'>Report a bug</span><span class='prof-rowchev'>&rsaquo;</span></a>
+    <a class='prof-row' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request'><span class='prof-rowlab'>Request a feature</span><span class='prof-rowchev'>&rsaquo;</span></a>
+  </div>
+  <div class='prof-group'>
+    <button type='button' class='prof-row prof-signout' id='profSignout'><span class='prof-rowlab prof-signout'>Sign out</span></button>
+  </div>
+</div>
+</section>
 <section id='home'>
 <div class='wipnote' id='wipNote'>👋 Welcome to the Thwap beta. We're adding new training videos and features every week.</div>
 <script>(function(){try{fetch('/api/coach?action=beta',{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){if(d&&d.betaUntil){var until=Date.parse(d.betaUntil);if(!isNaN(until)&&Date.now()>until){var n=document.getElementById('wipNote');if(n)n.hidden=true;}}}).catch(function(){});}catch(e){}})();</script>
@@ -2000,7 +2153,24 @@ window.thwapTrainingToday=function(){
 </div>
 </section>
 <div class='footer'><span class='slogan'>Compete. Improve. Have fun.</span><div class='footer-actions'><button class='sfxtoggle' id='sfxToggle' type='button' aria-label='Mute sounds' title='Mute sounds' aria-pressed='true'></button><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button><div class='footmenu-wrap'><button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button><div class='footmenu' id='footMenu' hidden role='menu'><a class='footmenu-item' href='/about' role='menuitem'>About Thwap</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a><a class='footmenu-item' id='menuSignout' href='#' role='menuitem'>Sign out</a></div></div></div></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div>
-</div><script>
+</div>
+<nav class='tabbar' id='tabbar' aria-label='Main'>
+  <span class='tab-player'>
+    <a class='tabbar-btn' href='#home' data-tab='home'><span class='tabbar-ico' aria-hidden='true'>🏒</span><span class='tabbar-lab'>Train</span></a>
+    <a class='tabbar-btn' href='#stickers' data-tab='stickers'><span class='tabbar-ico' aria-hidden='true'>🎯</span><span class='tabbar-lab'>Stickers</span></a>
+    <a class='tabbar-btn' href='#roster' data-tab='roster'><span class='tabbar-ico' aria-hidden='true'>👥</span><span class='tabbar-lab'>Team</span></a>
+    <a class='tabbar-btn' href='#progress' data-tab='progress'><span class='tabbar-ico' aria-hidden='true'>🏆</span><span class='tabbar-lab'>Standings</span></a>
+    <a class='tabbar-btn' href='#profile' data-tab='profile'><span class='tabbar-ico' aria-hidden='true'>👤</span><span class='tabbar-lab'>Profile</span></a>
+  </span>
+  <span class='tab-coach'>
+    <a class='tabbar-btn' href='#coachhome' data-tab='coachhome'><span class='tabbar-ico' aria-hidden='true'>🏒</span><span class='tabbar-lab'>Train</span></a>
+    <a class='tabbar-btn' href='#roster' data-tab='roster'><span class='tabbar-ico' aria-hidden='true'>👥</span><span class='tabbar-lab'>Team</span></a>
+    <a class='tabbar-btn' href='#plan' data-tab='plan'><span class='tabbar-ico' aria-hidden='true'>📋</span><span class='tabbar-lab'>Plan</span></a>
+    <a class='tabbar-btn' href='#progress' data-tab='progress'><span class='tabbar-ico' aria-hidden='true'>🏆</span><span class='tabbar-lab'>Standings</span></a>
+    <a class='tabbar-btn' href='#profile' data-tab='profile'><span class='tabbar-ico' aria-hidden='true'>👤</span><span class='tabbar-lab'>Profile</span></a>
+  </span>
+</nav>
+<script>
 /* ---- Single client-side roster source of truth ----
    Was duplicated as four separate maps (ROSTER / ROSTER_INFO / ROSTER_VIEW with
    lowercase keys, INFO with capitalized keys). They drifted independently; now
@@ -4314,7 +4484,7 @@ render();
 fetchBoard();
 window.addEventListener('hashchange',function(){ if(location.hash==='#progress') fetchBoard(); });
 })();</script>
-<script>(function(){var KEY='thwapTheme';function apply(t){var dark=(t==='dark');document.documentElement.setAttribute('data-theme',dark?'dark':'light');var i=document.getElementById('ttico'),l=document.getElementById('ttlabel');if(i)i.textContent=dark?'☀️':'🌙';if(l)l.textContent=dark?'Light':'Dark';var bm=document.getElementById('brandMark');if(bm)bm.setAttribute('src',dark?'wordmark-dark.svg':'wordmark-light.svg');var fm=document.getElementById('footerMark');if(fm)fm.setAttribute('src',dark?'wordmark-tm-dark.svg':'wordmark-tm-light.svg');var lm=document.getElementById('loginMark');if(lm)lm.setAttribute('src',dark?'wordmark-dark.svg':'wordmark-light.svg');}var saved='light';try{saved=localStorage.getItem(KEY)||'light';}catch(e){}apply(saved);function toggle(){var cur='light';try{cur=localStorage.getItem(KEY)||'light';}catch(e){}var next=(cur==='dark'?'light':'dark');try{localStorage.setItem(KEY,next);}catch(e){}apply(next);}var b=document.getElementById('themeToggle');if(b)b.addEventListener('click',toggle);})();</script>
+<script>(function(){var KEY='thwapTheme';function apply(t){var dark=(t==='dark');document.documentElement.setAttribute('data-theme',dark?'dark':'light');var i=document.getElementById('ttico'),l=document.getElementById('ttlabel');if(i)i.textContent=dark?'☀️':'🌙';if(l)l.textContent=dark?'Light':'Dark';var pi=document.getElementById('profTtico'),pl=document.getElementById('profTtlabel');if(pi)pi.textContent=dark?'☀️':'🌙';if(pl)pl.textContent=dark?'Light':'Dark';var bm=document.getElementById('brandMark');if(bm)bm.setAttribute('src',dark?'wordmark-dark.svg':'wordmark-light.svg');var fm=document.getElementById('footerMark');if(fm)fm.setAttribute('src',dark?'wordmark-tm-dark.svg':'wordmark-tm-light.svg');var lm=document.getElementById('loginMark');if(lm)lm.setAttribute('src',dark?'wordmark-dark.svg':'wordmark-light.svg');}var saved='light';try{saved=localStorage.getItem(KEY)||'light';}catch(e){}apply(saved);function toggle(){var cur='light';try{cur=localStorage.getItem(KEY)||'light';}catch(e){}var next=(cur==='dark'?'light':'dark');try{localStorage.setItem(KEY,next);}catch(e){}apply(next);}var b=document.getElementById('themeToggle');if(b)b.addEventListener('click',toggle);var pb=document.getElementById('profThemeToggle');if(pb)pb.addEventListener('click',toggle);})();</script>
 <script>(function(){
   /* Footer kebab: Sign out + Report a bug + Request a feature. Shown for every
      viewer (player or coach). One identity per session: Sign out clears the coach
@@ -8536,7 +8706,7 @@ document.getElementById('coachInfoScrim') && document.getElementById('coachInfoS
   var SPK="<svg viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M11 5 6 9H2v6h4l5 4V5z'/><path d='M15.5 8.5a5 5 0 0 1 0 7'/><path d='M18.5 5.5a9 9 0 0 1 0 13'/></svg>";
   var OFF="<svg viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'><path d='M11 5 6 9H2v6h4l5 4V5z'/><line x1='23' y1='9' x2='17' y2='15'/><line x1='17' y1='9' x2='23' y2='15'/></svg>";
   function wireMute(){
-    var btns=[document.getElementById('sfxToggle')].filter(Boolean);
+    var btns=[document.getElementById('sfxToggle'),document.getElementById('profSfxToggle')].filter(Boolean);
     if(!btns.length)return;
     function paint(){ var on=sfxOn(); btns.forEach(function(b){ b.innerHTML=on?SPK:OFF; b.setAttribute('aria-pressed',on?'true':'false'); b.setAttribute('aria-label',on?'Mute sounds':'Unmute sounds'); b.title=on?'Mute sounds':'Unmute sounds'; b.classList.toggle('off',!on); }); }
     btns.forEach(function(b){
@@ -8643,5 +8813,128 @@ window.thwapPaywall=function(billing, teamCode){
   }
   bar.hidden=false;
 };
+</script>
+<script>
+/* =====================================================================
+   NATIVE FEATURES WIRING (Capacitor). Everything here is gated on
+   body.is-native, so on the plain website it is inert: the hashchange
+   listener still runs but finds no .tabbar to light up, the Profile
+   handlers find their elements only inside the app shell, and the
+   Android back listener attaches only when the App plugin is present.
+   ===================================================================== */
+(function(){
+  var isNative = document.documentElement.classList.contains('is-native');
+
+  /* ---- Tab bar active state -------------------------------------------
+     Map the current hash to a single owning tab and mark it .on. Drill
+     sub-pages (#stick/#shoot/#dryland/#drillpick/#pass) roll up to Train;
+     the deep #player view belongs to no tab (reached from several). */
+  function tabForHash(h){
+    h = (h||'').replace(/^#/, '');
+    if(h==='' || h==='home' || h==='coachhome') return h==='coachhome' ? 'coachhome' : 'home';
+    if(h==='stick'||h==='shoot'||h==='dryland'||h==='drillpick'||h==='pass'){
+      return document.body.classList.contains('is-coach') ? null : 'home';
+    }
+    if(h==='stickers') return 'stickers';
+    if(h==='roster') return 'roster';
+    if(h==='plan') return 'plan';
+    if(h==='progress') return 'progress';
+    if(h==='profile') return 'profile';
+    return null; /* #player, #login, etc: no tab lit */
+  }
+  function paintTabs(){
+    var bar=document.getElementById('tabbar'); if(!bar) return;
+    var active=tabForHash(location.hash);
+    var btns=bar.querySelectorAll('.tabbar-btn');
+    for(var i=0;i<btns.length;i++){
+      var t=btns[i].getAttribute('data-tab');
+      btns[i].classList.toggle('on', active!==null && t===active);
+    }
+  }
+  window.addEventListener('hashchange', paintTabs);
+  if(document.readyState!=='loading') paintTabs(); else document.addEventListener('DOMContentLoaded', paintTabs);
+
+  /* ---- Profile tab wiring (native only) ------------------------------- */
+  function wireProfile(){
+    if(!isNative) return;
+
+    /* Card button: open the signed-in player's own card. A coach opens their
+       own kid's card via the same openPlayerPage path the home card uses. */
+    var cardBtn=document.getElementById('profCardBtn');
+    if(cardBtn){
+      var nm='', slug='';
+      try{ nm=(localStorage.getItem('bfPlayer')||'').trim(); }catch(e){}
+      if(nm){
+        var art=document.getElementById('profCardArt');
+        var nmEl=document.getElementById('profCardNm');
+        if(nmEl) nmEl.textContent=nm.split(/\s+/)[0]+"'s card";
+        slug=nm.split(/\s+/)[0].toLowerCase();
+        if(art) art.setAttribute('src','cards/'+slug+'_photo.png');
+      }
+      cardBtn.addEventListener('click',function(){
+        if(nm && window.openPlayerPage){ window.openPlayerPage(nm,'card'); }
+        else { location.hash='#home'; }
+      });
+      /* A broken/absent per-player photo falls back to the Thwap mark. */
+      var art2=document.getElementById('profCardArt');
+      if(art2) art2.addEventListener('error',function(){ art2.setAttribute('src','logo-64.png'); });
+    }
+
+    /* Sign out: identical clearing to the footer kebab's menuSignout, so there
+       is one sign-out behaviour whichever surface the user used. */
+    var out=document.getElementById('profSignout');
+    if(out) out.addEventListener('click',function(e){
+      e.preventDefault();
+      try{ localStorage.removeItem('thwapCoach'); }catch(_){}
+      try{ localStorage.removeItem('thwapAuth'); sessionStorage.removeItem('thwapAuth'); }catch(_){}
+      try{ document.cookie='thwapAuth=;path=/;max-age=0'; }catch(_){}
+      try{ localStorage.removeItem('bfPlayer'); localStorage.removeItem('thwapRosterFilter'); }catch(_){}
+      try{ if(window.THWAP_DEMO) window.THWAP_DEMO.deactivate(); }catch(_){}
+      location.hash='';
+      location.reload();
+    });
+  }
+  if(document.readyState!=='loading') wireProfile(); else document.addEventListener('DOMContentLoaded', wireProfile);
+
+  if(!isNative) return; /* ---- below here is native-only ---- */
+
+  /* ---- Android hardware back button -----------------------------------
+     Default Android behaviour closes the app on back from the first screen.
+     Instead: if an overlay/sheet is open, close it; else if we are on a deep
+     page, go back to the role home; else (already home) minimize the app so a
+     stray back press never quits mid-task. */
+  function roleHome(){ return document.body.classList.contains('is-coach') ? '#coachhome' : '#home'; }
+  function anyOverlayOpen(){
+    /* Visible full-screen overlays/sheets that own their own close. */
+    var sels=['.sheet:not([hidden])','.pgate:not([hidden])','.cardoverlay.show','.policy-page:not([hidden])','.pe-confirm:not([hidden])','#addplayer:not([hidden])'];
+    for(var i=0;i<sels.length;i++){
+      var el=document.querySelector(sels[i]);
+      if(el){ var cs=getComputedStyle(el); if(cs.display!=='none' && cs.visibility!=='hidden') return el; }
+    }
+    return null;
+  }
+  function closeTopOverlay(el){
+    /* Prefer the overlay's own close affordance so its teardown logic runs. */
+    var x=el.querySelector('.glassclose,.cardclose,[aria-label=\'Close\'],.sugg-close,[data-close]');
+    if(x){ x.click(); return true; }
+    return false;
+  }
+  function wireBack(){
+    try{
+      var App = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App;
+      if(!App || !App.addListener) return;
+      App.addListener('backButton', function(){
+        var ov=anyOverlayOpen();
+        if(ov && closeTopOverlay(ov)) return;
+        var h=(location.hash||'').replace(/^#/, '');
+        var home=roleHome();
+        if('#'+h !== home && h!=='' ){ location.hash=home; return; }
+        /* Already on the role home: minimize rather than exit. */
+        try{ App.minimizeApp && App.minimizeApp(); }catch(e){}
+      });
+    }catch(e){}
+  }
+  if(document.readyState!=='loading') wireBack(); else document.addEventListener('DOMContentLoaded', wireBack);
+})();
 </script>
 </body></html>
