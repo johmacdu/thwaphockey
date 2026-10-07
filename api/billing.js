@@ -4,7 +4,8 @@
 //   POST ?action=create-checkout      { code, seasons:[<key>,...] } -> { url }
 //   POST ?action=create-subscription  { code } -> { url }  (annual auto-renew)
 //   POST ?action=portal               { code } -> { url }  (Stripe billing portal)
-//   POST ?action=webhook              Stripe events -> records seasons + subscription
+//   POST ?action=webhook              Stripe events -> records seasons + subscription,
+//                                     and emails a pre-renewal heads-up (invoice.upcoming)
 //   GET  ?action=status&code=XXX      -> { active, free, subscribed, currentSeason, ... }
 //   GET  ?action=screen&code=XXX      -> coach billing screen { paid[], buyable[], subscription }
 //
@@ -179,6 +180,48 @@ function subFromStripe(obj) {
   };
 }
 
+// Transactional email via Resend (same provider as login codes / waitlist).
+// Fire-and-forget and guarded: with no Resend key configured it is a no-op, so
+// billing keeps working without email set up.
+async function sendEmail(to, subject, text) {
+  const from = process.env.PHOTO_FROM_EMAIL;
+  const key = process.env.RESEND_API_KEY;
+  if (!from || !key || !to) return false;
+  try {
+    const resp = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ from, to: [to], subject, text }),
+    });
+    return resp.ok;
+  } catch {
+    return false;
+  }
+}
+
+// Stripe invoice.upcoming -> a friendly heads-up BEFORE the subscription renews,
+// so a coach is never surprised by the annual charge (fewer chargebacks). Stripe
+// sends this a configurable number of days before renewal when the event is
+// enabled. The email address comes from Stripe's invoice, never the client.
+async function sendRenewalReminder(inv) {
+  const email = inv && inv.customer_email;
+  if (!email) return false;
+  const amount = (Number(inv.amount_due) || 0) / 100;
+  const amountStr = amount % 1 ? amount.toFixed(2) : String(amount);
+  const when = inv.next_payment_attempt || inv.period_end || null;
+  const dateStr = when
+    ? new Date(when * 1000).toLocaleDateString('en-CA', { year: 'numeric', month: 'long', day: 'numeric' })
+    : 'soon';
+  return sendEmail(
+    email,
+    'Your Thwap Hockey team renews soon',
+    `Heads up: your Thwap Hockey team subscription renews on ${dateStr} for $${amountStr}.\n\n`
+    + 'No action is needed if you want to keep training. To manage or cancel, open Thwap Hockey, '
+    + 'go to Team billing, and tap Manage subscription.\n\n'
+    + 'Thanks for being part of Thwap.'
+  );
+}
+
 async function webhook(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
   const stripe = await getStripe();
@@ -221,6 +264,9 @@ async function webhook(req, res) {
     const obj = (event.data && event.data.object) || {};
     const code = (obj.metadata && obj.metadata.teamCode) || '';
     if (code) await recordSubscription(code, { ...subFromStripe(obj), status: 'canceled' });
+  } else if (event.type === 'invoice.upcoming') {
+    // Pre-renewal heads-up email. No-op unless Resend is configured.
+    await sendRenewalReminder((event.data && event.data.object) || {});
   }
   return res.status(200).json({ received: true });
 }

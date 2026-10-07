@@ -1794,6 +1794,13 @@ body.login-locked{overflow:hidden}
 .chb-code{font-family:inherit;font-weight:800;font-size:13px;background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0;margin-top:12px}
 .chb-msg{font-size:var(--fs-support);color:var(--muted);margin-top:8px}
 .chb-msg.ok{color:var(--green2,#7BD389)}
+/* Post-checkout "you're all set" confirmation (shown once on return from Stripe). */
+.chb-success{display:flex;align-items:center;gap:12px;background:color-mix(in srgb,var(--green2,#7BD389) 14%,transparent);border:1px solid var(--green2,#7BD389);border-radius:14px;padding:12px 14px;margin:0 0 14px}
+.chb-success-ico{flex:0 0 auto;width:28px;height:28px;border-radius:50%;background:var(--green2,#7BD389);color:var(--ink,#15221B);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900}
+.chb-success-h{font-size:var(--fs-body);font-weight:900;color:var(--text)}
+.chb-success-p{font-size:var(--fs-support);color:var(--muted);margin-top:1px}
+/* Renewal heads-up (shown when the annual charge is near). */
+.chb-heads{color:var(--text);font-weight:800}
 </style>
 <div class='ch-billing' id='chBilling' hidden>
 <p class='ch-seclab'>Team billing</p>
@@ -9491,7 +9498,9 @@ window.thwapPaywall=function(billing, teamCode){
     try{ return d.toLocaleDateString('en-CA',{year:'numeric',month:'short',day:'numeric'}); }
     catch(e){ return iso.slice(0,10); }
   }
+  function daysUntil(iso){ if(!iso) return null; var t=new Date(iso).getTime(); if(isNaN(t)) return null; return Math.ceil((t-Date.now())/86400000); }
   function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  var shownSuccess=false; /* keep the post-checkout confirmation up across re-renders this page session */
 
   function buy(code, key, btn, msgEl){
     btn.disabled=true; var old=btn.textContent; btn.textContent='One sec';
@@ -9549,6 +9558,14 @@ window.thwapPaywall=function(billing, teamCode){
         var html='';
         var subd=!!b.subscribed;
         var sub=b.subscription||null;
+        var paidNow=/[?&]billing=success/.test(location.search);
+        if(paidNow) shownSuccess=true;
+        var justPaid=paidNow || shownSuccess;
+        /* Post-checkout confirmation moment: stays up for the rest of this page
+           session after a successful checkout, then is gone on the next full load. */
+        if(justPaid){
+          html+="<div class='chb-success'><span class='chb-success-ico' aria-hidden='true'>✓</span><div class='chb-success-txt'><div class='chb-success-h'>You're all set!</div><div class='chb-success-p'>Payment received. Your team is active.</div></div></div>";
+        }
         /* Status line. */
         if(b.free){
           html+="<p class='chb-status'>Your team is comped.</p><p class='chb-sub'>No payment needed. Thanks for being part of Thwap.</p>";
@@ -9557,7 +9574,14 @@ window.thwapPaywall=function(billing, teamCode){
           if(sub&&sub.cancelAtPeriodEnd){
             html+="<p class='chb-status'>Auto-renew is off.</p><p class='chb-sub'>"+(renews?"Your team stays active through "+esc(renews)+".":"Your team stays active until the period ends.")+"</p>";
           } else {
-            html+="<p class='chb-status'>Subscribed, renews automatically.</p><p class='chb-sub'>"+(renews?"Next charge "+esc(renews)+". Covers every season.":"Covers every season, every year.")+"</p>";
+            html+="<p class='chb-status'>Subscribed, renews automatically.</p>";
+            var du=daysUntil(sub&&sub.renewsAt);
+            if(du!=null && du>=0 && du<=14){
+              var whenWord=(du===0?'today':(du===1?'tomorrow':('in '+du+' days')));
+              html+="<p class='chb-sub chb-heads'>Heads up: your $500 renewal charges "+whenWord+(renews?" ("+esc(renews)+")":"")+". Cancel anytime from Manage.</p>";
+            } else {
+              html+="<p class='chb-sub'>"+(renews?"Next charge "+esc(renews)+". Covers every season.":"Covers every season, every year.")+"</p>";
+            }
           }
         } else if(b.active){
           var cur=(b.paid||[]).filter(function(s){ return s.current; })[0];
@@ -9601,8 +9625,9 @@ window.thwapPaywall=function(billing, teamCode){
         wrap.hidden=false;
 
         var msgEl=document.getElementById('chbMsg');
-        /* Returning from Stripe: a one-line confirmation above the fresh numbers. */
-        if(/[?&]billing=success/.test(location.search) && msgEl){ msgEl.textContent='Payment received, thank you. Your billing is up to date.'; msgEl.classList.add('ok'); }
+        /* Returning from Stripe: the confirmation box above says it; drop the query
+           so a reload does not show it again (the session flag keeps it up for now). */
+        if(paidNow){ try{ history.replaceState(null,'',location.pathname+location.hash); }catch(e){} }
         card.querySelectorAll('.chb-buy').forEach(function(btn){
           if(btn.id==='chbSub'){ btn.addEventListener('click',function(){ subscribe(code, btn, msgEl); }); return; }
           btn.addEventListener('click',function(){ buy(code, btn.getAttribute('data-key'), btn, msgEl); });
