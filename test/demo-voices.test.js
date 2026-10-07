@@ -20,7 +20,13 @@ const mode = readFileSync(resolve(root, 'demo/demo-mode.js'), 'utf8');
 
 function boot(demo) {
   const store = { bfPlayer: 'Connor McDavid' };
-  if (demo) store.thwapDemo = '1';
+  if (demo) {
+    store.thwapDemo = '1';
+    // A real persisted demo session also carries the auth record; readAuth() falls
+    // back to localStorage.thwapAuth. Without it, gate() now treats a top-level
+    // thwapDemo flag with no auth as leaked About-embed state and clears it.
+    store.thwapAuth = JSON.stringify({ pid: 'demo', name: 'Connor McDavid', email: 'demo@thwaphockey.com', year: 2027, ts: Date.now() });
+  }
   const inlined = html
     .replace("<script src='demo/demo-data.js'></script>", '<script>' + data + '</script>')
     .replace("<script src='demo/demo-mode.js'></script>", '<script>' + mode + '</script>');

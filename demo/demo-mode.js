@@ -28,16 +28,19 @@
      demo player this early (before the home renders), so the About page can embed
      the real app on the home screen, named, with no splash. The main app's gate()
      then sees an authed session and skips the login splash entirely. */
+  var inEmbed = false;
+  try { inEmbed = (window.self !== window.top); } catch (e) { inEmbed = true; }
   try {
-    if (/[?&]demo=1\b/.test(location.search) && !D.isActive()) {
+    /* Only the About-page embed (an iframe) auto-enters the demo. We do NOT write
+       the shared path=/ thwapAuth cookie here: that cookie is read by the TOP-LEVEL
+       tab's gate() and would make a Back-navigation land on the demo team instead
+       of the splash. The embed's own gate() skips its splash via __thwapDemoEmbed
+       below. (A stray top-level ?demo=1 is ignored on purpose.) */
+    if (inEmbed && /[?&]demo=1\b/.test(location.search) && !D.isActive()) {
+      window.__thwapDemoEmbed = true;
       D.activate();
       try { localStorage.removeItem('thwapCoach'); } catch (e) {}
       try { localStorage.setItem('bfPlayer', 'Mario Lemieux'); } catch (e) {}
-      try {
-        document.cookie = 'thwapAuth=' + encodeURIComponent(JSON.stringify(
-          { pid: 'demo', name: 'Mario Lemieux', email: 'demo@thwaphockey.com', year: 2027, ts: Date.now() }
-        )) + ';path=/';
-      } catch (e) {}
     }
   } catch (e) {}
 
