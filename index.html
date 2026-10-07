@@ -2152,7 +2152,7 @@ window.thwapTrainingToday=function(){
 <a class='nav nav-pass' href='#pass'><div class='ico'><img class='nav-ico' src='login/icon-pass.webp' alt=''></div><div><h2>Passing <span class='soon-tag'>Coming soon</span></h2><p>Tape-to-tape + vision, coming early November</p></div><div class='chev'>›</div></a>
 </div>
 </section>
-<div class='footer'><span class='slogan'>Compete. Improve. Have fun.</span><div class='footer-actions'><button class='sfxtoggle' id='sfxToggle' type='button' aria-label='Mute sounds' title='Mute sounds' aria-pressed='true'></button><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button><div class='footmenu-wrap'><button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button><div class='footmenu' id='footMenu' hidden role='menu'><a class='footmenu-item' href='/about' role='menuitem'>About Thwap</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a><a class='footmenu-item' id='menuSignout' href='#' role='menuitem'>Sign out</a></div></div></div></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div>
+<div class='footer'><span class='slogan'>Compete. Improve. Have fun.</span><div class='footer-actions'><button class='sfxtoggle' id='sfxToggle' type='button' aria-label='Mute sounds' title='Mute sounds' aria-pressed='true'></button><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button><div class='footmenu-wrap'><button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button><div class='footmenu' id='footMenu' hidden role='menu'><a class='footmenu-item' href='/about' role='menuitem'>About Thwap</a><a class='footmenu-item' id='menuTerms' href='#terms' role='menuitem'>Terms</a><a class='footmenu-item' id='menuPrivacy' href='#privacy' role='menuitem'>Privacy</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a><a class='footmenu-item' id='menuSignout' href='#' role='menuitem'>Sign out</a></div></div></div></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div>
 </div>
 <nav class='tabbar' id='tabbar' aria-label='Main'>
   <span class='tab-player'>
@@ -4507,6 +4507,12 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#progress')
     location.hash='';
     location.reload();
   });
+  function wirePolicy(id,which){
+    var el=document.getElementById(id);
+    if(el) el.addEventListener('click',function(e){ e.preventDefault(); closeMenu(); if(window.thwapOpenPolicy) window.thwapOpenPolicy(which); });
+  }
+  wirePolicy('menuTerms','terms');
+  wirePolicy('menuPrivacy','privacy');
 })();</script>
 <script>(function(){
 /* Cross-tab identity guard. Player/coach identity lives in localStorage
@@ -7974,6 +7980,7 @@ syncConsent();
   }
   if(tLink) tLink.addEventListener('click',function(e){ e.preventDefault(); openPolicy('terms'); });
   if(pLink) pLink.addEventListener('click',function(e){ e.preventDefault(); openPolicy('privacy'); });
+  window.thwapOpenPolicy=openPolicy;
   if(pclose) pclose.addEventListener('click',closePolicy);
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&sheet&&!sheet.hidden) closePolicy(); });
 })();
