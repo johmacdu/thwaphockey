@@ -13,7 +13,7 @@
 
 import { getTeam } from '../lib/teams_store.js';
 import { recordPayment, billingStatus, setTeamFree } from '../lib/billing_store.js';
-import { parseSeasonKey, isSeasonKey, priceCentsForKey } from '../lib/seasons.js';
+import { parseSeasonKey, isSeasonKey, priceCentsForKey, currentSeasonKey } from '../lib/seasons.js';
 
 export const config = { api: { bodyParser: false } };
 
@@ -139,6 +139,40 @@ async function status(req, res) {
   return res.status(200).json({ ok: true, ...(await billingStatus(code)) });
 }
 
+// Valid comp codes (e.g. MacDuffie2016 for Lewie's Jr. Rangers 10U) live in
+// BILLING_COMP_CODES, comma-separated. A comp code frees the CURRENT season when
+// redeemed; re-apply the same code each season.
+function compCodes() {
+  return String(process.env.BILLING_COMP_CODES || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+function isCompCode(c) {
+  const code = String(c || '').trim();
+  return !!code && compCodes().some((v) => v.toLowerCase() === code.toLowerCase());
+}
+
+// POST ?action=redeem { code, comp } -> comps the current season for the team.
+// The comp code itself is the authorization (no token needed).
+async function redeem(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  let body = {};
+  try {
+    body = JSON.parse((await readRaw(req)) || '{}');
+  } catch {
+    return res.status(400).json({ error: 'bad json' });
+  }
+  const code = String(body.code || '').trim();
+  const comp = String(body.comp || '').trim();
+  if (!code) return res.status(400).json({ error: 'code required' });
+  if (!isCompCode(comp)) return res.status(403).json({ error: 'invalid code' });
+  if (!(await getTeam(code))) return res.status(404).json({ error: 'team not found' });
+  const season = currentSeasonKey();
+  await recordPayment(code, season, { amountCents: 0, currency: 'usd', stripeSession: `comp:${comp}` });
+  return res.status(200).json({ ok: true, season, active: true });
+}
+
 // Admin-only: comp a team (free) or un-comp it. Gated by a shared env secret so
 // it needs no coach/admin token plumbing. Used to keep Lewie's team free.
 async function setFree(req, res) {
@@ -168,6 +202,8 @@ export default async function handler(req, res) {
       return status(req, res);
     case 'set-free':
       return setFree(req, res);
+    case 'redeem':
+      return redeem(req, res);
     default:
       return res.status(400).json({ error: 'unknown action' });
   }

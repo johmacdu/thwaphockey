@@ -32,6 +32,7 @@ process.env.STRIPE_PRICE_FW = 'price_fw';
 process.env.STRIPE_PRICE_SP = 'price_sp';
 process.env.STRIPE_PRICE_OS = 'price_os';
 process.env.BILLING_ADMIN_SECRET = 'adm_s';
+process.env.BILLING_COMP_CODES = 'MacDuffie2016, OtherComp';
 
 const handler = (await import('../api/billing.js')).default;
 const { getTeamBilling, hasPaidSeason, recordPayment } = await import('../lib/billing_store.js');
@@ -126,5 +127,23 @@ describe('api/billing', () => {
     const res = await call({ method: 'GET', query: { action: 'status', code: 'UNPAID9' }, headers: {} });
     delete process.env.BILLING_ENFORCED;
     expect(res.body).toMatchObject({ enforced: true, active: false, gated: true });
+  });
+
+  it('redeem: a valid comp code comps the current season (case-insensitive)', async () => {
+    fake._seed('team:MACD', { code: 'MACD' });
+    const res = await call({ method: 'POST', query: { action: 'redeem' }, headers: {}, body: JSON.stringify({ code: 'MACD', comp: 'macduffie2016' }) });
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toMatchObject({ ok: true, active: true });
+    expect(await hasPaidSeason('MACD', currentSeasonKey(new Date()))).toBe(true);
+    const b = await getTeamBilling('MACD');
+    expect(b.seasons[currentSeasonKey(new Date())].stripeSession).toBe('comp:macduffie2016');
+  });
+
+  it('redeem: invalid comp code -> 403, missing team -> 404', async () => {
+    fake._seed('team:MACD', { code: 'MACD' });
+    const bad = await call({ method: 'POST', query: { action: 'redeem' }, headers: {}, body: JSON.stringify({ code: 'MACD', comp: 'nope' }) });
+    expect(bad.statusCode).toBe(403);
+    const miss = await call({ method: 'POST', query: { action: 'redeem' }, headers: {}, body: JSON.stringify({ code: 'GHOST', comp: 'MacDuffie2016' }) });
+    expect(miss.statusCode).toBe(404);
   });
 });

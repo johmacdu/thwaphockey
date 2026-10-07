@@ -333,6 +333,18 @@ describe('team weekly plan', () => {
     expect(res.statusCode).toBe(402);
     expect(res.body).toMatchObject({ gated: true });
   });
+
+  it('get-plan carries the team billing status for the client paywall', async () => {
+    await loginSeedCoach();
+    const res = makeRes();
+    await _handlers.getPlan(get({ code: _seed.SEED_TEAM_CODE }), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.billing).toMatchObject({
+      active: expect.any(Boolean),
+      currentSeason: expect.any(String),
+      enforced: expect.any(Boolean),
+    });
+  });
 });
 
 describe('team goal (coach -> every player Game Day plan)', () => {
