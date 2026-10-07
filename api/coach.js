@@ -265,6 +265,38 @@ async function coachLogin(req, res) {
   });
 }
 
+// POST ?action=coach-register { email, password, name } -> self-serve coach
+// signup. Creates a brand-new coach:<email> with a hashed password (via passHash,
+// the same helper coach-login checks against), rejects a duplicate email, and
+// returns a session token in the SAME shape coach-login does so the client can
+// go straight on to create-team. New coaches start with no teams.
+async function coachRegister(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  // Seed first so the canonical seed coach/admin exist; this also makes a
+  // registration on the seed email correctly hit the duplicate guard below.
+  await ensureSeed();
+  const { email, password, name } = parseBody(req);
+  const cleanEmail = String(email || '').trim().toLowerCase();
+  res.setHeader('Cache-Control', 'no-store');
+  if (!EMAIL_RE.test(cleanEmail)) return res.status(400).json({ error: 'bad email' });
+  const pass = String(password || '');
+  if (pass.length < 6) return res.status(400).json({ error: 'password must be at least 6 characters' });
+  if (await getCoach(cleanEmail)) return res.status(409).json({ error: 'an account with that email already exists' });
+  const cleanName = String(name || '').trim().slice(0, 60) || 'Coach';
+  await setCoach(cleanEmail, {
+    name: cleanName,
+    passHash: passHash(pass),
+    teams: [],
+    childPlayerId: null,
+    createdAt: new Date().toISOString(),
+  });
+  const token = mintCoachToken(cleanEmail);
+  return res.status(200).json({
+    ok: true, token,
+    coach: { email: cleanEmail, name: cleanName, teams: [], teamList: [], childPlayerId: null },
+  });
+}
+
 async function createTeam(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
   const coach = await requireCoach(req, res); if (!coach) return;
@@ -943,6 +975,7 @@ export default async function handler(req, res) {
   const action = String((req.query && req.query.action) || '').toLowerCase();
   switch (action) {
     case 'coach-login': return coachLogin(req, res);
+    case 'coach-register': return coachRegister(req, res);
     case 'create-team': return createTeam(req, res);
     case 'add-player': return addPlayer(req, res);
     case 'remove-player': return removePlayer(req, res);
@@ -989,7 +1022,7 @@ export default async function handler(req, res) {
 
 // Exported for unit tests (call sub-handlers directly with a query.action-free req).
 export const _handlers = {
-  coachLogin, createTeam, addPlayer, removePlayer, roster, playerRollup,
+  coachLogin, coachRegister, createTeam, addPlayer, removePlayer, roster, playerRollup,
   updatePlayer, setPassword, requestPassword, resetPassword, requestCode,
   adminRoster, adminUpdatePlayer,
   adminLogin, adminSetPassword, adminStatus,

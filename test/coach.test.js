@@ -86,6 +86,63 @@ describe('coach auth gate', () => {
   });
 });
 
+describe('coach-register (self-serve signup)', () => {
+  it('registers a brand-new coach and returns a session token', async () => {
+    const res = makeRes();
+    await _handlers.coachRegister(post({ email: 'new@example.com', password: 'secret1', name: 'New Coach' }), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.ok).toBe(true);
+    expect(res.body.token).toBeTruthy();
+    // Same shape coach-login returns, with no teams yet.
+    expect(res.body.coach).toMatchObject({ email: 'new@example.com', name: 'New Coach', teams: [], teamList: [] });
+  });
+
+  it('lets the new coach log in and create a team right after registering', async () => {
+    const reg = makeRes();
+    await _handlers.coachRegister(post({ email: 'flow@example.com', password: 'secret1', name: 'Flow Coach' }), reg);
+    expect(reg.statusCode).toBe(200);
+    const token = reg.body.token;
+
+    // The token authorizes create-team (reuses the existing create-team handler).
+    const team = makeRes();
+    await _handlers.createTeam(post({ coachToken: token, name: 'Harbour Seals 10U', association: 'Test Assoc', ageGroup: '10U' }), team);
+    expect(team.statusCode).toBe(200);
+    expect(team.body.code).toBeTruthy();
+
+    // And the stored credentials work at coach-login.
+    const login = makeRes();
+    await _handlers.coachLogin(post({ email: 'flow@example.com', password: 'secret1' }), login);
+    expect(login.statusCode).toBe(200);
+    expect(login.body.token).toBeTruthy();
+    expect(login.body.coach.teams).toContain(team.body.code);
+  });
+
+  it('rejects a duplicate email with 409', async () => {
+    const first = makeRes();
+    await _handlers.coachRegister(post({ email: 'dupe@example.com', password: 'secret1', name: 'First' }), first);
+    expect(first.statusCode).toBe(200);
+    const second = makeRes();
+    await _handlers.coachRegister(post({ email: 'dupe@example.com', password: 'secret2', name: 'Second' }), second);
+    expect(second.statusCode).toBe(409);
+  });
+
+  it('rejects the seeded coach email as a duplicate', async () => {
+    const res = makeRes();
+    await _handlers.coachRegister(post({ email: _seed.SEED_COACH_EMAIL, password: 'secret1', name: 'Imposter' }), res);
+    expect(res.statusCode).toBe(409);
+  });
+
+  it('rejects a malformed email and a too-short password', async () => {
+    const badEmail = makeRes();
+    await _handlers.coachRegister(post({ email: 'not-an-email', password: 'secret1', name: 'X' }), badEmail);
+    expect(badEmail.statusCode).toBe(400);
+
+    const shortPw = makeRes();
+    await _handlers.coachRegister(post({ email: 'short@example.com', password: 'abc', name: 'X' }), shortPw);
+    expect(shortPw.statusCode).toBe(400);
+  });
+});
+
 describe('roster + participation + kid-owned identity', () => {
   it('lists the seeded roster with participation and a member has a jersey number', async () => {
     await loginSeedCoach();
