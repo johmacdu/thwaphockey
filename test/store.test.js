@@ -105,7 +105,7 @@ describe('computeStreak', () => {
 describe('weekCount (Monday-based)', () => {
   // Week containing Wed 2026-01-14 starts Mon 2026-01-12.
   it('is all zeros for a fresh player', async () => {
-    expect(await weekCount('lewie')).toEqual({ stick: 0, shoot: 0, dryland: 0, netplay: 0 });
+    expect(await weekCount('lewie')).toEqual({ stick: 0, shoot: 0, dryland: 0, netplay: 0, iq: 0 });
   });
 
   it('counts only events within the current Monday-based week', async () => {
@@ -115,7 +115,7 @@ describe('weekCount (Monday-based)', () => {
       { date: '2026-01-13', disc: 'shoot' }, // Tuesday - included
       { date: '2026-01-14', disc: 'stick' }, // Wednesday (today) - included
     ]);
-    expect(await weekCount('lewie')).toEqual({ stick: 2, shoot: 1, dryland: 0, netplay: 0 });
+    expect(await weekCount('lewie')).toEqual({ stick: 2, shoot: 1, dryland: 0, netplay: 0, iq: 0 });
   });
 
   it('ignores events with an unknown discipline', async () => {
@@ -123,7 +123,7 @@ describe('weekCount (Monday-based)', () => {
       { date: '2026-01-13', disc: 'stick' },
       { date: '2026-01-13', disc: 'bogus' },
     ]);
-    expect(await weekCount('lewie')).toEqual({ stick: 1, shoot: 0, dryland: 0, netplay: 0 });
+    expect(await weekCount('lewie')).toEqual({ stick: 1, shoot: 0, dryland: 0, netplay: 0, iq: 0 });
   });
 });
 
@@ -160,7 +160,7 @@ describe('bumpPlayer', () => {
     pinDate('2026-01-14');
     await bumpPlayer('lewie', 'shoot');
     expect(await computeStreak('lewie')).toBe(2);
-    expect(await weekCount('lewie')).toEqual({ stick: 1, shoot: 1, dryland: 0, netplay: 0 });
+    expect(await weekCount('lewie')).toEqual({ stick: 1, shoot: 1, dryland: 0, netplay: 0, iq: 0 });
   });
 });
 
@@ -170,7 +170,7 @@ describe('adjustPlayer (corrections)', () => {
     for (let i = 0; i < 6; i += 1) await bumpPlayer('lewie', 'stick');
     for (let i = 0; i < 6; i += 1) await bumpPlayer('lewie', 'shoot');
     for (let i = 0; i < 2; i += 1) await bumpPlayer('lewie', 'dryland');
-    expect(await weekCount('lewie')).toEqual({ stick: 6, shoot: 6, dryland: 2, netplay: 0 });
+    expect(await weekCount('lewie')).toEqual({ stick: 6, shoot: 6, dryland: 2, netplay: 0, iq: 0 });
 
     const res = await adjustPlayer('lewie', { stick: -3, shoot: -3, dryland: -1 });
     expect(res.stick).toBe(3);
@@ -180,7 +180,7 @@ describe('adjustPlayer (corrections)', () => {
     const stored = await getPlayer('lewie');
     expect(stored).toMatchObject({ stick: 3, shoot: 3, dryland: 1 });
     // Weekly split must correct too (events removed, not just aggregate).
-    expect(await weekCount('lewie')).toEqual({ stick: 3, shoot: 3, dryland: 1, netplay: 0 });
+    expect(await weekCount('lewie')).toEqual({ stick: 3, shoot: 3, dryland: 1, netplay: 0, iq: 0 });
   });
 
   it('never drives an aggregate count below zero', async () => {
@@ -232,9 +232,9 @@ describe('weekBoard', () => {
     const board = await weekBoard();
     expect(board).toHaveLength(ROSTER.length);
     const lewie = board.find((p) => p.id === 'lewie');
-    expect(lewie).toEqual({ id: 'lewie', stick: 1, shoot: 1, dryland: 0, netplay: 0 });
+    expect(lewie).toEqual({ id: 'lewie', stick: 1, shoot: 1, dryland: 0, netplay: 0, iq: 0 });
     const johnny = board.find((p) => p.id === 'johnny');
-    expect(johnny).toEqual({ id: 'johnny', stick: 0, shoot: 0, dryland: 0, netplay: 0 });
+    expect(johnny).toEqual({ id: 'johnny', stick: 0, shoot: 0, dryland: 0, netplay: 0, iq: 0 });
   });
 });
 

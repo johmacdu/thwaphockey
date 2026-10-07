@@ -46,7 +46,7 @@ const postWithKey = (body, key) => post(body, { 'x-seed-key': key });
 // Seed a player directly into the fake store with non-zero counts so we can
 // prove the reset zeroes them.
 function seedPlayer(id, counts) {
-  fake.map.set(`player:${id}`, { stick: 0, shoot: 0, dryland: 0, netplay: 0, streak: 0, stickers: 0, updatedAt: null, ...counts });
+  fake.map.set(`player:${id}`, { stick: 0, shoot: 0, dryland: 0, netplay: 0, iq: 0, streak: 0, stickers: 0, updatedAt: null, ...counts });
   fake.map.set(`days:${id}`, ['2026-09-01', '2026-09-02']);
   fake.map.set(`events:${id}`, [{ date: '2026-09-01', disc: 'stick' }, { date: '2026-09-02', disc: 'shoot' }]);
 }

@@ -229,6 +229,32 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 #stick .exrow{--exacc:#8fd65e;--exacc2:#6fb843}
 #shoot .exrow{--exacc:#75B8FF;--exacc2:#3e86d6}
 #dryland .exrow{--exacc:#FF9D4D;--exacc2:#e58a2e}
+#iq .exrow{--exacc:#A98BFF;--exacc2:#7A5AF0}
+/* Hockey IQ quiz: MC options + free-text reflection. Reuses the exrow shell. */
+.iq-q{margin:0 0 18px}
+.iq-q:last-child{margin-bottom:0}
+.iq-qtext{font-weight:900;font-size:15px;line-height:1.35;margin:0 0 10px}
+.iq-opts{display:flex;flex-direction:column;gap:8px}
+.iq-opt{display:flex;align-items:flex-start;gap:10px;width:100%;text-align:left;font-family:inherit;font-size:14px;font-weight:700;line-height:1.35;padding:12px 14px;min-height:48px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--text);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:border-color .12s ease,background .12s ease}
+.iq-opt .iq-optmark{flex:0 0 auto;width:22px;height:22px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900}
+.iq-opt.correct{border-color:#4E9128;background:rgba(78,145,40,.10)}
+.iq-opt.correct .iq-optmark{border-color:#4E9128;background:#4E9128;color:#fff}
+.iq-opt.wrong{border-color:#D64545;background:rgba(214,69,69,.08)}
+.iq-opt.wrong .iq-optmark{border-color:#D64545;background:#D64545;color:#fff}
+.iq-opt.locked{cursor:default;opacity:.72}
+.iq-opt.locked.correct,.iq-opt.locked.wrong{opacity:1}
+.iq-fb{font-size:13px;font-weight:800;margin:8px 0 0;min-height:1px}
+.iq-fb.ok{color:#4E9128}
+.iq-fb.no{color:#D64545}
+.iq-reflect{display:block;width:100%;box-sizing:border-box;font-family:inherit;font-size:15px;line-height:1.4;padding:12px 14px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--text);resize:vertical;min-height:92px}
+.iq-reflect:focus{outline:none;border-color:#7A5AF0}
+.iq-saverow{display:flex;align-items:center;gap:12px;margin-top:10px}
+.iq-save{font-family:inherit;font-size:14px;font-weight:900;padding:10px 18px;min-height:44px;border-radius:999px;border:0;background:#7A5AF0;color:#fff;cursor:pointer}
+.iq-save:disabled{opacity:.5;cursor:default}
+.iq-saved{font-size:13px;font-weight:800;color:#4E9128}
+.iq-reveal-note{font-size:12px;font-weight:700;color:var(--muted);margin-top:8px}
+.nav-iq .ico{background:linear-gradient(135deg,#A98BFF,#7A5AF0)}
+
 /* THWAP stamp when a drill is checked done */
 .exthwap{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%) rotate(-8deg) scale(0);font-family:'Archivo Black',system-ui,sans-serif;font-size:52px;color:var(--lime);-webkit-text-stroke:3px var(--ink);pointer-events:none;z-index:60;opacity:0}
 .exthwap.go{animation:plthwap .7s ease}
@@ -1686,6 +1712,11 @@ body.login-locked{overflow:hidden}
 <div id='passList'></div>
 </section>
 
+<section id='iq' class='page'>
+<a class='glassclose' href='.' aria-label='Close'>✕</a><div class='heroCard'><div class='big eggiq' id='eggIq' role='img' aria-label='Brain'>🧠</div><h1><button type='button' class='titletip' data-daytip>Today’s<span class='titletip-date' id='iqDate'></span></button> Hockey IQ</h1><p>Watch a shift, answer the read, and tell us what you saw. Thursdays and Fridays.</p><div class='pills'><span class='pill' id='iqTime'>about 10 min</span></div></div>
+<div id='iqList'></div>
+</section>
+
 <section id='coachhome' class='page'>
 <div class='topbar'><div class='brand'><img class='brandlogo' src='sass-logo.svg' alt='Thwap Hockey' width='80' height='68'><img class='brandmark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span></nav><button type='button' class='kebab' id='kebabC' aria-label='Explore pages' aria-expanded='false'>Explore</button><div class='kebabmenu' id='kebabMenuC' hidden><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a><a href='#progress'>Standings</a></span></div></div>
 <div class='hero'><div class='kicker' id='chKicker'>Jr Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='chProfileName' aria-label='Edit your coach profile'>Coach</button> <span class='hero-wave' role='img' aria-label='Waving hand'>👋</span></h1><p>Here is where your team is at.</p></div>
@@ -2020,6 +2051,7 @@ body.login-locked{overflow:hidden}
 <button type='button' class='metric' data-disc='pass' id='metricPass' hidden><span class='metric-label'>🎯 Passing</span><span class='metric-num' data-total='pass'>0</span></button>
 <button type='button' class='metric' data-disc='dryland'><span class='metric-label'>⚡ Dryland</span><span class='metric-num' data-total='dryland'>0</span></button>
 <button type='button' class='metric' data-disc='netplay' id='metricNetplay' hidden><span class='metric-label'>🧤 Net play</span><span class='metric-num' data-total='netplay'>0</span></button>
+<button type='button' class='metric' data-disc='iq'><span class='metric-label'>🧠 Hockey IQ</span><span class='metric-num' data-total='iq'>0</span></button>
 </div>
 <p id='boardscope' class='lb-scope'>Everyone, all training</p>
 <div class='board' id='board'></div>
@@ -2238,6 +2270,7 @@ window.thwapTrainingToday=function(){
 <a class='nav nav-shoot' href='#shoot'><div class='ico'><img class='nav-ico' src='login/icon-net.webp' alt=''></div><div><h2>Shooting</h2><p>Accuracy + release, about 15 min</p></div><div class='chev'>›</div></a>
 <a class='nav nav-dryland' href='#dryland'><div class='ico'><img class='nav-ico' src='login/icon-bolt.webp' alt=''></div><div><h2>Dryland</h2><p>Speed + power + balance, about 15 min</p></div><div class='chev'>›</div></a>
 <a class='nav nav-pass' href='#pass'><div class='ico'><img class='nav-ico' src='login/icon-pass.webp' alt=''></div><div><h2>Passing <span class='soon-tag'>Coming soon</span></h2><p>Tape-to-tape + vision, coming early November</p></div><div class='chev'>›</div></a>
+<a class='nav nav-iq' href='#iq'><div class='ico'>🧠</div><div><h2>Hockey IQ</h2><p>Read the play from real NHL shifts, about 10 min</p></div><div class='chev'>›</div></a>
 </div>
 </section>
 <div class='footer'><span class='slogan'>Compete. Improve.<br class='sl-br'> Have fun.</span><div class='footer-actions'><button class='sfxtoggle' id='sfxToggle' type='button' aria-label='Mute sounds' title='Mute sounds' aria-pressed='true'></button><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button><div class='footmenu-wrap'><button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button><div class='footmenu' id='footMenu' hidden role='menu'><a class='footmenu-item' href='/about' role='menuitem'>About Thwap</a><a class='footmenu-item' id='menuTerms' href='#terms' role='menuitem'>Terms of Use</a><a class='footmenu-item' id='menuPrivacy' href='#privacy' role='menuitem'>Privacy Policy</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a><a class='footmenu-item' id='menuSignout' href='#' role='menuitem'>Sign out</a></div></div></div></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div>
@@ -2941,7 +2974,7 @@ window.thwapActiveTeam=function(coach){
   var code=(window.thwapActiveTeam?window.thwapActiveTeam(coach):((coach.teams&&coach.teams[0])||'RANGERS72'));
   var saveBtn=document.getElementById('planSave'), doneEl=document.getElementById('planDone');
   var DAYS=[['mon','Mon'],['tue','Tue'],['wed','Wed'],['thu','Thu'],['fri','Fri'],['sat','Sat'],['sun','Sun']];
-  var CATS=[['stick','Hands'],['shoot','Shoot'],['dryland','Dryland']];
+  var CATS=[['stick','Hands'],['shoot','Shoot'],['dryland','Dryland'],['iq','Hockey IQ']];
   var todayKey=(function(){ try{ var w=window.thwapWeekday&&window.thwapWeekday(); var map=['sun','mon','tue','wed','thu','fri','sat']; return map[w]||''; }catch(e){ return ''; } })();
   var plan={}, dirty=false;
   function setDirty(d){ dirty=d; if(saveBtn){ saveBtn.disabled=!d; } if(d&&doneEl) doneEl.hidden=true; }
@@ -3035,7 +3068,7 @@ window.thwapActiveTeam=function(coach){
   if(modeReq) modeReq.addEventListener('click',function(){ pkOptional=false; reflectMode(); });
   if(modeOpt) modeOpt.addEventListener('click',function(){ pkOptional=true; reflectMode(); });
   var pkDay='', pkCat='';
-  var CATLABEL={stick:'Hands',shoot:'Shoot',dryland:'Dryland'};
+  var CATLABEL={stick:'Hands',shoot:'Shoot',dryland:'Dryland',iq:'Hockey IQ'};
   var DAYLABEL={mon:'Monday',tue:'Tuesday',wed:'Wednesday',thu:'Thursday',fri:'Friday',sat:'Saturday',sun:'Sunday'};
   function openPicker(day,cat){
     pkDay=day; pkCat=cat;
@@ -3057,7 +3090,7 @@ window.thwapActiveTeam=function(coach){
      each category, so per-drill time = DAY_MIN / DAY_COUNT[cat] (the player's day
      set is ~DAY_MIN total). Coach stays under DAY_MIN for the day/category. */
   var DAY_MIN=15;
-  var DAY_COUNT={stick:3, shoot:5, dryland:6};
+  var DAY_COUNT={stick:3, shoot:5, dryland:6, iq:1};
   function perDrillMin(cat){ var n=DAY_COUNT[cat]||6; return DAY_MIN/n; }
   function estMin(cat,count){ return Math.round(count*perDrillMin(cat)); }
   /* Largest number of drills that still fits the ~15 min/category day budget. */
@@ -4399,7 +4432,7 @@ function countUp(el,target,fmt){
    weekly split at /api/board?tf=week and cumulative all-time at /api/board. */
 var LIVE={week:null, all:null};
 function mapPlayers(list){
-  return list.map(function(p){ return {n:(p.id.charAt(0).toUpperCase()+p.id.slice(1)), stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0, netplay:p.netplay||0}; });
+  return list.map(function(p){ return {n:(p.id.charAt(0).toUpperCase()+p.id.slice(1)), stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0, netplay:p.netplay||0, iq:p.iq||0}; });
 }
 /* Global real-data store so the stats page reads the SAME live numbers, not a
    name-hash demo. Keyed by lowercase first name. streak is the honest computed
@@ -4407,7 +4440,7 @@ function mapPlayers(list){
 window.thwapBoard=window.thwapBoard||{ week:{}, all:{}, ready:false };
 function stashBoard(which, list){
   var m={};
-  list.forEach(function(p){ m[String(p.id).toLowerCase()]={stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0, netplay:p.netplay||0, streak:p.streak||0}; });
+  list.forEach(function(p){ m[String(p.id).toLowerCase()]={stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0, netplay:p.netplay||0, iq:p.iq||0, streak:p.streak||0}; });
   window.thwapBoard[which]=m; window.thwapBoard.ready=true;
   if(window.thwapStatsRefresh) window.thwapStatsRefresh();
 }
@@ -4463,7 +4496,7 @@ function fetchBoard(){
 function netEnabled(){ return !!window.NETPLAY_ENABLED; }
 function thirdOf(p){ return netEnabled() ? (p.shoot||0) : (p.shoot||0)+(p.netplay||0); }
 function scoreOf(p){
-  if(disc==='all') return (p.stick||0)+(p.shoot||0)+(p.netplay||0)+(p.dryland||0)+(p.pass||0);
+  if(disc==='all') return (p.stick||0)+(p.shoot||0)+(p.netplay||0)+(p.dryland||0)+(p.pass||0)+(p.iq||0);
   if(disc==='shoot') return thirdOf(p);
   return p[disc]||0;
 }
@@ -4504,10 +4537,10 @@ function render(){
   board.querySelectorAll('.row[data-player]').forEach(function(rw){
     rw.addEventListener('click',function(){ if(window.openPlayerPage) window.openPlayerPage(rw.getAttribute('data-player')); });
   });
-  var t={stick:0,shoot:0,dryland:0,pass:0,netplay:0};
-  var _src=rowsFor(); _src.forEach(function(p){ t.stick+=(p.stick||0); t.shoot+=thirdOf(p); t.dryland+=(p.dryland||0); t.pass+=(p.pass||0); t.netplay+=(p.netplay||0); });
+  var t={stick:0,shoot:0,dryland:0,pass:0,netplay:0,iq:0};
+  var _src=rowsFor(); _src.forEach(function(p){ t.stick+=(p.stick||0); t.shoot+=thirdOf(p); t.dryland+=(p.dryland||0); t.pass+=(p.pass||0); t.netplay+=(p.netplay||0); t.iq+=(p.iq||0); });
   t.all=t.stick+(t.shoot)+t.dryland+t.pass+(netEnabled()?t.netplay:0);
-  ['all','stick','shoot','dryland','pass','netplay'].forEach(function(k){
+  ['all','stick','shoot','dryland','pass','netplay','iq'].forEach(function(k){
     var el=document.querySelector(".metric-num[data-total='"+k+"']"); if(el)countUp(el,t[k]);
   });
   /* Team goal block: This week has a target + bar; All time is a running total with no ceiling. */
@@ -4532,7 +4565,7 @@ function render(){
       if(info)info.style.display='none';
     }
   }
-  var discLabel={all:'all training',stick:'🏒 Hands',shoot:'🥅 Shoot',dryland:'⚡ Dryland',pass:'🎯 Passing',netplay:'🧤 Net play'}[disc];
+  var discLabel={all:'all training',stick:'🏒 Hands',shoot:'🥅 Shoot',dryland:'⚡ Dryland',pass:'🎯 Passing',netplay:'🧤 Net play',iq:'🧠 Hockey IQ'}[disc];
   if(scope)scope.textContent=(disc==='all')?'Everyone, all training':('Just '+discLabel);
 }
 /* team streak: only shows when >= 3 days (temporal reward). Demo value until Phase 4. */
@@ -5880,6 +5913,18 @@ window.thwapDrillCatalog=function(cat){
   if(cat==='stick') return collect(window.DRILLS);
   if(cat==='shoot'){ var s=[]; (window.SHOOT_DAYS||[]).forEach(function(day){ (day||[]).forEach(function(x){ s.push(x); }); }); return collect(s); }
   if(cat==='dryland'){ var w=[]; (window.WORKOUTS||[]).forEach(function(wk){ (wk.drills||[]).forEach(function(x){ w.push(x); }); }); return collect(w); }
+  if(cat==='iq'){
+    /* IQ 'drills' are read-the-play videos: offense + defense pools, surfaced as
+       drill-like objects (name = clip title, video = youtube id) so the coach
+       drill-picker lists real content. The pool a player actually sees is still
+       chosen by position + weekday on the IQ page; this is the coach library. */
+    var iq=[]; var seen={};
+    (window.IQ_OFFENSE||[]).concat(window.IQ_DEFENSE||[]).forEach(function(v){
+      if(!v||!v.title) return; var nm=v.title; if(seen[v.id]) return; seen[v.id]=1;
+      iq.push({name:nm, emoji:'\uD83E\uDDE0', cue:'', steps:[], video:v.id});
+    });
+    return iq;
+  }
   return [];
 };
 /* Real per-player completion counts, read from the same live board the leaderboard
@@ -5900,7 +5945,7 @@ function statsFetch(){
     var url=(which==='week')?'/api/board?tf=week':'/api/board';
     try{ fetch(url,{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.players&&j.players.length){
-        var m={}; j.players.forEach(function(p){ m[String(p.id).toLowerCase()]={stick:p.stick||0,shoot:p.shoot||0,dryland:p.dryland||0,netplay:p.netplay||0,streak:p.streak||0}; });
+        var m={}; j.players.forEach(function(p){ m[String(p.id).toLowerCase()]={stick:p.stick||0,shoot:p.shoot||0,dryland:p.dryland||0,netplay:p.netplay||0,iq:p.iq||0,streak:p.streak||0}; });
         window.thwapBoard=window.thwapBoard||{week:{},all:{},ready:false};
         window.thwapBoard[which]=m; window.thwapBoard.ready=true;
         if(window.thwapStatsRefresh) window.thwapStatsRefresh();
@@ -6025,7 +6070,7 @@ window.thwapStatsRefresh=function(){ if(current && location.hash==='#player') bu
           dev.hidden=false;
           /* Per-discipline volume: this week (baseThisWeek) + this month (summed trend). */
           var volEl=document.getElementById('idpDevVol');
-          var wkv=j.baseThisWeek||{stick:0,shoot:0,dryland:0,netplay:0};
+          var wkv=j.baseThisWeek||{stick:0,shoot:0,dryland:0,netplay:0,iq:0};
           var mo={stick:0,shoot:0,dryland:0,netplay:0};
           (j.monthTrend||[]).forEach(function(w){ mo.stick+=w.stick||0; mo.shoot+=w.shoot||0; mo.dryland+=w.dryland||0; mo.netplay+=w.netplay||0; });
           if(volEl){
@@ -6875,6 +6920,339 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#pass') ren
 })();</script>
 
 <script>(function(){
+/* Hockey IQ discipline (LIVE). A 2/week (Thursday + Friday) read-the-play quiz:
+   each item is one real NHL shift video + its questions. Unlike the skill
+   checklists, a question is multiple-choice (tap an option, it marks correct or
+   incorrect) OR a free-text reflection (the kid's answer SAVES to their player
+   record; the coaching reveal is a HIDDEN STUB until Woody supplies it). The
+   video uses the existing inline "Watch how" expand (.exvid-link/.exvid-slot).
+
+   Position branch (from the player pos in THWAP_ROSTER):
+     F  -> offense pool,  D -> defense pool,
+     FD -> MIX: Thursday one offense video, Friday one defense video, so an FD
+           player gets exactly one of each per week.
+   Content is Woody-supplied (hockey-iq-content.md); do NOT fabricate beyond it.
+   Launch ships 3 defense + 7 offense real videos; more light up as they arrive.
+   iq stays OUT of the radar/participation triad (disciplinesFor) - it is a quiz,
+   not a 5/week skill - matching the server (iq not in disciplinesFor). */
+
+/* Each video: { id (youtube), title, questions:[] }.
+   A question is {t:'mc', q, opts:[...], correct:<1-based>} or {t:'ft', q}
+   (ft = free text; reveal is a hidden stub, no model answer shown). */
+var IQ_DEFENSE=window.IQ_DEFENSE=[
+  {id:'TzQ2vj8OjYU', title:'Quinn Hughes', questions:[
+    {t:'mc', q:'Why does Quinn Hughes avoid crowding the initial puck battle early in the shift?', opts:[
+      'Because he wants to stay out of the defensive coverage',
+      'Because he is trying to preserve support spacing and become an outlet option',
+      'Because defensemen should stay high at all times',
+      'Because he expects the puck battle to be lost immediately'], correct:2},
+    {t:'ft', q:'Why is Quinn Hughes\u2019 patience important when the puck becomes dangerous near the net-front area?'},
+    {t:'mc', q:'If your defensive partner is already pressuring the puck carrier near the net, what is usually the smartest support decision?', opts:[
+      'Chase the puck carrier too and leave the coverage',
+      'Stay underneath the play and protect passing options',
+      'Drift toward the blue line waiting for a breakout',
+      'Turn fully toward the puck and stop scanning threats'], correct:2}
+  ]},
+  {id:'nnpSMV7Yx4Y', title:'Covering the future of the puck', questions:[
+    {t:'mc', q:'As a defenseman, what does it mean to \u201ccover the future of the puck\u201d?', opts:[
+      'Chase the puck carrier aggressively',
+      'Anticipate and remove the next passing option',
+      'Stay glued to the net front',
+      'Watch only your assigned man'], correct:2},
+    {t:'ft', q:'Why is this hook considered more of an \u201ceffort penalty\u201d than a careless one?'}
+  ]},
+  {id:'2BxAhTmqoEc', title:'Penalty kill', questions:[
+    {t:'mc', q:'On the penalty kill, what is your primary responsibility inside a box structure?', opts:[
+      'Chase the puck aggressively',
+      'Pressure every pass',
+      'Collapse fully to the net',
+      'Protect your \u201cpiece of the pie\u201d and keep the box intact'], correct:4},
+    {t:'ft', q:'Why is puck movement on the power play designed to dismantle the penalty-kill box?'},
+    {t:'mc', q:'When should a penalty killer attack aggressively?', opts:[
+      'When a trigger occurs (backhand reception, bobble, turned back)',
+      'On every puck touch',
+      'Only after a shot',
+      'Never, always stay passive'], correct:1}
+  ]}
+];
+var IQ_OFFENSE=window.IQ_OFFENSE=[
+  {id:'cSEmQlxuUYI', title:'Macklin Celebrini', questions:[
+    {t:'mc', q:'Before Celebrini receives the puck after the D-to-D pass, what does he do that gives him an advantage?', opts:[
+      'He waits until the puck reaches him before deciding what to do',
+      'He takes an educated scan early to identify pressure and his next option before the puck arrives',
+      'He immediately turns toward the wall to protect the puck',
+      'He skates away from the middle to create more space'], correct:2},
+    {t:'ft', q:'On the rush, why does Celebrini turn toward the play instead of turning toward the wall for a traditional puck-protection play?'},
+    {t:'mc', q:'What is the biggest lesson from the second half of Celebrini\u2019s shift?', opts:[
+      'Long shifts give skilled players more chances to create offense',
+      'Centers should always stay low in the defensive zone',
+      'Players should avoid supporting the puck when they are tired',
+      'As fatigue builds, positioning and decision-making can deteriorate, which is why short shifts matter'], correct:4}
+  ]},
+  {id:'PvdXRNPdIZI', title:'Macklin Celebrini (playing wing)', questions:[
+    {t:'mc', q:'Celebrini is playing wing on this shift instead of center. How should that change his defensive positioning?', opts:[
+      'He should play exactly the same as he does as center',
+      'He should collapse all the way below the goal line',
+      'He should stay as high as possible and wait for offense',
+      'He can stay higher in the zone, but still needs to stay inside the dots, face the play and identify weak-side threats'], correct:4},
+    {t:'ft', q:'The Sharks temporarily have a player down in the corner. How should that change Celebrini\u2019s responsibilities on the weak side?'},
+    {t:'mc', q:'Late in the shift, what does Celebrini do well when the puck comes toward him along the wall?', opts:[
+      'He tries to make a skilled play through pressure',
+      'He keeps his eyes up, protects himself, gets the puck deep, and stays available for support before changing',
+      'He immediately leaves the zone for a line change',
+      'He stops moving and waits for a teammate to take the puck'], correct:2}
+  ]},
+  {id:'X3IDw2v_bqc', title:'Macklin Celebrini', questions:[
+    {t:'mc', q:'In the defensive zone, why does Celebrini stay patient instead of immediately chasing the puck?', opts:[
+      'He is waiting for his defenseman to tell him where to go',
+      'He wants to conserve energy for offense',
+      'The Sharks are already organized, so he stays D-side, tracks his assignment, and waits for the right pressure trigger',
+      'He is trying to stay as close to the net as possible'], correct:3},
+    {t:'ft', q:'Celebrini gets the puck in the offensive zone with pressure climbing. Why is detaching from the puck such an effective skill in this situation?'},
+    {t:'mc', q:'Why does Celebrini hold on to the puck and draw a defender toward him before moving it?', opts:[
+      'Pulling the defender toward him creates space elsewhere and changes the defensive structure before the pass',
+      'He is waiting until his teammates stop moving',
+      'He wants to slow the entire possession down',
+      'He is trying to create a one-on-one battle'], correct:1}
+  ]},
+  {id:'ecVofT29990', title:'Macklin Celebrini', questions:[
+    {t:'mc', q:'After Celebrini loses the faceoff and the puck moves D-to-D, what is the smartest thing for him to do?', opts:[
+      'Stay on top of his assignment, communicate the switch, then fill the middle as the forecheck changes',
+      'Chase the puck carrier all the way across the ice',
+      'Drop immediately below the dots and protect the net',
+      'Stay where he took the faceoff and wait for the play to develop'], correct:1},
+    {t:'ft', q:'Celebrini has only about a half-step advantage going back for the puck. Why is taking pre-puck contact smarter than simply racing to touch the puck first?'},
+    {t:'mc', q:'After Celebrini helps move the puck up the wall, why does he stay D-side instead of collapsing toward the front of the net?', opts:[
+      'He is preparing to leave the zone early',
+      'He wants to stay close enough to block the point shot himself',
+      'He keeps his assignment away from the net while helping give his goalie a clearer sightline',
+      'He is waiting for the puck to come back down the wall'], correct:3}
+  ]},
+  {id:'kHaxxhS-T04', title:'Macklin Celebrini', questions:[
+    {t:'mc', q:'What is the biggest issue with Celebrini\u2019s angle in the neutral zone?', opts:[
+      'He forces the puck carrier toward the boards instead of the middle',
+      'His gap is too large, giving the puck carrier too much space to attack around him',
+      'He closes too aggressively and gets beat with speed',
+      'He focuses too much on the puck instead of the player'], correct:2},
+    {t:'ft', q:'Celebrini misses the initial angle. What does he do next that keeps a small mistake from becoming a bigger problem?'},
+    {t:'mc', q:'After Celebrini wins the defensive-zone faceoff, what allows him to anticipate where the puck is going next?', opts:[
+      'His teammate verbally tells him where to go',
+      'He watches only the puck after the draw',
+      'He immediately leaves the zone looking for offense',
+      'He reads the defender\u2019s feet, weight shift, pressure, and body position before the pass is made'], correct:4}
+  ]},
+  {id:'ocHJSbT3m0I', title:'Macklin Celebrini', questions:[
+    {t:'mc', q:'After San Jose loses the power-play faceoff, why does Celebrini immediately close down the wall instead of going to the far post like he did after the previous win?', opts:[
+      'He wants to switch positions with the defenseman',
+      'He is trying to create a scoring chance before the puck leaves the zone',
+      'He recognizes the possession has changed and pressures the clear so Anaheim has to get rid of the puck faster',
+      'He is trying to force the puck carrier toward the middle'], correct:3},
+    {t:'ft', q:'On the power-play entry, why might a soft chip or a hard rim be a better option than forcing the puck back toward the middle?'},
+    {t:'mc', q:'On the late 3-on-1 rush, why does Celebrini slow down instead of continuing directly toward the net?', opts:[
+      'He sees Will Smith driving the net and uses that movement to find the open soft spot behind the defenders',
+      'He is preparing to change',
+      'He wants the puck carrier to shoot instead of pass',
+      'He is waiting for the backcheckers to catch up'], correct:1}
+  ]},
+  /* O-Video 7 shares O-Video 6's URL (ocHJSbT3m0I) per Woody's content brief -
+     treated as given (likely a duplicate link; questions differ). Confirm the
+     intended clip with Woody; leaving the given URL in place. */
+  {id:'ocHJSbT3m0I', title:'Macklin Celebrini', questions:[
+    {t:'mc', q:'With about a minute left in a tied period, why does Celebrini get above the puck instead of racing below it to chase possession?', opts:[
+      'He is preparing to change',
+      'He wants to stay away from contact',
+      'He is waiting for the defenseman to make the play',
+      'He recognizes the situation and protects against transition while still staying available offensively'], correct:4},
+    {t:'ft', q:'Why does Celebrini move the puck quickly to Will Smith and then immediately shave ice away from contact?'},
+    {t:'mc', q:'What makes Celebrini\u2019s backcheck late in the shift a high-hockey-iq play?', opts:[
+      'He skates as fast as possible all the way back to his net',
+      'He identifies which threats are already covered, finds the most dangerous open player, and adjusts when responsibilities change',
+      'He follows the puck carrier everywhere',
+      'He stays directly behind his defensemen'], correct:2}
+  ]}
+];
+var IQ_ENABLED=window.IQ_ENABLED=true;  /* we have content, so it is live */
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+/* Which pool + index for today. Thu(getDay 4) and Fri(getDay 5) only; other days
+   render a calm rest state. window.thwapWeekday() returns 0=Sun..6=Sat. */
+function iqPlayer(){ try{ return (localStorage.getItem('bfPlayer')||'Lewie').trim().split(/\s+/)[0]; }catch(e){ return 'Lewie'; } }
+function iqPos(){
+  var p=iqPlayer().toLowerCase().replace(/[^a-z]/g,'');
+  var r=(window.THWAP_ROSTER&&window.THWAP_ROSTER[p])||null;
+  return r&&r.pos ? r.pos : 'F';
+}
+function iqWeekday(){ try{ return window.thwapWeekday?window.thwapWeekday():0; }catch(e){ return 0; } }
+/* Returns the video for today, or null on a non-IQ day / empty pool.
+   F -> offense, D -> defense, FD -> Thu offense, Fri defense. The index rotates
+   by week so each video surfaces about twice across a 24-week season. */
+function iqToday(){
+  var wd=iqWeekday();                 /* 0=Sun..6=Sat */
+  if(wd!==4 && wd!==5) return null;   /* Thursday + Friday only */
+  var pos=iqPos();
+  var pool;
+  if(pos==='D') pool=IQ_DEFENSE;
+  else if(pos==='FD') pool=(wd===4)?IQ_OFFENSE:IQ_DEFENSE;  /* Thu offense, Fri defense */
+  else pool=IQ_OFFENSE;               /* F and anything else */
+  if(!pool || !pool.length) return null;
+  /* Rotate across the season by week number so a video repeats about twice.
+     Thursday and Friday advance together within a week. */
+  var wk=iqWeekNum();
+  var slot=(wd===5)?1:0;              /* Fri gets the next step so Thu/Fri differ */
+  var idx=((wk*2)+slot) % pool.length;
+  return { video:pool[idx], pool:(pool===IQ_DEFENSE?'defense':'offense'), idx:idx, wd:wd };
+}
+/* Weeks since a fixed season anchor, used only to rotate the daily video. */
+function iqWeekNum(){
+  var anchor=Date.UTC(2026,8,1);      /* Sep 1 2026, season-ish start */
+  var now=Date.now();
+  var wk=Math.floor((now-anchor)/(7*24*3600*1000));
+  return wk<0?0:wk;
+}
+
+function iqKey(t){ return 'thwapIqProg|'+t.pool+'|'+t.idx; }
+function loadIq(k){ try{ return JSON.parse(localStorage.getItem(k)||'{}'); }catch(e){ return {}; } }
+function saveIq(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+
+function iqRender(){
+  var list=document.getElementById('iqList'); if(!list) return;
+  var t=iqToday();
+  if(!t){
+    list.innerHTML="<div class='soon-empty'>"+
+      "<h3>Hockey IQ is Thursdays and Fridays</h3>"+
+      "<p>Come back Thursday or Friday to watch a real NHL shift and read the play. Until then, keep stacking days in Hands, Shooting and Dryland.</p>"+
+    "</div>";
+    return;
+  }
+  var v=t.video;
+  var key=iqKey(t);
+  var prog=loadIq(key);               /* { mc:{qi:choice}, ft:{qi:text}, done:bool } */
+  prog.mc=prog.mc||{}; prog.ft=prog.ft||{};
+  var qsHTML=v.questions.map(function(q,qi){ return iqQuestionHTML(q,qi,prog); }).join('');
+  list.innerHTML=
+    "<div class='exrow open' data-iq='1'>"+
+      "<div class='exhead'><div class='exem'>\U0001F9E0</div>"+
+        "<div><h3>"+esc(v.title)+"<span class='exbadge'>Done</span></h3>"+
+          "<div class='exdose'>"+(t.pool==='defense'?'Defense read':'Offense read')+"</div></div>"+
+        "<div class='exchev'>\u203a</div></div>"+
+      "<div class='exbody'>"+
+        "<button type='button' class='exvid-link' data-yt='"+esc(v.id)+"'><span class='exvid-tri'>\u25B6</span> Watch how</button>"+
+        "<div class='exvid-slot'></div>"+
+        "<div class='iq-questions'>"+qsHTML+"</div>"+
+      "</div>"+
+    "</div>";
+  var row=list.querySelector('.exrow');
+  row.querySelector('.exhead').addEventListener('click',function(){ row.classList.toggle('open'); });
+  iqWire(list, v, t, key);
+  iqSyncDone(list, v, key);
+}
+
+function iqQuestionHTML(q,qi,prog){
+  if(q.t==='mc'){
+    var chosen=prog.mc[qi];
+    var opts=q.opts.map(function(o,oi){
+      var n=oi+1;
+      var cls='iq-opt';
+      var mark=String.fromCharCode(65+oi);
+      if(chosen){
+        cls+=' locked';
+        if(n===q.correct){ cls+=' correct'; mark='\u2713'; }
+        else if(n===chosen){ cls+=' wrong'; mark='\u2715'; }
+      }
+      return "<button type='button' class='"+cls+"' data-qi='"+qi+"' data-opt='"+n+"'>"+
+        "<span class='iq-optmark'>"+mark+"</span><span class='iq-opttext'>"+esc(o)+"</span></button>";
+    }).join('');
+    var fb='';
+    if(chosen){
+      var ok=(chosen===q.correct);
+      fb="<p class='iq-fb "+(ok?'ok':'no')+"'>"+(ok?'Correct read.':'Not quite. The highlighted answer is the read.')+"</p>";
+    }
+    return "<div class='iq-q' data-qt='mc' data-qi='"+qi+"'>"+
+      "<p class='iq-qtext'>"+esc(q.q)+"</p>"+
+      "<div class='iq-opts'>"+opts+"</div>"+fb+"</div>";
+  }
+  /* free text reflection */
+  var saved=prog.ft[qi]||'';
+  return "<div class='iq-q' data-qt='ft' data-qi='"+qi+"'>"+
+    "<p class='iq-qtext'>"+esc(q.q)+"</p>"+
+    "<textarea class='iq-reflect' data-qi='"+qi+"' placeholder='Type what you saw. Tip: tap the mic on your keyboard to talk it out.'>"+esc(saved)+"</textarea>"+
+    "<div class='iq-saverow'><button type='button' class='iq-save' data-qi='"+qi+"'"+(saved?'':' disabled')+">Save</button>"+
+      "<span class='iq-saved' data-qi='"+qi+"'"+(saved?'':" hidden")+">Saved \u2713</span></div>"+
+    "<p class='iq-reveal-note'>Your coach will add a coaching point here soon.</p>"+   /* hidden stub: no model answer */
+  "</div>";
+}
+
+function iqWire(list, v, t, key){
+  /* MC taps */
+  list.querySelectorAll(".iq-q[data-qt='mc'] .iq-opt").forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var qdiv=btn.closest('.iq-q'); if(qdiv.querySelector('.iq-opt.locked')) return;  /* answered already */
+      var qi=+btn.getAttribute('data-qi');
+      var choice=+btn.getAttribute('data-opt');
+      var prog=loadIq(key); prog.mc=prog.mc||{}; prog.mc[qi]=choice; saveIq(key,prog);
+      var q=v.questions[qi];
+      qdiv.querySelectorAll('.iq-opt').forEach(function(b){
+        var n=+b.getAttribute('data-opt'); b.classList.add('locked');
+        if(n===q.correct){ b.classList.add('correct'); b.querySelector('.iq-optmark').textContent='\u2713'; }
+        else if(n===choice){ b.classList.add('wrong'); b.querySelector('.iq-optmark').textContent='\u2715'; }
+      });
+      var ok=(choice===q.correct);
+      var fb=qdiv.querySelector('.iq-fb');
+      if(!fb){ fb=document.createElement('p'); qdiv.appendChild(fb); }
+      fb.className='iq-fb '+(ok?'ok':'no');
+      fb.textContent=ok?'Correct read.':'Not quite. The highlighted answer is the read.';
+      iqSyncDone(list, v, key);
+    });
+  });
+  /* free-text save -> player record via /api/done pattern + localStorage */
+  list.querySelectorAll(".iq-q[data-qt='ft']").forEach(function(qdiv){
+    var qi=+qdiv.getAttribute('data-qi');
+    var ta=qdiv.querySelector('.iq-reflect');
+    var save=qdiv.querySelector('.iq-save');
+    var savedTag=qdiv.querySelector('.iq-saved');
+    ta.addEventListener('input',function(){
+      var has=!!ta.value.trim();
+      save.disabled=!has;
+      if(savedTag){ savedTag.hidden=true; }
+    });
+    save.addEventListener('click',function(){
+      var text=ta.value.trim(); if(!text) return;
+      var prog=loadIq(key); prog.ft=prog.ft||{}; prog.ft[qi]=text; saveIq(key,prog);
+      if(savedTag){ savedTag.hidden=false; }
+      /* Save the reflection to the player record. Reuse the same /api/done path the
+         skills use: POST { player, discipline:'iq', ... }. The reflection text rides
+         along; the server bump counts the IQ completion on the board. */
+      if(window.thwapSaveReflection) window.thwapSaveReflection(t, qi, text);
+      iqSyncDone(list, v, key);
+    });
+  });
+}
+
+/* The IQ item is "done" once every MC is answered and every free-text has a saved
+   answer. On done, hook the shared done/streak/sticker machinery like other discs. */
+function iqSyncDone(list, v, key){
+  var prog=loadIq(key); prog.mc=prog.mc||{}; prog.ft=prog.ft||{};
+  var allMc=v.questions.every(function(q,qi){ return q.t!=='mc' || prog.mc[qi]; });
+  var allFt=v.questions.every(function(q,qi){ return q.t!=='ft' || (prog.ft[qi]&&String(prog.ft[qi]).trim()); });
+  var done=allMc&&allFt;
+  var row=list.querySelector('.exrow');
+  if(done && !prog.done){
+    prog.done=true; saveIq(key,prog);
+    if(row) row.classList.add('done');
+    if(window.thwapCategoryDone) window.thwapCategoryDone('iq');
+    if(window.thwapMarkDone) window.thwapMarkDone('iq');
+    if(window.thwapStampToday) window.thwapStampToday('iq',true);
+  } else if(done && row){
+    row.classList.add('done');
+  }
+}
+
+iqRender();
+window.addEventListener('hashchange',function(){ if(location.hash==='#iq') iqRender(); });
+})();</script>
+
+<script>(function(){
 /* Global mark-done -> team leaderboard. When a drill is checked done, also count it
    on the shared board via /api/done. Gated by the player's PIN (jersey number + season
    year), asked once per browser session and cached. Fails silently if the API is not
@@ -7116,7 +7494,7 @@ document.addEventListener('click',function(e){
    source of truth for "all three done today" and cannot misfire off the three different
    drill-page storage schemes. Celebrates once per day. */
 function todayKey(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
-var DISCS=['stick','shoot','dryland'];
+var DISCS=['stick','shoot','dryland','iq'];  /* iq counts for stamping/stickers; it is NOT part of the daily required-celebration triad (see thwapCheckToday) */
 function doneKey(disc){ return 'thwapDone|'+todayKey()+'|'+disc; }
 function celebratedKey(){ return 'thwapTodayCelebrated|'+todayKey(); }
 function isDone(disc){ try{ return localStorage.getItem(doneKey(disc))==='1'; }catch(e){ return false; } }
@@ -7131,13 +7509,33 @@ window.thwapStampToday=function(disc,done){
   try{ if(done){ localStorage.setItem(doneKey(disc),'1'); } else { localStorage.removeItem(doneKey(disc)); } }catch(e){}
   if(done){ bumpEarned(); window.thwapCheckToday(); }  /* each completion unlocks another sticker */
 };
+/* Save a Hockey IQ reflection answer to the player record. The reflection text
+   is stored locally (authoritative, per device) and also sent to the shared
+   board via the same /api/done path the skills use: a POST { player,
+   discipline:'iq', drillId, reflection } so the IQ completion counts on the
+   board. The reflection field is additive and backward-compatible; a server
+   that does not read it still records the iq bump. The coaching-point reveal is
+   a hidden stub until Woody supplies model answers, so nothing is shown back. */
+window.thwapSaveReflection=function(today, qi, text){
+  try{
+    var pid=(localStorage.getItem('bfPlayer')||'Lewie').trim().split(/\s+/)[0].toLowerCase();
+    var drillId='iq:'+(today&&today.pool?today.pool:'offense')+':'+(today&&today.idx!=null?today.idx:0)+':q'+qi;
+    var payload={player:pid, discipline:'iq', drillId:drillId, reflection:String(text||'')};
+    var send=function(){ return fetch('/api/done',{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',credentials:'include',body:JSON.stringify(payload)}); };
+    var ensure=(window.thwapEnsureSession?window.thwapEnsureSession():Promise.resolve());
+    Promise.resolve(ensure).then(send).then(function(r){
+      if(r && r.status===401){ var h=(window.thwapEnsureSession?window.thwapEnsureSession():Promise.resolve()); return Promise.resolve(h).then(send); }
+      return r;
+    }).then(function(r){ if(!(r&&r.ok) && window.thwapDoneNotSaved) window.thwapDoneNotSaved(); }, function(){ if(window.thwapDoneNotSaved) window.thwapDoneNotSaved(); });
+  }catch(e){}
+};
 window.thwapCheckToday=function(){
   if(window.thwapIsRestDay&&window.thwapIsRestDay()) return;   /* weekend: rest day, nothing required */
   /* "All done" means every REQUIRED discipline is done. Optional (bonus) ones never
      gate the celebration, and a day with nothing required never fires it. Fail open
      to all three if the plan has not resolved (helper missing/throws). */
-  var req=DISCS.slice();
-  try{ if(window.thwapTrainingToday){ var tt=window.thwapTrainingToday(); if(tt&&tt.required) req=tt.required; } }catch(e){}
+  var req=['stick','shoot','dryland'];  /* iq is never required for the daily all-done celebration */
+  try{ if(window.thwapTrainingToday){ var tt=window.thwapTrainingToday(); if(tt&&tt.required) req=tt.required.filter(function(d){return d!=='iq';}); } }catch(e){}
   if(!req.length) return;                          /* nothing required today */
   if(!req.every(isDone)) return;                   /* not every required discipline done yet */
   var ck=celebratedKey(); try{ if(localStorage.getItem(ck)==='1') return; }catch(e){}  /* once per day */
@@ -7376,9 +7774,14 @@ function playPool(disc){ var c=DC[disc]||'#75B8FF'; try{ POOLS[disc][pickRotatin
 function dayKey(){ var d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
 /* Public: fire the once-per-day category celebration for a finished discipline. */
 window.thwapCategoryDone=function(disc){
-  if(['stick','shoot','dryland'].indexOf(disc)<0) return;
+  if(['stick','shoot','dryland','iq'].indexOf(disc)<0) return;
   var gk='thwapCatCeleb|'+dayKey()+'|'+disc;
   try{ if(localStorage.getItem(gk)==='1') return; localStorage.setItem(gk,'1'); }catch(e){}
+  if(disc==='iq'){ /* no dedicated effect pool yet; a brain-purple badge / confetti is the payoff */
+    if(reduce){ badge('SMART PLAY','#7A5AF0'); return; }
+    try{ confetti(['#A98BFF','#7A5AF0','#B9F06B','#ffffff']); stamp('SMART PLAY','#7A5AF0'); }catch(e){ badge('SMART PLAY','#7A5AF0'); }
+    return;
+  }
   if(reduce){ badge(WORDS[disc]||'NICE!',DC[disc]); return; }
   playPool(disc);
 };
