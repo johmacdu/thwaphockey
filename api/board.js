@@ -1,7 +1,7 @@
 // api/board.js
 //
 // GET  /api/board               -> { players: [ { id, stick, shoot, dryland, streak, stickers, updatedAt, cheers }, ... ] }
-// GET  /api/board?tf=week       -> { players: [ { id, stick, shoot, dryland, netplay, cheers }, ... ] }  (current week counts)
+// GET  /api/board?tf=week       -> { players: [ { id, stick, shoot, dryland, netplay, iq, cheers }, ... ] }  (current week counts)
 // POST /api/board?action=cheer  body: { to }  -> { ok, count } | { ok, already } | 4xx
 // POST /api/board?action=fire   body: { to }  -> { ok, count } | { ok, already } | 4xx
 //

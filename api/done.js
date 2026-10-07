@@ -174,10 +174,13 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'bad discipline' });
   }
 
-  // Position gate: a player may only log a discipline that applies to their
-  // position. disciplinesFor() is the single source of truth (goalie -> netplay,
-  // skater -> shoot), so a mismatched write can never misfile a real kid's work.
-  if (!disciplinesFor(entry.id).includes(discipline)) {
+  // Position gate: a player may only log a POSITION discipline that applies to
+  // their position. disciplinesFor() is the single source of truth (goalie ->
+  // netplay, skater -> shoot), so a mismatched write can never misfile work.
+  // `iq` (Hockey IQ) is a UNIVERSAL discipline every position does, so it is
+  // exempt from the position gate -- it is intentionally NOT in disciplinesFor
+  // (which stays the radar/participation triad), so it would fail this check.
+  if (discipline !== 'iq' && !disciplinesFor(entry.id).includes(discipline)) {
     return res.status(400).json({ error: 'discipline not for this position' });
   }
 

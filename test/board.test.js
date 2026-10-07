@@ -84,7 +84,7 @@ describe('board handler', () => {
     const res = makeRes();
     await handler({ method: 'GET', query: { tf: 'week' } }, res);
     const lewie = res.body.players.find((p) => p.id === 'lewie');
-    expect(lewie).toEqual({ id: 'lewie', stick: 1, shoot: 0, dryland: 1, netplay: 0, cheers: 0, fire: 0 });
+    expect(lewie).toEqual({ id: 'lewie', stick: 1, shoot: 0, dryland: 1, netplay: 0, iq: 0, cheers: 0, fire: 0 });
   });
 
   it('folds each player cheer count into the GET response', async () => {
