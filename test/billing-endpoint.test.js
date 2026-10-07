@@ -146,4 +146,23 @@ describe('api/billing', () => {
     const miss = await call({ method: 'POST', query: { action: 'redeem' }, headers: {}, body: JSON.stringify({ code: 'GHOST', comp: 'MacDuffie2016' }) });
     expect(miss.statusCode).toBe(404);
   });
+
+  it('screen: lists paid seasons and the seasons left to buy for a real team', async () => {
+    fake._seed('team:SCRN1', { code: 'SCRN1', name: 'Screen Team' });
+    const key = currentSeasonKey(new Date());
+    await recordPayment('SCRN1', key, { amountCents: 1234, stripeSession: 'cs_scr' });
+    const res = await call({ method: 'GET', query: { action: 'screen', code: 'SCRN1' }, headers: {} });
+    expect(res.statusCode).toBe(200);
+    expect(res.body.ok).toBe(true);
+    expect(res.body.paid.map((s) => s.key)).toContain(key);
+    expect(res.body.buyable.map((s) => s.key)).not.toContain(key); // already paid, dropped
+    expect(Array.isArray(res.body.buyable)).toBe(true);
+  });
+
+  it('screen: 404 for a missing team, 400 without a code', async () => {
+    const miss = await call({ method: 'GET', query: { action: 'screen', code: 'GHOST9' }, headers: {} });
+    expect(miss.statusCode).toBe(404);
+    const noCode = await call({ method: 'GET', query: { action: 'screen' }, headers: {} });
+    expect(noCode.statusCode).toBe(400);
+  });
 });

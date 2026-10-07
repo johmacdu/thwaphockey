@@ -5,6 +5,7 @@
 //   POST ?action=create-checkout  { code, seasons:[<key>,...] } -> { url }
 //   POST ?action=webhook          Stripe events -> records paid seasons
 //   GET  ?action=status&code=XXX  -> { active, free, currentSeason, paidSeasons }
+//   GET  ?action=screen&code=XXX  -> coach billing screen { paid[], buyable[] }
 //
 // Stripe is lazy-imported and only touched when a secret key is configured, so
 // the status endpoint (and the unit tests) work without any Stripe setup. The
@@ -12,7 +13,7 @@
 // needs the exact bytes Stripe sent.
 
 import { getTeam } from '../lib/teams_store.js';
-import { recordPayment, billingStatus, setTeamFree } from '../lib/billing_store.js';
+import { recordPayment, billingStatus, billingScreen, setTeamFree } from '../lib/billing_store.js';
 import { parseSeasonKey, isSeasonKey, priceCentsForKey, currentSeasonKey } from '../lib/seasons.js';
 
 export const config = { api: { bodyParser: false } };
@@ -139,6 +140,18 @@ async function status(req, res) {
   return res.status(200).json({ ok: true, ...(await billingStatus(code)) });
 }
 
+// GET ?action=screen&code=XXX -> the coach billing screen: seasons already paid
+// (with receipt amount/date) and the seasons the team can still buy. Read-only,
+// so it stays public like status; no payment data is trusted from the client.
+async function screen(req, res) {
+  if (!methodGuard(req, res, 'GET')) return;
+  const code = String((req.query && req.query.code) || '').trim();
+  if (!code) return res.status(400).json({ error: 'code required' });
+  if (!(await getTeam(code))) return res.status(404).json({ error: 'team not found' });
+  res.setHeader('Cache-Control', 'no-store');
+  return res.status(200).json({ ok: true, ...(await billingScreen(code)) });
+}
+
 // Valid comp codes (e.g. MacDuffie2016 for Lewie's Jr. Rangers 10U) live in
 // BILLING_COMP_CODES, comma-separated. A comp code frees the CURRENT season when
 // redeemed; re-apply the same code each season.
@@ -200,6 +213,8 @@ export default async function handler(req, res) {
       return webhook(req, res);
     case 'status':
       return status(req, res);
+    case 'screen':
+      return screen(req, res);
     case 'set-free':
       return setFree(req, res);
     case 'redeem':

@@ -19,6 +19,7 @@ const {
   hasPaidSeason,
   isTeamActive,
   billingStatus,
+  billingScreen,
   paidSeasons,
 } = await import('../lib/billing_store.js');
 
@@ -66,5 +67,35 @@ describe('billing_store', () => {
     expect(s.currentSeason).toBe('fw-2025');
     expect(s.active).toBe(true);
     expect(s.paidSeasons.sort()).toEqual(['fw-2025', 'sp-2026']);
+  });
+
+  it('billingScreen lists paid seasons with receipts and the seasons left to buy', async () => {
+    await recordPayment('SCR1', 'fw-2025', { amountCents: 35000, stripeSession: 'cs_live_1' });
+    const screen = await billingScreen('SCR1', FW);
+
+    // Already paid: the current Fall/Winter, with its receipt fields and not a comp.
+    expect(screen.currentSeason).toBe('fw-2025');
+    expect(screen.active).toBe(true);
+    expect(screen.paid).toHaveLength(1);
+    expect(screen.paid[0]).toMatchObject({
+      key: 'fw-2025', label: 'Fall/Winter 2025-26', amountCents: 35000, comp: false, current: true,
+    });
+    expect(screen.paid[0].paidAt).toBeTruthy();
+
+    // Buyable: the next two seasons ahead, priced, with fw-2025 dropped (already paid).
+    expect(screen.buyable.map((s) => s.key)).toEqual(['sp-2026', 'os-2026']);
+    expect(screen.buyable[0]).toMatchObject({ key: 'sp-2026', priceCents: 9000, current: false });
+  });
+
+  it('billingScreen flags a comp season and a free team', async () => {
+    await recordPayment('SCR2', 'fw-2025', { amountCents: 0, stripeSession: 'comp:macduffie2016' });
+    const screen = await billingScreen('SCR2', FW);
+    expect(screen.paid[0]).toMatchObject({ key: 'fw-2025', comp: true });
+
+    await setTeamFree('SCR3', true);
+    const free = await billingScreen('SCR3', FW);
+    expect(free).toMatchObject({ free: true, active: true });
+    expect(free.paid).toEqual([]);
+    expect(free.buyable.map((s) => s.key)).toEqual(['fw-2025', 'sp-2026', 'os-2026']);
   });
 });
