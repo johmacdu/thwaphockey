@@ -7173,7 +7173,7 @@ function iqRender(){
 /* One question block. MC = selectable options (no lock/reveal until Submit).
    Free text = a textarea the kid fills in. Numbered "Question N of total". */
 function iqQuestionHTML(q,qi,total,prog){
-  var head="<span class='iq-qnum'>Question "+(qi+1)+" of "+total+"</span>";
+  var head="<span class='iq-qnum'>Question "+(qi+1)+"</span>";
   if(q.t==='mc'){
     var chosen=prog.mc[qi];
     var opts=q.opts.map(function(o,oi){
@@ -7191,7 +7191,7 @@ function iqQuestionHTML(q,qi,total,prog){
   var saved=prog.ft[qi]||'';
   return "<div class='iq-q' data-qt='ft' data-qi='"+qi+"'>"+
     head+"<p class='iq-qtext'>"+esc(q.q)+"</p>"+
-    "<textarea class='iq-reflect' data-qi='"+qi+"' placeholder='Type what you saw.'>"+esc(saved)+"</textarea>"+
+    "<textarea class='iq-reflect' data-qi='"+qi+"' placeholder='Type your answer here.'>"+esc(saved)+"</textarea>"+
   "</div>";
 }
 
