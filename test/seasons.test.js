@@ -14,6 +14,8 @@ import {
   isSeasonKey,
   priceCentsForKey,
   labelForKey,
+  nextSeasonKey,
+  buyableSeasons,
 } from '../lib/seasons.js';
 
 const d = (iso) => new Date(iso);
@@ -59,5 +61,20 @@ describe('seasons', () => {
   it('the three seasons total $500', () => {
     const total = SEASONS.fw.priceCents + SEASONS.sp.priceCents + SEASONS.os.priceCents;
     expect(total).toBe(50000);
+  });
+
+  it('steps to the next season in calendar order, with the FW rollover', () => {
+    expect(nextSeasonKey('fw-2025')).toBe('sp-2026');
+    expect(nextSeasonKey('sp-2026')).toBe('os-2026');
+    expect(nextSeasonKey('os-2026')).toBe('fw-2026'); // Aug -> that September
+    expect(nextSeasonKey('fw-2026')).toBe('sp-2027');
+    expect(nextSeasonKey('bad')).toBeNull();
+  });
+
+  it('lists buyable seasons: the current one plus the next few, in order', () => {
+    expect(buyableSeasons(d('2025-10-15T19:00:00Z'))).toEqual(['fw-2025', 'sp-2026', 'os-2026']);
+    expect(buyableSeasons(d('2026-05-15T19:00:00Z'))).toEqual(['sp-2026', 'os-2026', 'fw-2026']);
+    expect(buyableSeasons(d('2026-07-15T19:00:00Z'))).toEqual(['os-2026', 'fw-2026', 'sp-2027']);
+    expect(buyableSeasons(d('2025-10-15T19:00:00Z'), 1)).toEqual(['fw-2025']);
   });
 });
