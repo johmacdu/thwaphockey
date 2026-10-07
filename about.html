@@ -211,7 +211,7 @@ h2.sec{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:clamp(26
 footer{background:var(--panel);border-top:1px solid color-mix(in srgb,var(--line) 45%,transparent)}
 .footer{display:flex;align-items:center;justify-content:space-between;gap:14px;color:var(--muted);font-size:12px;padding:30px 0 20px;flex-wrap:wrap}
 .footer .slogan{font-family:'Nunito Sans',sans-serif;font-weight:800;font-size:13px;letter-spacing:.01em;color:var(--text)}
-.footer-actions{display:inline-flex;align-items:center;gap:8px}
+.footer-actions{display:inline-flex;align-items:center;gap:8px}@media(max-width:620px){.footer{align-items:flex-start;flex-wrap:nowrap}.footer .slogan{flex:0 0 auto}.footer .slogan .sl-br{display:inline}.footer-actions{flex-shrink:0}}@media(max-width:360px){.footer-actions{gap:5px}.footer .slogan{font-size:12px}}.sl-br{display:none}
 .themetoggle{display:inline-flex;align-items:center;gap:7px;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:999px;padding:8px 12px;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit}
 .themetoggle:hover{border-color:var(--line2)}
 .themetoggle .ttico{font-size:14px;line-height:1}
@@ -367,7 +367,7 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
 <!-- FOOTER (matches the app footer) -->
 <footer><div class='wrap'>
   <div class='footer'>
-    <span class='slogan'>Compete. Improve. Have fun.</span>
+    <span class='slogan'>Compete. Improve.<br class='sl-br'> Have fun.</span>
     <div class='footer-actions'>
       <button class='sfxtoggle' id='sfxToggle' type='button' aria-label='Mute sounds' title='Mute sounds'></button>
       <button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button>
