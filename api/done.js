@@ -40,11 +40,32 @@ import {
   localDateStr,
 } from '../lib/store.js';
 import { verifySession, readSessionCookie } from '../lib/session_store.js';
+import { getMember } from '../lib/teams_store.js';
+import { isGated } from '../lib/billing_store.js';
 
 // Look up a roster entry by player id (lowercase first name).
 function findPlayer(id) {
   const wanted = String(id || '').toLowerCase();
   return ROSTER.find((p) => p.id === wanted) || null;
+}
+
+// Seasonal-billing gate for the acting player (server enforcement). A gated
+// team's player must not be able to RECORD a completion via the API. We resolve
+// the player's team from their membership and block only when that team is
+// gated. isGated() is a complete no-op (returns false) unless BILLING_ENFORCED=1.
+//
+// FAIL OPEN: if the player has no membership or no teamCode, or anything throws,
+// we ALLOW the write -- billing must never wrongly lock a real kid out of logging
+// their work. This guards the write path only; reads (GET) are never gated.
+async function playerIsGated(playerId) {
+  try {
+    const member = await getMember(playerId);
+    const teamCode = member && member.teamCode;
+    if (!teamCode) return false;
+    return await isGated(teamCode);
+  } catch {
+    return false;
+  }
 }
 
 // Parse the request body whether Vercel already parsed it (object) or handed
@@ -158,6 +179,14 @@ export default async function handler(req, res) {
   // skater -> shoot), so a mismatched write can never misfile a real kid's work.
   if (!disciplinesFor(entry.id).includes(discipline)) {
     return res.status(400).json({ error: 'discipline not for this position' });
+  }
+
+  // Seasonal-billing gate: block RECORDING a completion for a gated team. This
+  // mirrors the coach set-plan guard and is a no-op unless BILLING_ENFORCED=1.
+  // Fails open (see playerIsGated), so an unconfigured billing system never
+  // locks anyone out.
+  if (await playerIsGated(claims.playerId)) {
+    return res.status(402).json({ error: 'season not active', gated: true });
   }
 
   // Bump the aggregate count + dated event (unchanged behaviour).
