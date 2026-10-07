@@ -234,20 +234,20 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .iq-card{margin:0;border:2px solid var(--line);border-radius:20px;background:var(--card);padding:22px;box-shadow:0 6px 18px var(--shadow);transition:border-color .15s ease,box-shadow .15s ease}
 #iq .iq-card{--iqacc:#7A5AF0}
 .iq-card.iq-done{border-color:color-mix(in srgb,#4E9128 55%,var(--line))}
-.iq-head{display:flex;align-items:center;gap:14px;margin:0 0 18px}
+.iq-head{display:flex;align-items:center;gap:14px;margin:0 0 var(--gap-block)}
 .iq-head .iq-headem{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font-size:30px;line-height:1;background:color-mix(in srgb,#A98BFF 22%,transparent);flex:none}
-.iq-head h3{margin:0;font-size:22px;font-weight:800;letter-spacing:.005em;color:var(--text)}
+.iq-head h3{margin:0;font-size:var(--fs-section);font-weight:800;letter-spacing:.005em;color:var(--text)}
 .iq-head .iq-dose{font-size:12px;color:var(--muted);margin-top:4px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
 .iq-head .iq-badge{display:inline-block;margin-left:10px;font-size:12px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:var(--green2);background:color-mix(in srgb,#A98BFF 24%,transparent);padding:2px 10px;border-radius:999px;vertical-align:middle}
-.iq-video{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;margin:0 0 18px;background:#000;border:1px solid var(--line)}
+.iq-video{position:relative;width:100%;aspect-ratio:16/9;border-radius:var(--r-card);overflow:hidden;margin:0 0 var(--gap-block);background:#000;border:1px solid var(--line)}
 .iq-video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-.iq-progress{font-size:12px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
-.iq-q{margin:0 0 20px;padding:0 0 20px;border-bottom:1px solid var(--line)}
+.iq-progress{font-size:var(--fs-meta);font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:0 0 var(--sp-6)}
+.iq-q{margin:0 0 var(--sp-8);padding:0 0 var(--sp-8);border-bottom:1px solid var(--line)}
 .iq-q:last-of-type{margin-bottom:0;padding-bottom:0;border-bottom:0}
-.iq-qnum{display:inline-block;font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#7A5AF0;margin:0 0 6px}
-.iq-qtext{font-weight:900;font-size:16px;line-height:1.4;margin:0 0 12px}
+.iq-qnum{display:inline-block;font-size:var(--fs-eyebrow);font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#7A5AF0;margin:0 0 var(--sp-2)}
+.iq-qtext{font-weight:800;font-size:var(--fs-body);line-height:1.5;margin:0 0 var(--sp-4)}
 .iq-opts{display:flex;flex-direction:column;gap:10px}
-.iq-opt{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;font-family:inherit;font-size:15px;font-weight:700;line-height:1.4;padding:14px 16px;min-height:48px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--text);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:border-color .12s ease,background .12s ease}
+.iq-opt{display:flex;align-items:flex-start;gap:12px;width:100%;text-align:left;font-family:inherit;font-size:var(--fs-body);font-weight:700;line-height:1.4;padding:14px 16px;min-height:var(--tap);border-radius:var(--r-card);border:2px solid var(--line);background:var(--card);color:var(--text);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:border-color .12s ease,background .12s ease}
 .iq-opt .iq-optmark{flex:0 0 auto;width:24px;height:24px;border-radius:50%;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900}
 .iq-opt.sel{border-color:#7A5AF0;background:color-mix(in srgb,#7A5AF0 10%,transparent)}
 .iq-opt.sel .iq-optmark{border-color:#7A5AF0;background:#7A5AF0;color:#fff}
@@ -260,16 +260,14 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .iq-fb{font-size:13px;font-weight:800;margin:10px 0 0}
 .iq-fb.ok{color:#4E9128}
 .iq-fb.no{color:#D64545}
-.iq-reflect{display:block;width:100%;box-sizing:border-box;font-family:inherit;font-size:15px;line-height:1.4;padding:12px 14px;border-radius:14px;border:2px solid var(--line);background:var(--card);color:var(--text);resize:vertical;min-height:92px}
+.iq-reflect{display:block;width:100%;box-sizing:border-box;font-family:inherit;font-size:var(--fs-body);line-height:1.5;padding:12px 14px;border-radius:var(--r-card);border:2px solid var(--line);background:var(--card);color:var(--text);resize:vertical;min-height:92px}
 .iq-reflect:focus{outline:none;border-color:#7A5AF0}
 .iq-reflect:disabled{opacity:.7;cursor:default}
 .iq-reflect.answered{border-color:#4E9128}
-.iq-submitwrap{margin:22px 0 0}
+.iq-submitwrap{margin:var(--sp-8) 0 0}
 .iq-submit{display:block;width:100%;font-family:inherit;font-size:17px;font-weight:900;letter-spacing:.01em;padding:16px;min-height:56px;border-radius:16px;border:0;background:#7A5AF0;color:#fff;cursor:pointer;transition:opacity .12s ease,transform .08s ease}
 .iq-submit:active{transform:scale(.99)}
 .iq-submit:disabled{opacity:.45;cursor:default}
-.iq-submithint{font-size:13px;font-weight:800;color:var(--muted);text-align:center;margin:0 0 10px;min-height:1px}
-.iq-reveal-note{font-size:12px;font-weight:700;color:var(--muted);margin-top:8px}
 .nav-iq .ico{background:linear-gradient(135deg,#A98BFF,#7A5AF0)}
 
 /* THWAP stamp when a drill is checked done */
@@ -7164,8 +7162,7 @@ function iqRender(){
       "<p class='iq-progress'>Watch the shift, then answer "+total+(total===1?' question':' questions')+".</p>"+
       "<div class='iq-questions'>"+qsHTML+"</div>"+
       "<div class='iq-submitwrap'>"+
-        "<p class='iq-submithint'></p>"+
-        "<button type='button' class='iq-submit'"+(alreadyDone?" disabled":"")+">"+(alreadyDone?"Hockey IQ done \u2713":"Submit")+"</button>"+
+        "<button type='button' class='iq-submit'"+(alreadyDone?" disabled":"")+">"+(alreadyDone?"All done \u2713":"Submit my answers")+"</button>"+
       "</div>"+
     "</div>";
   iqWire(list, v, t, key);
@@ -7195,7 +7192,6 @@ function iqQuestionHTML(q,qi,total,prog){
   return "<div class='iq-q' data-qt='ft' data-qi='"+qi+"'>"+
     head+"<p class='iq-qtext'>"+esc(q.q)+"</p>"+
     "<textarea class='iq-reflect' data-qi='"+qi+"' placeholder='Type what you saw.'>"+esc(saved)+"</textarea>"+
-    "<p class='iq-reveal-note'>Your coach will add a coaching point here soon.</p>"+   /* hidden stub: no model answer */
   "</div>";
 }
 
@@ -7241,10 +7237,9 @@ function iqUpdateSubmit(list, v, key){
   if(prog.done) return;
   var left=iqRemaining(v, prog);
   var submit=list.querySelector('.iq-submit');
-  var hint=list.querySelector('.iq-submithint');
   if(!submit) return;
   submit.disabled=(left>0);
-  if(hint) hint.textContent=(left>0)?(left+(left===1?' question left to answer':' questions left to answer')):'';
+  submit.textContent=(left>0)?('Answer '+left+' more'):'Submit my answers';
 }
 
 /* Lock + reveal MC correctness, lock the free-text boxes. Used on Submit and on
@@ -7286,9 +7281,7 @@ function iqSubmit(list, v, t, key){
   });
   prog.done=true; saveIq(key,prog);
   var submit=list.querySelector('.iq-submit');
-  var hint=list.querySelector('.iq-submithint');
-  if(submit){ submit.disabled=true; submit.textContent='Hockey IQ done \u2713'; }
-  if(hint) hint.textContent='';
+  if(submit){ submit.disabled=true; submit.textContent='All done \u2713'; }
   var row=list.querySelector('.iq-card');
   if(row){ row.classList.add('iq-done'); row.setAttribute('data-done','1'); var h3=row.querySelector('.iq-head h3'); if(h3 && !h3.querySelector('.iq-badge')) h3.insertAdjacentHTML('beforeend',"<span class='iq-badge'>Done</span>"); }
   /* fire the shared done machinery like the other disciplines */
