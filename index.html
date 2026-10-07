@@ -260,7 +260,7 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .iq-submit{display:block;width:100%;font-family:inherit;font-size:17px;font-weight:900;letter-spacing:.01em;padding:16px;min-height:56px;border-radius:16px;border:0;background:#7A5AF0;color:#fff;cursor:pointer;transition:opacity .12s ease,transform .08s ease}
 .iq-submit:active{transform:scale(.99)}
 .iq-submit:disabled{opacity:.45;cursor:default}
-.iq-submithint{font-size:13px;font-weight:800;color:var(--muted);text-align:center;margin:10px 0 0;min-height:1px}
+.iq-submithint{font-size:13px;font-weight:800;color:var(--muted);text-align:center;margin:0 0 10px;min-height:1px}
 .iq-reveal-note{font-size:12px;font-weight:700;color:var(--muted);margin-top:8px}
 .nav-iq .ico{background:linear-gradient(135deg,#A98BFF,#7A5AF0)}
 
@@ -7140,7 +7140,7 @@ function iqRender(){
   var alreadyDone=!!prog.done;
   list.innerHTML=
     "<div class='exrow open'"+(alreadyDone?" data-done='1'":"")+" data-iq='1'>"+
-      "<div class='exhead'><div class='exem'>\U0001F9E0</div>"+
+      "<div class='exhead'><div class='exem'>🧠</div>"+
         "<div><h3>"+esc(v.title)+(alreadyDone?"<span class='exbadge'>Done</span>":"")+"</h3>"+
           "<div class='exdose'>"+(t.pool==='defense'?'Defense read':'Offense read')+"</div></div>"+
         "<div class='exchev'>\u203a</div></div>"+
@@ -7149,8 +7149,8 @@ function iqRender(){
         "<p class='iq-progress'>Watch the shift, then answer "+total+(total===1?' question':' questions')+".</p>"+
         "<div class='iq-questions'>"+qsHTML+"</div>"+
         "<div class='iq-submitwrap'>"+
-          "<button type='button' class='iq-submit'"+(alreadyDone?" disabled":"")+">"+(alreadyDone?"Hockey IQ done \u2713":"Submit")+"</button>"+
           "<p class='iq-submithint'></p>"+
+          "<button type='button' class='iq-submit'"+(alreadyDone?" disabled":"")+">"+(alreadyDone?"Hockey IQ done \u2713":"Submit")+"</button>"+
         "</div>"+
       "</div>"+
     "</div>";
