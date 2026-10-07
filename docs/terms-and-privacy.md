@@ -69,7 +69,8 @@ matters, we will ask you to agree again at sign-in. Continuing to use the app
 after a change means you accept the updated terms.
 
 ### Contact
-Questions about these terms: hello@thwaphockey.com.
+Questions about these terms: hello@thwaphockey.com, or by mail to Thwap Hockey,
+7610 3rd Ave, Seattle, WA 98117, Attn: John MacDuffie Woodburn.
 
 ---
 
@@ -124,10 +125,12 @@ information is used in the ways above, in line with COPPA (US) and PIPEDA
 (Canada). We verify a parent by emailing a one-time code to the parent's email
 and having them enter it. We keep a record that consent was given and when.
 
-> **REVIEW:** email + one-time-code is the chosen verifiable-consent method.
-> A lawyer should confirm it meets COPPA's standard for the data involved
-> (COPPA treats a photo of a child as personal information; the FTC's
-> email-plus method and its limits should be checked against what we store).
+> **REVIEW:** email + one-time-code is the chosen verifiable-consent method,
+> the same approach school districts and youth-sports platforms commonly use to
+> verify a parent. A lawyer should confirm it meets COPPA's standard for the
+> data involved (COPPA treats a photo of a child as personal information; the
+> FTC's email-plus method and its limits should be checked against what we
+> store), and whether a stronger method is needed specifically for the photo.
 
 ### How we use it
 We use this information only to run the app: to show a player their drills and
@@ -138,35 +141,60 @@ personal information.
 ### Who can see it, and who helps us run the app
 A player's training and photo are visible to that player, their parent, and
 their team's coaches. They are not shared publicly. To run the app we use a
-small number of trusted service providers, and share only what each needs:
-- **Hosting and the database** that stores player progress, photos, and consent
-  records.
-- **Email delivery** to send the one-time parent codes and waitlist replies.
+small number of named service providers, and share only what each needs. Each
+is bound by its terms to process the information only to provide its service to
+us, not for its own purposes:
+- **Vercel** hosts the app and runs the server code (United States).
+- **Upstash** provides the Redis database that stores player progress, parent
+  email, consent records, and the link to a stored photo (United States).
+- **Resend** delivers the one-time parent codes and waitlist replies by email
+  (United States).
 
-> **REVIEW:** name the actual sub-processors here before launch (today:
-> Vercel for hosting, Upstash Redis for the database, and the chosen email
-> provider - Resend or AWS SES - per the open decision in
-> `parent-photo-consent.md`). COPPA/PIPEDA both expect these to be disclosed,
-> and each should be under an agreement that limits them to running the service.
+A parent-added photo is stored as a file on our hosting provider and reached
+only through an unguessable link, not by a player's name.
+
+> **REVIEW:** confirm each provider above is under a data-processing agreement
+> (or its standard DPA / terms) that limits it to running the service, and that
+> this list stays current if a provider is added or swapped.
 
 ### How long we keep it, and how to remove it
-- A player's roster info and training stay while the player is on a team.
-- A player photo stays until a parent removes it.
-- The one-time email codes expire automatically (they are short-lived).
-- A parent or coach can remove a player from a team. A parent can ask us to
-  delete their child's information entirely, including the photo and the consent
-  record. Email us and we will take care of it.
+- A player's roster info and training history stay while the player is on an
+  active team. If a player leaves a team, or a team stops using Thwap, we remove
+  that player's information within 90 days, unless a parent asks us to delete it
+  sooner.
+- A player photo stays until a parent removes it, or until the player's
+  information is removed as above, whichever comes first.
+- The one-time email codes are short-lived and expire automatically (within
+  minutes); we do not keep them after they are used or expire.
+- A parent or coach can remove a player from a team at any time. A parent can
+  ask us to delete their child's information entirely at any time, including the
+  photo file and the consent record. We action a deletion request within 30
+  days and confirm when it is done.
 
-> **REVIEW:** set concrete retention periods a lawyer is comfortable with (e.g.
-> what happens to a player's data at the end of a season, or when a team stops
-> using Thwap), and confirm the deletion path actually erases the stored photo
-> blob and consent record, not just the roster row.
+When we delete, we erase the stored photo file and the consent record, not just
+the roster row.
+
+> **REVIEW:** confirm the 90-day inactive-player window and 30-day deletion
+> turnaround are workable, and that the deletion code path actually erases the
+> stored photo blob and consent record (not only the roster entry).
 
 ### Keeping it safe
 We serve the app over HTTPS, store a parent's one-time codes only briefly, and
 limit how a photo can be reached (its link is not guessable from a player's
 name). No system is perfectly secure, but we work to protect children's
 information and to limit what we collect in the first place.
+
+### Our accountability, and what we do if something goes wrong
+One person is accountable for how Thwap Hockey handles personal information:
+**John MacDuffie Woodburn**, our privacy contact. You can reach him using the
+Contact details below with any question, concern, or complaint about privacy.
+
+If a breach of security safeguards creates a real risk of significant harm to a
+child or parent, we will notify the affected parents and the appropriate
+authorities as the law requires, and we will tell you what happened, what
+information was involved, and what you can do. In Canada this follows PIPEDA's
+breach-notification duty; in the US we follow applicable state breach-notice
+laws.
 
 ### A parent's rights
 A parent can, at any time: review what we hold about their child, ask us to
@@ -175,8 +203,10 @@ child's photo and stop using their information for anything beyond what a coach
 needs to run the team). Email us and we will help.
 
 ### Contact
-Privacy questions, or to review, correct, or delete a child's information:
-privacy@thwaphockey.com.
+Our privacy contact is John MacDuffie Woodburn. For privacy questions, or to
+review, correct, or delete a child's information, reach us at
+privacy@thwaphockey.com, or by mail at Thwap Hockey, 7610 3rd Ave, Seattle, WA
+98117, Attn: John MacDuffie Woodburn.
 
 > **REVIEW:** both hello@ and privacy@thwaphockey.com must be real inboxes
 > someone monitors, since the policy promises a parent can reach us to delete a

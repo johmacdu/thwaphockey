@@ -2152,7 +2152,7 @@ window.thwapTrainingToday=function(){
 <a class='nav nav-pass' href='#pass'><div class='ico'><img class='nav-ico' src='login/icon-pass.webp' alt=''></div><div><h2>Passing <span class='soon-tag'>Coming soon</span></h2><p>Tape-to-tape + vision, coming early November</p></div><div class='chev'>›</div></a>
 </div>
 </section>
-<div class='footer'><span class='slogan'>Compete. Improve.<br class='sl-br'> Have fun.</span><div class='footer-actions'><button class='sfxtoggle' id='sfxToggle' type='button' aria-label='Mute sounds' title='Mute sounds' aria-pressed='true'></button><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button><div class='footmenu-wrap'><button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button><div class='footmenu' id='footMenu' hidden role='menu'><a class='footmenu-item' href='/about' role='menuitem'>About Thwap</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a><a class='footmenu-item' id='menuSignout' href='#' role='menuitem'>Sign out</a></div></div></div></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div>
+<div class='footer'><span class='slogan'>Compete. Improve.<br class='sl-br'> Have fun.</span><div class='footer-actions'><button class='sfxtoggle' id='sfxToggle' type='button' aria-label='Mute sounds' title='Mute sounds' aria-pressed='true'></button><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button><div class='footmenu-wrap'><button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button><div class='footmenu' id='footMenu' hidden role='menu'><a class='footmenu-item' href='/about' role='menuitem'>About Thwap</a><a class='footmenu-item' id='menuTerms' href='#terms' role='menuitem'>Terms of Use</a><a class='footmenu-item' id='menuPrivacy' href='#privacy' role='menuitem'>Privacy Policy</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a><a class='footmenu-item' id='menuSignout' href='#' role='menuitem'>Sign out</a></div></div></div></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div>
 </div>
 <nav class='tabbar' id='tabbar' aria-label='Main'>
   <span class='tab-player'>
@@ -4507,6 +4507,9 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#progress')
     location.hash='';
     location.reload();
   });
+  var mTerms=document.getElementById('menuTerms'), mPrivacy=document.getElementById('menuPrivacy');
+  if(mTerms) mTerms.addEventListener('click',function(e){ e.preventDefault(); closeMenu(); if(window.thwapOpenPolicy) window.thwapOpenPolicy('terms'); });
+  if(mPrivacy) mPrivacy.addEventListener('click',function(e){ e.preventDefault(); closeMenu(); if(window.thwapOpenPolicy) window.thwapOpenPolicy('privacy'); });
 })();</script>
 <script>(function(){
 /* Cross-tab identity guard. Player/coach identity lives in localStorage
@@ -7943,7 +7946,7 @@ syncConsent();
     "<h2>Changes</h2>"+
     "<p>We may update these terms as the app grows. When the terms change in a way that matters, we will ask you to agree again at sign-in. Continuing to use the app after a change means you accept the updated terms.</p>"+
     "<h2>Contact</h2>"+
-    "<p>Questions about these terms: <a href='mailto:hello@thwaphockey.com'>hello@thwaphockey.com</a>.</p>";
+    "<p>Questions about these terms: <a href='mailto:hello@thwaphockey.com'>hello@thwaphockey.com</a>, or by mail to Thwap Hockey, 7610 3rd Ave, Seattle, WA 98117, Attn: John MacDuffie Woodburn.</p>";
   var PRIVACY=
     "<p>Thwap Hockey is built for children, so we collect as little as we can and we are plain about what we keep and why. This explains what we collect, why, who can see it, how long we keep it, and how a parent removes it.</p>"+
     "<h2>What we collect</h2>"+
@@ -7961,15 +7964,22 @@ syncConsent();
     "<h2>How we use it</h2>"+
     "<p>We use this information only to run the app: to show a player their drills and progress, to let their coach see team progress, to show a parent-added photo on that player's card, and to contact a parent about consent. We do not sell personal information.</p>"+
     "<h2>Who can see it, and who helps us run the app</h2>"+
-    "<p>A player's training and photo are visible to that player, their parent, and their team's coaches. They are not shared publicly. To run the app we use a small number of trusted service providers and share only what each needs: hosting and the database that store player progress, photos, and consent records, and email delivery to send the one-time parent codes and waitlist replies.</p>"+
+    "<p>A player's training and photo are visible to that player, their parent, and their team's coaches. They are not shared publicly. To run the app we use a small number of named service providers, and share only what each needs. Each is bound by its terms to process the information only to provide its service to us, not for its own purposes:</p>"+
+    "<ul>"+
+    "<li><b>Vercel</b> hosts the app and runs the server code (United States).</li>"+
+    "<li><b>Upstash</b> provides the Redis database that stores player progress, parent email, consent records, and the link to a stored photo (United States).</li>"+
+    "<li><b>Resend</b> delivers the one-time parent codes and waitlist replies by email (United States).</li>"+
+    "</ul>"+
     "<h2>How long we keep it, and how to remove it</h2>"+
-    "<p>A player's roster info and training stay while the player is on a team. A player photo stays until a parent removes it. The one-time email codes expire automatically. A parent or coach can remove a player from a team, and a parent can ask us to delete their child's information entirely, including the photo and the consent record. Email us and we will take care of it.</p>"+
+    "<p>A player's roster info and training history stay while the player is on an active team. If a player leaves a team, or a team stops using Thwap, we remove that player's information within 90 days, unless a parent asks us to delete it sooner. A player photo stays until a parent removes it, or until the player's information is removed as above. The one-time email codes are short-lived and expire automatically. A parent or coach can remove a player from a team at any time, and a parent can ask us to delete their child's information entirely at any time, including the photo file and the consent record; we action a deletion within 30 days and confirm when it is done. When we delete, we erase the stored photo file and the consent record, not just the roster row.</p>"+
     "<h2>Keeping it safe</h2>"+
     "<p>We serve the app over HTTPS, store a parent's one-time codes only briefly, and limit how a photo can be reached. No system is perfectly secure, but we work to protect children's information and to limit what we collect in the first place.</p>"+
+    "<h2>Our accountability, and what we do if something goes wrong</h2>"+
+    "<p>One person is accountable for how Thwap Hockey handles personal information: John MacDuffie Woodburn, our privacy contact. You can reach him using the Contact details below with any question, concern, or complaint about privacy. If a breach of security safeguards creates a real risk of significant harm to a child or parent, we will notify the affected parents and the appropriate authorities as the law requires, and tell you what happened, what information was involved, and what you can do. In Canada this follows PIPEDA's breach-notification duty; in the US we follow applicable state breach-notice laws.</p>"+
     "<h2>A parent's rights</h2>"+
     "<p>A parent can at any time review what we hold about their child, ask us to correct it, ask us to delete it, and withdraw consent. Email us and we will help.</p>"+
     "<h2>Contact</h2>"+
-    "<p>Privacy questions, or to review, correct, or delete a child's information: <a href='mailto:privacy@thwaphockey.com'>privacy@thwaphockey.com</a>.</p>";
+    "<p>Our privacy contact is John MacDuffie Woodburn. For privacy questions, or to review, correct, or delete a child's information, reach us at <a href='mailto:privacy@thwaphockey.com'>privacy@thwaphockey.com</a>, or by mail at Thwap Hockey, 7610 3rd Ave, Seattle, WA 98117, Attn: John MacDuffie Woodburn.</p>";
   var TXT={ terms:['Terms of Use',TERMS], privacy:['Privacy Policy',PRIVACY] };
   var lastFocus=null;
   function openPolicy(which){
@@ -7986,6 +7996,7 @@ syncConsent();
   if(pLink) pLink.addEventListener('click',function(e){ e.preventDefault(); openPolicy('privacy'); });
   if(pclose) pclose.addEventListener('click',closePolicy);
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&sheet&&!sheet.hidden) closePolicy(); });
+  window.thwapOpenPolicy=openPolicy;
 })();
 function cookieGet(name){
   var m=document.cookie.match(new RegExp('(?:^|; )'+name.replace(/([.$?*|{}()\[\]\\\/\+^])/g,'\\$1')+'=([^;]*)'));
