@@ -231,7 +231,9 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 #dryland .exrow{--exacc:#FF9D4D;--exacc2:#e58a2e}
 #iq .exrow{--exacc:#A98BFF;--exacc2:#7A5AF0}
 /* Hockey IQ quiz: MC options + free-text reflection. Reuses the exrow shell. */
-.iq-card{margin:0}
+.iq-card{margin:0;border:2px solid var(--line);border-radius:20px;background:var(--card);padding:22px;box-shadow:0 6px 18px var(--shadow);transition:border-color .15s ease,box-shadow .15s ease}
+#iq .iq-card{--iqacc:#7A5AF0}
+.iq-card.iq-done{border-color:color-mix(in srgb,#4E9128 55%,var(--line))}
 .iq-head{display:flex;align-items:center;gap:14px;margin:0 0 18px}
 .iq-head .iq-headem{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font-size:30px;line-height:1;background:color-mix(in srgb,#A98BFF 22%,transparent);flex:none}
 .iq-head h3{margin:0;font-size:22px;font-weight:800;letter-spacing:.005em;color:var(--text)}
