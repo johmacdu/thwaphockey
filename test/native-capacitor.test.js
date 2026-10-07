@@ -24,8 +24,15 @@ const nativeCss = () => html.match(/<style id='native-css'>([\s\S]*?)<\/style>/)
 
 describe('Native flag is set only inside Capacitor', () => {
   it('body.is-native is gated on window.Capacitor.isNativePlatform()', () => {
-    expect(html).toMatch(/C\.isNativePlatform\(\)\)\{document\.documentElement\.classList\.add\('is-native'\)/);
-    expect(html).toMatch(/document\.body\.classList\.add\('is-native'\)/);
+    expect(html).toMatch(/C\.isNativePlatform\(\)\)\{/);
+    expect(html).toMatch(/document\.documentElement\.classList\.add\.apply\(document\.documentElement\.classList,cls\)/);
+    expect(html).toMatch(/document\.body\.classList\.add\.apply\(document\.body\.classList,cls\)/);
+  });
+
+  it('stamps is-ios / is-android from Capacitor.getPlatform()', () => {
+    expect(html).toMatch(/C\.getPlatform\(\)/);
+    expect(html).toMatch(/if\(plat==='ios'\)cls\.push\('is-ios'\)/);
+    expect(html).toMatch(/else if\(plat==='android'\)cls\.push\('is-android'\)/);
   });
 
   it('the tab bar is hidden by default and only shown under body.is-native', () => {
@@ -82,7 +89,34 @@ describe('Role-aware bottom tab bar', () => {
   });
 
   it('content gets bottom padding so it never hides behind the bar', () => {
-    expect(nativeCss()).toMatch(/body\.is-native\.is-authed:not\(\.login-locked\) \.app\{\s*padding-bottom:calc\(64px \+ env\(safe-area-inset-bottom/);
+    expect(nativeCss()).toMatch(/body\.is-native\.is-authed:not\(\.login-locked\) \.app\{\s*padding-bottom:calc\(66px \+ env\(safe-area-inset-bottom/);
+  });
+
+  it('the tab bar is a floating pill: detached side insets, rounded, no docked top border', () => {
+    const css = nativeCss();
+    expect(css).toMatch(/body\.is-native\.is-authed:not\(\.login-locked\) \.tabbar\{[\s\S]*?left:16px;right:16px/);
+    expect(css).toMatch(/body\.is-native\.is-authed:not\(\.login-locked\) \.tabbar\{[\s\S]*?border-radius:26px/);
+    expect(css).toMatch(/body\.is-native\.is-authed:not\(\.login-locked\) \.tabbar\{[\s\S]*?bottom:calc\(10px \+ env\(safe-area-inset-bottom/);
+    // no leftover docked full-width bar
+    expect(/body\.is-native\.is-authed:not\(\.login-locked\) \.tabbar\{[^}]*border-top:1px/.test(css)).toBe(false);
+  });
+
+  it('iOS gets Liquid Glass (backdrop blur), Android gets a flat tonal surface (no blur)', () => {
+    const css = nativeCss();
+    expect(css).toMatch(/body\.is-native\.is-ios\.is-authed:not\(\.login-locked\) \.tabbar\{[\s\S]*?backdrop-filter:saturate\(1\.8\) blur\(28px\)/);
+    const android = css.match(/body\.is-native\.is-android\.is-authed:not\(\.login-locked\) \.tabbar\{([^}]*)\}/);
+    expect(android).toBeTruthy();
+    expect(/backdrop-filter/.test(android[1])).toBe(false);
+    expect(/border:1px solid var\(--line\)/.test(android[1])).toBe(true);
+  });
+
+  it('the Stickers tab icon is a star, not the Shooting target', () => {
+    const stickers = [...doc.querySelectorAll('#tabbar .tabbar-btn')]
+      .find((b) => b.getAttribute('href') === '#stickers');
+    expect(stickers).toBeTruthy();
+    const ico = stickers.querySelector('.tabbar-ico').textContent;
+    expect(ico).toBe('\u2b50');
+    expect(ico).not.toBe('\ud83c\udfaf');
   });
 });
 
@@ -90,7 +124,10 @@ describe('Safe areas (notch / Dynamic Island / home indicator)', () => {
   it('the top chrome clears the top inset and the tab bar clears the bottom inset', () => {
     const css = nativeCss();
     expect(css).toMatch(/body\.is-native \.topbar\{padding-top:calc\(6px \+ env\(safe-area-inset-top/);
-    expect(css).toMatch(/\.tabbar\{[\s\S]*?padding-bottom:env\(safe-area-inset-bottom/);
+    expect(css).toMatch(/body\.is-native\.is-authed:not\(\.login-locked\) \.tabbar\{[\s\S]*?bottom:calc\(10px \+ env\(safe-area-inset-bottom/);
+  });
+  it('the full-screen Game Day Runner header clears the top inset for its Back button', () => {
+    expect(nativeCss()).toMatch(/\.gdr-top\{padding-top:calc\(16px \+ env\(safe-area-inset-top/);
   });
   it('the viewport opts into the safe-area via viewport-fit=cover', () => {
     expect(html).toMatch(/viewport-fit=cover/);
@@ -139,6 +176,27 @@ describe('Profile tab (native settings/account surface)', () => {
     expect(links.some((h) => /subject=Thwap%20feature%20request/.test(h))).toBe(true);
   });
 
+  it('Profile has a Player info row that opens the shared self-edit sheet', () => {
+    const row = doc.getElementById('profInfo');
+    expect(row).toBeTruthy();
+    expect(row.querySelector('.prof-rowlab').textContent).toBe('Player info');
+    // openSelfEdit is exposed globally so a separate script block can call it
+    expect(html).toMatch(/window\.openSelfEdit=openSelfEdit/);
+    const wire = html.slice(html.indexOf("getElementById('profInfo')"));
+    expect(wire).toMatch(/typeof window\.openSelfEdit==='function'\) window\.openSelfEdit\(\)/);
+  });
+
+  it('Profile has Privacy Policy and Terms of Use rows wired to the policy sheet', () => {
+    const t = doc.getElementById('profTerms');
+    const p = doc.getElementById('profPrivacy');
+    expect(t).toBeTruthy();
+    expect(p).toBeTruthy();
+    expect(t.querySelector('.prof-rowlab').textContent).toBe('Terms of Use');
+    expect(p.querySelector('.prof-rowlab').textContent).toBe('Privacy Policy');
+    expect(html).toMatch(/profT\.addEventListener\('click',function\(e\)\{ e\.preventDefault\(\); openPolicy\('terms'\)/);
+    expect(html).toMatch(/profP\.addEventListener\('click',function\(e\)\{ e\.preventDefault\(\); openPolicy\('privacy'\)/);
+  });
+
   it('the Profile close uses the role-aware js-home-close hook', () => {
     const close = doc.querySelector('#profile a.glassclose');
     expect(close).toBeTruthy();
@@ -151,6 +209,16 @@ describe('Profile tab (native settings/account surface)', () => {
     expect((html.match(/id='sfxToggle'/g) || []).length).toBe(1);
     expect((html.match(/id='themeToggle'/g) || []).length).toBe(1);
     expect((html.match(/id='menuSignout'/g) || []).length).toBe(1);
+  });
+
+  it('the beta banner, Train slogan, and wordmark trademark are hidden in-app only', () => {
+    const css = nativeCss();
+    expect(css).toMatch(/body\.is-native #wipNote\{display:none\}/);
+    expect(css).toMatch(/body\.is-native \.footer \.slogan,body\.is-native \.trademark\{display:none\}/);
+    // still present in the document (shown on the website)
+    expect(doc.getElementById('wipNote') || /id='wipNote'/.test(html)).toBeTruthy();
+    expect(/class='slogan'/.test(html)).toBe(true);
+    expect(/class='trademark'/.test(html)).toBe(true);
   });
 
   it('the header top nav (toplinks + kebab) is hidden in-app, since the tab bar owns primary nav', () => {
