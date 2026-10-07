@@ -23,18 +23,30 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const html = readFileSync(resolve(__dirname, '../index.html'), 'utf8');
 
 describe('Sign-in sheet mobile fixes', () => {
-  it('1. splash header is sticky (not relative) so it stays visible on scroll', () => {
-    expect(html).toContain('body.login-locked .topbar{position:sticky;top:0;z-index:120');
-    expect(html).not.toContain('body.login-locked .topbar{position:relative;z-index:120}');
+  it('1. splash header is pinned (fixed) AND transparent so it stays visible with no white band', () => {
+    expect(html).toMatch(/body\.login-locked \.topbar\{position:fixed;top:0;[^}]*background:transparent/);
+    // the old sticky rule painted a solid near-white band over the frost -- must be gone
+    expect(html).not.toContain('body.login-locked .topbar{position:sticky;top:0;z-index:120;background:var(--bg)}');
+    expect(html).not.toContain('body.login-locked .topbar{position:relative');
+    // header sits above the frost (z-90) but BELOW the sheet (z-130) so the sheet covers it
+    expect(html).toMatch(/body\.login-locked \.topbar\{position:fixed;[^}]*z-index:95/);
   });
 
-  it('2. both sheets carry a close button, and both are wired to dismiss', () => {
+  it('2. both sheets carry a glass circular close, wired to return to the splash (NOT unlock the app)', () => {
     expect(html).toContain("id='loginClose'");
     expect(html).toContain("id='waitClose'");
-    expect(html).toMatch(/\.login-x\{position:absolute;top:12px;right:12px/);
-    expect(html).toContain('function closeOverlay()');
-    expect(html).toContain("document.getElementById('loginClose')");
-    expect(html).toContain("document.getElementById('waitClose')");
+    // iOS-style glass circular button: round + backdrop blur, not a rounded square with a solid fill
+    expect(html).toMatch(/\.login-x\{position:absolute;[^}]*border-radius:50%/);
+    expect(html).toMatch(/\.login-x\{[^}]*backdrop-filter:saturate\(180%\) blur\(18px\)/);
+    expect(html).not.toMatch(/\.login-x\{position:absolute;top:12px;right:12px;z-index:3;[^}]*border-radius:10px/);
+    // the X returns to the frozen splash: it hides the sheet but keeps the frost + login-locked
+    expect(html).toContain('function backToSplash()');
+    expect(html).not.toContain('function closeOverlay()');
+    // backToSplash must NOT call hide() (which strips login-locked and dumps the user on the home screen)
+    const bts = html.match(/function backToSplash\(\)\{[^}]*\}/)[0];
+    expect(bts).not.toContain('hide()');
+    expect(bts).not.toContain("classList.remove('login-locked')");
+    expect(html).toContain("backToSplash();");
   });
 
   it('2. the waitlist blurb is the concise version', () => {
