@@ -322,6 +322,29 @@ describe('team weekly plan', () => {
     await _handlers.setPlan(post({ code: _seed.SEED_TEAM_CODE, plan: { mon: [] } }), res);
     expect(res.statusCode).toBe(401);
   });
+
+  it('blocks set-plan (402) when billing is enforced and the team is not active', async () => {
+    const login = await loginSeedCoach();
+    const token = login.body.token;
+    process.env.BILLING_ENFORCED = '1';
+    const res = makeRes();
+    await _handlers.setPlan(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, plan: { mon: { stick: [] } } }), res);
+    delete process.env.BILLING_ENFORCED;
+    expect(res.statusCode).toBe(402);
+    expect(res.body).toMatchObject({ gated: true });
+  });
+
+  it('get-plan carries the team billing status for the client paywall', async () => {
+    await loginSeedCoach();
+    const res = makeRes();
+    await _handlers.getPlan(get({ code: _seed.SEED_TEAM_CODE }), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.billing).toMatchObject({
+      active: expect.any(Boolean),
+      currentSeason: expect.any(String),
+      enforced: expect.any(Boolean),
+    });
+  });
 });
 
 describe('team goal (coach -> every player Game Day plan)', () => {

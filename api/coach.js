@@ -42,6 +42,7 @@ import {
   savePushToken,
 } from '../lib/teams_store.js';
 import { ensureSchedule, getSchedule, addEvent as addScheduleEvent, nextEvent } from '../lib/schedule_store.js';
+import { isGated, billingStatus } from '../lib/billing_store.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -648,7 +649,9 @@ async function getPlan(req, res) {
   const code = (req.query && req.query.code) || SEED_TEAM_CODE;
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
   res.setHeader('Cache-Control', 'no-store');
-  return res.status(200).json({ ok: true, plan: await getTeamPlan(code) });
+  // Billing status rides along so the client can paywall from the call it already
+  // makes; `code` here is the same team the plan is for.
+  return res.status(200).json({ ok: true, plan: await getTeamPlan(code), billing: await billingStatus(code) });
 }
 
 // POST the team's weekly plan. Coach-only.
@@ -657,6 +660,9 @@ async function setPlan(req, res) {
   const coach = await requireCoach(req, res); if (!coach) return;
   const { code, plan } = parseBody(req);
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  // Paywall: no editing the weekly plan when the team's season is unpaid. No-op
+  // until BILLING_ENFORCED=1, and fails open if billing can't be read.
+  if (await isGated(code)) return res.status(402).json({ error: 'season not active', gated: true });
   const saved = await setTeamPlan(code, plan);
   return res.status(200).json({ ok: true, plan: saved });
 }
