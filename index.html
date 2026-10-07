@@ -4432,7 +4432,7 @@ function countUp(el,target,fmt){
    weekly split at /api/board?tf=week and cumulative all-time at /api/board. */
 var LIVE={week:null, all:null};
 function mapPlayers(list){
-  return list.map(function(p){ return {n:(p.id.charAt(0).toUpperCase()+p.id.slice(1)), stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0, netplay:p.netplay||0}; });
+  return list.map(function(p){ return {n:(p.id.charAt(0).toUpperCase()+p.id.slice(1)), stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0, netplay:p.netplay||0, iq:p.iq||0}; });
 }
 /* Global real-data store so the stats page reads the SAME live numbers, not a
    name-hash demo. Keyed by lowercase first name. streak is the honest computed
@@ -4440,7 +4440,7 @@ function mapPlayers(list){
 window.thwapBoard=window.thwapBoard||{ week:{}, all:{}, ready:false };
 function stashBoard(which, list){
   var m={};
-  list.forEach(function(p){ m[String(p.id).toLowerCase()]={stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0, netplay:p.netplay||0, streak:p.streak||0}; });
+  list.forEach(function(p){ m[String(p.id).toLowerCase()]={stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0, netplay:p.netplay||0, iq:p.iq||0, streak:p.streak||0}; });
   window.thwapBoard[which]=m; window.thwapBoard.ready=true;
   if(window.thwapStatsRefresh) window.thwapStatsRefresh();
 }
@@ -4496,7 +4496,7 @@ function fetchBoard(){
 function netEnabled(){ return !!window.NETPLAY_ENABLED; }
 function thirdOf(p){ return netEnabled() ? (p.shoot||0) : (p.shoot||0)+(p.netplay||0); }
 function scoreOf(p){
-  if(disc==='all') return (p.stick||0)+(p.shoot||0)+(p.netplay||0)+(p.dryland||0)+(p.pass||0);
+  if(disc==='all') return (p.stick||0)+(p.shoot||0)+(p.netplay||0)+(p.dryland||0)+(p.pass||0)+(p.iq||0);
   if(disc==='shoot') return thirdOf(p);
   return p[disc]||0;
 }
@@ -4537,10 +4537,10 @@ function render(){
   board.querySelectorAll('.row[data-player]').forEach(function(rw){
     rw.addEventListener('click',function(){ if(window.openPlayerPage) window.openPlayerPage(rw.getAttribute('data-player')); });
   });
-  var t={stick:0,shoot:0,dryland:0,pass:0,netplay:0};
-  var _src=rowsFor(); _src.forEach(function(p){ t.stick+=(p.stick||0); t.shoot+=thirdOf(p); t.dryland+=(p.dryland||0); t.pass+=(p.pass||0); t.netplay+=(p.netplay||0); });
+  var t={stick:0,shoot:0,dryland:0,pass:0,netplay:0,iq:0};
+  var _src=rowsFor(); _src.forEach(function(p){ t.stick+=(p.stick||0); t.shoot+=thirdOf(p); t.dryland+=(p.dryland||0); t.pass+=(p.pass||0); t.netplay+=(p.netplay||0); t.iq+=(p.iq||0); });
   t.all=t.stick+(t.shoot)+t.dryland+t.pass+(netEnabled()?t.netplay:0);
-  ['all','stick','shoot','dryland','pass','netplay'].forEach(function(k){
+  ['all','stick','shoot','dryland','pass','netplay','iq'].forEach(function(k){
     var el=document.querySelector(".metric-num[data-total='"+k+"']"); if(el)countUp(el,t[k]);
   });
   /* Team goal block: This week has a target + bar; All time is a running total with no ceiling. */
@@ -4565,7 +4565,7 @@ function render(){
       if(info)info.style.display='none';
     }
   }
-  var discLabel={all:'all training',stick:'🏒 Hands',shoot:'🥅 Shoot',dryland:'⚡ Dryland',pass:'🎯 Passing',netplay:'🧤 Net play'}[disc];
+  var discLabel={all:'all training',stick:'🏒 Hands',shoot:'🥅 Shoot',dryland:'⚡ Dryland',pass:'🎯 Passing',netplay:'🧤 Net play',iq:'🧠 Hockey IQ'}[disc];
   if(scope)scope.textContent=(disc==='all')?'Everyone, all training':('Just '+discLabel);
 }
 /* team streak: only shows when >= 3 days (temporal reward). Demo value until Phase 4. */
@@ -5933,7 +5933,7 @@ function statsFetch(){
     var url=(which==='week')?'/api/board?tf=week':'/api/board';
     try{ fetch(url,{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.players&&j.players.length){
-        var m={}; j.players.forEach(function(p){ m[String(p.id).toLowerCase()]={stick:p.stick||0,shoot:p.shoot||0,dryland:p.dryland||0,netplay:p.netplay||0,streak:p.streak||0}; });
+        var m={}; j.players.forEach(function(p){ m[String(p.id).toLowerCase()]={stick:p.stick||0,shoot:p.shoot||0,dryland:p.dryland||0,netplay:p.netplay||0,iq:p.iq||0,streak:p.streak||0}; });
         window.thwapBoard=window.thwapBoard||{week:{},all:{},ready:false};
         window.thwapBoard[which]=m; window.thwapBoard.ready=true;
         if(window.thwapStatsRefresh) window.thwapStatsRefresh();
@@ -6058,7 +6058,7 @@ window.thwapStatsRefresh=function(){ if(current && location.hash==='#player') bu
           dev.hidden=false;
           /* Per-discipline volume: this week (baseThisWeek) + this month (summed trend). */
           var volEl=document.getElementById('idpDevVol');
-          var wkv=j.baseThisWeek||{stick:0,shoot:0,dryland:0,netplay:0};
+          var wkv=j.baseThisWeek||{stick:0,shoot:0,dryland:0,netplay:0,iq:0};
           var mo={stick:0,shoot:0,dryland:0,netplay:0};
           (j.monthTrend||[]).forEach(function(w){ mo.stick+=w.stick||0; mo.shoot+=w.shoot||0; mo.dryland+=w.dryland||0; mo.netplay+=w.netplay||0; });
           if(volEl){
@@ -7482,7 +7482,7 @@ document.addEventListener('click',function(e){
    source of truth for "all three done today" and cannot misfire off the three different
    drill-page storage schemes. Celebrates once per day. */
 function todayKey(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
-var DISCS=['stick','shoot','dryland'];
+var DISCS=['stick','shoot','dryland','iq'];  /* iq counts for stamping/stickers; it is NOT part of the daily required-celebration triad (see thwapCheckToday) */
 function doneKey(disc){ return 'thwapDone|'+todayKey()+'|'+disc; }
 function celebratedKey(){ return 'thwapTodayCelebrated|'+todayKey(); }
 function isDone(disc){ try{ return localStorage.getItem(doneKey(disc))==='1'; }catch(e){ return false; } }
@@ -7497,13 +7497,33 @@ window.thwapStampToday=function(disc,done){
   try{ if(done){ localStorage.setItem(doneKey(disc),'1'); } else { localStorage.removeItem(doneKey(disc)); } }catch(e){}
   if(done){ bumpEarned(); window.thwapCheckToday(); }  /* each completion unlocks another sticker */
 };
+/* Save a Hockey IQ reflection answer to the player record. The reflection text
+   is stored locally (authoritative, per device) and also sent to the shared
+   board via the same /api/done path the skills use: a POST { player,
+   discipline:'iq', drillId, reflection } so the IQ completion counts on the
+   board. The reflection field is additive and backward-compatible; a server
+   that does not read it still records the iq bump. The coaching-point reveal is
+   a hidden stub until Woody supplies model answers, so nothing is shown back. */
+window.thwapSaveReflection=function(today, qi, text){
+  try{
+    var pid=(localStorage.getItem('bfPlayer')||'Lewie').trim().split(/\s+/)[0].toLowerCase();
+    var drillId='iq:'+(today&&today.pool?today.pool:'offense')+':'+(today&&today.idx!=null?today.idx:0)+':q'+qi;
+    var payload={player:pid, discipline:'iq', drillId:drillId, reflection:String(text||'')};
+    var send=function(){ return fetch('/api/done',{method:'POST',headers:{'Content-Type':'application/json'},cache:'no-store',credentials:'include',body:JSON.stringify(payload)}); };
+    var ensure=(window.thwapEnsureSession?window.thwapEnsureSession():Promise.resolve());
+    Promise.resolve(ensure).then(send).then(function(r){
+      if(r && r.status===401){ var h=(window.thwapEnsureSession?window.thwapEnsureSession():Promise.resolve()); return Promise.resolve(h).then(send); }
+      return r;
+    }).then(function(r){ if(!(r&&r.ok) && window.thwapDoneNotSaved) window.thwapDoneNotSaved(); }, function(){ if(window.thwapDoneNotSaved) window.thwapDoneNotSaved(); });
+  }catch(e){}
+};
 window.thwapCheckToday=function(){
   if(window.thwapIsRestDay&&window.thwapIsRestDay()) return;   /* weekend: rest day, nothing required */
   /* "All done" means every REQUIRED discipline is done. Optional (bonus) ones never
      gate the celebration, and a day with nothing required never fires it. Fail open
      to all three if the plan has not resolved (helper missing/throws). */
-  var req=DISCS.slice();
-  try{ if(window.thwapTrainingToday){ var tt=window.thwapTrainingToday(); if(tt&&tt.required) req=tt.required; } }catch(e){}
+  var req=['stick','shoot','dryland'];  /* iq is never required for the daily all-done celebration */
+  try{ if(window.thwapTrainingToday){ var tt=window.thwapTrainingToday(); if(tt&&tt.required) req=tt.required.filter(function(d){return d!=='iq';}); } }catch(e){}
   if(!req.length) return;                          /* nothing required today */
   if(!req.every(isDone)) return;                   /* not every required discipline done yet */
   var ck=celebratedKey(); try{ if(localStorage.getItem(ck)==='1') return; }catch(e){}  /* once per day */
@@ -7742,9 +7762,14 @@ function playPool(disc){ var c=DC[disc]||'#75B8FF'; try{ POOLS[disc][pickRotatin
 function dayKey(){ var d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
 /* Public: fire the once-per-day category celebration for a finished discipline. */
 window.thwapCategoryDone=function(disc){
-  if(['stick','shoot','dryland'].indexOf(disc)<0) return;
+  if(['stick','shoot','dryland','iq'].indexOf(disc)<0) return;
   var gk='thwapCatCeleb|'+dayKey()+'|'+disc;
   try{ if(localStorage.getItem(gk)==='1') return; localStorage.setItem(gk,'1'); }catch(e){}
+  if(disc==='iq'){ /* no dedicated effect pool yet; a brain-purple badge / confetti is the payoff */
+    if(reduce){ badge('SMART PLAY','#7A5AF0'); return; }
+    try{ confetti(['#A98BFF','#7A5AF0','#B9F06B','#ffffff']); stamp('SMART PLAY','#7A5AF0'); }catch(e){ badge('SMART PLAY','#7A5AF0'); }
+    return;
+  }
   if(reduce){ badge(WORDS[disc]||'NICE!',DC[disc]); return; }
   playPool(disc);
 };
