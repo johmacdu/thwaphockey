@@ -6,7 +6,8 @@
   "description": "Thwap Hockey static site with Vercel serverless API (leaderboard + per-player discipline tracking).",
   "scripts": {
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "qa": "node qa/qa-views.cjs"
   },
   "dependencies": {
     "@capacitor/android": "^7.6.9",
