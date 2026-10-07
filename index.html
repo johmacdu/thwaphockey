@@ -7711,6 +7711,10 @@ window.thwapApplyServerDone=function(drillIds){
 .cf-cameo{position:fixed;left:50%;bottom:4vh;width:min(60vw,400px);z-index:132;opacity:0;pointer-events:none;transform:translateX(-50%) translateY(36vh)}
 .cf-cameo.go{animation:cfCameo 1.5s cubic-bezier(.2,.9,.3,1) forwards}
 @keyframes cfCameo{0%{opacity:0;transform:translateX(-50%) translateY(36vh) scale(.92)}22%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}80%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}100%{opacity:0;transform:translateX(-50%) translateY(8vh) scale(1)}}
+/* Reduced-motion variant: Sass still shows up, but only cross-fades in place (no
+   slide or scale), so the character appears for players with Reduce Motion on. */
+.cf-cameo.cf-still{opacity:0;transform:translateX(-50%) translateY(0);animation:cfStill 1.8s ease forwards}
+@keyframes cfStill{0%,100%{opacity:0}12%,80%{opacity:1}}
 .cf-shake{animation:cfShake .5s ease-out}
 @keyframes cfShake{0%,100%{transform:translate(0,0)}20%{transform:translate(-8px,4px)}40%{transform:translate(7px,-5px)}60%{transform:translate(-5px,3px)}80%{transform:translate(3px,-2px)}}
 @media (prefers-reduced-motion: reduce){
@@ -7775,6 +7779,13 @@ function sassCameo(src,word,color){
   if(word) stamp(word,color||'#75B8FF');
   setTimeout(function(){ rm(img); },1650);
 }
+/* Reduced-motion still: Sass fades in and out in place (no slide/scale). The word
+   rides on the reduced-motion-safe badge, so the character still shows up when the
+   player has Reduce Motion on, instead of a bare text badge. */
+function sassStill(src){
+  var img=document.createElement('img'); img.className='cf-cameo cf-still'; img.src=src; img.alt=''; document.body.appendChild(img);
+  setTimeout(function(){ rm(img); },1800);
+}
 /* ---- rotating pools: ~10 varied effects per discipline ---- */
 var POOLS={
   stick:[
@@ -7828,7 +7839,7 @@ window.thwapCategoryDone=function(disc){
   try{ if(localStorage.getItem(gk)==='1') return; localStorage.setItem(gk,'1'); }catch(e){}
   if(disc==='iq'){ /* Sass shows up for a finished Hockey IQ, like the skill categories */
     try{ if(window.thwapSfxEgg)thwapSfxEgg('eggShoot'); }catch(e){}
-    if(reduce){ badge('SMART PLAY','#7A5AF0'); return; }
+    if(reduce){ try{ sassStill('login/sass-celly.webp'); }catch(e){} badge('SMART PLAY','#7A5AF0'); return; }
     try{ sassCameo('login/sass-celly.webp','SMART PLAY','#7A5AF0'); }catch(e){ try{ confetti(['#A98BFF','#7A5AF0','#B9F06B','#ffffff']); stamp('SMART PLAY','#7A5AF0'); }catch(e2){ badge('SMART PLAY','#7A5AF0'); } }
     return;
   }
