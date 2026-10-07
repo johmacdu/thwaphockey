@@ -1,11 +1,12 @@
 // api/billing.js
 //
-// Seasonal team billing. Three actions on one serverless function (Vercel's
-// 12-function cap):
-//   POST ?action=create-checkout  { code, seasons:[<key>,...] } -> { url }
-//   POST ?action=webhook          Stripe events -> records paid seasons
-//   GET  ?action=status&code=XXX  -> { active, free, currentSeason, paidSeasons }
-//   GET  ?action=screen&code=XXX  -> coach billing screen { paid[], buyable[] }
+// Seasonal team billing on one serverless function (Vercel's 12-function cap):
+//   POST ?action=create-checkout      { code, seasons:[<key>,...] } -> { url }
+//   POST ?action=create-subscription  { code } -> { url }  (annual auto-renew)
+//   POST ?action=portal               { code } -> { url }  (Stripe billing portal)
+//   POST ?action=webhook              Stripe events -> records seasons + subscription
+//   GET  ?action=status&code=XXX      -> { active, free, subscribed, currentSeason, ... }
+//   GET  ?action=screen&code=XXX      -> coach billing screen { paid[], buyable[], subscription }
 //
 // Stripe is lazy-imported and only touched when a secret key is configured, so
 // the status endpoint (and the unit tests) work without any Stripe setup. The
@@ -13,8 +14,11 @@
 // needs the exact bytes Stripe sent.
 
 import { getTeam } from '../lib/teams_store.js';
-import { recordPayment, billingStatus, billingScreen, setTeamFree } from '../lib/billing_store.js';
-import { parseSeasonKey, isSeasonKey, priceCentsForKey, currentSeasonKey } from '../lib/seasons.js';
+import {
+  recordPayment, billingStatus, billingScreen, setTeamFree,
+  recordSubscription, subscriptionCustomer,
+} from '../lib/billing_store.js';
+import { parseSeasonKey, isSeasonKey, priceCentsForKey, currentSeasonKey, ANNUAL_SUB } from '../lib/seasons.js';
 
 export const config = { api: { bodyParser: false } };
 
@@ -101,6 +105,80 @@ async function createCheckout(req, res) {
   return res.status(200).json({ ok: true, url: session.url });
 }
 
+// Annual auto-renew: a subscription Checkout Session for the recurring $500/yr
+// price. The teamCode rides on BOTH the session and the subscription metadata so
+// every later subscription webhook (renewal, cancel) can find the team.
+async function createSubscription(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  const stripe = await getStripe();
+  if (!stripe) return res.status(503).json({ error: 'billing not configured' });
+
+  let body = {};
+  try {
+    body = JSON.parse((await readRaw(req)) || '{}');
+  } catch {
+    return res.status(400).json({ error: 'bad json' });
+  }
+  const code = String(body.code || '').trim();
+  if (!code) return res.status(400).json({ error: 'code required' });
+  if (!(await getTeam(code))) return res.status(404).json({ error: 'team not found' });
+
+  const price = process.env[ANNUAL_SUB.env] || '';
+  if (!price) return res.status(503).json({ error: 'missing Stripe price for the annual subscription' });
+
+  const origin = originOf(req);
+  const meta = { teamCode: code };
+  const session = await stripe.checkout.sessions.create({
+    mode: 'subscription',
+    line_items: [{ price, quantity: 1 }],
+    success_url: `${origin}/?billing=success`,
+    cancel_url: `${origin}/?billing=cancel`,
+    metadata: meta,
+    subscription_data: { metadata: meta },
+  });
+  return res.status(200).json({ ok: true, url: session.url });
+}
+
+// Open the Stripe Billing Portal for a team's customer: where a coach updates the
+// card, cancels/resumes, and downloads past invoices (so we never build receipts).
+async function portal(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  const stripe = await getStripe();
+  if (!stripe) return res.status(503).json({ error: 'billing not configured' });
+
+  let body = {};
+  try {
+    body = JSON.parse((await readRaw(req)) || '{}');
+  } catch {
+    return res.status(400).json({ error: 'bad json' });
+  }
+  const code = String(body.code || '').trim();
+  if (!code) return res.status(400).json({ error: 'code required' });
+  const customer = await subscriptionCustomer(code);
+  if (!customer) return res.status(404).json({ error: 'no subscription for this team' });
+
+  const origin = originOf(req);
+  const session = await stripe.billingPortal.sessions.create({ customer, return_url: `${origin}/?billing=portal` });
+  return res.status(200).json({ ok: true, url: session.url });
+}
+
+// Map a Stripe Subscription object to our stored shape. current_period_end moved
+// onto the subscription item in newer API versions, so read either spot.
+function subFromStripe(obj) {
+  const item = (obj.items && obj.items.data && obj.items.data[0]) || {};
+  const price = item.price || {};
+  const cpe = obj.current_period_end || item.current_period_end || null;
+  return {
+    id: obj.id,
+    customer: obj.customer,
+    status: obj.status,
+    priceId: price.id || null,
+    amountCents: Number(price.unit_amount) || 0,
+    currentPeriodEnd: cpe ? new Date(cpe * 1000).toISOString() : null,
+    cancelAtPeriodEnd: obj.cancel_at_period_end === true,
+  };
+}
+
 async function webhook(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
   const stripe = await getStripe();
@@ -120,6 +198,7 @@ async function webhook(req, res) {
     const obj = (event.data && event.data.object) || {};
     const md = obj.metadata || {};
     const code = md.teamCode || '';
+    // One-time season passes.
     const seasons = String(md.seasons || '').split(',').filter(isSeasonKey);
     for (const k of seasons) {
       await recordPayment(code, k, {
@@ -128,6 +207,20 @@ async function webhook(req, res) {
         stripeSession: obj.id,
       });
     }
+    // Subscription checkout: activate immediately so the team is covered even
+    // before the customer.subscription.created event lands. The .updated event
+    // then fills in the renewal date + price.
+    if (obj.mode === 'subscription' && obj.subscription && code) {
+      await recordSubscription(code, { id: obj.subscription, customer: obj.customer, status: 'active' });
+    }
+  } else if (event.type === 'customer.subscription.created' || event.type === 'customer.subscription.updated') {
+    const obj = (event.data && event.data.object) || {};
+    const code = (obj.metadata && obj.metadata.teamCode) || '';
+    if (code) await recordSubscription(code, subFromStripe(obj));
+  } else if (event.type === 'customer.subscription.deleted') {
+    const obj = (event.data && event.data.object) || {};
+    const code = (obj.metadata && obj.metadata.teamCode) || '';
+    if (code) await recordSubscription(code, { ...subFromStripe(obj), status: 'canceled' });
   }
   return res.status(200).json({ received: true });
 }
@@ -209,6 +302,10 @@ export default async function handler(req, res) {
   switch (action) {
     case 'create-checkout':
       return createCheckout(req, res);
+    case 'create-subscription':
+      return createSubscription(req, res);
+    case 'portal':
+      return portal(req, res);
     case 'webhook':
       return webhook(req, res);
     case 'status':

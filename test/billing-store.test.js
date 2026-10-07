@@ -21,6 +21,9 @@ const {
   billingStatus,
   billingScreen,
   paidSeasons,
+  recordSubscription,
+  subscriptionCustomer,
+  subscriptionActive,
 } = await import('../lib/billing_store.js');
 
 const FW = new Date('2025-10-15T19:00:00Z'); // Fall/Winter 2025
@@ -30,7 +33,7 @@ describe('billing_store', () => {
   beforeEach(() => { fake.map.clear(); });
 
   it('a brand-new team is empty and inactive', async () => {
-    expect(await getTeamBilling('RANGER10U')).toEqual({ free: false, seasons: {} });
+    expect(await getTeamBilling('RANGER10U')).toEqual({ free: false, seasons: {}, subscription: null });
     expect(await isTeamActive('RANGER10U', FW)).toBe(false);
     expect(await paidSeasons('RANGER10U')).toEqual([]);
   });
@@ -85,6 +88,39 @@ describe('billing_store', () => {
     // Buyable: the next two seasons ahead, priced, with fw-2025 dropped (already paid).
     expect(screen.buyable.map((s) => s.key)).toEqual(['sp-2026', 'os-2026']);
     expect(screen.buyable[0]).toMatchObject({ key: 'sp-2026', priceCents: 9000, current: false });
+  });
+
+  it('an active subscription keeps a team active in every season, with no per-season payment', async () => {
+    await recordSubscription('SUB1', {
+      id: 'sub_1', customer: 'cus_1', status: 'active',
+      priceId: 'price_annual', amountCents: 50000,
+      currentPeriodEnd: '2026-10-01T00:00:00.000Z', cancelAtPeriodEnd: false,
+    });
+    expect(subscriptionActive((await getTeamBilling('SUB1')).subscription)).toBe(true);
+    expect(await isTeamActive('SUB1', FW)).toBe(true);
+    expect(await isTeamActive('SUB1', SP)).toBe(true); // covers spring too, nothing bought per-season
+    expect(await subscriptionCustomer('SUB1')).toBe('cus_1');
+    const st = await billingStatus('SUB1', SP);
+    expect(st).toMatchObject({ subscribed: true, active: true });
+    const scr = await billingScreen('SUB1', FW);
+    expect(scr.subscribed).toBe(true);
+    expect(scr.subscription).toMatchObject({ status: 'active', cancelAtPeriodEnd: false });
+    expect(scr.subscription.renewsAt).toBe('2026-10-01T00:00:00.000Z');
+  });
+
+  it('a canceled subscription stops covering the team', async () => {
+    await recordSubscription('SUB2', { id: 'sub_2', customer: 'cus_2', status: 'active' });
+    expect(await isTeamActive('SUB2', FW)).toBe(true);
+    await recordSubscription('SUB2', { status: 'canceled' }); // keeps the stored customer id
+    expect(await isTeamActive('SUB2', FW)).toBe(false);
+    expect(await subscriptionCustomer('SUB2')).toBe('cus_2'); // retained for the portal
+    expect((await billingStatus('SUB2', FW)).subscribed).toBe(false);
+  });
+
+  it('past_due is a grace window that still counts as active', () => {
+    expect(subscriptionActive({ status: 'past_due' })).toBe(true);
+    expect(subscriptionActive({ status: 'canceled' })).toBe(false);
+    expect(subscriptionActive(null)).toBe(false);
   });
 
   it('billingScreen flags a comp season and a free team', async () => {

@@ -9043,6 +9043,36 @@ window.thwapPaywall=function(billing, teamCode){
       .catch(function(){ btn.disabled=false; btn.textContent=old; if(msgEl) msgEl.textContent='Could not start checkout.'; });
   }
 
+  /* Start the annual auto-renew subscription (redirects to Stripe Checkout). */
+  function subscribe(code, btn, msgEl){
+    btn.disabled=true; var old=btn.textContent; btn.textContent='One sec';
+    if(msgEl) msgEl.textContent='';
+    fetch('/api/billing?action=create-subscription',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code})})
+      .then(function(r){ return r.json().then(function(j){ return {status:r.status, j:j}; }); })
+      .then(function(res){
+        var j=res.j||{};
+        if(j.url){ window.location=j.url; return; }
+        btn.disabled=false; btn.textContent=old;
+        if(msgEl) msgEl.textContent=(res.status===503)?'Subscriptions are not set up yet. Hang tight.':((j.error)||'Could not start the subscription.');
+      })
+      .catch(function(){ btn.disabled=false; btn.textContent=old; if(msgEl) msgEl.textContent='Could not start the subscription.'; });
+  }
+
+  /* Open the Stripe billing portal (manage card, cancel/resume, past invoices). */
+  function openPortal(code, btn, msgEl){
+    btn.disabled=true; var old=btn.textContent; btn.textContent='One sec';
+    if(msgEl) msgEl.textContent='';
+    fetch('/api/billing?action=portal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code})})
+      .then(function(r){ return r.json().then(function(j){ return {status:r.status, j:j}; }); })
+      .then(function(res){
+        var j=res.j||{};
+        if(j.url){ window.location=j.url; return; }
+        btn.disabled=false; btn.textContent=old;
+        if(msgEl) msgEl.textContent=(j.error)||'Could not open billing management.';
+      })
+      .catch(function(){ btn.disabled=false; btn.textContent=old; if(msgEl) msgEl.textContent='Could not open billing management.'; });
+  }
+
   function render(){
     var wrap=document.getElementById('chBilling'); var card=document.getElementById('chBillingCard');
     if(!wrap||!card) return;
@@ -9053,14 +9083,23 @@ window.thwapPaywall=function(billing, teamCode){
       .then(function(b){
         if(!b||!b.ok){ wrap.hidden=true; return; }
         var html='';
+        var subd=!!b.subscribed;
+        var sub=b.subscription||null;
         /* Status line. */
         if(b.free){
           html+="<p class='chb-status'>Your team is comped.</p><p class='chb-sub'>No payment needed. Thanks for being part of Thwap.</p>";
+        } else if(subd){
+          var renews=(sub&&sub.renewsAt)?fmtDate(sub.renewsAt):'';
+          if(sub&&sub.cancelAtPeriodEnd){
+            html+="<p class='chb-status'>Auto-renew is off.</p><p class='chb-sub'>"+(renews?"Your team stays active through "+esc(renews)+".":"Your team stays active until the period ends.")+"</p>";
+          } else {
+            html+="<p class='chb-status'>Subscribed, renews automatically.</p><p class='chb-sub'>"+(renews?"Next charge "+esc(renews)+". Covers every season.":"Covers every season, every year.")+"</p>";
+          }
         } else if(b.active){
           var cur=(b.paid||[]).filter(function(s){ return s.current; })[0];
           html+="<p class='chb-status'>You are set for "+esc(cur?cur.label:b.currentSeason)+".</p><p class='chb-sub'>Your team can train all season.</p>";
         } else {
-          html+="<p class='chb-status'>No season is active.</p><p class='chb-sub'>Pick a season below to get your team training.</p>";
+          html+="<p class='chb-status'>No season is active.</p><p class='chb-sub'>Subscribe for the year, or pick a single season below.</p>";
         }
         /* Paid seasons (with receipts). */
         var paid=b.paid||[];
@@ -9075,26 +9114,37 @@ window.thwapPaywall=function(billing, teamCode){
             html+="<p class='chb-note'>Stripe emails a receipt to the payer for every charge.</p>";
           }
         }
-        /* Buyable seasons (not for a comped team: it is covered for everything). */
-        var buyable=b.free?[]:(b.buyable||[]);
+        /* Annual auto-renew offer (hidden once the team is comped or subscribed). */
+        if(!b.free && !subd){
+          html+="<p class='chb-sec'>Auto-renew</p>";
+          html+="<div class='chb-row'><div class='chb-row-main'><div class='chb-row-lab'>Annual, all seasons</div><div class='chb-row-meta'>$500 a year, renews automatically</div></div><div class='chb-row-r'><button type='button' class='chb-buy' id='chbSub'>Subscribe</button></div></div>";
+        }
+        /* Buyable seasons (not for a comped or subscribed team: already covered). */
+        var buyable=(b.free||subd)?[]:(b.buyable||[]);
         if(buyable.length){
-          html+="<p class='chb-sec'>"+(b.active?'Buy ahead':'Buy a season')+"</p>";
+          html+="<p class='chb-sec'>"+(b.active?'Buy ahead':'Buy a single season')+"</p>";
           buyable.forEach(function(s){
             var label=s.current?'Pay now':'Buy ahead';
             html+="<div class='chb-row'><div class='chb-row-main'><div class='chb-row-lab'>"+esc(s.label)+"</div><div class='chb-row-meta'>"+esc(fmtAmount(s.priceCents))+"</div></div><div class='chb-row-r'><button type='button' class='chb-buy' data-key='"+esc(s.key)+"'>"+label+"</button></div></div>";
           });
         }
         html+="<p class='chb-msg' id='chbMsg'></p>";
-        html+="<button type='button' class='chb-code' id='chbCode'>Have a code?</button>";
+        /* A team with a subscription on file gets Manage (Stripe portal: card,
+           cancel/resume, past invoices); otherwise the comp-code entry. */
+        if(sub){ html+="<button type='button' class='chb-code' id='chbManage'>Manage subscription</button>"; }
+        else { html+="<button type='button' class='chb-code' id='chbCode'>Have a code?</button>"; }
         card.innerHTML=html;
         wrap.hidden=false;
 
         var msgEl=document.getElementById('chbMsg');
         /* Returning from Stripe: a one-line confirmation above the fresh numbers. */
-        if(/[?&]billing=success/.test(location.search) && msgEl){ msgEl.textContent='Payment received, thank you. Your seasons are up to date.'; msgEl.classList.add('ok'); }
+        if(/[?&]billing=success/.test(location.search) && msgEl){ msgEl.textContent='Payment received, thank you. Your billing is up to date.'; msgEl.classList.add('ok'); }
         card.querySelectorAll('.chb-buy').forEach(function(btn){
+          if(btn.id==='chbSub'){ btn.addEventListener('click',function(){ subscribe(code, btn, msgEl); }); return; }
           btn.addEventListener('click',function(){ buy(code, btn.getAttribute('data-key'), btn, msgEl); });
         });
+        var manageBtn=document.getElementById('chbManage');
+        if(manageBtn) manageBtn.addEventListener('click',function(){ openPortal(code, manageBtn, msgEl); });
         var codeBtn=document.getElementById('chbCode');
         if(codeBtn) codeBtn.addEventListener('click',function(){
           var comp=(window.prompt('Enter your code')||'').trim(); if(!comp) return;

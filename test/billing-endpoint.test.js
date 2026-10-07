@@ -17,6 +17,7 @@ vi.mock('stripe', () => ({
   default: class {
     constructor() {}
     checkout = { sessions: { create: async (opts) => ({ id: 'cs_test_123', url: 'https://checkout.test/cs', _opts: opts }) } };
+    billingPortal = { sessions: { create: async (opts) => ({ url: 'https://portal.test/ps', _opts: opts }) } };
     webhooks = {
       constructEvent: (raw, _sig, secret) => {
         if (secret !== 'whsec_test') throw new Error('bad signature');
@@ -31,11 +32,12 @@ process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test';
 process.env.STRIPE_PRICE_FW = 'price_fw';
 process.env.STRIPE_PRICE_SP = 'price_sp';
 process.env.STRIPE_PRICE_OS = 'price_os';
+process.env.STRIPE_PRICE_ANNUAL = 'price_annual';
 process.env.BILLING_ADMIN_SECRET = 'adm_s';
 process.env.BILLING_COMP_CODES = 'MacDuffie2016, OtherComp';
 
 const handler = (await import('../api/billing.js')).default;
-const { getTeamBilling, hasPaidSeason, recordPayment } = await import('../lib/billing_store.js');
+const { getTeamBilling, hasPaidSeason, recordPayment, isTeamActive } = await import('../lib/billing_store.js');
 
 function makeRes() {
   const r = { statusCode: 200, body: null, headers: {} };
@@ -164,5 +166,52 @@ describe('api/billing', () => {
     expect(miss.statusCode).toBe(404);
     const noCode = await call({ method: 'GET', query: { action: 'screen' }, headers: {} });
     expect(noCode.statusCode).toBe(400);
+  });
+
+  it('create-subscription: returns a Stripe URL for an existing team, 404 otherwise', async () => {
+    fake._seed('team:SUBT', { code: 'SUBT', name: 'Sub Team' });
+    const ok = await call({ method: 'POST', query: { action: 'create-subscription' }, headers: { host: 'thwaphockey.com' }, body: JSON.stringify({ code: 'SUBT' }) });
+    expect(ok.statusCode).toBe(200);
+    expect(ok.body.url).toContain('checkout.test');
+    const miss = await call({ method: 'POST', query: { action: 'create-subscription' }, headers: {}, body: JSON.stringify({ code: 'NOPE' }) });
+    expect(miss.statusCode).toBe(404);
+  });
+
+  it('webhook: customer.subscription.created activates the team every season', async () => {
+    const event = {
+      type: 'customer.subscription.created',
+      data: { object: {
+        id: 'sub_x', customer: 'cus_x', status: 'active', cancel_at_period_end: false,
+        current_period_end: 1790000000,
+        metadata: { teamCode: 'SUBW' },
+        items: { data: [{ current_period_end: 1790000000, price: { id: 'price_annual', unit_amount: 50000 } }] },
+      } },
+    };
+    const res = await call({ method: 'POST', query: { action: 'webhook' }, headers: { 'stripe-signature': 'x' }, body: JSON.stringify(event) });
+    expect(res.statusCode).toBe(200);
+    const b = await getTeamBilling('SUBW');
+    expect(b.subscription).toMatchObject({ id: 'sub_x', customer: 'cus_x', status: 'active', amountCents: 50000 });
+    expect(await isTeamActive('SUBW', new Date('2026-05-15T19:00:00Z'))).toBe(true); // spring, nothing bought per-season
+  });
+
+  it('webhook: customer.subscription.deleted cancels the team but keeps the customer id', async () => {
+    const mk = (type, status) => ({ type, data: { object: { id: 'sub_d', customer: 'cus_d', status, metadata: { teamCode: 'SUBD' }, items: { data: [{ price: { id: 'price_annual', unit_amount: 50000 } }] } } } });
+    await call({ method: 'POST', query: { action: 'webhook' }, headers: { 'stripe-signature': 'x' }, body: JSON.stringify(mk('customer.subscription.created', 'active')) });
+    expect(await isTeamActive('SUBD', new Date())).toBe(true);
+    await call({ method: 'POST', query: { action: 'webhook' }, headers: { 'stripe-signature': 'x' }, body: JSON.stringify(mk('customer.subscription.deleted', 'canceled')) });
+    const b = await getTeamBilling('SUBD');
+    expect(b.subscription.status).toBe('canceled');
+    expect(b.subscription.customer).toBe('cus_d');
+    expect(await isTeamActive('SUBD', new Date())).toBe(false);
+  });
+
+  it('portal: opens for a team with a subscription, 404 without one', async () => {
+    const event = { type: 'customer.subscription.created', data: { object: { id: 'sub_p', customer: 'cus_p', status: 'active', metadata: { teamCode: 'PORT1' }, items: { data: [{ price: { id: 'price_annual', unit_amount: 50000 } }] } } } };
+    await call({ method: 'POST', query: { action: 'webhook' }, headers: { 'stripe-signature': 'x' }, body: JSON.stringify(event) });
+    const ok = await call({ method: 'POST', query: { action: 'portal' }, headers: { host: 'thwaphockey.com' }, body: JSON.stringify({ code: 'PORT1' }) });
+    expect(ok.statusCode).toBe(200);
+    expect(ok.body.url).toContain('portal.test');
+    const miss = await call({ method: 'POST', query: { action: 'portal' }, headers: {}, body: JSON.stringify({ code: 'NOSUB' }) });
+    expect(miss.statusCode).toBe(404);
   });
 });

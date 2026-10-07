@@ -61,11 +61,13 @@ describe('coach billing screen (coach home card)', () => {
     expect(card.textContent).toContain('Fall/Winter 2025-26');
     expect(card.textContent).toContain('$350');
     expect(card.textContent).toContain('Stripe emails a receipt');
-    const buys = card.querySelectorAll('.chb-buy');
+    const buys = card.querySelectorAll('.chb-buy[data-key]'); // season buttons (the Subscribe CTA has no data-key)
     expect(buys.length).toBe(2);
     expect(Array.from(buys).map((b) => b.getAttribute('data-key'))).toEqual(['sp-2026', 'os-2026']);
     // Buy-ahead says "Buy ahead" (not "Pay now") since the current season is paid.
     expect(buys[0].textContent).toBe('Buy ahead');
+    // A non-subscribed team is also offered the annual auto-renew.
+    expect(card.querySelector('#chbSub')).toBeTruthy();
   });
 
   it('a comped (free) team shows comped and no buy buttons', async () => {
@@ -86,7 +88,7 @@ describe('coach billing screen (coach home card)', () => {
     });
     const card = win.document.getElementById('chBillingCard');
     expect(card.textContent).toContain('No season is active');
-    const buy = card.querySelector('.chb-buy');
+    const buy = card.querySelector('.chb-buy[data-key]');
     expect(buy).toBeTruthy();
     expect(buy.textContent).toBe('Pay now');
   });
@@ -105,5 +107,42 @@ describe('coach billing screen (coach home card)', () => {
   it('hides the card when the screen call fails (missing team)', async () => {
     const win = await boot(null);
     expect(win.document.getElementById('chBilling').hidden).toBe(true);
+  });
+
+  it('a subscribed team shows the subscription + Manage, and no buy/subscribe buttons', async () => {
+    const win = await boot({
+      ok: true, free: false, enforced: true, currentSeason: 'fw-2025', active: true,
+      subscribed: true,
+      subscription: { status: 'active', renewsAt: '2026-08-01T00:00:00.000Z', cancelAtPeriodEnd: false, amountCents: 50000 },
+      paid: [], buyable: [{ key: 'sp-2026', label: 'Spring 2026', priceCents: 9000, current: false }],
+    });
+    const card = win.document.getElementById('chBillingCard');
+    expect(card.textContent).toContain('renews automatically');
+    expect(card.querySelector('#chbManage')).toBeTruthy();
+    expect(card.querySelector('#chbSub')).toBeNull(); // no Subscribe CTA once subscribed
+    expect(card.querySelectorAll('.chb-buy[data-key]').length).toBe(0); // buyable suppressed
+  });
+
+  it('an unsubscribed team is offered a Subscribe button', async () => {
+    const win = await boot({
+      ok: true, free: false, enforced: true, currentSeason: 'fw-2025', active: false,
+      subscribed: false, subscription: null,
+      paid: [], buyable: [{ key: 'fw-2025', label: 'Fall/Winter 2025-26', priceCents: 35000, current: true }],
+    });
+    const sub = win.document.getElementById('chbSub');
+    expect(sub).toBeTruthy();
+    expect(sub.textContent).toBe('Subscribe');
+  });
+
+  it('a subscription set to cancel shows auto-renew is off', async () => {
+    const win = await boot({
+      ok: true, free: false, enforced: true, currentSeason: 'fw-2025', active: true,
+      subscribed: true,
+      subscription: { status: 'active', renewsAt: '2026-08-01T00:00:00.000Z', cancelAtPeriodEnd: true, amountCents: 50000 },
+      paid: [], buyable: [],
+    });
+    const card = win.document.getElementById('chBillingCard');
+    expect(card.textContent).toContain('Auto-renew is off');
+    expect(card.querySelector('#chbManage')).toBeTruthy();
   });
 });
