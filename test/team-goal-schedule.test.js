@@ -19,14 +19,14 @@ describe('team goal rising season schedule', () => {
   it('defines the full season schedule in order', () => {
     expect(html).toMatch(/window\.TEAM_GOAL_SCHEDULE\s*=/);
     [
-      ["2026-01-01", 150],
-      ["2026-10-05", 160],
-      ["2026-10-19", 165],
-      ["2026-11-02", 170],
-      ["2026-12-01", 175],
-      ["2027-01-01", 180],
-      ["2027-02-01", 170],
-      ["2027-03-01", 165],
+      ["2026-01-01", 110],
+      ["2026-10-05", 120],
+      ["2026-10-19", 125],
+      ["2026-11-02", 130],
+      ["2026-12-01", 135],
+      ["2027-01-01", 140],
+      ["2027-02-01", 130],
+      ["2027-03-01", 125],
     ].forEach(([from, goal]) => {
       expect(html).toMatch(
         new RegExp("from:'" + from + "',\\s*goal:" + goal)
@@ -36,14 +36,14 @@ describe('team goal rising season schedule', () => {
 
   // Behavioural replication of the exact teamGoalFor logic shipped in index.html.
   const SCHED = [
-    { from: '2026-01-01', goal: 150 },
-    { from: '2026-10-05', goal: 160 },
-    { from: '2026-10-19', goal: 165 },
-    { from: '2026-11-02', goal: 170 },
-    { from: '2026-12-01', goal: 175 },
-    { from: '2027-01-01', goal: 180 },
-    { from: '2027-02-01', goal: 170 },
-    { from: '2027-03-01', goal: 165 },
+    { from: '2026-01-01', goal: 110 },
+    { from: '2026-10-05', goal: 120 },
+    { from: '2026-10-19', goal: 125 },
+    { from: '2026-11-02', goal: 130 },
+    { from: '2026-12-01', goal: 135 },
+    { from: '2027-01-01', goal: 140 },
+    { from: '2027-02-01', goal: 130 },
+    { from: '2027-03-01', goal: 125 },
   ];
   function teamGoalFor(d) {
     const key =
@@ -63,14 +63,14 @@ describe('team goal rising season schedule', () => {
 
   it('picks the right goal at every boundary and mid-window', () => {
     const cases = [
-      ['2026-10-01', 150], ['2026-10-04', 150],   // before the first bump
-      ['2026-10-05', 160], ['2026-10-18', 160],
-      ['2026-10-19', 165], ['2026-11-01', 165],
-      ['2026-11-02', 170], ['2026-11-30', 170],
-      ['2026-12-01', 175], ['2026-12-31', 175],   // all December
-      ['2027-01-01', 180], ['2027-01-31', 180],   // all January
-      ['2027-02-01', 170], ['2027-02-28', 170],   // February eases off
-      ['2027-03-01', 165], ['2027-03-15', 165],
+      ['2026-10-01', 110], ['2026-10-04', 110],   // before the first bump
+      ['2026-10-05', 120], ['2026-10-18', 120],
+      ['2026-10-19', 125], ['2026-11-01', 125],
+      ['2026-11-02', 130], ['2026-11-30', 130],
+      ['2026-12-01', 135], ['2026-12-31', 135],   // all December
+      ['2027-01-01', 140], ['2027-01-31', 140],   // all January
+      ['2027-02-01', 130], ['2027-02-28', 130],   // February eases off
+      ['2027-03-01', 125], ['2027-03-15', 125],
     ];
     cases.forEach(([iso, expected]) => {
       expect(teamGoalFor(on(iso))).toBe(expected);
@@ -78,6 +78,6 @@ describe('team goal rising season schedule', () => {
   });
 
   it('a date before the season start falls back to the default', () => {
-    expect(teamGoalFor(on('2025-12-31'))).toBe(150);
+    expect(teamGoalFor(on('2025-12-31'))).toBe(110);
   });
 });
