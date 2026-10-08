@@ -237,6 +237,82 @@ describe('method + validation fire BEFORE auth (stored lesson)', () => {
   });
 });
 
+describe('push_store statusSummary (counts only, never tokens)', () => {
+  it('tokenCountsFor tallies by platform and returns no token strings', async () => {
+    await store.registerToken('lewie', { token: 'tok-1', platform: 'ios' });
+    await store.registerToken('lewie', { token: 'tok-2', platform: 'web' });
+    await store.registerToken('lewie', { token: 'tok-3', platform: 'ios' });
+    const c = await store.tokenCountsFor('lewie');
+    expect(c.count).toBe(3);
+    expect(c.platforms).toEqual({ web: 1, ios: 2, android: 0 });
+    expect(JSON.stringify(c)).not.toContain('tok-');
+  });
+
+  it('statusSummary aggregates across players with a totalTokens and pushConfigured', async () => {
+    await store.registerToken('lewie', { token: 'tok-1', platform: 'web' });
+    await store.registerToken('oliver', { token: 'tok-2', platform: 'android' });
+    await store.registerToken('oliver', { token: 'tok-3', platform: 'android' });
+    const s = await store.statusSummary(['lewie', 'oliver', 'teddy']);
+    expect(s.totalTokens).toBe(3);
+    expect(s.pushConfigured).toBe(false);
+    const byId = Object.fromEntries(s.players.map((p) => [p.playerId, p]));
+    expect(byId.lewie.count).toBe(1);
+    expect(byId.oliver.count).toBe(2);
+    expect(byId.oliver.platforms.android).toBe(2);
+    expect(byId.teddy.count).toBe(0);
+    // No raw token string anywhere in the aggregate.
+    expect(JSON.stringify(s)).not.toContain('tok-');
+  });
+});
+
+describe('api/push status (admin-gated diagnostics, counts not tokens)', () => {
+  it('is 401 without admin auth', async () => {
+    const res = makeRes();
+    await _handlers.status(post({}, { action: 'status' }), res);
+    expect(res.statusCode).toBe(401);
+  });
+
+  it('returns per-player COUNTS with the shared admin key (never raw tokens)', async () => {
+    await store.registerToken('lewie', { token: 'secret-tok-1', platform: 'web' });
+    await store.registerToken('lewie', { token: 'secret-tok-2', platform: 'ios' });
+    const res = makeRes();
+    await _handlers.status(post({}, { key: 'admin-test-token' }), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.pushConfigured).toBe(false);
+    expect(res.body.totalTokens).toBe(2);
+    const lewie = res.body.players.find((p) => p.playerId === 'lewie');
+    expect(lewie.count).toBe(2);
+    expect(lewie.platforms).toEqual({ web: 1, ios: 1, android: 0 });
+    // The raw token strings must NEVER appear in the response.
+    expect(JSON.stringify(res.body)).not.toContain('secret-tok');
+  });
+
+  it('accepts a GET (operator can read it from a browser)', async () => {
+    const res = makeRes();
+    await _handlers.status({ method: 'GET', body: {}, query: { key: 'admin-test-token' }, headers: {} }, res);
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.body.players)).toBe(true);
+  });
+
+  it('accepts the shared admin key as a Bearer token', async () => {
+    const res = makeRes();
+    await _handlers.status({ method: 'POST', body: {}, query: {}, headers: { authorization: 'Bearer admin-test-token' } }, res);
+    expect(res.statusCode).toBe(200);
+  });
+
+  it('sets Cache-Control no-store', async () => {
+    const res = makeRes();
+    await _handlers.status(post({}, { key: 'admin-test-token' }), res);
+    expect(res.headers['Cache-Control']).toBe('no-store');
+  });
+
+  it('rejects a non-GET/POST method with 405 before the admin check', async () => {
+    const res = makeRes();
+    await _handlers.status({ method: 'DELETE', body: {}, query: {}, headers: {} }, res);
+    expect(res.statusCode).toBe(405); // method first, not 401
+  });
+});
+
 describe('index.html Notifications toggle (frontend smoke)', () => {
   const __dirname = dirname(fileURLToPath(import.meta.url));
   const html = readFileSync(resolve(__dirname, '../index.html'), 'utf8');
