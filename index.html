@@ -2195,12 +2195,17 @@ body.login-locked{overflow:hidden}
      present) so the gate actually finds the rows instead of returning early. */
   function run(){
   var rows={ stick:document.querySelector('.nav-stick'), shoot:document.querySelector('.nav-shoot'), dryland:document.querySelector('.nav-dryland') };
-  if(!rows.stick&&!rows.shoot&&!rows.dryland) return;
+  var iqRow=document.querySelector('.nav-iq');
+  if(!rows.stick&&!rows.shoot&&!rows.dryland&&!iqRow) return;
   var wd=0; try{ wd=window.thwapWeekday?window.thwapWeekday():0; }catch(e){}
   var dayKey=['sun','mon','tue','wed','thu','fri','sat'][wd]||'mon';
   var isWeekend=(wd===0||wd===6);
   /* Built-in default: dryland only Tue(2)/Wed(3)/Thu(4). */
   if(rows.dryland && [2,3,4].indexOf(wd)<0){ rows.dryland.style.display='none'; }
+  /* Hockey IQ is a fixed Thursday(4)/Friday(5) discipline (matches iqToday()); hide
+     its home card on every other day. It is not part of the coach day-plan, so this
+     single built-in gate is authoritative for it. */
+  if(iqRow && wd!==4 && wd!==5){ iqRow.style.display='none'; }
   try{ if(window.thwapRefreshHero) window.thwapRefreshHero(); }catch(e){}
   fetch('/api/coach?action=get-plan').then(function(r){ return r.json(); }).then(function(j){
     try{ if(window.thwapPaywall) window.thwapPaywall(j&&j.billing, null); }catch(e){}
