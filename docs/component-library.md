@@ -74,12 +74,26 @@ the **in-product-only** Report a bug / Request a feature.
   <a class="footmenu-item" href="/about" role="menuitem">About Thwap</a>
   ```
 - **Placement rules (important, these have regressed before):**
-  - Report a bug / Request a feature are **in-product only**. Tag them
-    `footmenu-inproduct`; a CSS rule hides them on the signed-out splash
-    (`body.login-locked .footmenu-item.footmenu-inproduct{display:none}`). They do
-    NOT belong on the About page footer.
-  - Terms of Use / Privacy Policy live on the **About page footer only**, not the
-    in-product footer.
+  - **Visibility matrix by auth state (two gate classes on the items):**
+    | Item | Splash (signed out, `body.login-locked`) | In product (signed in) |
+    |---|---|---|
+    | About Thwap | shown | shown |
+    | Terms of Use | shown | hidden |
+    | Privacy Policy | shown | hidden |
+    | Report a bug | hidden | shown |
+    | Request a feature | hidden | shown |
+    | Sign out | hidden (already signed out) | shown |
+  - Terms/Privacy items carry `footmenu-splash`; Report/Feature/Sign out carry
+    `footmenu-inproduct`; About carries neither (always shown). The CSS gate:
+    ```css
+    .footmenu-item.footmenu-splash{display:none}
+    body.login-locked .footmenu-item.footmenu-inproduct{display:none}
+    body.login-locked .footmenu-item.footmenu-splash{display:block}
+    ```
+  - Splash Terms/Privacy (`#menuTerms`/`#menuPrivacy`) open the full-page policy
+    overlay via `window.thwapOpenPolicy('terms'|'privacy')` (same handler used
+    elsewhere). Terms/Privacy ALSO live on the About page footer; they do NOT
+    appear in the in-product footer.
 - **Behavior:** registered with the shared menu manager (see §4).
 
 ### Segment / timeframe toggle: `.seg` + `.segbtn`

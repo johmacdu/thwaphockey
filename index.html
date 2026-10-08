@@ -1182,8 +1182,14 @@ body.login-locked .footer{position:relative;z-index:100;pointer-events:auto}
 .footmenu[hidden]{display:none}
 .footmenu-item{display:block;padding:10px 12px;border-radius:9px;color:var(--text);font-size:14px;font-weight:800;cursor:pointer;text-align:left}
 .footmenu-item:hover{background:var(--bg2,rgba(0,0,0,.05))}
-/* Report a bug / Request a feature are in-product only: hidden on the signed-out splash. */
+/* Footer kebab item visibility by auth state:
+   - Splash (signed out, body.login-locked): About + Terms + Privacy only.
+   - In product (signed in): About + Report a bug + Request a feature + Sign out.
+   Terms/Privacy are splash-only; Report/Feature/Sign out are in-product-only;
+   About shows in both. */
+.footmenu-item.footmenu-splash{display:none}
 body.login-locked .footmenu-item.footmenu-inproduct{display:none}
+body.login-locked .footmenu-item.footmenu-splash{display:block}
 /* Easter eggs on the drill pages. Long-press the header emoji to fire, then it
    resets. Reduced motion disables both (see the JS guard + the media block). */
 .eggstick,.eggnet{cursor:pointer;-webkit-user-select:none;user-select:none;touch-action:manipulation;position:relative;display:inline-block}
@@ -2329,7 +2335,7 @@ window.thwapTrainingToday=function(){
 <a class='nav nav-pass' href='#pass'><div class='ico'><img class='nav-ico' src='login/icon-pass.webp' alt=''></div><div><h2>Passing <span class='soon-tag'>Coming soon</span></h2><p>Tape-to-tape + vision, coming early November</p></div><div class='chev'>›</div></a>
 </div>
 </section>
-<div class='footer'><span class='slogan'>Compete. Improve.<br class='sl-br'> Have fun.</span><div class='footer-actions'><button class='sfxtoggle' id='sfxToggle' type='button' aria-label='Mute sounds' title='Mute sounds' aria-pressed='true'></button><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button><div class='footmenu-wrap'><button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button><div class='footmenu' id='footMenu' hidden role='menu'><a class='footmenu-item' href='/about' role='menuitem'>About Thwap</a><a class='footmenu-item footmenu-inproduct' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a><a class='footmenu-item footmenu-inproduct' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a><a class='footmenu-item' id='menuSignout' href='#' role='menuitem'>Sign out</a></div></div></div></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div>
+<div class='footer'><span class='slogan'>Compete. Improve.<br class='sl-br'> Have fun.</span><div class='footer-actions'><button class='sfxtoggle' id='sfxToggle' type='button' aria-label='Mute sounds' title='Mute sounds' aria-pressed='true'></button><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button><div class='footmenu-wrap'><button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button><div class='footmenu' id='footMenu' hidden role='menu'><a class='footmenu-item' href='/about' role='menuitem'>About Thwap</a><a class='footmenu-item footmenu-splash' id='menuTerms' href='#' role='menuitem'>Terms of Use</a><a class='footmenu-item footmenu-splash' id='menuPrivacy' href='#' role='menuitem'>Privacy Policy</a><a class='footmenu-item footmenu-inproduct' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a><a class='footmenu-item footmenu-inproduct' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a><a class='footmenu-item footmenu-inproduct' id='menuSignout' href='#' role='menuitem'>Sign out</a></div></div></div></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div>
 </div>
 <nav class='tabbar' id='tabbar' aria-label='Main'>
   <span class='tab-player'>
