@@ -9864,12 +9864,12 @@ window.thwapPaywall=function(billing, teamCode){
 
   /* ---- Tab bar active state -------------------------------------------
      Map the current hash to a single owning tab and mark it .on. Drill
-     sub-pages (#stick/#shoot/#dryland/#drillpick/#pass) roll up to Train;
+     sub-pages (#stick/#shoot/#dryland/#drillpick/#pass/#iq) roll up to Train;
      the deep #player view belongs to no tab (reached from several). */
   function tabForHash(h){
     h = (h||'').replace(/^#/, '');
     if(h==='' || h==='home' || h==='coachhome') return h==='coachhome' ? 'coachhome' : 'home';
-    if(h==='stick'||h==='shoot'||h==='dryland'||h==='drillpick'||h==='pass'){
+    if(h==='stick'||h==='shoot'||h==='dryland'||h==='drillpick'||h==='pass'||h==='iq'){
       return document.body.classList.contains('is-coach') ? null : 'home';
     }
     if(h==='stickers') return 'stickers';

@@ -76,7 +76,7 @@ describe('Role-aware bottom tab bar', () => {
   });
 
   it('the active-tab mapping rolls drill sub-pages up to Train and gives #player no tab', () => {
-    expect(html).toMatch(/if\(h==='stick'\|\|h==='shoot'\|\|h==='dryland'\|\|h==='drillpick'\|\|h==='pass'\)\{/);
+    expect(html).toMatch(/if\(h==='stick'\|\|h==='shoot'\|\|h==='dryland'\|\|h==='drillpick'\|\|h==='pass'\|\|h==='iq'\)\{/);
     expect(html).toMatch(/if\(h==='profile'\) return 'profile';/);
     expect(html).toMatch(/return h==='coachhome' \? 'coachhome' : 'home';/);
   });
