@@ -199,6 +199,44 @@ describe('Android hardware back navigates in-app (does not instantly close)', ()
   });
 });
 
+describe('Profile tab: Player info editor + Privacy/Terms rows', () => {
+  it('adds a Player info row in the Your card group, a Privacy Policy row and a Terms of Use row', () => {
+    const prof = doc.getElementById('profile');
+    expect(doc.getElementById('profInfo')).toBeTruthy();
+    expect(doc.getElementById('profPrivacy')).toBeTruthy();
+    expect(doc.getElementById('profTerms')).toBeTruthy();
+    expect(doc.getElementById('profInfo').textContent).toMatch(/Player info/);
+    expect(doc.getElementById('profPrivacy').textContent).toMatch(/Privacy Policy/);
+    expect(doc.getElementById('profTerms').textContent).toMatch(/Terms of Use/);
+  });
+
+  it('exposes openSelfEdit globally so the Profile row can call it across script blocks', () => {
+    expect(html).toMatch(/window\.openSelfEdit\s*=\s*openSelfEdit;/);
+  });
+
+  it('openSelfEdit no longer early-returns when the roster-grid card is absent (Profile-tab entry)', () => {
+    // The old guard `if(!card) return;` blocked opening from Profile; the roster
+    // fetch is the authoritative fill, so a missing card must not abort.
+    const fn = html.slice(html.indexOf('function openSelfEdit()'), html.indexOf('function openSelfEdit()') + 500);
+    expect(fn).not.toMatch(/var card=myCard\(\); if\(!card\) return;/);
+    expect(fn).toMatch(/var card=myCard\(\);/);
+    expect(fn).toMatch(/var num=card\?cardNum\(card\):''/);
+  });
+
+  it('the Player info row is wired to window.openSelfEdit, Privacy/Terms to the policy sheet', () => {
+    const block = html.slice(html.indexOf('function wireProfile()'));
+    const body = block.slice(0, block.indexOf('wireProfile);'));
+    expect(body).toMatch(/getElementById\('profInfo'\)[\s\S]*window\.openSelfEdit\(\)/);
+    expect(body).toMatch(/getElementById\('profPrivacy'\)[\s\S]*thwapOpenPolicy\('privacy'\)/);
+    expect(body).toMatch(/getElementById\('profTerms'\)[\s\S]*thwapOpenPolicy\('terms'\)/);
+  });
+
+  it('the self-edit roster fetch is a relative /api path (same-origin on web AND in the native shell via server.url)', () => {
+    const fn = html.slice(html.indexOf('function openSelfEdit()'), html.indexOf('function openSelfEdit()') + 1400);
+    expect(fn).toMatch(/fetch\('\/api\/coach\?action=roster/);
+  });
+});
+
 describe('No banned punctuation in the native additions', () => {
   it('the native-css and native-features blocks have no middot / em-dash / en-dash', () => {
     const css = nativeCss();
