@@ -221,6 +221,11 @@ Emoji/icons: `--ic-nav` 24 / `--ic-card` 30 / `--ic-feature` 44 / `--ic-empty` 8
 Min tap target `--tap` 44px on every interactive control.
 
 ### Shared components (reuse, do not re-create)
+The FULL component catalog, with each control's canonical class, where its CSS
+lives, a copy-paste markup snippet, and its reuse rule, is in
+`component-library.md`. Read it before building any control; the list below is a
+quick index.
+
 - Nav: the `.topbar` + `.toplinks` (`nav-authed` / `nav-coach` / `nav-guest`),
   collapsing to `.kebab` under 640px. Coach pages carry their own `.topbar`.
 - `.hero` (`.kicker` eyebrow + `.hero-hey`/h1 + `p`).

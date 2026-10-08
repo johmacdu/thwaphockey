@@ -236,6 +236,11 @@ footer{background:var(--panel);border-top:1px solid color-mix(in srgb,var(--line
 try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thwapTheme')||'light');}catch(e){document.documentElement.setAttribute('data-theme','light');}</script>
 <style>
 /* Terms / Privacy full-page overlay (ported from the app, bug: About had none). */
+/* iOS glass circular close button, matching index.html's .glassclose exactly so
+   the Terms/Privacy X is the same control used everywhere in the product. */
+.glassclose{position:fixed;z-index:50;display:inline-grid;place-items:center;width:48px;height:48px;border-radius:50%;font-size:20px;font-weight:700;color:var(--text);cursor:pointer;text-decoration:none;background:color-mix(in srgb,var(--panel) 62%,transparent);border:1px solid color-mix(in srgb,var(--text) 12%,transparent);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);box-shadow:0 6px 20px var(--shadow)}
+.glassclose:hover{background:color-mix(in srgb,var(--panel) 78%,transparent)}
+.glassclose:active{transform:scale(.94);background:color-mix(in srgb,var(--panel) 88%,transparent)}
 .policy-page{position:fixed;inset:0;z-index:200;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0}
 .policy-page[hidden]{display:none}
 .policy-page .policy-x{position:fixed;top:16px;right:16px;z-index:210}

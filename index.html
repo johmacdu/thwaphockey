@@ -1182,6 +1182,8 @@ body.login-locked .footer{position:relative;z-index:100;pointer-events:auto}
 .footmenu[hidden]{display:none}
 .footmenu-item{display:block;padding:10px 12px;border-radius:9px;color:var(--text);font-size:14px;font-weight:800;cursor:pointer;text-align:left}
 .footmenu-item:hover{background:var(--bg2,rgba(0,0,0,.05))}
+/* Report a bug / Request a feature are in-product only: hidden on the signed-out splash. */
+body.login-locked .footmenu-item.footmenu-inproduct{display:none}
 /* Easter eggs on the drill pages. Long-press the header emoji to fire, then it
    resets. Reduced motion disables both (see the JS guard + the media block). */
 .eggstick,.eggnet{cursor:pointer;-webkit-user-select:none;user-select:none;touch-action:manipulation;position:relative;display:inline-block}
@@ -2327,7 +2329,7 @@ window.thwapTrainingToday=function(){
 <a class='nav nav-pass' href='#pass'><div class='ico'><img class='nav-ico' src='login/icon-pass.webp' alt=''></div><div><h2>Passing <span class='soon-tag'>Coming soon</span></h2><p>Tape-to-tape + vision, coming early November</p></div><div class='chev'>›</div></a>
 </div>
 </section>
-<div class='footer'><span class='slogan'>Compete. Improve.<br class='sl-br'> Have fun.</span><div class='footer-actions'><button class='sfxtoggle' id='sfxToggle' type='button' aria-label='Mute sounds' title='Mute sounds' aria-pressed='true'></button><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button><div class='footmenu-wrap'><button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button><div class='footmenu' id='footMenu' hidden role='menu'><a class='footmenu-item' href='/about' role='menuitem'>About Thwap</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a><a class='footmenu-item' id='menuSignout' href='#' role='menuitem'>Sign out</a></div></div></div></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div>
+<div class='footer'><span class='slogan'>Compete. Improve.<br class='sl-br'> Have fun.</span><div class='footer-actions'><button class='sfxtoggle' id='sfxToggle' type='button' aria-label='Mute sounds' title='Mute sounds' aria-pressed='true'></button><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button><div class='footmenu-wrap'><button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button><div class='footmenu' id='footMenu' hidden role='menu'><a class='footmenu-item' href='/about' role='menuitem'>About Thwap</a><a class='footmenu-item footmenu-inproduct' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a><a class='footmenu-item footmenu-inproduct' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a><a class='footmenu-item' id='menuSignout' href='#' role='menuitem'>Sign out</a></div></div></div></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div>
 </div>
 <nav class='tabbar' id='tabbar' aria-label='Main'>
   <span class='tab-player'>
@@ -4661,17 +4663,36 @@ fetchBoard();
 window.addEventListener('hashchange',function(){ if(location.hash==='#progress') fetchBoard(); });
 })();</script>
 <script>(function(){var KEY='thwapTheme';function apply(t){var dark=(t==='dark');document.documentElement.setAttribute('data-theme',dark?'dark':'light');var i=document.getElementById('ttico'),l=document.getElementById('ttlabel');if(i)i.textContent=dark?'☀️':'🌙';if(l)l.textContent=dark?'Light':'Dark';var pi=document.getElementById('profTtico'),pl=document.getElementById('profTtlabel');if(pi)pi.textContent=dark?'☀️':'🌙';if(pl)pl.textContent=dark?'Light':'Dark';var bm=document.getElementById('brandMark');if(bm)bm.setAttribute('src',dark?'wordmark-dark.svg':'wordmark-light.svg');var fm=document.getElementById('footerMark');if(fm)fm.setAttribute('src',dark?'wordmark-tm-dark.svg':'wordmark-tm-light.svg');var lm=document.getElementById('loginMark');if(lm)lm.setAttribute('src',dark?'wordmark-dark.svg':'wordmark-light.svg');}var saved='light';try{saved=localStorage.getItem(KEY)||'light';}catch(e){}apply(saved);function toggle(){var cur='light';try{cur=localStorage.getItem(KEY)||'light';}catch(e){}var next=(cur==='dark'?'light':'dark');try{localStorage.setItem(KEY,next);}catch(e){}apply(next);}var b=document.getElementById('themeToggle');if(b)b.addEventListener('click',toggle);var pb=document.getElementById('profThemeToggle');if(pb)pb.addEventListener('click',toggle);})();</script>
+<script>
+/* Shared menu manager: at most one popover menu (footer kebab, nav kebabs) open
+   at a time. Opening one closes the others; a single document-level listener
+   closes whichever menu a click (or Escape) fell outside of. No handler calls
+   stopPropagation, so every registered menu sees every click -- which is what
+   makes tapping one trigger close another (and vice versa). */
+function registerThwapMenu(){
+  var items=[]; // {btn, menu}
+  function closeOne(it){ if(it.menu.hidden) return; it.menu.hidden=true; if(it.btn) it.btn.setAttribute('aria-expanded','false'); }
+  function closeAll(except){ items.forEach(function(it){ if(it!==except) closeOne(it); }); }
+  function toggle(it){ if(it.menu.hidden){ closeAll(it); it.menu.hidden=false; if(it.btn) it.btn.setAttribute('aria-expanded','true'); } else { closeOne(it); } }
+  document.addEventListener('click',function(e){ items.forEach(function(it){ if(!it.menu.hidden && !it.menu.contains(e.target) && e.target!==it.btn && !(it.btn&&it.btn.contains(e.target))) closeOne(it); }); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeAll(null); });
+  return {
+    add:function(btn,menu){ var it={btn:btn,menu:menu}; items.push(it); btn.addEventListener('click',function(e){ e.preventDefault(); toggle(it); }); return it; },
+    open:function(){ var it=items[0]; if(it){ closeAll(it); it.menu.hidden=false; if(it.btn) it.btn.setAttribute('aria-expanded','true'); } },
+    close:function(){ closeAll(null); }
+  };
+}
+</script>
 <script>(function(){
   /* Footer kebab: Sign out + Report a bug + Request a feature. Shown for every
      viewer (player or coach). One identity per session: Sign out clears the coach
      token and the parent auth so re-entry needs the password/code again. */
   var kebab=document.getElementById('footKebab'), menu=document.getElementById('footMenu');
   if(!kebab||!menu) return;
-  function openMenu(){ menu.hidden=false; kebab.setAttribute('aria-expanded','true'); }
-  function closeMenu(){ menu.hidden=true; kebab.setAttribute('aria-expanded','false'); }
-  kebab.addEventListener('click',function(e){ e.stopPropagation(); if(menu.hidden) openMenu(); else closeMenu(); });
-  document.addEventListener('click',function(e){ if(!menu.hidden && !menu.contains(e.target) && e.target!==kebab) closeMenu(); });
-  document.addEventListener('keydown',function(e){ if(e.key==='Escape') closeMenu(); });
+  var reg=(window.__thwapMenus||(window.__thwapMenus=registerThwapMenu()));
+  function openMenu(){ reg.open(); }
+  function closeMenu(){ reg.close(); }
+  reg.add(kebab,menu);
   var out=document.getElementById('menuSignout');
   if(out) out.addEventListener('click',function(e){
     e.preventDefault();
@@ -5726,12 +5747,9 @@ fetch('stickers/stickers.json').then(function(r){return r.json();}).then(functio
   var btn=document.getElementById(pair[0]);
   var menu=document.getElementById(pair[1]);
   if(!btn||!menu)return;
-  function open(){ menu.hidden=false; btn.setAttribute('aria-expanded','true'); }
-  function close(){ menu.hidden=true; btn.setAttribute('aria-expanded','false'); }
-  btn.addEventListener('click',function(e){ e.stopPropagation(); if(menu.hidden)open(); else close(); });
-  menu.addEventListener('click',function(){ close(); });
-  document.addEventListener('click',function(e){ if(!menu.hidden && !menu.contains(e.target) && e.target!==btn) close(); });
-  document.addEventListener('keydown',function(e){ if(e.key==='Escape') close(); });
+  var reg=(window.__thwapMenus||(window.__thwapMenus=registerThwapMenu()));
+  reg.add(btn,menu);
+  menu.addEventListener('click',function(){ reg.close(); });
 });
 })();
 </script>
