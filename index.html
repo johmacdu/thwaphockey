@@ -2144,6 +2144,7 @@ body.login-locked{overflow:hidden}
       <img class='prof-card-art' id='profCardArt' src='logo-64.png' alt=''>
       <span class='prof-card-txt'><span class='prof-card-nm' id='profCardNm'>Your player card</span><span class='prof-card-sub'>Open your card</span></span>
     </button>
+    <a class='prof-row' href='#roster' id='profInfo'><span class='prof-rowlab'>Player info</span><span class='prof-rowchev'>&rsaquo;</span></a>
   </div>
   <div class='prof-group'>
     <div class='prof-grouplab'>Settings</div>
@@ -2161,6 +2162,8 @@ body.login-locked{overflow:hidden}
     <a class='prof-row' href='/about'><span class='prof-rowlab'>About Thwap</span><span class='prof-rowchev'>&rsaquo;</span></a>
     <a class='prof-row' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report'><span class='prof-rowlab'>Report a bug</span><span class='prof-rowchev'>&rsaquo;</span></a>
     <a class='prof-row' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request'><span class='prof-rowlab'>Request a feature</span><span class='prof-rowchev'>&rsaquo;</span></a>
+    <a class='prof-row' href='#privacy' id='profPrivacy'><span class='prof-rowlab'>Privacy Policy</span><span class='prof-rowchev'>&rsaquo;</span></a>
+    <a class='prof-row' href='#terms' id='profTerms'><span class='prof-rowlab'>Terms of Use</span><span class='prof-rowchev'>&rsaquo;</span></a>
   </div>
   <div class='prof-group'>
     <button type='button' class='prof-row prof-signout' id='profSignout'><span class='prof-rowlab prof-signout'>Sign out</span></button>
@@ -9150,9 +9153,13 @@ if(selfCancelBtn) selfCancelBtn.addEventListener('click',function(){ setEditing(
 function sheetShow(on){ if(sheet) sheet.hidden=!on; }
 function validEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v||'').trim()); }
 function openSelfEdit(){
-  var card=myCard(); if(!card) return;
+  /* The roster-grid card is only present once the Team page has rendered; when
+     the sheet is opened from the Profile tab it may be absent. The roster fetch
+     below is the authoritative source, so proceed either way and seed from the
+     card when we have it, otherwise from the stored name. */
+  var card=myCard();
   var parts=myName().split(/\s+/); var first=parts[0]||''; var last=parts.slice(1).join(' ');
-  var num=cardNum(card);
+  var num=card?cardNum(card):'';
   currentCode=num?(num+'2027'):'';           /* proof-of-self for the server */
   if(psMsg) psMsg.textContent='';
   if(psFirst) psFirst.value=first;
@@ -9172,6 +9179,7 @@ function openSelfEdit(){
       window.thwapEmailUI.render(psEmailList, Array.isArray(m.parentEmails)?m.parentEmails:[m.parentEmail,m.parentEmail2]);
     }).catch(function(){});
 }
+window.openSelfEdit=openSelfEdit;
 /* In self-edit mode, tapping the player's OWN card opens the sheet. Capture phase
    so it beats the card's normal navigation; other cards are pointer-events:none. */
 (function(){
@@ -9700,6 +9708,22 @@ window.thwapPaywall=function(billing, teamCode){
       location.hash='';
       location.reload();
     });
+
+    /* Player info: opens the same self-edit sheet the Team-page pencil uses
+       (name / jersey / parent emails with add + remove, request a new code).
+       It fetches the roster from the live origin, which the native shell loads
+       via capacitor server.url, so the emails pre-fill on device too. */
+    var info=document.getElementById('profInfo');
+    if(info) info.addEventListener('click',function(e){
+      e.preventDefault();
+      if(window.openSelfEdit) window.openSelfEdit();
+    });
+
+    /* Privacy Policy + Terms of Use open the existing policy sheet. */
+    var pv=document.getElementById('profPrivacy');
+    if(pv) pv.addEventListener('click',function(e){ e.preventDefault(); if(window.thwapOpenPolicy) window.thwapOpenPolicy('privacy'); });
+    var tm=document.getElementById('profTerms');
+    if(tm) tm.addEventListener('click',function(e){ e.preventDefault(); if(window.thwapOpenPolicy) window.thwapOpenPolicy('terms'); });
   }
   if(document.readyState!=='loading') wireProfile(); else document.addEventListener('DOMContentLoaded', wireProfile);
 
