@@ -51,7 +51,7 @@ describe('goalie Net play wiring (source guards)', () => {
 
   it('the player radar third spoke is Net play for a goalie, wired to netplay data', () => {
     expect(html).toMatch(/var thirdDisc=goalieView\?'Net play':'Shooting'/);
-    expect(html).toMatch(/var discs=\['Stickhandling',thirdDisc,'Dryland'\]/);
+    expect(html).toMatch(/var discs=\['Stickhandling',thirdDisc,'Dryland','HockeyIQ'\]/);
     // display name resolves to the netplay storage key + a catalog for the ring goal
     expect(html).toMatch(/'Net play':'netplay'/);
     expect(html).toMatch(/'Net play': uNet\.length\?uNet:\[\]/);
