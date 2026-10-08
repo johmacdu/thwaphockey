@@ -4661,6 +4661,7 @@ window.addEventListener('hashchange',function(){ if(location.hash==='#progress')
     try{ localStorage.removeItem('thwapAuth'); sessionStorage.removeItem('thwapAuth'); }catch(_){}
     try{ document.cookie='thwapAuth=;path=/;max-age=0'; }catch(_){}
     try{ localStorage.removeItem('bfPlayer'); localStorage.removeItem('thwapRosterFilter'); }catch(_){}
+    try{ localStorage.removeItem('thwapNotifToken'); }catch(_){}
     try{ if(window.THWAP_DEMO) window.THWAP_DEMO.deactivate(); }catch(_){}
     location.hash='';
     location.reload();
@@ -9925,6 +9926,7 @@ window.thwapPaywall=function(billing, teamCode){
       try{ localStorage.removeItem('thwapAuth'); sessionStorage.removeItem('thwapAuth'); }catch(_){}
       try{ document.cookie='thwapAuth=;path=/;max-age=0'; }catch(_){}
       try{ localStorage.removeItem('bfPlayer'); localStorage.removeItem('thwapRosterFilter'); }catch(_){}
+      try{ localStorage.removeItem('thwapNotifToken'); }catch(_){}
       try{ if(window.THWAP_DEMO) window.THWAP_DEMO.deactivate(); }catch(_){}
       location.hash='';
       location.reload();
@@ -9976,6 +9978,9 @@ window.thwapPaywall=function(billing, teamCode){
         try{
           if(P.addListener) P.addListener('registration', function(t){
             var token = t && (t.value || t.token); if(!token) return;
+            /* Stash the device token so the DISABLE path can unregister exactly
+               this device later (the plugin does not expose it on demand). */
+            try{ localStorage.setItem('thwapNotifToken', token); }catch(_){}
             var platform='web';
             try{ platform=(window.Capacitor.getPlatform&&window.Capacitor.getPlatform())||'web'; }catch(_){}
             fetch('/api/push?action=register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:token,platform:platform})}).catch(function(){});
@@ -9991,6 +9996,9 @@ window.thwapPaywall=function(billing, teamCode){
         var tok='';
         try{ tok = localStorage.getItem('thwapNotifToken')||''; }catch(_){}
         if(tok){ fetch('/api/push?action=unregister',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tok})}).catch(function(){}); }
+        /* Drop the stored token whether or not it existed: once the user turns
+           notifications off this device must not keep a token on hand. */
+        try{ localStorage.removeItem('thwapNotifToken'); }catch(_){}
       };
       notif.addEventListener('click',function(){
         var next = notif.getAttribute('aria-pressed')!=='true';
