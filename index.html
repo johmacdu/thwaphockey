@@ -264,6 +264,15 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .iq-reflect:focus{outline:none;border-color:#7A5AF0}
 .iq-reflect:disabled{opacity:.7;cursor:default}
 .iq-reflect.answered{border-color:#4E9128}
+.iq-scorenote{font-size:var(--fs-meta);color:var(--muted);font-weight:700;line-height:1.5;margin:0 0 var(--sp-4)}
+.iq-scorebox{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.iq-scorelbl{font-size:var(--fs-eyebrow);font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#7A5AF0}
+.iq-scoreinput{font-family:inherit;font-size:22px;font-weight:900;width:90px;text-align:center;padding:12px 10px;border-radius:var(--r-card);border:2px solid var(--line);background:var(--card);color:var(--text);-moz-appearance:textfield}
+.iq-scoreinput::-webkit-outer-spin-button,.iq-scoreinput::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.iq-scoreinput:focus{outline:none;border-color:#7A5AF0}
+.iq-scoreinput:disabled{opacity:.8;cursor:default}
+.iq-scoreinput.answered{border-color:#4E9128}
+.iq-scoremax{font-size:var(--fs-body);font-weight:800;color:var(--muted)}
 .iq-submitwrap{margin:var(--sp-8) 0 0}
 .iq-submit{display:block;width:100%;font-family:inherit;font-size:17px;font-weight:900;letter-spacing:.01em;padding:16px;min-height:56px;border-radius:16px;border:0;background:#7A5AF0;color:#fff;cursor:pointer;transition:opacity .12s ease,transform .08s ease}
 .iq-submit:active{transform:scale(.99)}
@@ -6991,6 +7000,12 @@ var IQ_DEFENSE=window.IQ_DEFENSE=[
       'On every puck touch',
       'Only after a shot',
       'Never, always stay passive'], correct:1}
+  ]},
+  {id:'1XJFbezgoRs', title:'Quinn Hughes', questions:[
+    {t:'score', q:'Watch each clip, make your read in the 5-second pause, then give yourself a point for each read you got right. Add them up and enter your total.', max:4}
+  ]},
+  {id:'vXhOnPyHqaQ', title:'Aaron Ekblad', questions:[
+    {t:'score', q:'Watch each clip, make your read in the 5-second pause, then give yourself a point for each read you got right. Add them up and enter your total.', max:3}
   ]}
 ];
 var IQ_OFFENSE=window.IQ_OFFENSE=[
@@ -7190,6 +7205,19 @@ function iqQuestionHTML(q,qi,total,prog){
       head+"<p class='iq-qtext'>"+esc(q.q)+"</p>"+
       "<div class='iq-opts'>"+opts+"</div></div>";
   }
+  if(q.t==='score'){
+    prog.score=prog.score||{};
+    var sv=(prog.score[qi]!=null)?prog.score[qi]:'';
+    var mx=q.max||10;
+    return "<div class='iq-q' data-qt='score' data-qi='"+qi+"'>"+
+      head+"<p class='iq-qtext'>"+esc(q.q)+"</p>"+
+      "<p class='iq-scorenote'>Be honest, we play this one again later so you can see your reads get better over time.</p>"+
+      "<div class='iq-scorebox'>"+
+        "<label class='iq-scorelbl' for='iqscore"+qi+"'>My score</label>"+
+        "<input id='iqscore"+qi+"' class='iq-scoreinput' type='number' inputmode='numeric' min='0' max='"+mx+"' step='1' value='"+esc(String(sv))+"' data-qi='"+qi+"' data-max='"+mx+"'>"+
+        "<span class='iq-scoremax'>out of "+mx+"</span>"+
+      "</div></div>";
+  }
   /* free text reflection */
   var saved=prog.ft[qi]||'';
   return "<div class='iq-q' data-qt='ft' data-qi='"+qi+"'>"+
@@ -7219,6 +7247,20 @@ function iqWire(list, v, t, key){
       iqUpdateSubmit(list, v, key);
     });
   });
+  list.querySelectorAll(".iq-q[data-qt='score'] .iq-scoreinput").forEach(function(inp){
+    if(inp.disabled) return;
+    var qi=+inp.getAttribute('data-qi');
+    var mx=+inp.getAttribute('data-max')||10;
+    inp.addEventListener('input',function(){
+      var raw=inp.value.replace(/[^0-9]/g,'');
+      var n=(raw==='')?null:Math.max(0,Math.min(mx,parseInt(raw,10)));
+      if(n!=null && String(n)!==inp.value) inp.value=String(n);
+      var prog=loadIq(key); prog.score=prog.score||{};
+      if(n==null) delete prog.score[qi]; else prog.score[qi]=n;
+      saveIq(key,prog);
+      iqUpdateSubmit(list, v, key);
+    });
+  });
   var submit=list.querySelector('.iq-submit');
   if(submit) submit.addEventListener('click',function(){ iqSubmit(list, v, t, key); });
 }
@@ -7227,8 +7269,10 @@ function iqWire(list, v, t, key){
 function iqRemaining(v, prog){
   prog.mc=prog.mc||{}; prog.ft=prog.ft||{};
   var n=0;
+  prog.score=prog.score||{};
   v.questions.forEach(function(q,qi){
     if(q.t==='mc'){ if(!prog.mc[qi]) n++; }
+    else if(q.t==='score'){ if(prog.score[qi]==null) n++; }
     else { if(!(prog.ft[qi]&&String(prog.ft[qi]).trim())) n++; }
   });
   return n;
@@ -7268,6 +7312,7 @@ function iqLockAll(list, v, prog){
     }
   });
   list.querySelectorAll(".iq-q[data-qt='ft'] .iq-reflect").forEach(function(ta){ ta.disabled=true; ta.classList.add('answered'); });
+  list.querySelectorAll(".iq-q[data-qt='score'] .iq-scoreinput").forEach(function(inp){ inp.disabled=true; inp.classList.add('answered'); });
 }
 
 /* Submit: lock everything, reveal MC correctness, save each free-text answer to
@@ -7281,6 +7326,7 @@ function iqSubmit(list, v, t, key){
   /* persist free-text reflections to the player record */
   v.questions.forEach(function(q,qi){
     if(q.t==='ft'){ var text=String(prog.ft[qi]||'').trim(); if(text && window.thwapSaveReflection) window.thwapSaveReflection(t, qi, text); }
+    else if(q.t==='score'){ var sc=(prog.score&&prog.score[qi]!=null)?prog.score[qi]:null; if(sc!=null && window.thwapSaveReflection) window.thwapSaveReflection(t, qi, 'score: '+sc+' / '+(q.max||10)); }
   });
   prog.done=true; saveIq(key,prog);
   var submit=list.querySelector('.iq-submit');
