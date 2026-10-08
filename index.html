@@ -2318,7 +2318,7 @@ window.thwapTrainingToday=function(){
 <a class='nav nav-pass' href='#pass'><div class='ico'><img class='nav-ico' src='login/icon-pass.webp' alt=''></div><div><h2>Passing <span class='soon-tag'>Coming soon</span></h2><p>Tape-to-tape + vision, coming early November</p></div><div class='chev'>›</div></a>
 </div>
 </section>
-<div class='footer'><span class='slogan'>Compete. Improve.<br class='sl-br'> Have fun.</span><div class='footer-actions'><button class='sfxtoggle' id='sfxToggle' type='button' aria-label='Mute sounds' title='Mute sounds' aria-pressed='true'></button><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button><div class='footmenu-wrap'><button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button><div class='footmenu' id='footMenu' hidden role='menu'><a class='footmenu-item' href='/about' role='menuitem'>About Thwap</a><a class='footmenu-item' id='menuTerms' href='#terms' role='menuitem'>Terms of Use</a><a class='footmenu-item' id='menuPrivacy' href='#privacy' role='menuitem'>Privacy Policy</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a><a class='footmenu-item' id='menuSignout' href='#' role='menuitem'>Sign out</a></div></div></div></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div>
+<div class='footer'><span class='slogan'>Compete. Improve.<br class='sl-br'> Have fun.</span><div class='footer-actions'><button class='sfxtoggle' id='sfxToggle' type='button' aria-label='Mute sounds' title='Mute sounds' aria-pressed='true'></button><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button><div class='footmenu-wrap'><button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button><div class='footmenu' id='footMenu' hidden role='menu'><a class='footmenu-item' href='/about' role='menuitem'>About Thwap</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a><a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a><a class='footmenu-item' id='menuSignout' href='#' role='menuitem'>Sign out</a></div></div></div></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div>
 </div>
 <nav class='tabbar' id='tabbar' aria-label='Main'>
   <span class='tab-player'>
@@ -8905,6 +8905,9 @@ function thwapPlaySplashHit(){
   try{
     if(reduceMotion()) return;
     if(window.thwapMuted && window.thwapMuted()) return;
+    /* Also respect the footer SOUND icon (thwapSfxOn, separate from narration mute):
+       when sound effects are off, the splash impact must be silent too. */
+    try{ if(localStorage.getItem('thwapSfxOn')==='0') return; }catch(e){}
     if(!_thwapHit){ _thwapHit=new Audio('login/thwap-hit.mp3'); _thwapHit.preload='auto'; }
     _thwapHit.currentTime=0;
     var p=_thwapHit.play(); if(p&&p.catch) p.catch(function(){});
@@ -9324,6 +9327,25 @@ function gate(){
      top-level tab never sets it, so a Back-navigation out of /about correctly
      shows the splash instead of inheriting the embed's demo session. */
   var demoEmbed=false; try{ demoEmbed=!!window.__thwapDemoEmbed && window.THWAP_DEMO && window.THWAP_DEMO.isActive(); }catch(_){}
+  /* The About-page live-demo iframe writes thwapDemo + bfPlayer='Mario Lemieux' into
+     SHARED localStorage. For a real signed-in user that clobbers their identity, so a
+     Back-navigation out of /about would land on Mario (the demo team). Heal it here:
+     if a NON-demo real session exists but demo leaked in, deactivate demo and restore
+     bfPlayer from the real auth record's name. A legitimate Demo Team login (its own
+     auth record pid==='demo', or a demo coach) is NOT a leak and is left alone. Never
+     blank a real player. Only applies at the TOP level (never inside the embed). */
+  try{
+    if(!demoEmbed && window.THWAP_DEMO && window.THWAP_DEMO.isActive() && (isAuthed() || hasCoach)){
+      var _ra=null; try{ _ra=readAuth(); }catch(_){}
+      var _realCoachDemo=false; try{ _realCoachDemo=!!(hasCoach && JSON.parse(localStorage.getItem('thwapCoach')||'{}').demo); }catch(_){}
+      var _isDemoSession=(_ra && _ra.pid==='demo') || _realCoachDemo;
+      if(!_isDemoSession){
+        window.THWAP_DEMO.deactivate();
+        if(_ra && _ra.name){ try{ localStorage.setItem('bfPlayer', _ra.name); }catch(_){} }
+        else { try{ localStorage.removeItem('bfPlayer'); }catch(_){} }
+      }
+    }
+  }catch(_){}
   if(isAuthed() || hasCoach || demoEmbed){ hide(); return; }
   /* Showing the splash at top level: clear any demo state the About-page embed
      leaked into shared storage (thwapDemo flag + bfPlayer), so the splash is clean

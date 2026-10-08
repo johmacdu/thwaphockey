@@ -51,4 +51,27 @@ describe('About demo embed does not leak demo auth to the top-level tab', () => 
   it('gate() clears leaked demo state when showing the splash at top level', () => {
     expect(html).toMatch(/if\(!demoEmbed && window\.THWAP_DEMO && window\.THWAP_DEMO\.isActive\(\)\)\{ window\.THWAP_DEMO\.deactivate\(\);/);
   });
+
+  // Bug (Woody, Oct 7 2026): the guest fix above did NOT cover a SIGNED-IN player.
+  // The iframe still writes bfPlayer='Mario Lemieux' + thwapDemo=1 into shared
+  // localStorage, and for an authed user gate() took the hide() path without
+  // cleaning up, so Back landed on Mario (the demo team's player).
+  it('gate() heals a leaked demo state for a SIGNED-IN user, restoring the real player', () => {
+    // The heal runs when demo leaked AND a real session exists, BEFORE the hide() return.
+    expect(html).toContain('if(!demoEmbed && window.THWAP_DEMO && window.THWAP_DEMO.isActive() && (isAuthed() || hasCoach)){');
+    // It restores bfPlayer from the real auth record's name, never leaves it as Mario.
+    expect(html).toContain("if(_ra && _ra.name){ try{ localStorage.setItem('bfPlayer', _ra.name); }catch(_){} }");
+    // The heal must appear BEFORE the authed hide() return (so it runs for authed users).
+    const healIdx = html.indexOf('window.THWAP_DEMO.isActive() && (isAuthed() || hasCoach))');
+    const hideIdx = html.indexOf('if(isAuthed() || hasCoach || demoEmbed){ hide(); return; }');
+    expect(healIdx).toBeGreaterThan(-1);
+    expect(hideIdx).toBeGreaterThan(healIdx);
+  });
+
+  it('about.html restores the real identity on pagehide (belt-and-suspenders)', () => {
+    expect(about).toContain("var KEYS=['bfPlayer','thwapDemo'];");
+    expect(about).toContain("window.addEventListener('pagehide', restore);");
+    // snapshot is taken (before the lazy iframe can overwrite it)
+    expect(about).toMatch(/var real=\{\}; try\{ KEYS\.forEach/);
+  });
 });

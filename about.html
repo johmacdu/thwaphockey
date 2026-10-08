@@ -234,6 +234,20 @@ footer{background:var(--panel);border-top:1px solid color-mix(in srgb,var(--line
 </style>
 <script>/* Apply saved theme early (no flash), same key as the app. */
 try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thwapTheme')||'light');}catch(e){document.documentElement.setAttribute('data-theme','light');}</script>
+<style>
+/* Terms / Privacy full-page overlay (ported from the app, bug: About had none). */
+.policy-page{position:fixed;inset:0;z-index:200;background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0}
+.policy-page[hidden]{display:none}
+.policy-page .policy-x{position:fixed;top:16px;right:16px;z-index:210}
+.policy-inner{max-width:760px;margin:0 auto;padding:72px 22px 64px}
+.policy-h1{font-size:28px;font-weight:800;margin:0 0 4px;color:var(--text)}
+.policy-eff{font-size:13px;color:var(--muted,#6E7B73);margin:0 0 24px}
+.policy-body{font-size:16px;line-height:1.6;color:var(--text)}
+.policy-body h2{font-size:18px;font-weight:800;margin:28px 0 8px;color:var(--text)}
+.policy-body p,.policy-body ul{margin:0 0 14px}
+.policy-body ul{padding-left:20px}
+.policy-body a{color:var(--accent,#3E88D8);text-decoration:underline}
+</style>
 </head>
 <body>
 
@@ -376,8 +390,8 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
       <div class='footmenu-wrap'>
         <button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button>
         <div class='footmenu' id='footMenu' hidden role='menu'>
-          <a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a>
-          <a class='footmenu-item' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a>
+          <a class='footmenu-item' id='menuTerms' href='#terms' role='menuitem'>Terms of Use</a>
+          <a class='footmenu-item' id='menuPrivacy' href='#privacy' role='menuitem'>Privacy Policy</a>
         </div>
       </div>
     </div>
@@ -493,4 +507,113 @@ try{document.documentElement.setAttribute('data-theme',localStorage.getItem('thw
   }
 })();
 </script>
-</body></html>
+<div class='policy-page' id='policySheet' hidden>
+  <button type='button' class='glassclose policy-x' id='policyClose' aria-label='Close'>&#215;</button>
+  <div class='policy-inner'>
+    <h1 class='policy-h1' id='policyTitle'>Policy</h1>
+    <p class='policy-eff' id='policyEff'></p>
+    <div class='policy-body' id='policyBody'></div>
+  </div>
+</div>
+</body><script>
+/* Bug fixes: (a) Terms/Privacy on About open a full page with a close button;
+   (b) restore the real signed-in identity the live-demo iframe (/?demo=1) leaks
+   into shared localStorage (thwapDemo + bfPlayer='Mario Lemieux'), so tapping Back
+   to the app never lands on Mario. */
+(function(){
+  var EFFECTIVE='Effective September 2026';;
+  var TERMS=
+    "<p>Thwap Hockey is a home-training app for youth hockey players. It gives a player short daily stickhandling, shooting and dryland drills, tracks the training they mark done, and shows that progress to the player and their team coach. By using Thwap Hockey you agree to these terms.</p>"+
+    "<h2>Who uses it</h2>"+
+    "<p>Thwap Hockey is used by youth players, their parents, and their team coaches. A player under 13 may use the app only with a parent's involvement and consent. A coach uses the app to set the team plan and see how players are progressing.</p>"+
+    "<h2>What you agree to</h2>"+
+    "<ul>"+
+    "<li>Use the app for its purpose: youth hockey training and coaching.</li>"+
+    "<li>Keep your sign-in details private. A team password gates the coach view; do not share it with players.</li>"+
+    "<li>Do not upload content that is not yours to share, and do not misuse another person's account.</li>"+
+    "<li>A parent, not a child, adds a player photo, and only of their own child.</li>"+
+    "</ul>"+
+    "<h2>Training and safety</h2>"+
+    "<p>The drills are general training suggestions, not medical or professional coaching advice. A player should train within their ability and stop if something hurts. A parent or coach should judge whether a drill is right for a given player. Thwap Hockey is not responsible for injuries that happen during training.</p>"+
+    "<h2>The app as-is</h2>"+
+    "<p>Thwap is offered as-is for a youth hockey team. We work to keep it running and accurate, but we do not promise it will be uninterrupted or error-free.</p>"+
+    "<h2>Changes</h2>"+
+    "<p>We may update these terms as the app grows. When the terms change in a way that matters, we will ask you to agree again at sign-in. Continuing to use the app after a change means you accept the updated terms.</p>"+
+    "<h2>Contact</h2>"+
+    "<p>Questions about these terms: <a href='mailto:hello@thwaphockey.com'>hello@thwaphockey.com</a>, or by mail to Thwap Hockey, 7610 3rd Ave, Seattle, WA 98117, Attn: John MacDuffie Woodburn.</p>";
+  var PRIVACY=
+    "<p>Thwap Hockey is built for children, so we collect as little as we can and we are plain about what we keep and why. This explains what we collect, why, who can see it, how long we keep it, and how a parent removes it.</p>"+
+    "<h2>What we collect</h2>"+
+    "<ul>"+
+    "<li><b>About a player:</b> first name, jersey number, position, and the training the player marks done. This is what shows the player and their coach how they are progressing.</li>"+
+    "<li><b>A player photo:</b> only if a parent adds one (see below).</li>"+
+    "<li><b>From a parent:</b> an email, so we can reach a parent and get consent, and a one-time 6-digit code we email to verify consent. The code is short-lived and expires.</li>"+
+    "<li><b>A coach:</b> name, email, and an optional photo.</li>"+
+    "</ul>"+
+    "<p>We do not collect a home address, phone number, precise location, or a child's own contact information. We do not track children with advertising tools, and we do not show third-party advertising to children.</p>"+
+    "<h2>Parent-added photos</h2>"+
+    "<p>A player photo is a child's face, so it is handled with the most care. A parent, not the child, adds or removes it after verifying with the one-time email code. The photo is cropped in the browser before it is sent, stored on our hosting provider, and shown only on that player's own card, never on the leaderboard or in another player's view. A parent can remove it at any time, which deletes it from our storage.</p>"+
+    "<h2>How we verify a parent</h2>"+
+    "<p>For a player under 13, we obtain a parent's consent before that child's information is used in the ways above, in line with COPPA (US) and PIPEDA (Canada). We verify a parent by emailing a one-time code to the parent's email and having them enter it, and we keep a record that consent was given and when.</p>"+
+    "<h2>How we use it</h2>"+
+    "<p>We use this information only to run the app: to show a player their drills and progress, to let their coach see team progress, to show a parent-added photo on that player's card, and to contact a parent about consent. We do not sell personal information.</p>"+
+    "<h2>Who can see it, and who helps us run the app</h2>"+
+    "<p>A player's training and photo are visible to that player, their parent, and their team's coaches. They are not shared publicly. To run the app we use a small number of named service providers, and share only what each needs. Each is bound by its terms to process the information only to provide its service to us, not for its own purposes:</p>"+
+    "<ul>"+
+    "<li><b>Vercel</b> hosts the app and runs the server code (United States).</li>"+
+    "<li><b>Upstash</b> provides the Redis database that stores player progress, parent email, consent records, and the link to a stored photo (United States).</li>"+
+    "<li><b>Resend</b> delivers the one-time parent codes and waitlist replies by email (United States).</li>"+
+    "</ul>"+
+    "<h2>How long we keep it, and how to remove it</h2>"+
+    "<p>A player's roster info and training history stay while the player is on an active team. If a player leaves a team, or a team stops using Thwap, we remove that player's information within 90 days, unless a parent asks us to delete it sooner. A player photo stays until a parent removes it, or until the player's information is removed as above. The one-time email codes are short-lived and expire automatically. A parent or coach can remove a player from a team at any time, and a parent can ask us to delete their child's information entirely at any time, including the photo file and the consent record; we action a deletion within 30 days and confirm when it is done. When we delete, we erase the stored photo file and the consent record, not just the roster row.</p>"+
+    "<h2>Keeping it safe</h2>"+
+    "<p>We serve the app over HTTPS, store a parent's one-time codes only briefly, and limit how a photo can be reached. No system is perfectly secure, but we work to protect children's information and to limit what we collect in the first place.</p>"+
+    "<h2>Our accountability, and what we do if something goes wrong</h2>"+
+    "<p>One person is accountable for how Thwap Hockey handles personal information: John MacDuffie Woodburn, our privacy contact. You can reach him using the Contact details below with any question, concern, or complaint about privacy. If a breach of security safeguards creates a real risk of significant harm to a child or parent, we will notify the affected parents and the appropriate authorities as the law requires, and tell you what happened, what information was involved, and what you can do. In Canada this follows PIPEDA's breach-notification duty; in the US we follow applicable state breach-notice laws.</p>"+
+    "<h2>A parent's rights</h2>"+
+    "<p>A parent can at any time review what we hold about their child, ask us to correct it, ask us to delete it, and withdraw consent. Email us and we will help.</p>"+
+    "<h2>Contact</h2>"+
+    "<p>Our privacy contact is John MacDuffie Woodburn. For privacy questions, or to review, correct, or delete a child's information, reach us at <a href='mailto:privacy@thwaphockey.com'>privacy@thwaphockey.com</a>, or by mail at Thwap Hockey, 7610 3rd Ave, Seattle, WA 98117, Attn: John MacDuffie Woodburn.</p>";
+  var TXT={ terms:['Terms of Use',TERMS], privacy:['Privacy Policy',PRIVACY] };
+  var sheet=document.getElementById('policySheet'),
+      title=document.getElementById('policyTitle'),
+      eff2=document.getElementById('policyEff'),
+      pbody=document.getElementById('policyBody'),
+      pclose=document.getElementById('policyClose');
+  var lastFocus=null;
+  function openPolicy(which){
+    var t=TXT[which]; if(!t||!sheet) return;
+    lastFocus=document.activeElement;
+    if(title) title.textContent=t[0];
+    if(eff2) eff2.textContent=EFFECTIVE;
+    if(pbody) pbody.innerHTML=t[1];
+    sheet.hidden=false; sheet.scrollTop=0;
+  }
+  function closePolicy(){ if(sheet) sheet.hidden=true; try{ if(lastFocus&&lastFocus.focus) lastFocus.focus(); }catch(_){ } }
+  var mt=document.getElementById('menuTerms'), mp=document.getElementById('menuPrivacy');
+  if(mt) mt.addEventListener('click',function(e){ e.preventDefault(); var m=document.getElementById('footMenu'); if(m)m.hidden=true; openPolicy('terms'); });
+  if(mp) mp.addEventListener('click',function(e){ e.preventDefault(); var m=document.getElementById('footMenu'); if(m)m.hidden=true; openPolicy('privacy'); });
+  if(pclose) pclose.addEventListener('click',closePolicy);
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&sheet&&!sheet.hidden) closePolicy(); });
+  window.thwapOpenPolicy=openPolicy;
+
+  /* Identity-restore guard. Snapshot the real signed-in player BEFORE the demo
+     iframe can overwrite shared localStorage, and restore it when this page is
+     about to be left (Back navigation / bfcache). This is belt-and-suspenders
+     with the app's own gate() heal; together a Back out of /about always returns
+     the real player, never the demo's Mario. */
+  var KEYS=['bfPlayer','thwapDemo'];
+  var real={}; try{ KEYS.forEach(function(k){ real[k]=localStorage.getItem(k); }); }catch(_){ }
+  function restore(){
+    try{
+      KEYS.forEach(function(k){
+        var cur=localStorage.getItem(k), was=real[k];
+        if(cur!==was){ if(was===null) localStorage.removeItem(k); else localStorage.setItem(k,was); }
+      });
+    }catch(_){ }
+  }
+  window.addEventListener('pagehide', restore);
+  window.addEventListener('beforeunload', restore);
+})();
+</script>
+</html>
