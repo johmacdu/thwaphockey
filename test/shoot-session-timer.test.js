@@ -6,10 +6,11 @@ import { dirname, join } from 'path';
 const __dir = dirname(fileURLToPath(import.meta.url));
 const html = readFileSync(join(__dir, '..', 'index.html'), 'utf8');
 
-/* The shooting timer is a single continuous countdown whose length adapts to how
-   many drills the day shows (no rests). These guard the load-bearing pieces:
-   the type:'session' branch, the duration table at the call site, and the
-   duration override plumbed through thwapDrillTimer. */
+/* The shooting timer is a single continuous countdown (no rests). Each shooting
+   drill is a FLAT 2:30 (150s), independent of how many drills the day shows
+   (Woody's fixed per-drill length). These guard the load-bearing pieces:
+   the type:'session' branch, the flat 150s at the call site, and the duration
+   override plumbed through thwapDrillTimer. */
 describe('shooting session timer', () => {
   it('buildSteps has a type:session continuous-countdown branch with no rest phase', () => {
     expect(html).toMatch(/sc\.type===['"]session['"]/);
@@ -20,20 +21,21 @@ describe('shooting session timer', () => {
     expect(branch).not.toMatch(/phase:'Rest'/);
   });
 
-  it('shooting call site sizes each drill by the day count: 3 -> 270s, 4 -> 210s, else 810/n', () => {
-    expect(html).toMatch(/_n===3\?270:\(_n===4\?210:Math\.round\(810\/Math\.max\(1,_n\)\)\)/);
-    // the computed duration is passed to the timer
+  it('every shooting drill is a flat 150s (2:30), not scaled to the day count', () => {
+    // flat duration constant at the call site
+    expect(html).toMatch(/var _dur=150;/);
+    // the flat duration is passed to the timer
     expect(html).toMatch(/window\.thwapDrillTimer\(SHOOT\[i\]\.name,\s*markDone,\s*SHOOT\[i\]\.audio,\s*\{[^}]*\},\s*_dur\)/);
+    // the old session-budget scaling must be gone
+    expect(html).not.toMatch(/_n===3\?270/);
+    expect(html).not.toMatch(/810\/Math\.max/);
   });
 
   it('thwapDrillTimer converts a positive durSecs into a session script', () => {
     expect(html).toMatch(/if\(durSecs && durSecs>0\) sc=\{type:'session', seconds:Math\.round\(durSecs\)\}/);
   });
 
-  it('the two anchor cases produce the requested lengths', () => {
-    // pure math check of the table
-    const dur = (n) => (n === 3 ? 270 : n === 4 ? 210 : Math.round(810 / Math.max(1, n)));
-    expect(dur(3)).toBe(270); // 4:30
-    expect(dur(4)).toBe(210); // 3:30
+  it('150s is exactly two minutes thirty seconds', () => {
+    expect(150).toBe(2 * 60 + 30);
   });
 });
