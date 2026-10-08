@@ -1344,6 +1344,14 @@ body.is-native .footer-actions{display:none}
    mobile kebab are redundant in-app. The brand (logo + wordmark) stays. */
 body.is-native .topbar .toplinks,
 body.is-native .topbar .kebab{display:none}
+/* Native Hockey IQ video: tap-to-play poster replacing the nested iframe. */
+.iq-video-native{position:relative;display:block;width:100%;aspect-ratio:16/9;padding:0;border:1px solid var(--line);border-radius:var(--r-card);overflow:hidden;background:#000;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.iq-video-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.iq-video-play{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:64px;height:64px;display:flex;align-items:center;justify-content:center;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font-size:26px;padding-left:4px}
+@media (hover:hover){.iq-video-native:hover .iq-video-play{background:rgba(0,0,0,.7)}}
+.iq-video-native:active{transform:scale(.985)}
+@media (prefers-reduced-motion:reduce){.iq-video-native:active{transform:none}}
+
 </style>
 <style id='login-splash-css'>
 /* ---- Break the Ice: login splash overlay (Pass 1 foundation) ----
@@ -3806,6 +3814,7 @@ function saveProg(wid,o){try{localStorage.setItem(progKey(wid),JSON.stringify(o)
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function ytid(url){ if(!url)return ''; var m=String(url).match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([A-Za-z0-9_-]{11})/); return m?m[1]:''; }
 /* Delegated 'Watch how' expand/collapse: loads the YouTube iframe only on tap. One document-level listener serves every render site and survives re-renders. */
+if(!window.__thwapIqVidNative){window.__thwapIqVidNative=true;document.addEventListener('click',function(ev){var b=ev.target.closest&&ev.target.closest('.iq-video-native');if(!b)return;ev.preventDefault();var id=b.getAttribute('data-ytid')||'';if(!id)return;var url='https://www.youtube.com/watch?v='+id;try{var C=window.Capacitor;if(C&&C.Plugins&&C.Plugins.Browser&&C.Plugins.Browser.open){C.Plugins.Browser.open({url:url});return;}}catch(e){}try{window.open(url,'_blank');}catch(e){try{location.href=url;}catch(e2){}}});}
 if(!window.__thwapVidDelegated){window.__thwapVidDelegated=true;document.addEventListener('click',function(ev){var link=ev.target.closest&&ev.target.closest('.exvid-link');if(!link)return;ev.preventDefault();var slot=link.nextElementSibling;while(slot&&!(slot.classList&&slot.classList.contains('exvid-slot')))slot=slot.nextElementSibling;if(!slot)return;if(!link.classList.contains('open')){var id=link.getAttribute('data-yt')||'';slot.innerHTML="<div class='exvideo'><iframe src='https://www.youtube-nocookie.com/embed/"+id+"?autoplay=1' title='drill video' loading='lazy' allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture' allowfullscreen></iframe></div>";link.classList.add('open');link.innerHTML="<span class='exvid-tri'>\u25B6</span> Hide video";}else{slot.innerHTML='';link.classList.remove('open');link.innerHTML="<span class='exvid-tri'>\u25B6</span> Watch how";}});}
 function videoBlock(dr){
   /* "Watch how" videos removed from all drills: the linked clips were not accurate
@@ -7266,6 +7275,28 @@ function iqHeading(title){
   var isName=/^[A-Z][a-zA-Z'\-]+(?:\s+[A-Z][a-zA-Z'\-]+)+$/.test(core);
   return isName ? t+' full shift video' : t;
 }
+/* Hockey IQ video surface. On the plain website this is the YouTube-nocookie
+   iframe exactly as before. In the native app (body.is-native) a nested YouTube
+   webview is heavy on the scroll surface and gives no real native player, so we
+   render a light tap-to-play poster (YouTube thumbnail + play button) that hands
+   the clip to the OS player (YouTube app / native video) on tap. No new Capacitor
+   plugin needed. Gated purely on is-native; the website is untouched. */
+function iqIsNative(){ try{ return document.documentElement.classList.contains('is-native'); }catch(e){ return false; } }
+function iqVideoBlock(id){
+  var yid=esc(String(id||''));
+  if(!iqIsNative()){
+    return "<div class='iq-video'><iframe src='https://www.youtube-nocookie.com/embed/"+yid+"' "+
+      "title='Hockey IQ video' loading='lazy' allow='accelerometer; autoplay; clipboard-write; "+
+      "encrypted-media; gyroscope; picture-in-picture' allowfullscreen></iframe></div>";
+  }
+  /* Native: poster that opens the clip in the OS player. Thumbnail from YouTube's
+     own image host (hqdefault always exists); button is a real control for a11y. */
+  return "<button type='button' class='iq-video iq-video-native' data-ytid='"+yid+"' "+
+    "aria-label='Play the Hockey IQ shift video'>"+
+      "<img class='iq-video-poster' src='https://i.ytimg.com/vi/"+yid+"/hqdefault.jpg' alt='' loading='lazy'>"+
+      "<span class='iq-video-play' aria-hidden='true'>\u25B6</span>"+
+    "</button>";
+}
 function iqRender(){
   var list=document.getElementById('iqList'); if(!list) return;
   var t=iqToday();
@@ -7290,7 +7321,7 @@ function iqRender(){
         "<div class='iq-headtx'><h3>"+esc(iqHeading(v.title))+(alreadyDone?"<span class='iq-badge'>Done</span>":"")+"</h3>"+
           "<div class='iq-dose'>"+(t.pool==='defense'?'Defense read':'Offense read')+"</div></div>"+
       "</div>"+
-      "<div class='iq-video'><iframe src='https://www.youtube-nocookie.com/embed/"+esc(v.id)+"' title='Hockey IQ video' loading='lazy' allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture' allowfullscreen></iframe></div>"+
+      iqVideoBlock(v.id)+
       "<p class='iq-progress'>Watch the shift, then answer "+total+(total===1?' question':' questions')+".</p>"+
       "<div class='iq-questions'>"+qsHTML+"</div>"+
       "<div class='iq-submitwrap'>"+
