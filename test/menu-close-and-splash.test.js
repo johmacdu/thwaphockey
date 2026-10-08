@@ -39,22 +39,42 @@ async function bootIndex() {
   return dom.window;
 }
 
-describe('A: splash footer kebab hides in-product items', () => {
+describe('A: footer kebab item matrix (splash: About+Terms+Privacy; in-product: About+Report+Feature+Sign out)', () => {
   it('Report a bug / Request a feature carry the in-product class', () => {
     const i = index.indexOf("id='footMenu'");
     const m = index.slice(i, index.indexOf('</div>', i));
-    const bug = /Report a bug<\/a>/.exec(m) && /footmenu-inproduct[^>]*Thwap%20bug%20report|Thwap%20bug%20report[^<]*<\/a>/;
     expect(m).toMatch(/class='footmenu-item footmenu-inproduct'[^>]*Thwap%20bug%20report/);
     expect(m).toMatch(/class='footmenu-item footmenu-inproduct'[^>]*Thwap%20feature%20request/);
   });
-  it('a CSS rule hides .footmenu-inproduct under body.login-locked', () => {
-    expect(index).toMatch(/body\.login-locked \.footmenu-item\.footmenu-inproduct\{display:none\}/);
-  });
-  it('About Thwap and Sign out are NOT tagged in-product (stay on splash)', () => {
+  it('Sign out is in-product-only (hidden on the signed-out splash)', () => {
     const i = index.indexOf("id='footMenu'");
     const m = index.slice(i, index.indexOf('</div>', i));
-    expect(m).toMatch(/class='footmenu-item'[^>]*>About Thwap<\/a>/);
-    expect(m).toMatch(/id='menuSignout'/);
+    expect(m).toMatch(/class='footmenu-item footmenu-inproduct' id='menuSignout'/);
+  });
+  it('Terms of Use / Privacy Policy are splash-only items', () => {
+    const i = index.indexOf("id='footMenu'");
+    const m = index.slice(i, index.indexOf('</div>', i));
+    expect(m).toMatch(/class='footmenu-item footmenu-splash' id='menuTerms'[^>]*>Terms of Use</);
+    expect(m).toMatch(/class='footmenu-item footmenu-splash' id='menuPrivacy'[^>]*>Privacy Policy</);
+  });
+  it('About Thwap is ungated (shows in both states)', () => {
+    const i = index.indexOf("id='footMenu'");
+    const m = index.slice(i, index.indexOf('</div>', i));
+    expect(m).toMatch(/class='footmenu-item' href='\/about'[^>]*>About Thwap</);
+  });
+  it('CSS gates: splash shows .footmenu-splash and hides .footmenu-inproduct', () => {
+    expect(index).toMatch(/\.footmenu-item\.footmenu-splash\{display:none\}/);
+    expect(index).toMatch(/body\.login-locked \.footmenu-item\.footmenu-inproduct\{display:none\}/);
+    expect(index).toMatch(/body\.login-locked \.footmenu-item\.footmenu-splash\{display:block\}/);
+  });
+  it('EXECUTION: splash kebab shows only About + Terms + Privacy', async () => {
+    const w = await bootIndex();
+    expect(w.document.body.classList.contains('login-locked')).toBe(true);
+    const fk = w.document.getElementById('footKebab'); fk.click();
+    const shown = [...w.document.querySelectorAll('#footMenu .footmenu-item')]
+      .filter(a => w.getComputedStyle(a).display !== 'none')
+      .map(a => a.textContent.trim());
+    expect(shown).toEqual(['About Thwap', 'Terms of Use', 'Privacy Policy']);
   });
 });
 

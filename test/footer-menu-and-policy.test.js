@@ -41,10 +41,17 @@ describe('Bug 2 + 3: footer kebab item placement', () => {
     expect(m).toContain('Thwap%20feature%20request');
   });
 
-  it('index (in-product) footer menu does NOT have Terms or Privacy', () => {
+  it('index footer menu: Terms/Privacy are splash-ONLY (present but gated, hidden in-product)', () => {
+    // Updated Oct 8 2026: Terms of Use / Privacy Policy now live on the SPLASH
+    // footer kebab (signed-out), so they are present in markup but tagged
+    // .footmenu-splash and hidden in-product via CSS. They must NOT be plain
+    // (ungated) items in this menu.
     const m = footMenu(index);
-    expect(m).not.toContain('Terms of Use');
-    expect(m).not.toContain('Privacy Policy');
+    expect(m).toMatch(/class='footmenu-item footmenu-splash' id='menuTerms'[^>]*>Terms of Use</);
+    expect(m).toMatch(/class='footmenu-item footmenu-splash' id='menuPrivacy'[^>]*>Privacy Policy</);
+    // Not present as an UNGATED footmenu item (that would show them in-product).
+    expect(m).not.toMatch(/class='footmenu-item'[^>]*>Terms of Use</);
+    expect(m).not.toMatch(/class='footmenu-item'[^>]*>Privacy Policy</);
   });
 
   it('about footer menu HAS Terms of Use + Privacy Policy', () => {
