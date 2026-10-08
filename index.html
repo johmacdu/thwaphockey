@@ -7467,7 +7467,9 @@ window.thwapHydrateDone=function(){
     };
     var apply=function(data){
       if(!data || !Array.isArray(data.drills)) return { ok:false };
-      try{ if(window.thwapApplyServerDone) window.thwapApplyServerDone(data.drills); }catch(e){}
+      /* authoritative=true: this runs only on a CONFIRMED 200 read, so stale
+         local done rows are cleared to match the server's truth for today. */
+      try{ if(window.thwapApplyServerDone) window.thwapApplyServerDone(data.drills, true); }catch(e){}
       return { ok:true, drills:data.drills };
     };
     /* A second device can have the thwapAuth UI cookie but a MISSING or expired
@@ -7605,14 +7607,48 @@ window.thwapSetDoneSignal=function(disc,done){
   try{ if(done){ localStorage.setItem(doneKey(disc),'1'); } else { localStorage.removeItem(doneKey(disc)); } }catch(e){}
 };
 
+/* Clear TODAY's local done state for every discipline: wipe each discipline's
+   per-day prog key and its thwapDone|<today>|<disc> signal, then repaint the home
+   hero + stats. Each prog key is date-scoped, so only TODAY's keys are cleared;
+   prior days are untouched. Fail-open throughout. */
+window.thwapClearTodayDone=function(){
+  var discs=(typeof DISCS!=='undefined'&&DISCS)?DISCS:['stick','shoot','dryland'];
+  var tk=(function(){try{var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}catch(e){return '';}})();
+  discs.forEach(function(disc){ try{ localStorage.removeItem('thwapDone|'+tk+'|'+disc); }catch(e){} });
+  try{
+    var kills=[];
+    for(var i=0;i<localStorage.length;i++){
+      var k=localStorage.key(i); if(!k) continue;
+      if(tk && k.indexOf('|'+tk)>=0 && (/^bf(Stick|Shoot)\|/.test(k) || /dryland/i.test(k) || /\|prog\|/.test(k))){ kills.push(k); }
+    }
+    kills.forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
+  }catch(e){}
+  try{
+    var reg=window.__thwapDrillApply||{};
+    Object.keys(reg).forEach(function(disc){ try{ if(typeof reg[disc]==='function') reg[disc]([]); }catch(e){} });
+  }catch(e){}
+  try{ if(typeof window.thwapRefreshHero==='function') window.thwapRefreshHero(); }catch(e){}
+  try{ if(typeof window.thwapStatsRefresh==='function') window.thwapStatsRefresh(); }catch(e){}
+};
+
 /* Apply a server-returned list of completed drill ids ('<disc>:<index>') to this
    device: route each discipline's indices to its registered render hook (which
    writes that discipline's own per-day prog scheme and re-renders), then, for any
    discipline whose rendered list is now fully checked, set the done signal so the
    home hero + celebration reflect it. FAIL OPEN throughout: a malformed id or a
    missing hook is skipped, never thrown. Does NOT bump earned/stickers. */
-window.thwapApplyServerDone=function(drillIds){
+window.thwapApplyServerDone=function(drillIds, authoritative){
   if(!Array.isArray(drillIds)) return;
+  /* AUTHORITATIVE RESET (day-rollover / stale-view fix): on a confirmed 200
+     the server is the truth for TODAY. Clear every discipline's per-day prog
+     + done signal first so a 'done' row left over from a never-reloaded
+     prior-day view cannot survive when the new-day server set no longer holds
+     it. Never runs on 401/offline/fallback (authoritative falsy), so offline
+     completions are preserved. Keyed on the server set, not any player id, so
+     it protects EVERY player. */
+  if(authoritative){
+    try{ if(typeof window.thwapClearTodayDone==='function') window.thwapClearTodayDone(); }catch(e){}
+  }
   var byDisc={};
   drillIds.forEach(function(did){
     var parts=String(did).split(':'); var disc=parts[0]; var idx=parseInt(parts[1],10);
@@ -7655,6 +7691,31 @@ window.thwapApplyServerDone=function(drillIds){
     var p=''; try{ p=localStorage.getItem('bfPlayer')||''; }catch(e){}
     if(authed && p && window.thwapHydrateDone){ window.thwapHydrateDone(); }
   }catch(e){}
+})();
+
+/* DAY-ROLLOVER RESUME GUARD: Thwap runs as an installed home-screen app reopened
+   without a full reload. Nothing re-read the date on resume and hydrate was add-only,
+   so an evening view showing 'done' survived into the next morning. Stamp the day the
+   UI last rendered for; on resume (visibility -> visible, or pageshow from bfcache),
+   if the calendar day rolled over, clear today's local done state and re-run
+   authoritative hydration so every player starts the new day clean. Fail-open. */
+(function(){
+  function dayStr(){ try{ var d=new Date(); return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }catch(e){ return ''; } }
+  var renderedDay=dayStr();
+  function onResume(){
+    try{
+      var now=dayStr();
+      if(now && now!==renderedDay){
+        renderedDay=now;
+        var authed=/(?:^|; )thwapAuth=/.test(document.cookie);
+        var p=''; try{ p=localStorage.getItem('bfPlayer')||''; }catch(e){}
+        try{ if(window.thwapClearTodayDone) window.thwapClearTodayDone(); }catch(e){}
+        if(authed && p && window.thwapHydrateDone){ window.thwapHydrateDone(); }
+      }
+    }catch(e){}
+  }
+  document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible') onResume(); });
+  window.addEventListener('pageshow',function(e){ if(e && e.persisted) onResume(); });
 })();
 })();</script>
 <style>
