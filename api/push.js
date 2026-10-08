@@ -14,6 +14,10 @@
 //   POST ?action=send        { playerId? | team?, payload }  -> fan a payload out
 //                              (ADMIN-ONLY: a manual/admin test trigger; uses the
 //                               MOCK sender today, so it delivers nothing yet)
+//   GET|POST ?action=status                                 -> per-player token
+//                              COUNTS only (ADMIN-ONLY diagnostics read): NEVER
+//                              the raw token strings, just tallies + platforms.
+//                              Delivers nothing; a pure read of registration state.
 //
 // SCOPE: this is the SEND MACHINERY plus a manual admin test trigger only. It
 // invents no notification copy and no automatic triggers. Push is MOCKED and
@@ -38,6 +42,7 @@ import { ROSTER } from '../lib/store.js';
 import { listMembers, getAdmin } from '../lib/teams_store.js';
 import {
   registerToken, unregisterToken, listTokens, sendToTokens, pushConfigured,
+  statusSummary,
 } from '../lib/push_store.js';
 
 // --- admin gate (same contract as api/coach.js requireAdmin) ----------------
@@ -151,15 +156,35 @@ async function send(req, res) {
   });
 }
 
+// GET|POST ?action=status. ADMIN-ONLY diagnostics read: returns per-player token
+// COUNTS and platform tallies so an operator can see registration state. It
+// delivers nothing and NEVER returns a raw token string (a token is
+// credential-adjacent). Both GET and POST are accepted so an operator can hit it
+// from a browser or a scripted admin call.
+async function status(req, res) {
+  // Method + validation BEFORE auth (stored lesson): reject anything but GET/POST
+  // regardless of admin state.
+  if (req.method !== 'GET' && req.method !== 'POST') {
+    res.setHeader('Allow', 'GET, POST');
+    return res.status(405).json({ error: 'method not allowed' });
+  }
+  res.setHeader('Cache-Control', 'no-store');
+  if (!(await isAdmin(req))) return res.status(401).json({ error: 'admin auth required' });
+
+  const summary = await statusSummary(ROSTER.map((p) => p.id));
+  return res.status(200).json(summary);
+}
+
 export default async function handler(req, res) {
   const action = String((req.query && req.query.action) || '').toLowerCase();
   switch (action) {
     case 'register': return register(req, res);
     case 'unregister': return unregister(req, res);
     case 'send': return send(req, res);
+    case 'status': return status(req, res);
     default: return res.status(404).json({ error: 'unknown push action' });
   }
 }
 
 // Exported for unit tests (call sub-handlers directly with a query.action-free req).
-export const _handlers = { register, unregister, send };
+export const _handlers = { register, unregister, send, status };
