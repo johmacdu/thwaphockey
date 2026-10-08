@@ -1415,6 +1415,13 @@ html[data-theme='dark'] .login-frost{background:linear-gradient(180deg,rgba(120,
 .policy-page[hidden]{display:none}
 .policy-x{z-index:141}
 .policy-inner{max-width:640px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 76px) 20px 60px}
+/* Self-serve coach signup renders as a FULL PAGE (not a centered sheet): full-screen
+   overlay above the frost with a glass close button, matching the policy page. */
+.cs-page{position:fixed;inset:0;z-index:140;max-width:none;width:100%;background:var(--bg);border:0;border-radius:0;box-shadow:none;padding:0;overflow-y:auto;-webkit-overflow-scrolling:touch;animation:none}
+.cs-x{z-index:141}
+.cs-inner{max-width:420px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 76px) 22px 60px}
+@media (min-width:641px){.cs-page{justify-content:center}}
+
 .policy-h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:var(--fs-title);line-height:1.05;margin:0 0 4px;color:var(--text)}
 .policy-eff{font-size:13px;font-weight:800;color:var(--muted);margin:0 0 20px}
 .policy-body h2{font-family:'Archivo Black',system-ui,sans-serif;font-size:18px;color:var(--text);margin:22px 0 6px}
@@ -1447,7 +1454,7 @@ body.login-locked{overflow:hidden}
 @media (prefers-reduced-motion: reduce){.login-go{transition:none}}
 @media (max-width:420px){.login-modal{max-width:none}.login-h{font-size:23px}}
 /* ---- Break the Ice splash animation (Pass 2): Sass welcome -> run -> THWAP! -> modal ---- */
-#loginOverlay.is-playing #loginForm,#loginOverlay.is-playing #waitForm{display:none}
+#loginOverlay.is-playing #loginForm,#loginOverlay.is-playing #waitForm,#loginOverlay.is-playing #coachSignupForm{display:none}
 /* Sass moves across the stage; positions/opacity per data-step drive the beats. */
 /* welcome group: Sass + bubble wrapped together and sized by Sass, so the bubble
    (positioned as a % of this group below) stays glued to Sass and they never drift
@@ -1605,7 +1612,7 @@ body.login-locked{overflow:hidden}
       <p class='login-err' id='loginErr' aria-live='polite'></p>
       <button type='button' class='login-otp-toggle' id='loginOtpToggle'>Forgot your code?</button>
       <p class='login-alt'>New to <img class='login-wordmark' id='loginMark' src='wordmark-light.svg' alt='Thwap Hockey'>? <a href='#' id='loginWaitlist'>Join the waitlist.</a></p>
-      <p class='login-alt'>Coaching a team? <a href='#' id='loginCoach'>Create your team.</a></p>
+      <p class='login-alt' id='loginCoachLine' hidden>Coaching a team? <a href='#' id='loginCoach'>Create your team.</a></p>
     </div>
     <div id='loginOtpView' hidden>
       <div class='login-otphead'>
@@ -1669,8 +1676,9 @@ body.login-locked{overflow:hidden}
     <p class='login-alt'>Already have a team? <a href='#' id='waitBack'>Back to sign in.</a></p>
     <p class='login-alt'>Coaching a team? <a href='#' id='waitCoach'>Set it up now.</a></p>
   </form>
-  <form class='login-modal' id='coachSignupForm' role='dialog' aria-modal='true' aria-labelledby='csTitle' hidden novalidate>
-    <button type='button' class='login-x' id='csClose' aria-label='Close'>&#215;</button>
+  <form class='login-modal cs-page' id='coachSignupForm' role='dialog' aria-modal='true' aria-labelledby='csTitle' hidden novalidate>
+    <button type='button' class='glassclose cs-x' id='csClose' aria-label='Close'>&#215;</button>
+    <div class='cs-inner'>
     <div id='csFields'>
       <h2 class='login-h' id='csTitle'>Set up your team</h2>
       <p class='login-sub'>Create a coach account and your team in one step. You will get a team code to share with your players.</p>
@@ -1720,6 +1728,7 @@ body.login-locked{overflow:hidden}
       <div class='cs-code' id='csCode'></div>
       <p class='login-sub cs-codehint'>Players tap Sign in, then enter their jersey number and this code. You can add players and set the training plan from your Team page.</p>
       <button type='button' class='login-go' id='csEnter'>Go to my team &#8594;</button>
+    </div>
     </div>
   </form>
 </div>
