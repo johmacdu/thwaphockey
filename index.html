@@ -1310,6 +1310,7 @@ body.is-native.is-coach .tabbar .tab-coach{display:contents}
    on the web they stay in the footer. These are flat rows (no card styling on a
    non-navigating element), grouped under plain labels. --- */
 body:not(.is-native) #profile.page:target{display:none}  /* web: never routable */
+body:not(.is-native) #profile .prof-row-native{display:none}  /* native-only: Notifications toggle needs the Capacitor push plugin */
 #profile .prof-wrap{max-width:520px;margin:0 auto}
 #profile .prof-group{margin:0 0 22px}
 #profile .prof-grouplab{font-size:var(--fs-eyebrow);font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;padding:0 2px}
@@ -2164,6 +2165,10 @@ body.login-locked{overflow:hidden}
     <div class='prof-row'>
       <span class='prof-rowlab'>Appearance</span>
       <button class='themetoggle' id='profThemeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='profTtico'>🌙</span><span class='ttlabel' id='profTtlabel'>Dark</span></button>
+    </div>
+    <div class='prof-row prof-row-native' id='profNotifRow'>
+      <span class='prof-rowlab'>Notifications</span>
+      <button class='themetoggle' id='profNotif' type='button' aria-pressed='false' aria-label='Turn notifications on or off'><span class='ttico' id='profNotifIco'>🔕</span><span class='ttlabel' id='profNotifLabel'>Off</span></button>
     </div>
   </div>
   <div class='prof-group'>
@@ -9924,6 +9929,66 @@ window.thwapPaywall=function(billing, teamCode){
       e.preventDefault();
       if(window.openSelfEdit) window.openSelfEdit();
     });
+
+    /* Notifications toggle (native-only). We FEATURE-DETECT the Capacitor push
+       plugin at runtime (window.Capacitor.Plugins.PushNotifications) rather than
+       import @capacitor/push-notifications: index.html is a plain inline-script
+       page with no bundler, and the plain web/preview build has no plugin, so it
+       must no-op the registration and never fake success. The toggle state is
+       persisted in localStorage so it survives reopen. On enable we get the device
+       token and POST it to /api/push?action=register (session-gated, playerId from
+       the session, not the body); on disable we POST ?action=unregister. */
+    var notif=document.getElementById('profNotif');
+    if(notif){
+      var NOTIF_KEY='thwapNotif';
+      var paintNotif=function(on){
+        notif.setAttribute('aria-pressed', on?'true':'false');
+        var ico=document.getElementById('profNotifIco');
+        var lab=document.getElementById('profNotifLabel');
+        if(ico) ico.textContent = on ? '🔔' : '🔕';
+        if(lab) lab.textContent = on ? 'On' : 'Off';
+      };
+      var persisted=false;
+      try{ persisted = localStorage.getItem(NOTIF_KEY)==='1'; }catch(_){}
+      paintNotif(persisted);
+      /* The Capacitor push plugin, when the native shell provides it. */
+      var pushPlugin=function(){
+        try{ return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.PushNotifications; }
+        catch(_){ return null; }
+      };
+      /* Ask the native plugin for a device token, then register it server-side.
+         A one-shot 'registration' listener resolves the token the OS hands back
+         after register(). If the plugin is absent (web/preview) this is a no-op:
+         the toggle still flips and persists, but no fake registration happens. */
+      var enableNotif=function(){
+        var P=pushPlugin();
+        if(!P) return; /* web/preview: persist the toggle, no plugin to register */
+        try{
+          if(P.addListener) P.addListener('registration', function(t){
+            var token = t && (t.value || t.token); if(!token) return;
+            var platform='web';
+            try{ platform=(window.Capacitor.getPlatform&&window.Capacitor.getPlatform())||'web'; }catch(_){}
+            fetch('/api/push?action=register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:token,platform:platform})}).catch(function(){});
+          });
+          if(P.requestPermissions){ P.requestPermissions().then(function(r){ if(!r||r.receive==='granted'){ if(P.register) P.register(); } }).catch(function(){ if(P.register) P.register(); }); }
+          else if(P.register){ P.register(); }
+        }catch(_){}
+      };
+      /* Disable: tell the server to drop whatever token this device registered.
+         The native plugin does not expose the token on demand, so we clear the
+         flag and best-effort unregister via a stored token if the shell saved one. */
+      var disableNotif=function(){
+        var tok='';
+        try{ tok = localStorage.getItem('thwapNotifToken')||''; }catch(_){}
+        if(tok){ fetch('/api/push?action=unregister',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({token:tok})}).catch(function(){}); }
+      };
+      notif.addEventListener('click',function(){
+        var next = notif.getAttribute('aria-pressed')!=='true';
+        paintNotif(next);
+        try{ localStorage.setItem(NOTIF_KEY, next?'1':'0'); }catch(_){}
+        if(next) enableNotif(); else disableNotif();
+      });
+    }
 
     /* Privacy Policy + Terms of Use open the existing policy sheet. */
     var pv=document.getElementById('profPrivacy');
