@@ -14,6 +14,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { JSDOM } from 'jsdom';
 import { FakeRedis } from './fakeRedis.js';
 
 // One shared fake; both push_store.js and the api modules capture it via new Redis().
@@ -336,5 +337,173 @@ describe('index.html Notifications toggle (frontend smoke)', () => {
     // And the frontend never imports the package by module specifier.
     expect(html).not.toContain("from '@capacitor/push-notifications'");
     expect(html).not.toContain("import('@capacitor/push-notifications')");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Notifications toggle HARDENING (unregister path + token lifecycle).
+//
+// These exercise the REAL shipped closure, not a reconstruction: we slice the
+// `if(notif){ ... }` block out of index.html and run it inside a JSDOM window
+// with the Profile Notifications markup and a FAKE Capacitor push plugin. The
+// host cannot drive the real plugin, so the native leg is reasoned from feature
+// detection: the fake plugin's register() fires the one-shot 'registration'
+// listener exactly as the OS would, which is where the token gets stashed.
+// ---------------------------------------------------------------------------
+describe('Notifications toggle hardening (token lifecycle via the shipped closure)', () => {
+  const __d = dirname(fileURLToPath(import.meta.url));
+  const indexHtml = readFileSync(resolve(__d, '../index.html'), 'utf8');
+
+  // Slice the real toggle closure: from `var notif=...` up to and including the
+  // `}` that closes `if(notif){`, right before the Privacy Policy comment.
+  function toggleSource() {
+    const start = indexHtml.indexOf("var notif=document.getElementById('profNotif');");
+    const end = indexHtml.indexOf('/* Privacy Policy + Terms of Use', start);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    return indexHtml.slice(start, end);
+  }
+
+  // Build a JSDOM window carrying the toggle markup + an optional fake plugin,
+  // then execute the sliced closure against it. Returns the window plus a record
+  // of fetch() calls and the registration listener the plugin captured.
+  function runToggle({ plugin = null, persisted = null } = {}) {
+    const dom = new JSDOM(
+      "<!doctype html><html><body>"
+      + "<button id='profNotif' aria-pressed='false'>"
+      + "<span id='profNotifIco'>🔕</span><span id='profNotifLabel'>Off</span>"
+      + "</button></body></html>",
+      { url: 'https://thwaphockey.com/' },
+    );
+    const win = dom.window;
+    if (persisted !== null) win.localStorage.setItem('thwapNotif', persisted);
+
+    const fetches = [];
+    win.fetch = (url, opts) => { fetches.push({ url, opts }); return Promise.resolve({ ok: true }); };
+
+    let regListener = null;
+    if (plugin) {
+      win.Capacitor = {
+        getPlatform: () => 'ios',
+        Plugins: {
+          PushNotifications: {
+            addListener: (name, cb) => { if (name === 'registration') regListener = cb; },
+            requestPermissions: () => Promise.resolve({ receive: 'granted' }),
+            register: () => { if (regListener) regListener({ value: 'device-token-xyz' }); },
+            ...plugin,
+          },
+        },
+      };
+    }
+
+    // Execute the shipped closure with window/document/localStorage/fetch bound.
+    const fn = new win.Function(
+      'window', 'document', 'localStorage', 'fetch',
+      toggleSource(),
+    );
+    fn(win, win.document, win.localStorage, win.fetch);
+    return { win, fetches, getRegListener: () => regListener };
+  }
+
+  it('the sliced closure parses and runs (jsdom smoke)', () => {
+    const { win } = runToggle();
+    expect(win.document.getElementById('profNotif')).toBeTruthy();
+  });
+
+  it('restores persisted ON state on load (aria-pressed + label)', () => {
+    const { win } = runToggle({ persisted: '1' });
+    const btn = win.document.getElementById('profNotif');
+    expect(btn.getAttribute('aria-pressed')).toBe('true');
+    expect(win.document.getElementById('profNotifLabel').textContent).toBe('On');
+  });
+
+  it('a click persists the toggle intent to localStorage.thwapNotif', () => {
+    const { win } = runToggle();
+    const btn = win.document.getElementById('profNotif');
+    btn.dispatchEvent(new win.Event('click'));
+    expect(btn.getAttribute('aria-pressed')).toBe('true');
+    expect(win.localStorage.getItem('thwapNotif')).toBe('1');
+    btn.dispatchEvent(new win.Event('click'));
+    expect(btn.getAttribute('aria-pressed')).toBe('false');
+    expect(win.localStorage.getItem('thwapNotif')).toBe('0');
+  });
+
+  it('WEB (no plugin): toggle flips + persists but NEVER fetches (no fake success)', () => {
+    const { win, fetches } = runToggle({ plugin: null });
+    const btn = win.document.getElementById('profNotif');
+    btn.dispatchEvent(new win.Event('click')); // enable
+    expect(win.localStorage.getItem('thwapNotif')).toBe('1');
+    expect(fetches.length).toBe(0); // no register POST, no stashed token
+    expect(win.localStorage.getItem('thwapNotifToken')).toBeNull();
+  });
+
+  it('ENABLE (native): stashes the device token in localStorage.thwapNotifToken and POSTs register', async () => {
+    const { win, fetches } = runToggle({ plugin: {} });
+    const btn = win.document.getElementById('profNotif');
+    btn.dispatchEvent(new win.Event('click')); // enable -> requestPermissions().then(register)
+    await new Promise((r) => setTimeout(r, 0)); // flush the permission promise + register()
+    // The token the plugin handed back is now on hand for a later unregister.
+    expect(win.localStorage.getItem('thwapNotifToken')).toBe('device-token-xyz');
+    const reg = fetches.find((f) => String(f.url).includes('action=register'));
+    expect(reg).toBeTruthy();
+    expect(JSON.parse(reg.opts.body).token).toBe('device-token-xyz');
+  });
+
+  it('DISABLE (native): reads the stashed token, POSTs unregister, then CLEARS it', async () => {
+    const { win, fetches } = runToggle({ plugin: {} });
+    const btn = win.document.getElementById('profNotif');
+    btn.dispatchEvent(new win.Event('click')); // enable: stash token
+    await new Promise((r) => setTimeout(r, 0)); // flush the permission promise + register()
+    expect(win.localStorage.getItem('thwapNotifToken')).toBe('device-token-xyz');
+    btn.dispatchEvent(new win.Event('click')); // disable
+    const unreg = fetches.find((f) => String(f.url).includes('action=unregister'));
+    expect(unreg).toBeTruthy();
+    expect(JSON.parse(unreg.opts.body).token).toBe('device-token-xyz');
+    // Token is gone once notifications are off.
+    expect(win.localStorage.getItem('thwapNotifToken')).toBeNull();
+  });
+
+  it('DISABLE with no stashed token: still clears, never POSTs unregister', () => {
+    const { win, fetches } = runToggle({ plugin: {} });
+    // Pretend a prior ON state with no stored token (e.g. token write failed).
+    win.localStorage.setItem('thwapNotif', '1');
+    const btn = win.document.getElementById('profNotif');
+    btn.setAttribute('aria-pressed', 'true');
+    btn.dispatchEvent(new win.Event('click')); // disable
+    expect(fetches.some((f) => String(f.url).includes('action=unregister'))).toBe(false);
+    expect(win.localStorage.getItem('thwapNotifToken')).toBeNull();
+  });
+
+  it('source: the ENABLE registration listener writes thwapNotifToken BEFORE the register POST', () => {
+    const src = toggleSource();
+    const setIdx = src.indexOf("localStorage.setItem('thwapNotifToken'");
+    const regIdx = src.indexOf('action=register');
+    expect(setIdx).toBeGreaterThan(-1);
+    expect(regIdx).toBeGreaterThan(setIdx);
+  });
+
+  it('source: the DISABLE path reads then removes thwapNotifToken', () => {
+    const src = toggleSource();
+    expect(src).toContain("getItem('thwapNotifToken')");
+    expect(src).toContain("removeItem('thwapNotifToken')");
+  });
+
+  it('BOTH sign-out handlers clear thwapNotifToken (footer kebab + Profile)', () => {
+    // One sign-out behaviour whichever surface the user used: each handler's
+    // removeItem list now includes the push token.
+    const hits = indexHtml.split("localStorage.removeItem('thwapNotifToken')").length - 1;
+    // 2 sign-out handlers + 1 disable-path clear = 3 removeItem call sites.
+    expect(hits).toBe(3);
+    // Each sign-out handler clears it alongside bfPlayer (adjacency check).
+    const signoutClears = indexHtml.match(
+      /removeItem\('bfPlayer'\);[^\n]*\}catch\(_\)\{\}\s*try\{ localStorage\.removeItem\('thwapNotifToken'\)/g,
+    ) || [];
+    expect(signoutClears.length).toBe(2);
+  });
+
+  it('no banned punctuation introduced in the toggle closure (no middot, no em-dash)', () => {
+    const src = toggleSource();
+    expect(src).not.toContain('\u00b7'); // middle dot
+    expect(src).not.toContain('\u2014'); // em dash
   });
 });
