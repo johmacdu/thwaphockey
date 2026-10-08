@@ -6843,11 +6843,10 @@ function render(){
       };
       if(row.classList.contains('done')){ unMark(); return; }  /* tap a done row to un-mark it (no timer) */
       if(window.thwapDrillTimer){
-        /* Per-drill length adapts to how many drills the day shows so the whole
-           session lands ~13.5 min: 3 drills -> 4:30 each, 4 -> 3:30 each,
-           otherwise ~810s / count. No rests -- one continuous countdown. */
-        var _n=SHOOT.length;
-        var _dur=_n===3?270:(_n===4?210:Math.round(810/Math.max(1,_n)));
+        /* Every shooting drill is a flat 2:30 (150s) continuous countdown, no
+           rests -- Woody's fixed per-drill length, independent of how many drills
+           the day shows. */
+        var _dur=150;
         window.thwapDrillTimer(SHOOT[i].name, markDone, SHOOT[i].audio, {cue:SHOOT[i].cue, steps:SHOOT[i].steps}, _dur);
       }
       else { markDone(); }
