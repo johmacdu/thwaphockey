@@ -1237,7 +1237,16 @@ body.login-locked .footmenu-item.footmenu-splash{display:block}
 .eggpassflight{position:fixed;top:0;left:0;width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#3a3a3a,#0a0a0a 70%);border:1.5px solid rgba(255,255,255,.85);box-shadow:0 0 0 1px rgba(0,0,0,.4),0 3px 10px rgba(0,0,0,.5);pointer-events:none;z-index:130;will-change:transform;opacity:0}
 .eggpassflight.go{animation:eggPassSaucer 1.7s cubic-bezier(.45,.02,.5,1) forwards}
 @keyframes eggPassSaucer{0%{transform:translate(0,0) rotate(0);opacity:0}6%{opacity:1}18%{transform:translate(40vw,-58px) rotate(340deg)}33%{transform:translate(82vw,0) rotate(680deg)}48%{transform:translate(38vw,-58px) rotate(1020deg)}64%{transform:translate(-5vw,0) rotate(1360deg)}82%{transform:translate(0,-30px) rotate(1680deg)}95%{transform:translate(0,0) rotate(2000deg);opacity:1}100%{transform:translate(0,0) rotate(2000deg);opacity:0}}
-@media (prefers-reduced-motion: reduce){.eggstick.egg-go,.eggdangle.weave,.eggbolt.egg-surge,.eggshock.go,.eggshot.fly,.eggnet.egg-hit,.eggnet .egghole.punch,.eggpassflight.go{animation:none}}</style>
+/* Hockey IQ brain egg: TAP pulses the brain and sends out vision-scan rings + a radial fan of eyes (reading the ice). */
+.eggiq.egg-scan{animation:eggScanPulse .95s ease-in-out}
+@keyframes eggScanPulse{0%{transform:scale(1)}20%{transform:scale(1.18)}44%{transform:scale(.95)}68%{transform:scale(1.06)}100%{transform:scale(1)}}
+.eggscan{position:fixed;top:0;left:0;width:26px;height:26px;border-radius:50%;border:2px solid #7A5AF0;box-shadow:0 0 12px rgba(122,90,240,.55);transform:translate(-50%,-50%) scale(.25);opacity:0;pointer-events:none;z-index:120;will-change:transform,opacity}
+.eggscan.go{animation:eggScan 1s ease-out forwards}
+@keyframes eggScan{0%{transform:translate(-50%,-50%) scale(.25);opacity:0}16%{opacity:.85}100%{transform:translate(-50%,-50%) scale(5.6);opacity:0}}
+.eggeye{position:fixed;top:0;left:0;font-size:20px;line-height:1;transform:translate(-50%,-50%) scale(.4);opacity:0;pointer-events:none;z-index:121;will-change:transform,opacity}
+.eggeye.go{animation:eggEye .9s ease-out forwards}
+@keyframes eggEye{0%{transform:translate(-50%,-50%) scale(.4);opacity:0}22%{opacity:1}100%{transform:translate(calc(-50% + var(--ex)),calc(-50% + var(--ey))) scale(1);opacity:0}}
+@media (prefers-reduced-motion: reduce){.eggstick.egg-go,.eggdangle.weave,.eggbolt.egg-surge,.eggshock.go,.eggshot.fly,.eggnet.egg-hit,.eggnet .egghole.punch,.eggpassflight.go,.eggiq.egg-scan,.eggscan.go,.eggeye.go{animation:none}}</style>
 <style id='native-css'>
 /* =====================================================================
    NATIVE ADAPTATIONS (Capacitor iOS + Android), v1.
@@ -8142,7 +8151,8 @@ window.thwapLongPress={
   shoot:function(){ try{ if(window.thwapSfxEgg)thwapSfxEgg('eggShoot'); }catch(e){} if(reduce){ badge('SNIPE!','#75B8FF'); return; } screenCrack('#75B8FF',true); stamp('SNIPE!','#75B8FF'); },
   dryland:function(){ try{ if(window.thwapSfxEgg)thwapSfxEgg('eggDryland'); }catch(e){} if(reduce){ badge('POWERED UP','#FF9D4D'); return; } sassCameo('login/sass-power.webp','POWERED UP','#FF9D4D'); },
   goals:function(){ try{ if(window.thwapSfxEgg)thwapSfxEgg('eggShoot'); }catch(e){} if(reduce){ badge("LET'S GO!",'#FFC24A'); return; } sassCameo('login/sass-celly.webp',"LET'S GO!",'#FFC24A'); },
-  pass:function(){ try{ if(window.thwapSfxEgg)thwapSfxEgg('eggPass'); }catch(e){} if(reduce){ badge('SAUCE!','#2E86FF'); return; } sassCameo('login/sass-pass.webp','SAUCE!','#2E86FF'); }
+  pass:function(){ try{ if(window.thwapSfxEgg)thwapSfxEgg('eggPass'); }catch(e){} if(reduce){ badge('SAUCE!','#2E86FF'); return; } sassCameo('login/sass-pass.webp','SAUCE!','#2E86FF'); },
+  iq:function(){ try{ if(window.thwapSfxEgg)thwapSfxEgg('eggIq'); }catch(e){} if(reduce){ sassStill('login/sass-celly.webp'); badge('BIG BRAIN!','#7A5AF0'); return; } sassCameo('login/sass-celly.webp','BIG BRAIN!','#7A5AF0'); }
 };
 /* Top tier: everything done today. A bigger, rotating finish (over the "today
    complete" card). Reduced motion shows nothing extra (the card is the fallback). */
@@ -8733,6 +8743,44 @@ holdEgg(document.getElementById('eggPass'),function(done){
     done();
   },1750);
 },function(){ if(window.thwapLongPress&&window.thwapLongPress.pass) window.thwapLongPress.pass(); });
+/* Hockey IQ: TAP -> the brain pulses and sends out vision-scan rings plus a radial
+   fan of eyes (reading the ice). LONG-PRESS -> the Sass "BIG BRAIN!" cameo. */
+holdEgg(document.getElementById('eggIq'),function(done){
+  var el=document.getElementById('eggIq');
+  if(reduce){ done(); return; }
+  el.classList.add('egg-scan');
+  /* The .big wrapper is full-width, so center the scan on the brain GLYPH itself
+     (a Range over the emoji text) rather than the wrapper's middle. */
+  var r=el.getBoundingClientRect(), cx, cy;
+  try{ var rng=document.createRange(); rng.selectNodeContents(el); var gr=rng.getBoundingClientRect(); cx=Math.round(gr.left+gr.width/2); cy=Math.round(gr.top+gr.height/2); }
+  catch(e){ cx=Math.round(r.left+r.width*0.12); cy=Math.round(r.top+r.height/2); }
+  var bits=[];
+  try{ if(window.thwapSfxEgg)thwapSfxEgg('eggIq'); }catch(e){}
+  var i;
+  for(i=0;i<3;i++){   /* expanding vision-scan rings */
+    var s=document.createElement('span'); s.className='eggscan';
+    s.style.left=cx+'px'; s.style.top=cy+'px'; s.style.animationDelay=(i*150)+'ms';
+    document.body.appendChild(s); bits.push(s);
+    (function(sp){ requestAnimationFrame(function(){ sp.classList.add('go'); }); })(s);
+  }
+  var EYES=6;
+  for(i=0;i<EYES;i++){   /* eyes fan out in a ring */
+    var ang=(i/EYES)*Math.PI*2 - Math.PI/2;
+    var dist=62+Math.round(Math.random()*16);
+    var e=document.createElement('span'); e.className='eggeye'; e.textContent='👀';
+    e.style.left=cx+'px'; e.style.top=cy+'px';
+    e.style.setProperty('--ex', Math.round(Math.cos(ang)*dist)+'px');
+    e.style.setProperty('--ey', Math.round(Math.sin(ang)*dist)+'px');
+    e.style.animationDelay=(i*35)+'ms';
+    document.body.appendChild(e); bits.push(e);
+    (function(sp){ requestAnimationFrame(function(){ sp.classList.add('go'); }); })(e);
+  }
+  setTimeout(function(){
+    el.classList.remove('egg-scan');
+    for(var j=0;j<bits.length;j++){ if(bits[j].parentNode)bits[j].parentNode.removeChild(bits[j]); }
+    done();
+  },1200);
+},function(){ if(window.thwapLongPress&&window.thwapLongPress.iq) window.thwapLongPress.iq(); });
 })();</script>
 <script>(function(){
 /* ---- Break the Ice: login gate (Pass 1 foundation) ----
@@ -9647,7 +9695,8 @@ document.getElementById('coachInfoScrim') && document.getElementById('coachInfoS
     eggDryland:{c:'buzzer',r:1.25,g:0.6},                   /* the bolt snaps (zap) */
     eggPass:{c:'hands',r:0.92,g:0.75},                      /* soft sauce off the blade */
     eggSkate:{c:'card-open',r:1.0,g:1.5},                   /* Sass skates across */
-    eggThwap:{c:'done',r:1.08,g:1.0}                        /* wordmark THWAP hit */
+    eggThwap:{c:'done',r:1.08,g:1.0},                       /* wordmark THWAP hit */
+    eggIq:{c:'card-open',r:1.25,g:0.85}                     /* bright vision-scan swish */
   };
   function playEgg(name){
     if(reduce)return;                                       /* egg visual is off under reduced-motion */
