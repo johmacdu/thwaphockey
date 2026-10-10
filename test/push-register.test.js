@@ -115,7 +115,15 @@ describe('index.html native bridge (no-op on web, active in the shell)', () => {
     expect(html).toMatch(/isNativePlatform/);
   });
 
-  it('posts the device token to the push-register endpoint', () => {
-    expect(html).toMatch(/action=push-register/);
+  it('posts the device token to the current /api/push register endpoint', () => {
+    expect(html).toMatch(/\/api\/push\?action=register/);
+  });
+
+  it('stashes the device token so the disable path can unregister it', () => {
+    expect(html).toMatch(/thwapNotifToken/);
+  });
+
+  it('no longer auto-registers against the stale /api/coach push-register endpoint', () => {
+    expect(html).not.toMatch(/action=push-register/);
   });
 });
