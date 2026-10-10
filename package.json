@@ -17,6 +17,7 @@
     "@capacitor/haptics": "^7.0.5",
     "@capacitor/ios": "^7.6.9",
     "@capacitor/push-notifications": "^7.0.7",
+    "@capacitor/share": "^7.0.2",
     "@capacitor/status-bar": "^7.0.6",
     "@upstash/redis": "1.38.4",
     "@vercel/blob": "0.27.3",

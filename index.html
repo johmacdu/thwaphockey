@@ -1357,6 +1357,26 @@ body:not(.is-native) #profile .prof-row-native{display:none}  /* native-only: No
 /* In the app, the web footer action cluster (sound/theme/menu) is redundant with
    the Profile tab, so hide it. The slogan + trademark stay. */
 body.is-native .footer-actions{display:none}
+
+/* --- Per-platform system font (native only). Nunito Sans stays the brand face
+   for headings and the website; this swaps BODY text to the platform system
+   font so running text reads native: San Francisco on iOS, Roboto on Android.
+   Brand faces (Archivo Black / Nunito Sans display) are untouched. --- */
+body.is-ios{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Nunito Sans',system-ui,sans-serif}
+body.is-android{font-family:'Roboto','Nunito Sans',system-ui,sans-serif}
+
+/* --- Native modal: present the policy sheet as a platform bottom sheet that
+   slides up from the bottom and clears the home indicator, instead of the web
+   centred overlay. Native only; the website keeps its centred modal. --- */
+body.is-native .policy-sheet{align-items:flex-end;padding:0}
+body.is-native .policy-page{
+  width:100%;max-width:100%;border-radius:18px 18px 0 0;
+  max-height:92vh;max-height:92dvh;
+  padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));
+  animation:thwapSheetUp .26s cubic-bezier(.22,1,.36,1);
+}
+@keyframes thwapSheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){body.is-native .policy-page{animation:none}}
 /* Primary nav moves to the bottom tab bar, so the header's top links AND the
    mobile kebab are redundant in-app. The brand (logo + wordmark) stays. */
 body.is-native .topbar .toplinks,
@@ -1447,6 +1467,7 @@ html[data-theme='dark'] .login-frost{background:linear-gradient(180deg,rgba(120,
 .policy-body li{font-size:15px;color:var(--text2);line-height:1.6;margin-bottom:6px}
 .policy-body a{color:var(--green);font-weight:700}
 .login-go{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;background:var(--green);color:var(--onaccent);font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;font-size:16px;border:0;border-radius:14px;cursor:pointer;transition:transform .08s ease,filter .12s ease}
+.login-go[hidden]{display:none}
 .login-go:hover{filter:brightness(1.04)}
 .login-go:active{transform:scale(.98)}
 .login-err{min-height:18px;margin:10px 0 0;font-size:13px;font-weight:700;color:var(--alert);text-align:center}
@@ -1568,7 +1589,7 @@ body.login-locked{overflow:hidden}
    same window.Capacitor?.isNativePlatform() check as the bridge, so the plain
    website at thwaphockey.com never gets body.is-native and is completely unchanged.
    Set on <html> AND <body> as early as possible so the first paint already has it. */
-(function(){try{var C=window.Capacitor;if(C&&typeof C.isNativePlatform==='function'&&C.isNativePlatform()){document.documentElement.classList.add('is-native');var add=function(){if(document.body)document.body.classList.add('is-native');};add();if(!document.body)document.addEventListener('DOMContentLoaded',add);}}catch(e){}})();</script><script src='demo/demo-data.js'></script><script src='demo/demo-mode.js'></script><div class='app'>
+(function(){try{var C=window.Capacitor;if(C&&typeof C.isNativePlatform==='function'&&C.isNativePlatform()){var pf='';try{pf=(C.getPlatform&&C.getPlatform())||'';}catch(e2){}var pc=pf==='ios'?'is-ios':(pf==='android'?'is-android':'');var r=document.documentElement;r.classList.add('is-native');if(pc)r.classList.add(pc);var add=function(){if(document.body){document.body.classList.add('is-native');if(pc)document.body.classList.add(pc);}};add();if(!document.body)document.addEventListener('DOMContentLoaded',add);}}catch(e){}})();</script><script src='demo/demo-data.js'></script><script src='demo/demo-mode.js'></script><script>/* thwapShare: native OS share sheet via @capacitor/share when in the shell, graceful web fallback (Web Share API, then clipboard copy) otherwise. Returns a promise; never throws into the caller. */window.thwapShare=function(opts){opts=opts||{};var title=opts.title||'Thwap Hockey';var text=opts.text||'';var url=opts.url||'';function done(ok){return Promise.resolve({ok:ok});}try{var C=window.Capacitor;var native=!!(C&&typeof C.isNativePlatform==='function'&&C.isNativePlatform());if(native){var S=C.Plugins&&C.Plugins.Share;if(S&&S.share){return S.share({title:title,text:text,url:url,dialogTitle:title}).then(function(){return done(true);}).catch(function(){return done(false);});}}}catch(e){}try{if(navigator.share){return navigator.share({title:title,text:text,url:url}).then(function(){return done(true);}).catch(function(){return done(false);});}}catch(e2){}try{var payload=(text?text+(url?' ':''):'')+(url||'');if(navigator.clipboard&&navigator.clipboard.writeText){return navigator.clipboard.writeText(payload).then(function(){return done('copied');}).catch(function(){return done(false);});}}catch(e3){}return done(false);};</script><div class='app'>
 <!-- Break the Ice login splash: two fixed layers over the real homepage.
      #loginBackdrop (frost + Sass/THWAP stage) sits BELOW the site header so its
      Sign In / Join Waitlist links stay visible and tappable; #loginOverlay (the
@@ -1745,6 +1766,7 @@ body.login-locked{overflow:hidden}
       <h2 class='login-h'>Your team is ready!</h2>
       <p class='login-sub'>Share this team code with your players so they can join:</p>
       <div class='cs-code' id='csCode'></div>
+      <button type='button' class='login-go cs-share' id='csShare' hidden>Share the code &#8594;</button>
       <p class='login-sub cs-codehint'>Players tap Sign in, then enter their jersey number and this code. You can add players and set the training plan from your Team page.</p>
       <button type='button' class='login-go' id='csEnter'>Go to my team &#8594;</button>
     </div>
@@ -9361,6 +9383,15 @@ if(coachSignupForm){
             if(csCodeEl) csCodeEl.textContent=code;
             if(csFields) csFields.hidden=true;
             if(csDone) csDone.hidden=false;
+            var csShare=document.getElementById('csShare');
+            if(csShare){ csShare.hidden=false;
+              csShare.onclick=function(){
+                var msg='Join our team on Thwap Hockey. Tap Sign in, enter your jersey number and this team code: '+code;
+                if(window.thwapShare) window.thwapShare({ title:'Join our Thwap team', text:msg, url:'https://thwaphockey.com' }).then(function(r){
+                  if(r&&r.ok==='copied'){ var old=csShare.textContent; csShare.textContent='Code copied'; setTimeout(function(){ csShare.textContent=old; },1600); }
+                });
+              };
+            }
           });
       })
       .catch(function(){ csFail('Something went wrong. Check your connection and try again.'); });
