@@ -7,7 +7,7 @@ a:focus-visible,button:focus-visible,[tabindex]:focus-visible,.row:focus-visible
 /* Thwap brand palette */
 --ink:#15221B;--ice:#F3F7F4;--puck:#202522;--lime:#B9F06B;--blue:#75B8FF;--orange:#FF9D4D;--tape:#FFFFFF;--bench:#A5B0A9;--pnw:#315B43;--alert:#F0645A;
 /* Foundation = Ice light: dark Ink text on Ice bg, Lime reserved for go/active */
---bg:#F3F7F4;--bg2:#E9EFEA;--panel:#FFFFFF;--panel2:#FBFDFB;--line:#DCE5DE;--text:#15221B;--muted:#5F6F64;--green:#2F6B41;--green2:#2F6B41;--soft:#E7EEE8;--card:#FFFFFF;--card2:#F7FAF7;--cardgrad1:#FFFFFF;--cardgrad2:#F2F6F3;--line2:#C9D5CC;--line3:#DCE5DE;--linesel:#8FD65E;--text2:#2C3A31;--muted2:#5F6F64;--chev:#6E7B73;--onaccent:#FFFFFF;--shadow:rgba(20,40,25,.10);
+--bg:#F3F7F4;--bg2:#E9EFEA;--panel:#FFFFFF;--panel2:#FBFDFB;--line:#DCE5DE;--text:#15221B;--muted:#5F6F64;--green:#2F6B41;--green2:#2F6B41;--soft:#E7EEE8;--card:#FFFFFF;--card2:#F7FAF7;--cardgrad1:#FFFFFF;--cardgrad2:#F2F6F3;--line2:#C9D5CC;--line3:#DCE5DE;--linesel:#8FD65E;--text2:#2C3A31;--muted2:#5F6F64;--chev:#5A6861;--onaccent:#FFFFFF;--shadow:rgba(20,40,25,.10);
 /* radii */
 --r-card:16px;--r-major:22px;--r-player:26px;--r-pill:999px;
 /* === Design system (code contract; see thwap-docs/design-system.md) ===
@@ -1361,6 +1361,10 @@ body.is-native.is-android .tabbar-btn.on .tabbar-ico{
 }
 body.is-native.is-android .tabbar-lab{font-size:12px;font-weight:800;letter-spacing:.01em}
 body.is-native.is-android .tabbar-btn.on .tabbar-lab{font-weight:900}
+/* Native-only type/glyph bumps (website product unchanged). */
+body.is-native .nextgame-tag{font-size:15px}
+body.is-native .cardsw.locked::after{font-size:20px}
+body.is-native:not(.is-android) .tabbar-lab{font-size:12px}
 /* MD3 press state layer, approximated: a faint fill under the icon on press,
    plus the existing scale. Reduced-motion drops the scale, keeps the fill. */
 body.is-native.is-android .tabbar-btn:active .tabbar-ico{
@@ -1942,7 +1946,7 @@ body.login-locked{overflow:hidden}
 <div class='ch-nextwrap'>
 <p class='ch-seclab'>Next up</p>
 <button type='button' class='nextgame' id='chNextGame'>
-  <span class='ng-when'><span class='ng-mon' id='ngMon'>&mdash;</span><span class='ng-day' id='ngDay'></span></span>
+  <span class='ng-when'><span class='ng-mon' id='ngMon'></span><span class='ng-day' id='ngDay'></span></span>
   <span class='ng-body'><span class='ng-lab' id='ngLab'>Next game</span><span class='ng-opp' id='ngOpp'>No games scheduled</span><span class='ng-meta' id='ngMeta'>Tap to add one</span></span>
   <span class='ng-chev' aria-hidden='true'>&#8250;</span>
 </button>
@@ -2032,7 +2036,7 @@ body.login-locked{overflow:hidden}
       <option value='FD'>Forward/Defense</option>
     </select></label>
     <div class='pe-elist' id='peEmailList'></div>
-    <div class='sheet-pin'>Player code (PIN)<span class='sheet-pin-val' id='pePin'>&mdash;</span><span class='sheet-pin-hint'>In case the player or parent forgets it.</span><button type='button' class='sheet-pin-btn' id='peReqCode'>Request new code</button></div>
+    <div class='sheet-pin'>Player code (PIN)<span class='sheet-pin-val' id='pePin'></span><span class='sheet-pin-hint'>In case the player or parent forgets it.</span><button type='button' class='sheet-pin-btn' id='peReqCode'>Request new code</button></div>
     <button type='submit' class='pgate-go' id='peSave'>Save</button>
     <button type='button' class='pe-remove' id='peRemove'>Remove from roster</button>
     <div class='pe-confirm' id='peConfirm' hidden>
@@ -2059,7 +2063,7 @@ body.login-locked{overflow:hidden}
     <label class='sheet-lab'>Last name<input class='pgate-in' id='psLast' type='text' autocomplete='off'></label>
     <label class='sheet-lab'>Jersey number<input class='pgate-in' id='psNum' type='text' inputmode='numeric' autocomplete='off'></label>
     <div class='pe-elist' id='psEmailList'></div>
-    <div class='sheet-pin'>Player code (PIN)<span class='sheet-pin-val' id='psPin'>&mdash;</span><span class='sheet-pin-hint'>In case the player or parent forgets it.</span><button type='button' class='sheet-pin-btn' id='psReqCode'>Request new code</button></div>
+    <div class='sheet-pin'>Player code (PIN)<span class='sheet-pin-val' id='psPin'></span><span class='sheet-pin-hint'>In case the player or parent forgets it.</span><button type='button' class='sheet-pin-btn' id='psReqCode'>Request new code</button></div>
     <button type='submit' class='pgate-go' id='psSave'>Save</button>
     <p class='pgate-msg' id='psMsg' aria-live='polite'></p>
   </form>
@@ -2314,7 +2318,7 @@ body.login-locked{overflow:hidden}
 <div class='pl-streak' id='plStreak'></div>
 <div id='plDisc'></div>
 <div class='idpdev' id='idpDev' hidden>
-  <div class='idpdev-coachlab'><span class='idpdev-lock' aria-hidden='true'>🔒</span> Coach&rsquo;s read &middot; not shown to players</div>
+  <div class='idpdev-coachlab'><span class='idpdev-lock' aria-hidden='true'>🔒</span> Coach&rsquo;s read, not shown to players</div>
   <div class='idpdev-vol' id='idpDevVol'></div>
   <div class='idpdev-trend-h'>Weekly activity</div>
   <div class='idpdev-trend' id='idpDevTrend'></div>
