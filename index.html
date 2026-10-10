@@ -1323,6 +1323,113 @@ body.is-native.is-authed:not(.login-locked) .app{
 body.is-native:not(.is-coach) .tabbar .tab-player{display:contents}
 body.is-native.is-coach .tabbar .tab-coach{display:contents}
 
+/* Beta banner is a web-only welcome note. In the installed apps it is
+   noise above the training, so hide it there. Web (no is-native) keeps it,
+   and the betaUntil auto-hide script is untouched. */
+body.is-native #wipNote{display:none !important}
+
+/* --- 3b. Material 3 navigation bar, ANDROID ONLY. Gated on
+   body.is-native.is-android so iOS and the website are untouched. Adds the
+   MD3 navigation-bar structure (taller surface, a rounded active-indicator
+   pill behind the active icon) using Thwap's own green, never stock teal and
+   never a new palette. Icons stay the existing emoji; labels stay visible. --- */
+body.is-native.is-android.is-authed:not(.login-locked) .tabbar{
+  min-height:calc(80px + env(safe-area-inset-bottom,0px));
+  align-items:center;
+  background:var(--panel);
+  border-top:1px solid var(--line);
+  box-shadow:0 -8px 24px var(--shadow);
+}
+body.is-native.is-android.is-authed:not(.login-locked) .app{
+  padding-bottom:calc(80px + env(safe-area-inset-bottom,0px) + 16px);
+}
+/* Each destination is a column: a 64x32 active-indicator pill wraps the icon,
+   the label sits under it. Min target stays >=48dp. */
+body.is-native.is-android .tabbar-btn{
+  position:relative;gap:4px;min-height:56px;padding:10px 2px 8px;
+  justify-content:flex-start;
+}
+body.is-native.is-android .tabbar-ico{
+  position:relative;z-index:1;
+  display:inline-flex;align-items:center;justify-content:center;
+  width:64px;height:32px;border-radius:16px;font-size:24px;
+  transition:background .18s ease;
+}
+/* The MD3 active-indicator pill: Thwap green as a soft tint behind the icon. */
+body.is-native.is-android .tabbar-btn.on .tabbar-ico{
+  background:color-mix(in srgb, var(--green2) 22%, transparent);
+}
+body.is-native.is-android .tabbar-lab{font-size:12px;font-weight:800;letter-spacing:.01em}
+body.is-native.is-android .tabbar-btn.on .tabbar-lab{font-weight:900}
+/* MD3 press state layer, approximated: a faint fill under the icon on press,
+   plus the existing scale. Reduced-motion drops the scale, keeps the fill. */
+body.is-native.is-android .tabbar-btn:active .tabbar-ico{
+  background:color-mix(in srgb, var(--green2) 12%, transparent);
+}
+body.is-native.is-android .tabbar-btn.on:active .tabbar-ico{
+  background:color-mix(in srgb, var(--green2) 30%, transparent);
+}
+@media(prefers-reduced-motion:reduce){
+  body.is-native.is-android .tabbar-ico{transition:none}
+  body.is-native.is-android .tabbar-btn:active{transform:none}
+}
+
+/* --- 3c. Material 3 button treatment, ANDROID ONLY. In-app back buttons
+   (they stay the plain word 'Back', no chevron) and the primary action
+   buttons get an MD3 state layer, a tonal/pill radius and a >=48dp target.
+   Scoped to body.is-native.is-android so web and iOS buttons are unchanged. --- */
+body.is-native.is-android .glassback,
+body.is-native.is-android .gdr-back{
+  min-height:48px;position:relative;overflow:hidden;
+  transition:background .18s ease;
+}
+body.is-native.is-android .glassback:active,
+body.is-native.is-android .gdr-back:active{
+  background:color-mix(in srgb, var(--green2) 12%, var(--panel));
+  transform:scale(.97);
+}
+/* Primary action buttons: MD3 filled/tonal feel, pill-to-20dp radius, state
+   layer, >=48dp min-height. Thwap keeps its own fill colors. */
+body.is-native.is-android .gdr-btn,
+body.is-native.is-android .create-label,
+body.is-native.is-android .idp-save,
+body.is-native.is-android .plansave,
+body.is-native.is-android .tgoal-save,
+body.is-native.is-android .today-done-btn,
+body.is-native.is-android .pe-confirm-go{
+  min-height:48px;border-radius:20px;position:relative;overflow:hidden;
+  transition:filter .18s ease, transform .12s ease;
+}
+body.is-native.is-android .gdr-btn:active,
+body.is-native.is-android .create-label:active,
+body.is-native.is-android .idp-save:active,
+body.is-native.is-android .plansave:active,
+body.is-native.is-android .tgoal-save:active,
+body.is-native.is-android .today-done-btn:active,
+body.is-native.is-android .pe-confirm-go:active{
+  filter:brightness(.94);transform:scale(.98);
+}
+@media(prefers-reduced-motion:reduce){
+  body.is-native.is-android .glassback,
+  body.is-native.is-android .gdr-back,
+  body.is-native.is-android .gdr-btn,
+  body.is-native.is-android .create-label,
+  body.is-native.is-android .idp-save,
+  body.is-native.is-android .plansave,
+  body.is-native.is-android .tgoal-save,
+  body.is-native.is-android .today-done-btn,
+  body.is-native.is-android .pe-confirm-go{transition:none}
+  body.is-native.is-android .glassback:active,
+  body.is-native.is-android .gdr-back:active,
+  body.is-native.is-android .gdr-btn:active,
+  body.is-native.is-android .create-label:active,
+  body.is-native.is-android .idp-save:active,
+  body.is-native.is-android .plansave:active,
+  body.is-native.is-android .tgoal-save:active,
+  body.is-native.is-android .today-done-btn:active,
+  body.is-native.is-android .pe-confirm-go:active{transform:none}
+}
+
 /* --- 4. Profile tab page. In the app the sound/theme/footmenu items move here;
    on the web they stay in the footer. These are flat rows (no card styling on a
    non-navigating element), grouped under plain labels. --- */
