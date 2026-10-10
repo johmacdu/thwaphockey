@@ -1377,6 +1377,22 @@ body.is-native .policy-page{
 }
 @keyframes thwapSheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){body.is-native .policy-page{animation:none}}
+
+/* --- Native drawers as bottom sheets. On the web the .sheet-panel is a right-side
+   slide-in drawer; in the app it reads more native anchored to the bottom with a
+   rounded top, sliding up, clearing the home indicator. Covers every .sheet
+   (self-edit, add-player, coach info, schedule, gates). Native only. --- */
+body.is-native .sheet-scrim{background:rgba(0,0,0,.45)}
+body.is-native .sheet-panel{
+  top:auto;left:0;right:0;bottom:0;width:100%;max-width:100%;
+  border-left:0;border-top:1px solid var(--line);
+  border-radius:18px 18px 0 0;
+  max-height:92vh;max-height:92dvh;
+  box-shadow:0 -12px 32px rgba(0,0,0,.28);
+  padding:24px 20px calc(24px + env(safe-area-inset-bottom,0px));
+  animation:thwapSheetUp .26s cubic-bezier(.22,1,.36,1);
+}
+@media(prefers-reduced-motion:reduce){body.is-native .sheet-panel{animation:none}}
 /* Primary nav moves to the bottom tab bar, so the header's top links AND the
    mobile kebab are redundant in-app. The brand (logo + wordmark) stays. */
 body.is-native .topbar .toplinks,
@@ -1589,7 +1605,7 @@ body.login-locked{overflow:hidden}
    same window.Capacitor?.isNativePlatform() check as the bridge, so the plain
    website at thwaphockey.com never gets body.is-native and is completely unchanged.
    Set on <html> AND <body> as early as possible so the first paint already has it. */
-(function(){try{var C=window.Capacitor;if(C&&typeof C.isNativePlatform==='function'&&C.isNativePlatform()){var pf='';try{pf=(C.getPlatform&&C.getPlatform())||'';}catch(e2){}var pc=pf==='ios'?'is-ios':(pf==='android'?'is-android':'');var r=document.documentElement;r.classList.add('is-native');if(pc)r.classList.add(pc);var add=function(){if(document.body){document.body.classList.add('is-native');if(pc)document.body.classList.add(pc);}};add();if(!document.body)document.addEventListener('DOMContentLoaded',add);}}catch(e){}})();</script><script src='demo/demo-data.js'></script><script src='demo/demo-mode.js'></script><script>/* thwapShare: native OS share sheet via @capacitor/share when in the shell, graceful web fallback (Web Share API, then clipboard copy) otherwise. Returns a promise; never throws into the caller. */window.thwapShare=function(opts){opts=opts||{};var title=opts.title||'Thwap Hockey';var text=opts.text||'';var url=opts.url||'';function done(ok){return Promise.resolve({ok:ok});}try{var C=window.Capacitor;var native=!!(C&&typeof C.isNativePlatform==='function'&&C.isNativePlatform());if(native){var S=C.Plugins&&C.Plugins.Share;if(S&&S.share){return S.share({title:title,text:text,url:url,dialogTitle:title}).then(function(){return done(true);}).catch(function(){return done(false);});}}}catch(e){}try{if(navigator.share){return navigator.share({title:title,text:text,url:url}).then(function(){return done(true);}).catch(function(){return done(false);});}}catch(e2){}try{var payload=(text?text+(url?' ':''):'')+(url||'');if(navigator.clipboard&&navigator.clipboard.writeText){return navigator.clipboard.writeText(payload).then(function(){return done('copied');}).catch(function(){return done(false);});}}catch(e3){}return done(false);};</script><div class='app'>
+(function(){try{var C=window.Capacitor;if(C&&typeof C.isNativePlatform==='function'&&C.isNativePlatform()){var pf='';try{pf=(C.getPlatform&&C.getPlatform())||'';}catch(e2){}var pc=pf==='ios'?'is-ios':(pf==='android'?'is-android':'');var r=document.documentElement;r.classList.add('is-native');if(pc)r.classList.add(pc);var add=function(){if(document.body){document.body.classList.add('is-native');if(pc)document.body.classList.add(pc);}};add();if(!document.body)document.addEventListener('DOMContentLoaded',add);}}catch(e){}})();</script><script src='demo/demo-data.js'></script><script src='demo/demo-mode.js'></script><script>/* thwapShare: native OS share sheet via @capacitor/share when in the shell, graceful web fallback (Web Share API, then clipboard copy) otherwise. Returns a promise; never throws into the caller. */window.thwapShare=function(opts){opts=opts||{};var title=opts.title||'Thwap Hockey';var text=opts.text||'';var url=opts.url||'';function done(ok){return Promise.resolve({ok:ok});}try{var C=window.Capacitor;var native=!!(C&&typeof C.isNativePlatform==='function'&&C.isNativePlatform());if(native){var S=C.Plugins&&C.Plugins.Share;if(S&&S.share){return S.share({title:title,text:text,url:url,dialogTitle:title}).then(function(){return done(true);}).catch(function(){return done(false);});}}}catch(e){}try{if(navigator.share){return navigator.share({title:title,text:text,url:url}).then(function(){return done(true);}).catch(function(){return done(false);});}}catch(e2){}try{var payload=(text?text+(url?' ':''):'')+(url||'');if(navigator.clipboard&&navigator.clipboard.writeText){return navigator.clipboard.writeText(payload).then(function(){return done('copied');}).catch(function(){return done(false);});}}catch(e3){}return done(false);};</script><script>/* thwapSyncStatusBar: match the native status bar to the app theme. No-op on the plain web (no plugin). Dark theme -> light status-bar text on a dark bar; light theme -> dark text on a light bar. */window.thwapSyncStatusBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof C.isNativePlatform==='function'&&C.isNativePlatform()))return;var SB=C.Plugins&&C.Plugins.StatusBar;if(!SB)return;if(SB.setStyle)SB.setStyle({style:dark?'DARK':'LIGHT'});if(SB.setBackgroundColor)SB.setBackgroundColor({color:dark?'#101A14':'#F3F7F4'});}catch(e){}};</script><div class='app'>
 <!-- Break the Ice login splash: two fixed layers over the real homepage.
      #loginBackdrop (frost + Sass/THWAP stage) sits BELOW the site header so its
      Sign In / Join Waitlist links stay visible and tappable; #loginOverlay (the
@@ -4099,7 +4115,7 @@ function render(){
         var _l=row.parentNode;
         if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('dryland');
         if(window.thwapMarkDone)window.thwapMarkDone('dryland','dryland:'+i);
-        if(window.thwapStampToday)window.thwapStampToday('dryland',true); try{ if(window.thwapSfx)thwapSfx('drylandReward'); }catch(e){}
+        if(window.thwapStampToday)window.thwapStampToday('dryland',true); try{ if(window.thwapSfx)thwapSfx('drylandReward'); }catch(e){} try{ if(window.thwapHaptic)thwapHaptic('done'); }catch(e){}
         btn.textContent='Done ✓';
       };
       var unMark=function(){
@@ -4701,7 +4717,7 @@ render();
 fetchBoard();
 window.addEventListener('hashchange',function(){ if(location.hash==='#progress') fetchBoard(); });
 })();</script>
-<script>(function(){var KEY='thwapTheme';function apply(t){var dark=(t==='dark');document.documentElement.setAttribute('data-theme',dark?'dark':'light');var i=document.getElementById('ttico'),l=document.getElementById('ttlabel');if(i)i.textContent=dark?'☀️':'🌙';if(l)l.textContent=dark?'Light':'Dark';var pi=document.getElementById('profTtico'),pl=document.getElementById('profTtlabel');if(pi)pi.textContent=dark?'☀️':'🌙';if(pl)pl.textContent=dark?'Light':'Dark';var bm=document.getElementById('brandMark');if(bm)bm.setAttribute('src',dark?'wordmark-dark.svg':'wordmark-light.svg');var fm=document.getElementById('footerMark');if(fm)fm.setAttribute('src',dark?'wordmark-tm-dark.svg':'wordmark-tm-light.svg');var lm=document.getElementById('loginMark');if(lm)lm.setAttribute('src',dark?'wordmark-dark.svg':'wordmark-light.svg');}var saved='light';try{saved=localStorage.getItem(KEY)||'light';}catch(e){}apply(saved);function toggle(){var cur='light';try{cur=localStorage.getItem(KEY)||'light';}catch(e){}var next=(cur==='dark'?'light':'dark');try{localStorage.setItem(KEY,next);}catch(e){}apply(next);}var b=document.getElementById('themeToggle');if(b)b.addEventListener('click',toggle);var pb=document.getElementById('profThemeToggle');if(pb)pb.addEventListener('click',toggle);})();</script>
+<script>(function(){var KEY='thwapTheme';function apply(t){var dark=(t==='dark');document.documentElement.setAttribute('data-theme',dark?'dark':'light');try{if(window.thwapSyncStatusBar)window.thwapSyncStatusBar(dark);}catch(e){}var i=document.getElementById('ttico'),l=document.getElementById('ttlabel');if(i)i.textContent=dark?'☀️':'🌙';if(l)l.textContent=dark?'Light':'Dark';var pi=document.getElementById('profTtico'),pl=document.getElementById('profTtlabel');if(pi)pi.textContent=dark?'☀️':'🌙';if(pl)pl.textContent=dark?'Light':'Dark';var bm=document.getElementById('brandMark');if(bm)bm.setAttribute('src',dark?'wordmark-dark.svg':'wordmark-light.svg');var fm=document.getElementById('footerMark');if(fm)fm.setAttribute('src',dark?'wordmark-tm-dark.svg':'wordmark-tm-light.svg');var lm=document.getElementById('loginMark');if(lm)lm.setAttribute('src',dark?'wordmark-dark.svg':'wordmark-light.svg');}var saved='light';try{saved=localStorage.getItem(KEY)||'light';}catch(e){}apply(saved);function toggle(){var cur='light';try{cur=localStorage.getItem(KEY)||'light';}catch(e){}var next=(cur==='dark'?'light':'dark');try{localStorage.setItem(KEY,next);}catch(e){}apply(next);}var b=document.getElementById('themeToggle');if(b)b.addEventListener('click',toggle);var pb=document.getElementById('profThemeToggle');if(pb)pb.addEventListener('click',toggle);})();</script>
 <script>
 /* Shared menu manager: at most one popover menu (footer kebab, nav kebabs) open
    at a time. Opening one closes the others; a single document-level listener
@@ -5915,7 +5931,7 @@ function render(){
         var _l=row.parentNode;
         if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('stick');
         if(window.thwapMarkDone)window.thwapMarkDone('stick','stick:'+i);
-        if(window.thwapStampToday)window.thwapStampToday('stick',true); try{ if(window.thwapSfx)thwapSfx('handsReward'); }catch(e){}
+        if(window.thwapStampToday)window.thwapStampToday('stick',true); try{ if(window.thwapSfx)thwapSfx('handsReward'); }catch(e){} try{ if(window.thwapHaptic)thwapHaptic('done'); }catch(e){}
         btn.textContent='Done ✓';
       };
       var unMark=function(){
@@ -6426,7 +6442,7 @@ function build(){
     wrap.querySelectorAll('.pl-ring').forEach(function(rg){
       rg.addEventListener('click',function(){
         rg.classList.remove('pl-pop');void rg.offsetWidth;rg.classList.add('pl-pop');
-        if(rg.getAttribute('data-full')==='true'){var t=document.getElementById('plThwap');if(t){t.classList.remove('go');void t.offsetWidth;t.classList.add('go');}}
+        if(rg.getAttribute('data-full')==='true'){var t=document.getElementById('plThwap');if(t){t.classList.remove('go');void t.offsetWidth;t.classList.add('go');} try{ if(window.thwapHaptic)thwapHaptic('streak'); }catch(e){}}
         /* Tapping a ring filters the activity list below to that discipline; tapping
            the active one again clears back to all. Same plFilter the all-time tiles use. */
         var d=rg.getAttribute('data-disc');
@@ -6904,7 +6920,7 @@ function render(){
            the shoot route. */
         if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('shoot');
         if(window.thwapMarkDone)window.thwapMarkDone(goalie?'netplay':'shoot','shoot:'+i);
-        if(window.thwapStampToday)window.thwapStampToday('shoot',true); try{ if(window.thwapSfx)thwapSfx('shootReward'); }catch(e){}
+        if(window.thwapStampToday)window.thwapStampToday('shoot',true); try{ if(window.thwapSfx)thwapSfx('shootReward'); }catch(e){} try{ if(window.thwapHaptic)thwapHaptic('done'); }catch(e){}
         try{ if(window.thwapRefreshHero) window.thwapRefreshHero(); }catch(e){}
         btn.textContent='Done ✓';
       };
@@ -8304,7 +8320,7 @@ window.thwapDecorateDeck=function(faces, getVisible, onchange){
       var q=pct(fc.container, ev.clientX, ev.clientY);
       window.thwapPlaced.add(vf.surface, PICK.file, q.x, q.y);
       window.thwapDeckRedraw(); if(DECK.onchange) DECK.onchange();
-      if(!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)){ var ws=fc.container.querySelectorAll('.pl-decalwrap'); var last=ws[ws.length-1]; if(last){ last.classList.add('placed-pop'); setTimeout(function(){ last.classList.remove('placed-pop'); },420); } }
+      if(!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)){ var ws=fc.container.querySelectorAll('.pl-decalwrap'); var last=ws[ws.length-1]; if(last){ last.classList.add('placed-pop'); setTimeout(function(){ last.classList.remove('placed-pop'); },420); } } try{ if(window.thwapHaptic)thwapHaptic('tick'); }catch(e){}
       window.thwapClearPick();
     });
   });
@@ -8355,7 +8371,7 @@ window.thwapStartTrayDrag=function(file, startEvent){
       var q=pct(fc.container,ev.clientX,ev.clientY);
       window.thwapPlaced.add(fc.surface, file, q.x, q.y);
       window.thwapDeckRedraw(); if(DECK.onchange) DECK.onchange();
-      if(!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)){ var ws=fc.container.querySelectorAll('.pl-decalwrap'); var last=ws[ws.length-1]; if(last){ last.classList.add('placed-pop'); setTimeout(function(){ last.classList.remove('placed-pop'); },420); } }
+      if(!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)){ var ws=fc.container.querySelectorAll('.pl-decalwrap'); var last=ws[ws.length-1]; if(last){ last.classList.add('placed-pop'); setTimeout(function(){ last.classList.remove('placed-pop'); },420); } } try{ if(window.thwapHaptic)thwapHaptic('tick'); }catch(e){}
     }
   }
   document.addEventListener('pointermove',move,true);
