@@ -1313,7 +1313,7 @@ body.is-native.is-authed:not(.login-locked) .app{
   -webkit-tap-highlight-color:transparent;
 }
 .tabbar-btn:active{transform:scale(.94)}
-.tabbar-ico{font-size:22px;line-height:1;filter:grayscale(1);opacity:.72}
+.tabbar-ico{font-size:22px;line-height:1;opacity:.9}
 .tabbar-lab{font-size:11px;font-weight:800;letter-spacing:.01em}
 .tabbar-btn.on{color:var(--green2)}
 .tabbar-btn.on .tabbar-ico{filter:none;opacity:1}
@@ -10238,6 +10238,30 @@ window.thwapPaywall=function(billing, teamCode){
     }catch(e){}
   }
   if(document.readyState!=='loading') wireBack(); else document.addEventListener('DOMContentLoaded', wireBack);
+
+  /* ---- Native splash hide ---------------------------------------------
+     capacitor.config.json sets SplashScreen launchAutoHide:false, so the
+     NATIVE splash (solid #0b0f14, matching the dark app bg) stays up over the
+     webview until we hide it here. Without this the webview paints the home
+     screen first and the web 'Break the Ice' splash (#loginOverlay, z-130)
+     frosts over an already-rendered .app, so the home screen ghosts through.
+     Holding the opaque native splash until the first web frame has painted,
+     then hiding it, means the user only ever sees the splash, not the ghost.
+     Feature-detected (no bundler on this page); a no-op if the plugin is
+     absent. requestAnimationFrame waits for the first paint; the fade honours
+     the user's reduced-motion setting (0ms when reduce is requested). */
+  function hideNativeSplash(){
+    try{
+      var SP = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SplashScreen;
+      if(!SP || !SP.hide) return;
+      var reduce=false;
+      try{ reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(_){}
+      requestAnimationFrame(function(){ requestAnimationFrame(function(){
+        try{ SP.hide({ fadeOutDuration: reduce ? 0 : 200 }); }catch(e){}
+      }); });
+    }catch(e){}
+  }
+  if(document.readyState!=='loading') hideNativeSplash(); else window.addEventListener('load', hideNativeSplash);
 })();
 </script>
 </body></html>

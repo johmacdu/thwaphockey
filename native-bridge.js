@@ -82,4 +82,23 @@
 
   document.addEventListener('DOMContentLoaded', registerPush);
   if (document.readyState !== 'loading') registerPush();
+
+  // ---- Native splash hide --------------------------------------------------
+  // capacitor.config.json sets SplashScreen launchAutoHide:false, so the native
+  // splash stays up over the webview until we hide it once the web app has
+  // painted. Feature-detected (no bundler); a no-op if the plugin is absent.
+  // The fade honours prefers-reduced-motion.
+  function hideSplash() {
+    try {
+      var SP = Cap.Plugins && Cap.Plugins.SplashScreen;
+      if (!SP || !SP.hide) return;
+      var reduce = false;
+      try { reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+      requestAnimationFrame(function () { requestAnimationFrame(function () {
+        try { SP.hide({ fadeOutDuration: reduce ? 0 : 200 }); } catch (e) {}
+      }); });
+    } catch (e) {}
+  }
+  if (document.readyState !== 'loading') hideSplash();
+  else window.addEventListener('load', hideSplash);
 })();

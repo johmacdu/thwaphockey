@@ -18,6 +18,7 @@
     "@capacitor/ios": "^7.6.9",
     "@capacitor/push-notifications": "^7.0.7",
     "@capacitor/share": "^7.0.2",
+    "@capacitor/splash-screen": "^7.0.3",
     "@capacitor/status-bar": "^7.0.6",
     "@upstash/redis": "1.38.4",
     "@vercel/blob": "0.27.3",
