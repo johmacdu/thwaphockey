@@ -24,7 +24,7 @@ const nativeCss = () => html.match(/<style id='native-css'>([\s\S]*?)<\/style>/)
 
 describe('Native flag is set only inside Capacitor', () => {
   it('body.is-native is gated on window.Capacitor.isNativePlatform()', () => {
-    expect(html).toMatch(/C\.isNativePlatform\(\)\)\{document\.documentElement\.classList\.add\('is-native'\)/);
+    expect(html).toMatch(/C\.isNativePlatform\(\)\)\{[^]*?r\.classList\.add\('is-native'\)/);
     expect(html).toMatch(/document\.body\.classList\.add\('is-native'\)/);
   });
 
