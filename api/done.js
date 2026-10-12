@@ -177,10 +177,11 @@ export default async function handler(req, res) {
   // Position gate: a player may only log a POSITION discipline that applies to
   // their position. disciplinesFor() is the single source of truth (goalie ->
   // netplay, skater -> shoot), so a mismatched write can never misfile work.
-  // `iq` (Hockey IQ) is a UNIVERSAL discipline every position does, so it is
-  // exempt from the position gate -- it is intentionally NOT in disciplinesFor
-  // (which stays the radar/participation triad), so it would fail this check.
-  if (discipline !== 'iq' && !disciplinesFor(entry.id).includes(discipline)) {
+  // `iq` (Hockey IQ) and `pass` (Passing) are UNIVERSAL disciplines every position
+  // does, so they are exempt from the position gate -- they are intentionally NOT in
+  // disciplinesFor (which stays the radar/participation triad), so they would fail
+  // this check.
+  if (discipline !== 'iq' && discipline !== 'pass' && !disciplinesFor(entry.id).includes(discipline)) {
     return res.status(400).json({ error: 'discipline not for this position' });
   }
 
