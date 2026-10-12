@@ -576,7 +576,7 @@ async function roster(req, res) {
   const members = [];
   for (const pid of ids) {
     const m = await getMember(pid);
-    const wk = byId[pid] || { stick: 0, shoot: 0, dryland: 0 };
+    const wk = byId[pid] || { stick: 0, shoot: 0, dryland: 0, netplay: 0, iq: 0, pass: 0 };
     const trained = (wk.stick + wk.shoot + wk.dryland) > 0;
     const goal = await getIdpGoal(pid);
     members.push({
@@ -585,7 +585,13 @@ async function roster(req, res) {
       number: m ? m.number : null, position: (m && m.position) || '',
       status: (m && m.status) || 'active',
       parentEmails: parentEmailList(m),
-      week: { stick: wk.stick, shoot: wk.shoot, dryland: wk.dryland }, trainedThisWeek: trained,
+      // Full weekly split so the coach dashboard can break participation down by
+      // skill (stick/shoot/dryland are the required triad; iq + pass are bonus).
+      week: {
+        stick: wk.stick || 0, shoot: wk.shoot || 0, dryland: wk.dryland || 0,
+        netplay: wk.netplay || 0, iq: wk.iq || 0, pass: wk.pass || 0,
+      },
+      trainedThisWeek: trained,
       idpGoal: goal ? goal.text : '',
     });
   }
