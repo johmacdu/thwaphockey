@@ -1,7 +1,8 @@
 // test/voice-picker.test.js
 //
 // EXECUTION test: boots index.html in jsdom and checks the drill-narration voice
-// picker on ALL three discipline lists. Guards the bug where the picker used shared
+// picker on ALL narrated discipline lists (dryland, stick, shoot, pass). Guards the
+// bug where the picker used shared
 // ids (#vWord/#vSheet) so only the first (dryland) picker worked - stick/shoot were
 // dead. Also guards the day-based unlock ladder: Canadian + Minnesota are free, the
 // rest (American, Boston, New Yorker, Russian, Swedish, Finnish) unlock by days of
@@ -34,10 +35,12 @@ beforeAll(async () => {
   await new Promise((r) => setTimeout(r, 50));
 });
 
-describe('Drill narration voice picker (all three disciplines, no id collision)', () => {
-  it('renders a picker on dryland, stick AND shoot lists (3 total, class-scoped not id)', () => {
+describe('Drill narration voice picker (all narrated disciplines, no id collision)', () => {
+  it('renders a picker on dryland, stick, shoot AND pass lists (4 total, class-scoped not id)', () => {
+    // Passing (PR #388) gained recorded Sass narration, so it carries the same
+    // voice picker as the other skills -> 4 pickers now, not 3.
     const picks = doc.querySelectorAll('.vpick');
-    expect(picks.length).toBe(3);
+    expect(picks.length).toBe(4);
     // no shared ids that would collide
     expect(doc.getElementById('vWord')).toBeNull();
     expect(doc.getElementById('vSheet')).toBeNull();
