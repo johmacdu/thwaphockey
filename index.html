@@ -2303,7 +2303,7 @@ body.login-locked{overflow:hidden}
   </button>
   <div class='idp-edit-row' id='idpEditRow' hidden>
     <input class='idp-in' id='idpInput' type='text' maxlength='120' placeholder='e.g. Work on backward skating'>
-    <div class='idp-presets-lab'>Coach skill presets (10U) &middot; tap to use</div>
+    <div class='idp-presets-lab'>Coach skill presets (10U), tap to use</div>
     <div class='idp-presets' id='idpPresets'></div>
     <div class='idp-btns'>
       <button type='button' class='idp-save' id='idpSave'>Save</button>
@@ -2636,7 +2636,7 @@ window.thwapActiveTeam=function(coach){
       if(g){ var dt=parseDate(g.date); mon.textContent=MON[dt.getMonth()]; day.textContent=dt.getDate();
         lab.textContent=(g.kind==='tournament'?'Next tournament':'Next game');
         opp.textContent=(g.home?'':'at ')+(g.opponent||'TBD'); meta.textContent=metaLine(g);
-      } else { mon.textContent='\u2014'; day.textContent=''; lab.textContent='Next game'; opp.textContent='No games scheduled'; meta.textContent='Tap to add one'; }
+      } else { mon.textContent='-'; day.textContent=''; lab.textContent='Next game'; opp.textContent='No games scheduled'; meta.textContent='Tap to add one'; }
     }
     function renderList(sched){
       var wrap=document.getElementById('schedEvents'), empty=document.getElementById('schedEmpty'); if(!wrap) return;
@@ -2974,7 +2974,7 @@ window.thwapActiveTeam=function(coach){
         peRemove=document.getElementById('peRemove');
     var pePid='';
     var SEASON_CODES=['2027','2026'];
-    function pinFor(num){ var n=String(num==null?'':num).trim(); return n?(n+SEASON_CODES[0]):'\u2014'; }
+    function pinFor(num){ var n=String(num==null?'':num).trim(); return n?(n+SEASON_CODES[0]):'-'; }
     function peSheetShow(on){ if(sheet) sheet.hidden=!on; if(!on){ var c=document.getElementById('peConfirm'); if(c) c.hidden=true; } }
     function openPlayerEdit(name, cardEl){
       var parts=String(name||'').trim().split(/\s+/);
@@ -3093,7 +3093,7 @@ window.thwapActiveTeam=function(coach){
             var first=(c.getAttribute('data-name')||'').trim().split(/\s+/)[0].toLowerCase();
             var on=!!keep[first]; c.classList.toggle('filtered-out',!on); if(on) shown++;
           });
-          if(lab) lab.textContent=(f==='nogoal'?'Players who need a goal':'Not training yet')+' \u00b7 '+shown;
+          if(lab) lab.textContent=(f==='nogoal'?'Players who need a goal':'Not training yet')+', '+shown;
           bar.setAttribute('data-on','1');
         }).catch(function(){});
     }
@@ -3393,7 +3393,7 @@ window.thwapActiveTeam=function(coach){
       var drillWord=(n===1?'drill':'drills');
       var verb=(n===1?'is':'are');
       var minWord=(mins===1?'min':'mins');
-      var full=(mins>=DAY_MIN?" \u2014 that's a full day":'');
+      var full=(mins>=DAY_MIN?", that's a full day":'');
       if(barN) barN.textContent=n+' '+drillWord+' '+verb+' ~'+mins+' '+minWord+full;
       if(barT) barT.textContent='';
     }
@@ -4096,7 +4096,7 @@ function voicePickerHTML(){
     if(isUnlocked(v)){
       return "<button type=\"button\" class=\"vopt"+(v.code===curV.code?' on':'')+"\" data-voice=\""+v.code+"\" role=\"menuitemradio\">"+(v.emoji?"<span class=\"vopt-emoji\">"+v.emoji+"</span> ":'')+esc(v.label)+"</button>";
     }
-    return "<span class=\"vopt locked\">\uD83D\uDD12 "+esc(v.label)+" \u00B7 unlocks in "+thwapDaysToUnlock(v)+" days</span>";
+    return "<span class=\"vopt locked\">\uD83D\uDD12 "+esc(v.label)+", unlocks in "+thwapDaysToUnlock(v)+" days</span>";
   }).join('');
   return "<div class='vpick'>"+
     "<p class='vmadlib'>Sass talks with a <button type=\"button\" class=\"pos-word vword\" aria-haspopup=\"true\" aria-expanded=\"false\">"+esc(curV.label)+"</button> accent.</p>"+
@@ -9703,7 +9703,7 @@ var psFirst=document.getElementById('psFirst'), psLast=document.getElementById('
     psPin=document.getElementById('psPin'),
     psMsg=document.getElementById('psMsg'), psReqCode=document.getElementById('psReqCode');
 var editing=false, currentCode='';
-function pinFor(num){ var n=String(num==null?'':num).trim(); return n?(n+'2027'):'\u2014'; }
+function pinFor(num){ var n=String(num==null?'':num).trim(); return n?(n+'2027'):'-'; }
 function setEditing(on){
   editing=on;
   document.body.classList.toggle('roster-selfediting', on);
