@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Oswald:wght@500;600;700&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;0,6..12,800;0,6..12,900&family=Luckiest+Guy&display=swap' rel='stylesheet'><title>Thwap Hockey</title><link rel='icon' type='image/png' href='logo-64.png'><link rel='apple-touch-icon' href='logo-180.png'><style>
+<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Oswald:wght@500;600;700&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;0,6..12,800;0,6..12,900&family=Luckiest+Guy&display=swap' rel='stylesheet'><title>Thwap Hockey</title><link rel='icon' type='image/png' href='logo-64.png'><link rel='apple-touch-icon' href='logo-180.png'><style>
 /* Keyboard focus ring: visible for keyboard/switch users, invisible to mouse taps.
    Uses a lime core with a dark ink halo so it reads on both light and dark themes. */
 a:focus-visible,button:focus-visible,[tabindex]:focus-visible,.row:focus-visible,.nav:focus-visible,.segbtn:focus-visible,.pl-tot:focus-visible{outline:3px solid var(--lime);outline-offset:2px;box-shadow:0 0 0 5px rgba(21,34,27,.55);border-radius:12px}
@@ -441,6 +441,11 @@ body:not(.viewing-teammate) .cardctl-mine:not([hidden]){display:flex;justify-con
   .cheerpop.in .cheerpop-sass,.cheerpop.out .cheerpop-sass{animation:none}
   .cheerpop.in .cheerpop-sass{transform:translateX(4vw)}
   .cheerpop-bubble{transition:none}
+  /* Still the stride-frame cycling (the .out frames loop infinitely) and hold the
+     resting pose so Sass does not skate in place under reduced motion. */
+  .cheerpop .cheerpop-frame{animation:none!important}
+  .cheerpop .cheerpop-frame.fa{opacity:1}
+  .cheerpop .cheerpop-frame.fm,.cheerpop .cheerpop-frame.fb{opacity:0}
 }
 /* holographic sheen driven by --sheen (0..1) */
 .cardface::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.28) 47%,rgba(185,240,107,.22) 52%,rgba(117,184,255,.22) 57%,transparent 72%);transform:translateX(calc((var(--sheen,.5) - .5) * 160%));mix-blend-mode:screen;opacity:.7}
@@ -2003,7 +2008,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 </section>
 
 <section id='coachhome' class='page'>
-<div class='topbar'><div class='brand'><img class='brandlogo' src='sass-logo.svg' alt='Thwap Hockey' width='80' height='68'><img class='brandmark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span></nav><button type='button' class='kebab' id='kebabC' aria-label='Explore pages' aria-expanded='false'>Explore</button><div class='kebabmenu' id='kebabMenuC' hidden><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a><a href='#progress'>Standings</a></span></div></div>
+<div class='topbar'><div class='brand'><img class='brandlogo' src='sass-logo.svg' alt='Thwap Hockey' width='80' height='68'><img class='brandmark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks' aria-label='Coach quick links'><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span></nav><button type='button' class='kebab' id='kebabC' aria-label='Explore pages' aria-expanded='false'>Explore</button><div class='kebabmenu' id='kebabMenuC' hidden><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a><a href='#progress'>Standings</a></span></div></div>
 <div class='hero'><div class='kicker' id='chKicker'>Jr Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='chProfileName' aria-label='Edit your coach profile'>Coach</button> <span class='hero-wave' role='img' aria-label='Waving hand'>👋</span></h1><p>Here is where your team is at.</p></div>
 
 <div class='lb-teamzone'>
@@ -2124,8 +2129,8 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
     <button type='button' class='pgate-x' id='switchGateX' aria-label='Close'>&#215;</button>
     <h2 class='pgate-h' id='switchGateTitle'>Switch player</h2>
     <p class='pgate-p'>Ask a parent. Enter their email and the player code.</p>
-    <input class='pgate-in' id='switchEmail' type='email' inputmode='email' autocomplete='email' placeholder='parent@email.com' required>
-    <input class='pgate-in' id='switchCode' type='text' inputmode='numeric' autocomplete='off' placeholder='Player code' required>
+    <input class='pgate-in' id='switchEmail' type='email' inputmode='email' autocomplete='email' placeholder='parent@email.com' aria-label='Parent email' required>
+    <input class='pgate-in' id='switchCode' type='text' inputmode='numeric' autocomplete='off' placeholder='Player code' aria-label='Player code' required>
     <button type='submit' class='pgate-go'>Switch player</button>
     <p class='pgate-msg' id='switchErr' aria-live='polite'></p>
   </form>
@@ -2188,11 +2193,11 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
       <span id='asInitials' class='cprof-initials'>+</span>
       <span class='cprof-photo-lab'>Photo</span>
     </button>
-    <input type='file' id='asFile' accept='image/*' hidden>
-    <input class='pgate-in' id='asFirst' type='text' autocomplete='off' placeholder='First name' required>
-    <input class='pgate-in' id='asLast' type='text' autocomplete='off' placeholder='Last name'>
-    <input class='pgate-in' id='asEmail' type='email' inputmode='email' autocomplete='off' placeholder='assistant@email.com' required>
-    <input class='pgate-in' id='asPw' type='text' autocomplete='off' placeholder='Password (they use to log in)' required>
+    <input type='file' id='asFile' accept='image/*' aria-label='Assistant coach photo' hidden>
+    <input class='pgate-in' id='asFirst' type='text' autocomplete='off' placeholder='First name' aria-label='Assistant first name' required>
+    <input class='pgate-in' id='asLast' type='text' autocomplete='off' placeholder='Last name' aria-label='Assistant last name'>
+    <input class='pgate-in' id='asEmail' type='email' inputmode='email' autocomplete='off' placeholder='assistant@email.com' aria-label='Assistant email' required>
+    <input class='pgate-in' id='asPw' type='text' autocomplete='off' placeholder='Password (they use to log in)' aria-label='Assistant password' required>
     <button type='submit' class='pgate-go' id='asSave'>Add assistant</button>
     <p class='pgate-msg' id='asMsg' aria-live='polite'></p>
   </form>
@@ -2219,15 +2224,15 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
       <span id='coachProfileInitials' class='cprof-initials'>+</span>
       <span class='cprof-photo-lab'>Add photo</span>
     </button>
-    <input type='file' id='coachProfileFile' accept='image/*' hidden>
+    <input type='file' id='coachProfileFile' accept='image/*' aria-label='Coach photo' hidden>
     <label class='sheet-lab'>Coach name<input class='pgate-in' id='coachProfileName' type='text' autocomplete='name' placeholder='Coach name' required></label>
     <button type='submit' class='pgate-go'>Save profile</button>
     <p class='pgate-msg' id='coachProfileMsg' aria-live='polite'></p>
     <div class='cprof-pw'>
       <div class='cprof-pw-h'>Team password</div>
       <p class='pgate-p'>This is the password the team uses to reach the coach view. Change it here.</p>
-      <input class='pgate-in' id='coachPwCurrent' type='password' autocomplete='current-password' placeholder='Current password'>
-      <input class='pgate-in' id='coachPwNew' type='password' autocomplete='new-password' placeholder='New password (6+ characters)'>
+      <input class='pgate-in' id='coachPwCurrent' type='password' autocomplete='current-password' placeholder='Current password' aria-label='Current team password'>
+      <input class='pgate-in' id='coachPwNew' type='password' autocomplete='new-password' placeholder='New password (6+ characters)' aria-label='New team password'>
       <button type='button' class='sugg-send' id='coachPwSave'>Update password</button>
       <p class='pgate-msg' id='coachPwMsg' aria-live='polite'></p>
     </div>
@@ -2297,7 +2302,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
   <div class='tgoal-wrap' id='tgoalBox'>
     <div class='tgoal-h'>Team goal for the game</div>
     <p class='tgoal-p'>One team focus, shown in every player&rsquo;s Game Day plan. Leave it empty to give players all three picks.</p>
-    <input class='tgoal-in' id='tgoalIn' type='text' maxlength='80' placeholder='e.g. Talk on the ice'>
+    <input class='tgoal-in' id='tgoalIn' type='text' maxlength='80' placeholder='e.g. Talk on the ice' aria-label='Team goal for the game'>
     <button type='button' class='tgoal-save' id='tgoalSave'>Save team goal</button>
     <p class='tgoal-done' id='tgoalDone' hidden>Saved! Your team sees this.</p>
   </div>
@@ -2313,7 +2318,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
       <button type='button' class='sugg-cat' data-cat='shoot'>🥅 Shoot</button>
       <button type='button' class='sugg-cat' data-cat='dryland'>⚡ Dryland</button>
     </div>
-    <input class='sugg-in' id='suggIn' type='text' maxlength='140' placeholder='Drill name and a one-line description'>
+    <input class='sugg-in' id='suggIn' type='text' maxlength='140' placeholder='Drill name and a one-line description' aria-label='Drill name and description'>
     <button type='button' class='sugg-send' id='suggSend' disabled>Send to Thwap</button>
     <p class='sugg-done' id='suggDone' hidden>Thanks! Thwap will review it.</p>
   </div>
@@ -2411,7 +2416,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
     <span class='idp-view-chev' id='idpEdit'>&rsaquo;</span>
   </button>
   <div class='idp-edit-row' id='idpEditRow' hidden>
-    <input class='idp-in' id='idpInput' type='text' maxlength='120' placeholder='e.g. Work on backward skating'>
+    <input class='idp-in' id='idpInput' type='text' maxlength='120' placeholder='e.g. Work on backward skating' aria-label='Your focus this month'>
     <div class='idp-presets-lab'>Coach skill presets (10U), tap to use</div>
     <div class='idp-presets' id='idpPresets'></div>
     <div class='idp-btns'>
@@ -2536,7 +2541,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 <section id='home'>
 <div class='wipnote' id='wipNote'>👋 Welcome to the Thwap beta. We're adding new training videos and features every week.</div>
 <script>(function(){try{fetch('/api/coach?action=beta',{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){if(d&&d.betaUntil){var until=Date.parse(d.betaUntil);if(!isNaN(until)&&Date.now()>until){var n=document.getElementById('wipNote');if(n)n.hidden=true;}}}).catch(function(){});}catch(e){}})();</script>
-<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.svg' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><span class='nav-authed'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a></span><span class='nav-guest'><a class='link' href='/about' id='navAbout'>About Thwap</a><span class='topsep'>|</span><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Explore pages' aria-expanded='false'>Explore</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#stickers'>Stickers</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a></span><span class='nav-guest'><a href='/about' id='navAboutK'>About Thwap</a><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
+<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.svg' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks' aria-label='Quick links'><span class='nav-authed'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a></span><span class='nav-guest'><a class='link' href='/about' id='navAbout'>About Thwap</a><span class='topsep'>|</span><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Explore pages' aria-expanded='false'>Explore</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#stickers'>Stickers</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a></span><span class='nav-guest'><a href='/about' id='navAboutK'>About Thwap</a><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
 <div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>there</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><script>(function(){try{var authed=/(?:^|; )thwapAuth=/.test(document.cookie);var p=localStorage.getItem('bfPlayer');var b=document.getElementById('homePlayer');if(b){if(p&&authed){b.textContent=p.trim().split(/\s+/)[0];}else{b.classList.add('needpick');}}}catch(e){}
 /* Team plan: hide the category rows the coach turned OFF for today. On any failure
    or unset plan, stick + shoot stay shown (the built-in rotation), and dryland
@@ -5108,8 +5113,8 @@ function registerThwapMenu(){
       </div>
       <div class='cardctl-mine' id='cardCtlMine' hidden><span class='cardctl-mine-count' id='cbMineCount'></span></div>
       <div class='cardctl-row' id='cardCtlMain'>
-        <button type='button' class='cardbtn' id='cardThemeBtn'></button>
-        <button type='button' class='cardbtn' id='cardImageBtn'></button>
+        <button type='button' class='cardbtn' id='cardThemeBtn' aria-label='Change card theme'></button>
+        <button type='button' class='cardbtn' id='cardImageBtn' aria-label='Change card image'></button>
       </div>
       <div class='cardctl-theme' id='cardCtlTheme' hidden>
         <div class='cardthemes' id='cardThemes' role='group' aria-label='Card color'></div>
