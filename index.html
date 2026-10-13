@@ -1974,6 +1974,33 @@ body.login-locked{overflow:hidden}
 </a>
 </div>
 
+<div class='lb-divider'></div>
+<style>
+/* Coach home "This week by skill": per-discipline participation. Each row shows
+   how many players trained that skill this week; tap to see who has and who
+   hasn't (iq + pass included, now that they count). */
+.ch-byskill{margin-top:var(--gap-section)}
+.bskill-list{margin-top:var(--sp-1)}
+.bskill-row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);padding:12px 2px;font-family:inherit;cursor:pointer;color:var(--text);-webkit-tap-highlight-color:transparent}
+.bskill-ico{flex:0 0 auto;font-size:18px;width:22px;text-align:center}
+.bskill-lab{flex:0 0 auto;font-weight:800;font-size:var(--fs-body);min-width:88px}
+.bskill-bar{flex:1 1 auto;height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.bskill-fill{display:block;height:100%;background:var(--green2,#4E9128);border-radius:99px;transition:width .4s ease}
+.bskill-count{flex:0 0 auto;font-weight:900;font-size:var(--fs-support);color:var(--muted);min-width:46px;text-align:right}
+.bskill-chev{flex:0 0 auto;color:var(--chev);font-weight:700;transition:transform .15s ease}
+.bskill-row.open .bskill-chev{transform:rotate(90deg)}
+.bskill-detail[hidden]{display:none}
+.bskill-detail{padding:2px 2px 12px 34px;border-bottom:1px solid var(--line)}
+.bskill-grp{font-size:var(--fs-support);margin:6px 0;line-height:1.4}
+.bskill-grp-lab{display:inline-block;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-size:11px;margin-right:6px}
+.bskill-names{color:var(--text)}
+.bskill-names.none{color:var(--muted)}
+</style>
+<div class='ch-byskill' id='chBySkill' hidden>
+<p class='lb-scope'>This week by skill</p>
+<div class='bskill-list' id='chBySkillList'></div>
+</div>
+
 <style>
 /* Coach billing card on the coach home (web + native). Rendered by
    window.thwapRenderBilling() from /api/billing?action=screen; hidden until a
@@ -2801,6 +2828,30 @@ window.thwapActiveTeam=function(coach){
             top.appendChild(el);
           });
         }
+        /* This week by skill: per-discipline participation (iq + pass included),
+           tap a row to see who has and hasn't trained it this week. */
+        (function(){
+          var wrap=document.getElementById('chBySkill'), listEl=document.getElementById('chBySkillList');
+          if(!wrap||!listEl) return;
+          function esc(x){ return String(x==null?'':x).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+          function nm(m){ return ((m.firstName||m.playerId||'')+(m.lastName?(' '+m.lastName.charAt(0)+'.'):'')).trim(); }
+          var SKILLS=[['stick','🏒','Hands'],['shoot','🥅','Shooting'],['dryland','⚡','Dryland'],['iq','🧠','Hockey IQ'],['pass','🎯','Passing']];
+          var N=j.members.length;
+          listEl.innerHTML='';
+          SKILLS.forEach(function(s){
+            var did=[], not=[];
+            j.members.forEach(function(m){ var w=m.week||{}; if((w[s[0]]||0)>0) did.push(nm(m)); else not.push(nm(m)); });
+            var pct=N?Math.round(100*did.length/N):0;
+            var row=document.createElement('button'); row.type='button'; row.className='bskill-row';
+            row.innerHTML="<span class='bskill-ico'>"+s[1]+"</span><span class='bskill-lab'>"+s[2]+"</span><span class='bskill-bar'><span class='bskill-fill' style='width:"+pct+"%'></span></span><span class='bskill-count'>"+did.length+"/"+N+"</span><span class='bskill-chev'>›</span>";
+            var detail=document.createElement('div'); detail.className='bskill-detail'; detail.hidden=true;
+            detail.innerHTML="<div class='bskill-grp'><span class='bskill-grp-lab'>Not yet</span><span class='bskill-names"+(not.length?'':' none')+"'>"+(not.length?not.map(esc).join(', '):'everyone did it')+"</span></div>"+
+                             "<div class='bskill-grp'><span class='bskill-grp-lab'>Did it</span><span class='bskill-names"+(did.length?'':' none')+"'>"+(did.length?did.map(esc).join(', '):'nobody yet')+"</span></div>";
+            row.addEventListener('click',function(){ var open=row.classList.toggle('open'); detail.hidden=!open; });
+            listEl.appendChild(row); listEl.appendChild(detail);
+          });
+          wrap.hidden=false;
+        })();
       })
       .catch(function(){});
   })();
