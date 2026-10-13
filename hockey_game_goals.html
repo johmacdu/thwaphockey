@@ -1484,7 +1484,7 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
       <div class="teach-body">
         <h2>Teach Dad and Mom one thing.</h2>
         <p>Notice something from the ice they couldn&#x2019;t see from the stands. Check this when you do it, then type what you saw.</p>
-        <textarea class="teach-note" id="pgTeach" maxlength="280" placeholder="What did you teach them?"></textarea>
+        <textarea class="teach-note" id="pgTeach" maxlength="280" placeholder="What did you teach them?" aria-label="What did you teach them?"></textarea>
       </div>
     </section>
 
@@ -1833,6 +1833,8 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
     if(teachNoteEl) teachNoteEl.addEventListener('input',function(){ var d=document.getElementById('pgLogDone'); if(d) d.hidden=true; syncLogBtn(); });
   })();
   function puckRain(){
+    // Respect reduced motion: skip the falling-puck celebration entirely.
+    try{ if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches) return; }catch(e){}
     var layer=document.createElement('div'); layer.className='puck-rain';
     for(var i=0;i<40;i++){
       var p=document.createElement('div'); p.className='puck';
