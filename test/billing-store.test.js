@@ -5,7 +5,7 @@
 // season and the active-only-within-that-season rule, case-insensitive team
 // codes, rejection of bad season keys, and the status summary.
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { FakeRedis } from './fakeRedis.js';
 
 const fake = new FakeRedis();
@@ -24,6 +24,8 @@ const {
   recordSubscription,
   subscriptionCustomer,
   subscriptionActive,
+  billingEnforced,
+  isGated,
 } = await import('../lib/billing_store.js');
 
 const FW = new Date('2025-10-15T19:00:00Z'); // Fall/Winter 2025
@@ -31,6 +33,7 @@ const SP = new Date('2026-04-15T19:00:00Z'); // Spring 2026
 
 describe('billing_store', () => {
   beforeEach(() => { fake.map.clear(); });
+  afterEach(() => { delete process.env.BILLING_ENFORCED; });
 
   it('a brand-new team is empty and inactive', async () => {
     expect(await getTeamBilling('RANGER10U')).toEqual({ free: false, seasons: {}, subscription: null });
@@ -133,5 +136,71 @@ describe('billing_store', () => {
     expect(free).toMatchObject({ free: true, active: true });
     expect(free.paid).toEqual([]);
     expect(free.buyable.map((s) => s.key)).toEqual(['fw-2025', 'sp-2026', 'os-2026']);
+  });
+
+  it('recordPayment is idempotent: re-paying a season overwrites the receipt, never duplicates', async () => {
+    await recordPayment('RP', 'fw-2025', { amountCents: 35000, stripeSession: 'cs_1' });
+    await recordPayment('RP', 'fw-2025', { amountCents: 35000, stripeSession: 'cs_2' });
+    const b = await getTeamBilling('RP');
+    expect(Object.keys(b.seasons)).toEqual(['fw-2025']);
+    expect(b.seasons['fw-2025'].stripeSession).toBe('cs_2');
+  });
+
+  it('recordSubscription records cancel-at-period-end and surfaces it on the screen (still active until period end)', async () => {
+    await recordSubscription('CPE', {
+      id: 's', customer: 'c', status: 'active', priceId: 'price_annual',
+      amountCents: 50000, currentPeriodEnd: '2026-10-01T00:00:00.000Z', cancelAtPeriodEnd: true,
+    });
+    const scr = await billingScreen('CPE', FW);
+    expect(scr.subscribed).toBe(true); // active through the end of the paid period
+    expect(scr.subscription).toMatchObject({ status: 'active', cancelAtPeriodEnd: true });
+  });
+});
+
+// The go-live safety property: the whole paywall is dead code until the operator
+// flips BILLING_ENFORCED=1. isGated() must be a complete no-op before then, and
+// must never gate a covered team (free/comp, paid season, or active subscription)
+// after.
+describe('enforcement gate (no-op until BILLING_ENFORCED=1)', () => {
+  beforeEach(() => { fake.map.clear(); });
+  afterEach(() => { delete process.env.BILLING_ENFORCED; });
+
+  it('billingEnforced() is true ONLY for the exact string "1"', () => {
+    delete process.env.BILLING_ENFORCED;
+    expect(billingEnforced()).toBe(false);
+    for (const v of ['0', 'true', 'yes', 'on', '']) {
+      process.env.BILLING_ENFORCED = v;
+      expect(billingEnforced()).toBe(false);
+    }
+    process.env.BILLING_ENFORCED = '1';
+    expect(billingEnforced()).toBe(true);
+  });
+
+  it('isGated() is false while enforcement is OFF, even for a genuinely unpaid team', async () => {
+    delete process.env.BILLING_ENFORCED;
+    expect(await isTeamActive('UNPAID', FW)).toBe(false); // genuinely inactive...
+    expect(await isGated('UNPAID', FW)).toBe(false); // ...but never gated pre-go-live
+  });
+
+  it('isGated() gates an unpaid team only once enforcement is ON', async () => {
+    process.env.BILLING_ENFORCED = '1';
+    expect(await isGated('UNPAID', FW)).toBe(true);
+  });
+
+  it('isGated() never gates a covered team (free, paid season, or active subscription), even when enforced', async () => {
+    process.env.BILLING_ENFORCED = '1';
+    await setTeamFree('FREE', true);
+    await recordPayment('PAID', 'fw-2025', { amountCents: 35000 });
+    await recordSubscription('SUBB', { id: 's', customer: 'c', status: 'active' });
+    expect(await isGated('FREE', FW)).toBe(false);
+    expect(await isGated('PAID', FW)).toBe(false);
+    expect(await isGated('SUBB', FW)).toBe(false);
+  });
+
+  it('billingStatus echoes enforced + gated flags straight from the env', async () => {
+    process.env.BILLING_ENFORCED = '1';
+    expect(await billingStatus('NADA', FW)).toMatchObject({ enforced: true, active: false, gated: true });
+    delete process.env.BILLING_ENFORCED;
+    expect(await billingStatus('NADA', FW)).toMatchObject({ enforced: false, active: false, gated: false });
   });
 });

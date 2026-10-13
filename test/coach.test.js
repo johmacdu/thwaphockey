@@ -391,6 +391,27 @@ describe('team weekly plan', () => {
     expect(res.body).toMatchObject({ gated: true });
   });
 
+  it('does NOT gate set-plan while enforcement is OFF, even for an unpaid team (no-op)', async () => {
+    const login = await loginSeedCoach();
+    const token = login.body.token;
+    // Default: BILLING_ENFORCED unset. The seed team has paid nothing, yet the
+    // paywall must stay dead code pre-go-live.
+    const res = makeRes();
+    await _handlers.setPlan(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, plan: { mon: { stick: [] } } }), res);
+    expect(res.statusCode).toBe(200);
+  });
+
+  it('allows set-plan (200) when enforced but the team is comped free', async () => {
+    const login = await loginSeedCoach();
+    const token = login.body.token;
+    fake._seed(`teamBilling:${_seed.SEED_TEAM_CODE}`, { free: true, seasons: {}, subscription: null });
+    process.env.BILLING_ENFORCED = '1';
+    const res = makeRes();
+    await _handlers.setPlan(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, plan: { mon: { stick: [] } } }), res);
+    delete process.env.BILLING_ENFORCED;
+    expect(res.statusCode).toBe(200);
+  });
+
   it('get-plan carries the team billing status for the client paywall', async () => {
     await loginSeedCoach();
     const res = makeRes();
