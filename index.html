@@ -1750,7 +1750,7 @@ body.login-locked{overflow:hidden}
    the in-app toggle. Status bar stays owned by thwapSyncStatusBar. No-op on iOS (no
    nav bar) and on the plain web. Prefers the local SystemBars plugin, falls back to a
    NavigationBar plugin (colour+buttons, older Android) or a window.thwapSetNavBar bridge. */
-window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof C.isNativePlatform==='function'&&C.isNativePlatform()))return;var go=function(){try{var P=(window.Capacitor&&window.Capacitor.Plugins)||{};if(P.SystemBars&&P.SystemBars.setStyle){P.SystemBars.setStyle({dark:!!dark});}else if(P.NavigationBar&&P.NavigationBar.setColor){P.NavigationBar.setColor({color:dark?'#101A14':'#F3F7F4',darkButtons:!dark});}else if(window.thwapSetNavBar){window.thwapSetNavBar(!!dark);}}catch(e3){}};var P0=C.Plugins||{};if(P0.SystemBars||P0.NavigationBar||window.thwapSetNavBar)go();else setTimeout(go,300);}catch(e){}};</script>
+window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof C.isNativePlatform==='function'&&C.isNativePlatform()))return;var bg=dark?'#101A14':'#F3F7F4';var go=function(){try{var P=(window.Capacitor&&window.Capacitor.Plugins)||{};if(P.SystemBars&&P.SystemBars.setStyle){P.SystemBars.setStyle({dark:!!dark,bg:bg});}else if(P.NavigationBar&&P.NavigationBar.setColor){P.NavigationBar.setColor({color:bg,darkButtons:!dark});}else if(window.thwapSetNavBar){window.thwapSetNavBar(!!dark);}}catch(e3){}};var P0=C.Plugins||{};if(P0.SystemBars||P0.NavigationBar||window.thwapSetNavBar)go();else setTimeout(go,300);}catch(e){}};</script>
 <script>
 /* Unified drawn icon set, NATIVE-ONLY. On the website the product keeps its
    emoji; in the installed apps emoji are swapped for one consistent monoline
