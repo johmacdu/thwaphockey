@@ -18,7 +18,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const html = readFileSync(resolve(__dirname, '../index.html'), 'utf8');
 
 // Budget caps (DAY_MIN=15, DAY_COUNT below) -> most drills that still fit 15 min.
-const MAX_FOR = { stick: 3, shoot: 5, dryland: 6 };
+const MAX_FOR = { stick: 3, shoot: 3, dryland: 3 };
 
 async function bootCoach() {
   const dom = new JSDOM(html, {

@@ -24,6 +24,7 @@ vi.mock('@upstash/redis', () => ({
 process.env.SESSION_TOKEN_SECRET = 'test-session-secret';
 const { default: handler } = await import('../api/done.js');
 const { mintSession } = await import('../lib/session_store.js');
+const { currentSeasonKey } = await import('../lib/seasons.js');
 
 function makeRes() {
   return {
@@ -73,6 +74,29 @@ describe('done handler: seasonal-billing gate', () => {
     // No membership record for this player -> teamCode indeterminate -> allow.
     fake.map.delete('teamMember:lewie');
     process.env.BILLING_ENFORCED = '1';
+    const res = makeRes();
+    const token = mintSession('lewie', 'parent@example.com');
+    await handler(postAs({ player: 'lewie', discipline: 'stick' }, token), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.player.stick).toBe(1);
+  });
+
+  it('allows the mark write (200) when enforced but the team is COMPED free (Lewie)', async () => {
+    // The real go-live path for Lewie's squad: comped free, so enforcement never
+    // locks his players out even once the paywall is live.
+    process.env.BILLING_ENFORCED = '1';
+    fake._seed('teamBilling:RANGERS10U', { free: true, seasons: {}, subscription: null });
+    const res = makeRes();
+    const token = mintSession('lewie', 'parent@example.com');
+    await handler(postAs({ player: 'lewie', discipline: 'stick' }, token), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.player.stick).toBe(1);
+  });
+
+  it('allows the mark write (200) when enforced and the CURRENT season is paid', async () => {
+    process.env.BILLING_ENFORCED = '1';
+    const season = currentSeasonKey(new Date());
+    fake._seed('teamBilling:RANGERS10U', { free: false, seasons: { [season]: { paidAt: new Date().toISOString(), amountCents: 35000 } }, subscription: null });
     const res = makeRes();
     const token = mintSession('lewie', 'parent@example.com');
     await handler(postAs({ player: 'lewie', discipline: 'stick' }, token), res);

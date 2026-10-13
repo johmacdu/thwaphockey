@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Oswald:wght@500;600;700&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;0,6..12,800;0,6..12,900&family=Luckiest+Guy&display=swap' rel='stylesheet'><title>Thwap Hockey</title><link rel='icon' type='image/png' href='logo-64.png'><link rel='apple-touch-icon' href='logo-180.png'><style>
+<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Oswald:wght@500;600;700&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;0,6..12,800;0,6..12,900&family=Luckiest+Guy&display=swap' rel='stylesheet'><title>Thwap Hockey</title><link rel='icon' type='image/png' href='logo-64.png'><link rel='apple-touch-icon' href='logo-180.png'><style>
 /* Keyboard focus ring: visible for keyboard/switch users, invisible to mouse taps.
    Uses a lime core with a dark ink halo so it reads on both light and dark themes. */
 a:focus-visible,button:focus-visible,[tabindex]:focus-visible,.row:focus-visible,.nav:focus-visible,.segbtn:focus-visible,.pl-tot:focus-visible{outline:3px solid var(--lime);outline-offset:2px;box-shadow:0 0 0 5px rgba(21,34,27,.55);border-radius:12px}
@@ -441,6 +441,11 @@ body:not(.viewing-teammate) .cardctl-mine:not([hidden]){display:flex;justify-con
   .cheerpop.in .cheerpop-sass,.cheerpop.out .cheerpop-sass{animation:none}
   .cheerpop.in .cheerpop-sass{transform:translateX(4vw)}
   .cheerpop-bubble{transition:none}
+  /* Still the stride-frame cycling (the .out frames loop infinitely) and hold the
+     resting pose so Sass does not skate in place under reduced motion. */
+  .cheerpop .cheerpop-frame{animation:none!important}
+  .cheerpop .cheerpop-frame.fa{opacity:1}
+  .cheerpop .cheerpop-frame.fm,.cheerpop .cheerpop-frame.fb{opacity:0}
 }
 /* holographic sheen driven by --sheen (0..1) */
 .cardface::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.28) 47%,rgba(185,240,107,.22) 52%,rgba(117,184,255,.22) 57%,transparent 72%);transform:translateX(calc((var(--sheen,.5) - .5) * 160%));mix-blend-mode:screen;opacity:.7}
@@ -2003,7 +2008,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 </section>
 
 <section id='coachhome' class='page'>
-<div class='topbar'><div class='brand'><img class='brandlogo' src='sass-logo.webp' alt='Thwap Hockey' width='80' height='68'><img class='brandmark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span></nav><button type='button' class='kebab' id='kebabC' aria-label='Explore pages' aria-expanded='false'>Explore</button><div class='kebabmenu' id='kebabMenuC' hidden><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a><a href='#progress'>Standings</a></span></div></div>
+<div class='topbar'><div class='brand'><img class='brandlogo' src='sass-logo.webp' alt='Thwap Hockey' width='80' height='68'><img class='brandmark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks' aria-label='Coach quick links'><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span></nav><button type='button' class='kebab' id='kebabC' aria-label='Explore pages' aria-expanded='false'>Explore</button><div class='kebabmenu' id='kebabMenuC' hidden><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a><a href='#progress'>Standings</a></span></div></div>
 <div class='hero'><div class='kicker' id='chKicker'>Jr Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='chProfileName' aria-label='Edit your coach profile'>Coach</button> <span class='hero-wave' role='img' aria-label='Waving hand'>👋</span></h1><p>Here is where your team is at.</p></div>
 
 <div class='lb-teamzone'>
@@ -2117,15 +2122,15 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 </div>
 <div class='rfilter' id='rFilter' hidden><span id='rFilterLab'></span> <button type='button' class='rfilter-clear' id='rFilterClear'>Clear</button></div>
 <div class='roster-playershead'><div class='coachcoaches-h'>Players</div><button type='button' class='roster-edit roster-coachonly' id='rosterEdit' aria-label='Edit players'><span aria-hidden='true'>&#9998;</span></button><div class='roster-editactions roster-coachonly' id='rosterEditActions' hidden><button type='button' class='roster-editcancel' id='rosterEditCancel'>Cancel</button><button type='button' class='roster-editdone' id='rosterEditDone'>Done</button></div><button type='button' class='roster-edit roster-playeronly' id='rosterEditSelf' aria-label='Edit my details'><span aria-hidden='true'>&#9998;</span></button><div class='roster-editactions roster-playeronly' id='rosterEditSelfActions' hidden><button type='button' class='roster-editcancel' id='rosterEditSelfCancel'>Cancel</button><button type='button' class='roster-editdone' id='rosterEditSelfDone'>Done</button></div></div>
-<div class='roster' id='roster-grid'><a href='#player' class='pcard' data-name='Alder Reese' data-pid='alder'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>71</span><span class='pcard-bnname'>Alder</span></div></a><a href='#player' class='pcard' data-name='Brooklyn Coughlan' data-pid='brooklyn'><div class='pcard-bignum pos-def'><span class='pcard-bn'>92</span><span class='pcard-bnname'>Brooklyn</span></div></a><a href='#player' class='pcard' data-name='Dawson Huffman' data-pid='dawson'><div class='pcard-bignum pos-def'><span class='pcard-bn'>19</span><span class='pcard-bnname'>Dawson</span></div></a><a href='#player' class='pcard' data-name='Dominic Cinque' data-pid='dominic'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>98</span><span class='pcard-bnname'>Dominic</span></div></a><a href='#player' class='pcard' data-name='Eugene Kuhn' data-pid='eugene'><div class='pcard-bignum pos-def'><span class='pcard-bn'>3</span><span class='pcard-bnname'>Eugene</span></div></a><a href='#player' class='pcard' data-name='Evan Ewing' data-pid='evan'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>13</span><span class='pcard-bnname'>Evan</span></div></a><a href='#player' class='pcard' data-name='Greyson Wertz' data-pid='greyson'><div class='pcard-bignum pos-def'><span class='pcard-bn'>32</span><span class='pcard-bnname'>Greyson</span></div></a><a href='#player' class='pcard' data-name='Issac Moyer' data-pid='issac'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>53</span><span class='pcard-bnname'>Issac</span></div></a><a href='#player' class='pcard' data-name='Johnny Eraman' data-pid='johnny'><div class='pcard-bignum pos-goalie'><span class='pcard-bn'>1</span><span class='pcard-bnname'>Johnny</span></div></a><a href='#player' class='pcard' data-name='Joziah Soto' data-pid='joziah'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>59</span><span class='pcard-bnname'>Joziah</span></div></a><a href='#player' class='pcard pcard-you-card' data-name='Lewie' data-pid='lewie'><img class='pcard-cardart' src='cards/lewie_photo.png' alt='Lewie'></a><a href='#player' class='pcard' data-name='Liam Delatorre' data-pid='liam'><div class='pcard-bignum pos-def'><span class='pcard-bn'>29</span><span class='pcard-bnname'>Liam</span></div></a><a href='#player' class='pcard' data-name='Maddux Jones' data-pid='maddux'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>18</span><span class='pcard-bnname'>Maddux</span></div></a><a href='#player' class='pcard' data-name='Oliver Moyer' data-pid='oliver'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>90</span><span class='pcard-bnname'>Oliver</span></div></a><a href='#player' class='pcard' data-name='Teddy Diss' data-pid='teddy'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>11</span><span class='pcard-bnname'>Teddy</span></div></a><a href='#player' class='pcard' data-name='William Schnell' data-pid='william'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>16</span><span class='pcard-bnname'>William</span></div></a></div>
+<div class='roster' id='roster-grid'><a href='#player' class='pcard' data-name='Alder Reese' data-pid='alder'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>71</span><span class='pcard-bnname'>Alder</span></div></a><a href='#player' class='pcard' data-name='Brooklyn Coughlan' data-pid='brooklyn'><div class='pcard-bignum pos-def'><span class='pcard-bn'>92</span><span class='pcard-bnname'>Brooklyn</span></div></a><a href='#player' class='pcard' data-name='Dawson Huffman' data-pid='dawson'><div class='pcard-bignum pos-def'><span class='pcard-bn'>19</span><span class='pcard-bnname'>Dawson</span></div></a><a href='#player' class='pcard' data-name='Dominic Cinque' data-pid='dominic'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>98</span><span class='pcard-bnname'>Dominic</span></div></a><a href='#player' class='pcard' data-name='Eugene Kuhn' data-pid='eugene'><div class='pcard-bignum pos-def'><span class='pcard-bn'>3</span><span class='pcard-bnname'>Eugene</span></div></a><a href='#player' class='pcard' data-name='Evan Ewing' data-pid='evan'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>13</span><span class='pcard-bnname'>Evan</span></div></a><a href='#player' class='pcard' data-name='Greyson Wertz' data-pid='greyson'><div class='pcard-bignum pos-def'><span class='pcard-bn'>32</span><span class='pcard-bnname'>Greyson</span></div></a><a href='#player' class='pcard' data-name='Issac Moyer' data-pid='issac'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>53</span><span class='pcard-bnname'>Issac</span></div></a><a href='#player' class='pcard' data-name='Johnny Eraman' data-pid='johnny'><div class='pcard-bignum pos-goalie'><span class='pcard-bn'>1</span><span class='pcard-bnname'>Johnny</span></div></a><a href='#player' class='pcard' data-name='Joziah Soto' data-pid='joziah'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>59</span><span class='pcard-bnname'>Joziah</span></div></a><a href='#player' class='pcard pcard-you-card' data-name='Lewie' data-pid='lewie'><img class='pcard-cardart' src='cards/lewie_photo.png' alt='Lewie' loading='lazy' decoding='async'></a><a href='#player' class='pcard' data-name='Liam Delatorre' data-pid='liam'><div class='pcard-bignum pos-def'><span class='pcard-bn'>29</span><span class='pcard-bnname'>Liam</span></div></a><a href='#player' class='pcard' data-name='Maddux Jones' data-pid='maddux'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>18</span><span class='pcard-bnname'>Maddux</span></div></a><a href='#player' class='pcard' data-name='Oliver Moyer' data-pid='oliver'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>90</span><span class='pcard-bnname'>Oliver</span></div></a><a href='#player' class='pcard' data-name='Teddy Diss' data-pid='teddy'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>11</span><span class='pcard-bnname'>Teddy</span></div></a><a href='#player' class='pcard' data-name='William Schnell' data-pid='william'><div class='pcard-bignum pos-fwd'><span class='pcard-bn'>16</span><span class='pcard-bnname'>William</span></div></a></div>
 <div class='rsearch-empty' id='rsearchEmpty' hidden></div>
 <div class='pgate' id='switchGate' hidden>
   <form class='pgate-box' id='switchGateForm' novalidate>
     <button type='button' class='pgate-x' id='switchGateX' aria-label='Close'>&#215;</button>
     <h2 class='pgate-h' id='switchGateTitle'>Switch player</h2>
     <p class='pgate-p'>Ask a parent. Enter their email and the player code.</p>
-    <input class='pgate-in' id='switchEmail' type='email' inputmode='email' autocomplete='email' placeholder='parent@email.com' required>
-    <input class='pgate-in' id='switchCode' type='text' inputmode='numeric' autocomplete='off' placeholder='Player code' required>
+    <input class='pgate-in' id='switchEmail' type='email' inputmode='email' autocomplete='email' placeholder='parent@email.com' aria-label='Parent email' required>
+    <input class='pgate-in' id='switchCode' type='text' inputmode='numeric' autocomplete='off' placeholder='Player code' aria-label='Player code' required>
     <button type='submit' class='pgate-go'>Switch player</button>
     <p class='pgate-msg' id='switchErr' aria-live='polite'></p>
   </form>
@@ -2184,15 +2189,15 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
     <h2 class='pgate-h'>Add assistant coach</h2>
     <p class='pgate-p'>They sign in with their email and this password.</p>
     <button type='button' class='cprof-photo' id='asPhoto'>
-      <img id='asImg' alt='' hidden>
+      <img id='asImg' alt='' loading='lazy' decoding='async' hidden>
       <span id='asInitials' class='cprof-initials'>+</span>
       <span class='cprof-photo-lab'>Photo</span>
     </button>
-    <input type='file' id='asFile' accept='image/*' hidden>
-    <input class='pgate-in' id='asFirst' type='text' autocomplete='off' placeholder='First name' required>
-    <input class='pgate-in' id='asLast' type='text' autocomplete='off' placeholder='Last name'>
-    <input class='pgate-in' id='asEmail' type='email' inputmode='email' autocomplete='off' placeholder='assistant@email.com' required>
-    <input class='pgate-in' id='asPw' type='text' autocomplete='off' placeholder='Password (they use to log in)' required>
+    <input type='file' id='asFile' accept='image/*' aria-label='Assistant coach photo' hidden>
+    <input class='pgate-in' id='asFirst' type='text' autocomplete='off' placeholder='First name' aria-label='Assistant first name' required>
+    <input class='pgate-in' id='asLast' type='text' autocomplete='off' placeholder='Last name' aria-label='Assistant last name'>
+    <input class='pgate-in' id='asEmail' type='email' inputmode='email' autocomplete='off' placeholder='assistant@email.com' aria-label='Assistant email' required>
+    <input class='pgate-in' id='asPw' type='text' autocomplete='off' placeholder='Password (they use to log in)' aria-label='Assistant password' required>
     <button type='submit' class='pgate-go' id='asSave'>Add assistant</button>
     <p class='pgate-msg' id='asMsg' aria-live='polite'></p>
   </form>
@@ -2215,19 +2220,19 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
     <h2 class='pgate-h'>Your coach profile</h2>
     <p class='pgate-p'>Your name and photo help the team know who is coaching.</p>
     <button type='button' class='cprof-photo' id='coachProfilePhoto'>
-      <img id='coachProfileImg' alt='' hidden>
+      <img id='coachProfileImg' alt='' loading='lazy' decoding='async' hidden>
       <span id='coachProfileInitials' class='cprof-initials'>+</span>
       <span class='cprof-photo-lab'>Add photo</span>
     </button>
-    <input type='file' id='coachProfileFile' accept='image/*' hidden>
+    <input type='file' id='coachProfileFile' accept='image/*' aria-label='Coach photo' hidden>
     <label class='sheet-lab'>Coach name<input class='pgate-in' id='coachProfileName' type='text' autocomplete='name' placeholder='Coach name' required></label>
     <button type='submit' class='pgate-go'>Save profile</button>
     <p class='pgate-msg' id='coachProfileMsg' aria-live='polite'></p>
     <div class='cprof-pw'>
       <div class='cprof-pw-h'>Team password</div>
       <p class='pgate-p'>This is the password the team uses to reach the coach view. Change it here.</p>
-      <input class='pgate-in' id='coachPwCurrent' type='password' autocomplete='current-password' placeholder='Current password'>
-      <input class='pgate-in' id='coachPwNew' type='password' autocomplete='new-password' placeholder='New password (6+ characters)'>
+      <input class='pgate-in' id='coachPwCurrent' type='password' autocomplete='current-password' placeholder='Current password' aria-label='Current team password'>
+      <input class='pgate-in' id='coachPwNew' type='password' autocomplete='new-password' placeholder='New password (6+ characters)' aria-label='New team password'>
       <button type='button' class='sugg-send' id='coachPwSave'>Update password</button>
       <p class='pgate-msg' id='coachPwMsg' aria-live='polite'></p>
     </div>
@@ -2297,7 +2302,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
   <div class='tgoal-wrap' id='tgoalBox'>
     <div class='tgoal-h'>Team goal for the game</div>
     <p class='tgoal-p'>One team focus, shown in every player&rsquo;s Game Day plan. Leave it empty to give players all three picks.</p>
-    <input class='tgoal-in' id='tgoalIn' type='text' maxlength='80' placeholder='e.g. Talk on the ice'>
+    <input class='tgoal-in' id='tgoalIn' type='text' maxlength='80' placeholder='e.g. Talk on the ice' aria-label='Team goal for the game'>
     <button type='button' class='tgoal-save' id='tgoalSave'>Save team goal</button>
     <p class='tgoal-done' id='tgoalDone' hidden>Saved! Your team sees this.</p>
   </div>
@@ -2313,7 +2318,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
       <button type='button' class='sugg-cat' data-cat='shoot'>🥅 Shoot</button>
       <button type='button' class='sugg-cat' data-cat='dryland'>⚡ Dryland</button>
     </div>
-    <input class='sugg-in' id='suggIn' type='text' maxlength='140' placeholder='Drill name and a one-line description'>
+    <input class='sugg-in' id='suggIn' type='text' maxlength='140' placeholder='Drill name and a one-line description' aria-label='Drill name and description'>
     <button type='button' class='sugg-send' id='suggSend' disabled>Send to Thwap</button>
     <p class='sugg-done' id='suggDone' hidden>Thanks! Thwap will review it.</p>
   </div>
@@ -2411,7 +2416,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
     <span class='idp-view-chev' id='idpEdit'>&rsaquo;</span>
   </button>
   <div class='idp-edit-row' id='idpEditRow' hidden>
-    <input class='idp-in' id='idpInput' type='text' maxlength='120' placeholder='e.g. Work on backward skating'>
+    <input class='idp-in' id='idpInput' type='text' maxlength='120' placeholder='e.g. Work on backward skating' aria-label='Your focus this month'>
     <div class='idp-presets-lab'>Coach skill presets (10U), tap to use</div>
     <div class='idp-presets' id='idpPresets'></div>
     <div class='idp-btns'>
@@ -2445,7 +2450,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
   <div class='prof-group'>
     <div class='prof-grouplab'>Your card</div>
     <button type='button' class='prof-card-btn' id='profCardBtn'>
-      <img class='prof-card-art' id='profCardArt' src='logo-64.png' alt=''>
+      <img class='prof-card-art' id='profCardArt' src='logo-64.png' alt='' loading='lazy' decoding='async'>
       <span class='prof-card-txt'><span class='prof-card-nm' id='profCardNm'>Your player card</span><span class='prof-card-sub'>Open your card</span></span>
     </button>
     <a class='prof-row' href='#roster' id='profInfo'><span class='prof-rowlab'>Player info</span><span class='prof-rowchev'>&rsaquo;</span></a>
@@ -2528,6 +2533,92 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
     <a class='prof-row' href='#privacy' id='profPrivacy'><span class='prof-rowlab'>Privacy Policy</span><span class='prof-rowchev'>&rsaquo;</span></a>
     <a class='prof-row' href='#terms' id='profTerms'><span class='prof-rowlab'>Terms of Use</span><span class='prof-rowchev'>&rsaquo;</span></a>
   </div>
+  <!-- ============================================================
+       NATIVE DIAGNOSTICS (native-only, read-only). One self-contained
+       block: markup + scoped CSS + JS, kept contiguous to minimise
+       merge conflicts with other in-flight index.html edits. The group
+       carries .prof-group-native, so the plain web hides it (native-css
+       rule) and the script below never populates it off-native. A dev
+       style, collapsible panel under the Profile tab that reports, at a
+       glance, platform, the is-native / is-ios / is-android flags, which
+       Capacitor plugins are present, the current theme, the safe-area
+       insets and the selected app icon, so recently merged native work
+       can be confirmed on a device. See docs/native-verification.md.
+       ============================================================ -->
+  <div class='prof-group prof-group-native' id='diagGroup'>
+    <div class='prof-grouplab'>Developer</div>
+    <button type='button' class='prof-row' id='diagToggle' aria-expanded='false' aria-controls='diagPanel'><span class='prof-rowlab'>Native diagnostics</span><span class='prof-rowchev' id='diagChev'>&rsaquo;</span></button>
+    <div id='diagPanel' class='diag-panel' hidden></div>
+    <div id='diagSafeProbe' aria-hidden='true'></div>
+  </div>
+  <style>
+  #profile #diagPanel{padding:4px 2px 2px}
+  #profile .diag-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid var(--line);font-size:var(--fs-support)}
+  #profile .diag-row:last-child{border-bottom:0}
+  #profile .diag-k{color:var(--muted);font-weight:800}
+  #profile .diag-v{color:var(--text);font-weight:800;text-align:right;word-break:break-word}
+  #profile .diag-v.no{color:var(--muted);font-weight:700}
+  #profile #diagChev{display:inline-block;transition:transform .15s ease}
+  #profile #diagGroup.open #diagChev{transform:rotate(90deg)}
+  #profile #diagSafeProbe{position:absolute;left:-9999px;top:0;width:0;height:0;visibility:hidden;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+  </style>
+  <script>
+  /* Native diagnostics: a read-only snapshot, populated only inside the app
+     shell (body.is-native). Inert on the web: the group is display:none via
+     .prof-group-native and this script returns early off-native (empty panel). */
+  (function(){
+    var group=document.getElementById('diagGroup');
+    var panel=document.getElementById('diagPanel');
+    var toggle=document.getElementById('diagToggle');
+    if(!group||!panel||!toggle) return;
+    function isNative(){ try{ return document.body.classList.contains('is-native'); }catch(e){ return false; } }
+    function row(k,v,cls){
+      var r=document.createElement('div'); r.className='diag-row';
+      var ke=document.createElement('span'); ke.className='diag-k'; ke.textContent=k;
+      var ve=document.createElement('span'); ve.className='diag-v'+(cls?(' '+cls):''); ve.textContent=v;
+      r.appendChild(ke); r.appendChild(ve); return r;
+    }
+    function boolRow(k,v){ return row(k, v?'Yes':'No', v?'yes':'no'); }
+    window.thwapRenderNativeDiag=function(){
+      if(!isNative()) return;  /* web: leave the panel empty and hidden */
+      var C=window.Capacitor||{};
+      var plat=''; try{ plat=(C.getPlatform&&C.getPlatform())||''; }catch(e){}
+      var P=(C&&C.Plugins)||{};
+      var root=document.documentElement, body=document.body;
+      var hasIcon=!!(P.DynamicAppIcon||P.CapacitorDynamicIcon||P.AppIcon);
+      var theme=''; try{ theme=localStorage.getItem('thwapTheme')||''; }catch(e){}
+      if(!theme) theme=root.getAttribute('data-theme')||'';
+      var icon='(none)';
+      try{ var raw=localStorage.getItem('thwapAppIcon'); if(raw){ var o=JSON.parse(raw); icon=(o&&(o.iosKey||o.androidAlias))?(o.iosKey||o.androidAlias):raw; } }catch(e){}
+      var saTop='0px', saBot='0px';
+      try{ var probe=document.getElementById('diagSafeProbe'); if(probe){ var cs=getComputedStyle(probe); saTop=cs.paddingTop||'0px'; saBot=cs.paddingBottom||'0px'; } }catch(e){}
+      panel.innerHTML='';
+      panel.appendChild(row('Platform', plat||'(unknown)'));
+      panel.appendChild(boolRow('is-native', body.classList.contains('is-native')));
+      panel.appendChild(boolRow('is-ios', body.classList.contains('is-ios')||root.classList.contains('is-ios')));
+      panel.appendChild(boolRow('is-android', body.classList.contains('is-android')||root.classList.contains('is-android')));
+      panel.appendChild(boolRow('StatusBar plugin', !!P.StatusBar));
+      panel.appendChild(boolRow('SystemBars plugin', !!P.SystemBars));
+      panel.appendChild(boolRow('App icon plugin', hasIcon));
+      panel.appendChild(boolRow('Haptics plugin', !!P.Haptics));
+      panel.appendChild(boolRow('Share plugin', !!P.Share));
+      panel.appendChild(row('Theme', theme||'(unset)'));
+      panel.appendChild(row('Safe area top', saTop));
+      panel.appendChild(row('Safe area bottom', saBot));
+      panel.appendChild(row('App icon', icon));
+    };
+    toggle.addEventListener('click',function(){
+      var open=group.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', open?'true':'false');
+      if(open){ window.thwapRenderNativeDiag(); panel.hidden=false; }
+      else { panel.hidden=true; }
+    });
+    /* Populate once on load inside the app so the view is ready (and testable)
+       even before it is expanded; stays empty and hidden on the web. */
+    function init(){ if(isNative()) window.thwapRenderNativeDiag(); }
+    if(document.readyState!=='loading') init(); else document.addEventListener('DOMContentLoaded', init);
+  })();
+  </script>
   <div class='prof-group'>
     <button type='button' class='prof-row prof-signout' id='profSignout'><span class='prof-rowlab prof-signout'>Sign out</span></button>
   </div>
@@ -2536,7 +2627,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 <section id='home'>
 <div class='wipnote' id='wipNote'>👋 Welcome to the Thwap beta. We're adding new training videos and features every week.</div>
 <script>(function(){try{fetch('/api/coach?action=beta',{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){if(d&&d.betaUntil){var until=Date.parse(d.betaUntil);if(!isNaN(until)&&Date.now()>until){var n=document.getElementById('wipNote');if(n)n.hidden=true;}}}).catch(function(){});}catch(e){}})();</script>
-<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.webp' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks'><span class='nav-authed'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a></span><span class='nav-guest'><a class='link' href='/about' id='navAbout'>About Thwap</a><span class='topsep'>|</span><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Explore pages' aria-expanded='false'>Explore</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#stickers'>Stickers</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a></span><span class='nav-guest'><a href='/about' id='navAboutK'>About Thwap</a><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
+<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.webp' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks' aria-label='Quick links'><span class='nav-authed'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a></span><span class='nav-guest'><a class='link' href='/about' id='navAbout'>About Thwap</a><span class='topsep'>|</span><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Explore pages' aria-expanded='false'>Explore</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#stickers'>Stickers</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a></span><span class='nav-guest'><a href='/about' id='navAboutK'>About Thwap</a><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
 <div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>there</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><script>(function(){try{var authed=/(?:^|; )thwapAuth=/.test(document.cookie);var p=localStorage.getItem('bfPlayer');var b=document.getElementById('homePlayer');if(b){if(p&&authed){b.textContent=p.trim().split(/\s+/)[0];}else{b.classList.add('needpick');}}}catch(e){}
 /* Team plan: hide the category rows the coach turned OFF for today. On any failure
    or unset plan, stick + shoot stay shown (the built-in rotation), and dryland
@@ -3507,7 +3598,7 @@ window.thwapActiveTeam=function(coach){
      each category, so per-drill time = DAY_MIN / DAY_COUNT[cat] (the player's day
      set is ~DAY_MIN total). Coach stays under DAY_MIN for the day/category. */
   var DAY_MIN=15;
-  var DAY_COUNT={stick:3, shoot:5, dryland:6, iq:1};
+  var DAY_COUNT={stick:3, shoot:3, dryland:3, iq:1};
   function perDrillMin(cat){ var n=DAY_COUNT[cat]||6; return DAY_MIN/n; }
   function estMin(cat,count){ return Math.round(count*perDrillMin(cat)); }
   /* Largest number of drills that still fits the ~15 min/category day budget. */
@@ -4374,7 +4465,7 @@ function render(){
      exactly those (no trim). Otherwise fall back to the built-in WORKOUTS day
      through trimDrills (which anchors the run and varies day to day). */
   var coachNames=(window.thwapCoachDrillNames&&window.thwapCoachDrillNames('dryland'))||[];
-  var coachDrills=coachNames.length?(window.thwapDrylandFromNames?window.thwapDrylandFromNames(coachNames):[]):[];
+  var coachDrills=coachNames.length?(window.thwapDrylandFromNames?window.thwapDrylandFromNames(coachNames):[]).slice(0,3):[];
   var drills=coachDrills.length?coachDrills:trimDrills(w.drills);
   var dateEl=document.getElementById('drylandDate');
   if(dateEl){var ov=(window.thwapDateOverride&&window.thwapDateOverride());var d=(window.thwapToday?window.thwapToday():new Date());var o={weekday:'long',month:'long',day:'numeric'};if(ov!==null&&ov!==undefined)o.timeZone='UTC';dateEl.textContent=d.toLocaleDateString(undefined,o);}
@@ -4454,7 +4545,7 @@ function render(){
     try{
       if(!(window.thwapIsRestDay&&window.thwapIsRestDay())){
         var _cn=(window.thwapCoachDrillNames&&window.thwapCoachDrillNames('dryland'))||[];
-        var _cd=_cn.length?(window.thwapDrylandFromNames?window.thwapDrylandFromNames(_cn):[]):[];
+        var _cd=_cn.length?(window.thwapDrylandFromNames?window.thwapDrylandFromNames(_cn):[]).slice(0,3):[];
         var drills=_cd.length?_cd:(trimDrills(w.drills)||[]);
         var all=drills.length>0; for(var i=0;i<drills.length;i++){ if(!p[i]){ all=false; break; } }
         if(all && window.thwapSetDoneSignal) window.thwapSetDoneSignal('dryland',true);
@@ -5108,8 +5199,8 @@ function registerThwapMenu(){
       </div>
       <div class='cardctl-mine' id='cardCtlMine' hidden><span class='cardctl-mine-count' id='cbMineCount'></span></div>
       <div class='cardctl-row' id='cardCtlMain'>
-        <button type='button' class='cardbtn' id='cardThemeBtn'></button>
-        <button type='button' class='cardbtn' id='cardImageBtn'></button>
+        <button type='button' class='cardbtn' id='cardThemeBtn' aria-label='Change card theme'></button>
+        <button type='button' class='cardbtn' id='cardImageBtn' aria-label='Change card image'></button>
       </div>
       <div class='cardctl-theme' id='cardCtlTheme' hidden>
         <div class='cardthemes' id='cardThemes' role='group' aria-label='Card color'></div>
@@ -7344,7 +7435,7 @@ function render(){
     return;
   }
   var today=PASS_DAYS[passDayI()];
-  var PASS=today;   /* passing runs twice a week, so each session shows its full set */
+  var PASS=today.slice(0,3);   /* passing runs twice a week; cap each session at 3 drills/day max */
   var prog=loadP();
   list.innerHTML='';
   /* Passing now has recorded Sass narration (drill/pass_NN/setup across every
