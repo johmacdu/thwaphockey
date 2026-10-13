@@ -1439,6 +1439,15 @@ body.is-native.is-android .pe-confirm-go:active{
    non-navigating element), grouped under plain labels. --- */
 body:not(.is-native) #profile.page:target{display:none}  /* web: never routable */
 body:not(.is-native) #profile .prof-row-native{display:none}  /* native-only: Notifications toggle needs the Capacitor push plugin */
+body:not(.is-native) #profile .prof-group-native{display:none}  /* native-only: alternate app icons are an iOS/Android feature */
+#profile .appicon-hint{font-size:var(--fs-support);color:var(--muted);margin:0 0 12px;padding:0 2px}
+#profile .appicon-skill{margin:0 0 14px}
+#profile .appicon-skilllab{font-size:var(--fs-support);font-weight:900;color:var(--text);margin:0 0 6px;padding:0 2px}
+#profile .appicon-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+#profile .appicon-cell{position:relative;border:0;background:none;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;aspect-ratio:1;border-radius:16px}
+#profile .appicon-cell img{display:block;width:100%;height:100%;border-radius:16px}
+#profile .appicon-cell.sel{outline:3px solid var(--lime);outline-offset:2px}
+#profile .appicon-cell.sel::after{content:'\2713';position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:var(--lime);color:var(--ink,#15221B);font-size:13px;font-weight:900;line-height:20px;text-align:center}
 #profile .prof-wrap{max-width:520px;margin:0 auto}
 #profile .prof-group{margin:0 0 22px}
 #profile .prof-grouplab{font-size:var(--fs-eyebrow);font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;padding:0 2px}
@@ -2356,6 +2365,59 @@ body.login-locked{overflow:hidden}
       <button class='themetoggle' id='profNotif' type='button' aria-pressed='false' aria-label='Turn notifications on or off'><span class='ttico' id='profNotifIco'>🔕</span><span class='ttlabel' id='profNotifLabel'>Off</span></button>
     </div>
   </div>
+  <div class='prof-group prof-group-native' id='appIconGroup'>
+    <div class='prof-grouplab'>App icon</div>
+    <p class='appicon-hint'>Pick which Sass shows on your home screen.</p>
+    <div id='appIconGrid'></div>
+  </div>
+  <script>
+  /* Selectable app icon: pick a skill + color; the choice is remembered and, in
+     the native app, applied via the alternate-icon bridge (see app-icons/README).
+     On the web it is an inert preview -- the installed icon can only change in the
+     native shell. Data-driven from app-icons/manifest.json. */
+  (function(){
+    var grid=document.getElementById('appIconGrid'); if(!grid) return;
+    var KEY='thwapAppIcon';
+    function current(){ try{ return JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ return null; } }
+    function applyNative(ic){
+      try{
+        var cap=window.Capacitor, plat=(cap&&cap.getPlatform&&cap.getPlatform())||'web';
+        /* iOS wants the CFBundleAlternateIcons key; Android wants the activity-alias name. */
+        var name=(plat==='android'?ic.androidAlias:ic.iosKey);
+        var p=cap&&cap.Plugins&&(cap.Plugins.DynamicAppIcon||cap.Plugins.CapacitorDynamicIcon||cap.Plugins.AppIcon);
+        if(p&&p.change){ p.change({name:name}); return true; }
+        if(p&&p.setIcon){ p.setIcon({name:name}); return true; }
+        if(window.thwapSetNativeIcon){ window.thwapSetNativeIcon(name, {ios:ic.iosKey, android:ic.androidAlias, platform:plat}); return true; }
+      }catch(e){}
+      return false;  /* no native bridge (web, or plugin not installed): choice is still remembered */
+    }
+    window.thwapRenderAppIconPicker=function(m){
+      var cur=current(); grid.innerHTML='';
+      (m.skills||[]).forEach(function(sk){
+        var wrap=document.createElement('div'); wrap.className='appicon-skill';
+        var lab=document.createElement('div'); lab.className='appicon-skilllab'; lab.textContent=sk.label; wrap.appendChild(lab);
+        var row=document.createElement('div'); row.className='appicon-row';
+        (m.colors||[]).forEach(function(col){
+          var ic=(m.icons||[]).filter(function(x){return x.skill===sk.id&&x.color===col.id;})[0]; if(!ic) return;
+          var b=document.createElement('button'); b.type='button'; b.className='appicon-cell'; b.setAttribute('aria-label',sk.label+' '+col.label); b.setAttribute('data-ios',ic.iosKey);
+          if(cur&&cur.skill===sk.id&&cur.color===col.id) b.classList.add('sel');
+          b.innerHTML="<img src='"+ic.preview+"' alt='' loading='lazy'>";
+          b.addEventListener('click',function(){
+            grid.querySelectorAll('.appicon-cell.sel').forEach(function(e){e.classList.remove('sel');});
+            b.classList.add('sel');
+            try{ localStorage.setItem(KEY, JSON.stringify({skill:sk.id,color:col.id,iosKey:ic.iosKey,androidAlias:ic.androidAlias})); }catch(e){}
+            applyNative(ic);
+          });
+          row.appendChild(b);
+        });
+        wrap.appendChild(row); grid.appendChild(wrap);
+      });
+    };
+    fetch('/app-icons/manifest.json',{cache:'no-store'}).then(function(r){ return r.ok?r.json():null; })
+      .then(function(m){ if(m&&m.icons) window.thwapRenderAppIconPicker(m); else { var g=document.getElementById('appIconGroup'); if(g) g.hidden=true; } })
+      .catch(function(){ var g=document.getElementById('appIconGroup'); if(g) g.hidden=true; });
+  })();
+  </script>
   <div class='prof-group'>
     <div class='prof-grouplab'>About</div>
     <a class='prof-row' href='/about'><span class='prof-rowlab'>About Thwap</span><span class='prof-rowchev'>&rsaquo;</span></a>
