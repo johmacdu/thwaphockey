@@ -1,6 +1,8 @@
 package com.thwaphockey.app;
 
 import android.app.Activity;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.view.Window;
 
 import androidx.core.view.WindowInsetsControllerCompat;
@@ -23,6 +25,11 @@ import com.getcapacitor.annotation.CapacitorPlugin;
  * the @capacitor/status-bar plugin (thwapSyncStatusBar), so the two don't fight.
  *
  * Light bars (dark icons) when the app is in LIGHT theme; dark bars (light icons) in dark.
+ *
+ * Optionally also sets the native WINDOW background to the themed colour ("bg"). The
+ * window background only shows before/behind the web view (a warm reload or resume), where
+ * the config value is the dark launch colour -- syncing it keeps a light-theme reload from
+ * flashing dark. Cold launch still shows the dark splash, which is intended.
  */
 @CapacitorPlugin(name = "SystemBars")
 public class SystemBarsPlugin extends Plugin {
@@ -30,6 +37,7 @@ public class SystemBarsPlugin extends Plugin {
     @PluginMethod()
     public void setStyle(PluginCall call) {
         final boolean dark = Boolean.TRUE.equals(call.getBoolean("dark", false));
+        final String bg = call.getString("bg");
         final Activity activity = getActivity();
         if (activity == null) {
             call.reject("No activity available to theme the system bars");
@@ -42,6 +50,10 @@ public class SystemBarsPlugin extends Plugin {
                     new WindowInsetsControllerCompat(window, window.getDecorView());
                 // dark icons on the nav bar only when the app is in LIGHT theme
                 controller.setAppearanceLightNavigationBars(!dark);
+                // keep the window backdrop (behind the web view) on-theme too
+                if (bg != null && !bg.isEmpty()) {
+                    window.setBackgroundDrawable(new ColorDrawable(Color.parseColor(bg)));
+                }
             } catch (Exception ignored) {
                 // Non-fatal: on very old devices / unusual window states we simply
                 // leave the system default nav-bar appearance in place.

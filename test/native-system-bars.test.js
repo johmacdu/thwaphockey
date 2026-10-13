@@ -54,7 +54,7 @@ describe('Native system-bar theming', () => {
     const { calls } = await boot(true);
     // the theme bootstrap applies the saved theme (default light) on load
     expect(calls.nav.length).toBeGreaterThan(0);
-    expect(calls.nav.at(-1)).toEqual({ dark: false });
+    expect(calls.nav.at(-1)).toEqual({ dark: false, bg: '#F3F7F4' }); // light bars + themed window backdrop
   });
 
   it('flips the nav bar to dark when the theme toggles to dark', async () => {
@@ -64,7 +64,7 @@ describe('Native system-bar theming', () => {
     expect(toggle).toBeTruthy();
     toggle.dispatchEvent(new win.Event('click', { bubbles: true }));
     expect(calls.nav.length).toBeGreaterThan(before);
-    expect(calls.nav.at(-1)).toEqual({ dark: true });
+    expect(calls.nav.at(-1)).toEqual({ dark: true, bg: '#101A14' }); // dark bars + themed window backdrop
   });
 
   it('is inert on the plain web (no Capacitor): defined, no throw, no bridge calls', async () => {

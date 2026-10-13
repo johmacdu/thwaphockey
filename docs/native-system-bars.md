@@ -32,8 +32,12 @@ every toggle, so the bars always track the current theme. The two are deliberate
 the nav-bar work does **not** touch #400's status-bar code.
 
 - **`SystemBarsPlugin.java`** — a local Capacitor plugin (same pattern as `AppIconPlugin`),
-  registered in `MainActivity`. `setStyle({dark})` flips the nav-bar icon appearance via
-  `WindowInsetsControllerCompat.setAppearanceLightNavigationBars(!dark)`. No npm dependency.
+  registered in `MainActivity`. `setStyle({dark, bg})` flips the nav-bar icon appearance via
+  `WindowInsetsControllerCompat.setAppearanceLightNavigationBars(!dark)`, and sets the native
+  **window background** to the themed `bg` colour. The window backdrop only shows before/behind
+  the web view (a warm reload or resume), where the config value is the dark launch colour, so
+  syncing it keeps a light-theme reload from flashing dark. Cold launch still shows the dark
+  splash, which is intended. No npm dependency.
 - **`thwapSyncNavBar(dark)`** (in `index.html`) prefers `Capacitor.Plugins.SystemBars`, and
   falls back to a third-party `NavigationBar` plugin (`setColor({color, darkButtons})`, useful
   on pre-15 Android where colour still applies) or a `window.thwapSetNavBar` bridge. No-op on
