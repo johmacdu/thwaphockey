@@ -26,6 +26,9 @@
       "launchShowDuration": 3000,
       "backgroundColor": "#0b0f14",
       "showSpinner": false
+    },
+    "StatusBar": {
+      "overlaysWebView": false
     }
   }
 }
