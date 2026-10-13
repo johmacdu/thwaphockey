@@ -203,4 +203,17 @@ describe('enforcement gate (no-op until BILLING_ENFORCED=1)', () => {
     delete process.env.BILLING_ENFORCED;
     expect(await billingStatus('NADA', FW)).toMatchObject({ enforced: false, active: false, gated: false });
   });
+
+  it('fails OPEN: a store-read failure never gates a team, even when enforced', async () => {
+    process.env.BILLING_ENFORCED = '1';
+    // a genuinely unpaid team still gates when the read succeeds (paywall works)
+    expect(await isGated('UNPAID2', FW)).toBe(true);
+    // but if the Redis read THROWS, an unreadable record counts as active...
+    vi.spyOn(fake, 'get').mockRejectedValueOnce(new Error('redis down'));
+    expect(await isTeamActive('UNPAID2', FW)).toBe(true);
+    // ...so a blip never wrongly locks a real team out
+    vi.spyOn(fake, 'get').mockRejectedValueOnce(new Error('redis down'));
+    expect(await isGated('UNPAID2', FW)).toBe(false);
+    vi.restoreAllMocks();
+  });
 });
