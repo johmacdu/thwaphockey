@@ -3507,7 +3507,7 @@ window.thwapActiveTeam=function(coach){
      each category, so per-drill time = DAY_MIN / DAY_COUNT[cat] (the player's day
      set is ~DAY_MIN total). Coach stays under DAY_MIN for the day/category. */
   var DAY_MIN=15;
-  var DAY_COUNT={stick:3, shoot:5, dryland:3, iq:1};
+  var DAY_COUNT={stick:3, shoot:3, dryland:3, iq:1};
   function perDrillMin(cat){ var n=DAY_COUNT[cat]||6; return DAY_MIN/n; }
   function estMin(cat,count){ return Math.round(count*perDrillMin(cat)); }
   /* Largest number of drills that still fits the ~15 min/category day budget. */
