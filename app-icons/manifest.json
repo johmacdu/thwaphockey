@@ -1,0 +1,229 @@
+{
+  "skills": [
+    {
+      "id": "hands",
+      "label": "Hands"
+    },
+    {
+      "id": "shooting",
+      "label": "Shooting"
+    },
+    {
+      "id": "passing",
+      "label": "Passing"
+    },
+    {
+      "id": "dryland",
+      "label": "Dryland"
+    }
+  ],
+  "colors": [
+    {
+      "id": "green",
+      "label": "Green",
+      "hex": "#8FD65E"
+    },
+    {
+      "id": "blue",
+      "label": "Blue",
+      "hex": "#75B8FF"
+    },
+    {
+      "id": "orange",
+      "label": "Orange",
+      "hex": "#FF9D4D"
+    },
+    {
+      "id": "purple",
+      "label": "Purple",
+      "hex": "#7A5AF0"
+    },
+    {
+      "id": "pink",
+      "label": "Pink",
+      "hex": "#EC4E9B"
+    }
+  ],
+  "icons": [
+    {
+      "skill": "hands",
+      "skillLabel": "Hands",
+      "color": "green",
+      "colorLabel": "Green",
+      "hex": "#8FD65E",
+      "iosKey": "AltIcon-HandsGreen",
+      "preview": "app-icons/preview/hands-green.png"
+    },
+    {
+      "skill": "hands",
+      "skillLabel": "Hands",
+      "color": "blue",
+      "colorLabel": "Blue",
+      "hex": "#75B8FF",
+      "iosKey": "AltIcon-HandsBlue",
+      "preview": "app-icons/preview/hands-blue.png"
+    },
+    {
+      "skill": "hands",
+      "skillLabel": "Hands",
+      "color": "orange",
+      "colorLabel": "Orange",
+      "hex": "#FF9D4D",
+      "iosKey": "AltIcon-HandsOrange",
+      "preview": "app-icons/preview/hands-orange.png"
+    },
+    {
+      "skill": "hands",
+      "skillLabel": "Hands",
+      "color": "purple",
+      "colorLabel": "Purple",
+      "hex": "#7A5AF0",
+      "iosKey": "AltIcon-HandsPurple",
+      "preview": "app-icons/preview/hands-purple.png"
+    },
+    {
+      "skill": "hands",
+      "skillLabel": "Hands",
+      "color": "pink",
+      "colorLabel": "Pink",
+      "hex": "#EC4E9B",
+      "iosKey": "AltIcon-HandsPink",
+      "preview": "app-icons/preview/hands-pink.png"
+    },
+    {
+      "skill": "shooting",
+      "skillLabel": "Shooting",
+      "color": "green",
+      "colorLabel": "Green",
+      "hex": "#8FD65E",
+      "iosKey": "AltIcon-ShootingGreen",
+      "preview": "app-icons/preview/shooting-green.png"
+    },
+    {
+      "skill": "shooting",
+      "skillLabel": "Shooting",
+      "color": "blue",
+      "colorLabel": "Blue",
+      "hex": "#75B8FF",
+      "iosKey": "AltIcon-ShootingBlue",
+      "preview": "app-icons/preview/shooting-blue.png"
+    },
+    {
+      "skill": "shooting",
+      "skillLabel": "Shooting",
+      "color": "orange",
+      "colorLabel": "Orange",
+      "hex": "#FF9D4D",
+      "iosKey": "AltIcon-ShootingOrange",
+      "preview": "app-icons/preview/shooting-orange.png"
+    },
+    {
+      "skill": "shooting",
+      "skillLabel": "Shooting",
+      "color": "purple",
+      "colorLabel": "Purple",
+      "hex": "#7A5AF0",
+      "iosKey": "AltIcon-ShootingPurple",
+      "preview": "app-icons/preview/shooting-purple.png"
+    },
+    {
+      "skill": "shooting",
+      "skillLabel": "Shooting",
+      "color": "pink",
+      "colorLabel": "Pink",
+      "hex": "#EC4E9B",
+      "iosKey": "AltIcon-ShootingPink",
+      "preview": "app-icons/preview/shooting-pink.png"
+    },
+    {
+      "skill": "passing",
+      "skillLabel": "Passing",
+      "color": "green",
+      "colorLabel": "Green",
+      "hex": "#8FD65E",
+      "iosKey": "AltIcon-PassingGreen",
+      "preview": "app-icons/preview/passing-green.png"
+    },
+    {
+      "skill": "passing",
+      "skillLabel": "Passing",
+      "color": "blue",
+      "colorLabel": "Blue",
+      "hex": "#75B8FF",
+      "iosKey": "AltIcon-PassingBlue",
+      "preview": "app-icons/preview/passing-blue.png"
+    },
+    {
+      "skill": "passing",
+      "skillLabel": "Passing",
+      "color": "orange",
+      "colorLabel": "Orange",
+      "hex": "#FF9D4D",
+      "iosKey": "AltIcon-PassingOrange",
+      "preview": "app-icons/preview/passing-orange.png"
+    },
+    {
+      "skill": "passing",
+      "skillLabel": "Passing",
+      "color": "purple",
+      "colorLabel": "Purple",
+      "hex": "#7A5AF0",
+      "iosKey": "AltIcon-PassingPurple",
+      "preview": "app-icons/preview/passing-purple.png"
+    },
+    {
+      "skill": "passing",
+      "skillLabel": "Passing",
+      "color": "pink",
+      "colorLabel": "Pink",
+      "hex": "#EC4E9B",
+      "iosKey": "AltIcon-PassingPink",
+      "preview": "app-icons/preview/passing-pink.png"
+    },
+    {
+      "skill": "dryland",
+      "skillLabel": "Dryland",
+      "color": "green",
+      "colorLabel": "Green",
+      "hex": "#8FD65E",
+      "iosKey": "AltIcon-DrylandGreen",
+      "preview": "app-icons/preview/dryland-green.png"
+    },
+    {
+      "skill": "dryland",
+      "skillLabel": "Dryland",
+      "color": "blue",
+      "colorLabel": "Blue",
+      "hex": "#75B8FF",
+      "iosKey": "AltIcon-DrylandBlue",
+      "preview": "app-icons/preview/dryland-blue.png"
+    },
+    {
+      "skill": "dryland",
+      "skillLabel": "Dryland",
+      "color": "orange",
+      "colorLabel": "Orange",
+      "hex": "#FF9D4D",
+      "iosKey": "AltIcon-DrylandOrange",
+      "preview": "app-icons/preview/dryland-orange.png"
+    },
+    {
+      "skill": "dryland",
+      "skillLabel": "Dryland",
+      "color": "purple",
+      "colorLabel": "Purple",
+      "hex": "#7A5AF0",
+      "iosKey": "AltIcon-DrylandPurple",
+      "preview": "app-icons/preview/dryland-purple.png"
+    },
+    {
+      "skill": "dryland",
+      "skillLabel": "Dryland",
+      "color": "pink",
+      "colorLabel": "Pink",
+      "hex": "#EC4E9B",
+      "iosKey": "AltIcon-DrylandPink",
+      "preview": "app-icons/preview/dryland-pink.png"
+    }
+  ]
+}
