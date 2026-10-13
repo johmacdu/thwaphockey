@@ -93,17 +93,6 @@ describe('coach billing screen (coach home card)', () => {
     expect(buy.textContent).toBe('Pay now');
   });
 
-  it('a success return from Stripe shows a confirmation line', async () => {
-    const win = await boot({
-      ok: true, free: false, enforced: true, currentSeason: 'fw-2025', active: true,
-      paid: [{ key: 'fw-2025', label: 'Fall/Winter 2025-26', paidAt: '2025-10-01T12:00:00.000Z', amountCents: 35000, comp: false, current: true }],
-      buyable: [],
-    }, { search: '?billing=success' });
-    const msg = win.document.getElementById('chbMsg');
-    expect(msg).toBeTruthy();
-    expect(msg.textContent).toContain('Payment received');
-  });
-
   it('hides the card when the screen call fails (missing team)', async () => {
     const win = await boot(null);
     expect(win.document.getElementById('chBilling').hidden).toBe(true);
@@ -144,5 +133,42 @@ describe('coach billing screen (coach home card)', () => {
     const card = win.document.getElementById('chBillingCard');
     expect(card.textContent).toContain('Auto-renew is off');
     expect(card.querySelector('#chbManage')).toBeTruthy();
+  });
+
+  it('shows the "You\'re all set" confirmation when returning from a successful checkout', async () => {
+    const win = await boot({
+      ok: true, free: false, enforced: true, currentSeason: 'fw-2025', active: true,
+      paid: [{ key: 'fw-2025', label: 'Fall/Winter 2025-26', paidAt: '2025-10-01T12:00:00.000Z', amountCents: 35000, comp: false, current: true }],
+      buyable: [],
+    }, { search: '?billing=success' });
+    const card = win.document.getElementById('chBillingCard');
+    expect(card.querySelector('.chb-success')).toBeTruthy();
+    expect(card.textContent).toContain("You're all set");
+  });
+
+  it('warns the coach when the annual renewal is near (within 14 days)', async () => {
+    const soon = new Date(Date.now() + 5 * 86400000).toISOString();
+    const win = await boot({
+      ok: true, free: false, enforced: true, currentSeason: 'fw-2025', active: true,
+      subscribed: true,
+      subscription: { status: 'active', renewsAt: soon, cancelAtPeriodEnd: false, amountCents: 50000 },
+      paid: [], buyable: [],
+    });
+    const card = win.document.getElementById('chBillingCard');
+    expect(card.textContent).toContain('Heads up');
+    expect(card.textContent).toContain('$500 renewal');
+  });
+
+  it('does not warn when the renewal is far off', async () => {
+    const far = new Date(Date.now() + 200 * 86400000).toISOString();
+    const win = await boot({
+      ok: true, free: false, enforced: true, currentSeason: 'fw-2025', active: true,
+      subscribed: true,
+      subscription: { status: 'active', renewsAt: far, cancelAtPeriodEnd: false, amountCents: 50000 },
+      paid: [], buyable: [],
+    });
+    const card = win.document.getElementById('chBillingCard');
+    expect(card.textContent).not.toContain('Heads up');
+    expect(card.textContent).toContain('Next charge');
   });
 });
