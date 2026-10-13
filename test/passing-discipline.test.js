@@ -53,10 +53,13 @@ describe('Passing discipline (live)', () => {
     expect(names).toContain('Timed Accuracy Circuit');
   });
 
-  it('renders the full session on the #pass page (names, theme, steps)', async () => {
+  it('renders at most 3 drills/day on the #pass page (names, theme, steps)', async () => {
     const win = await boot(4); // Monday -> session 1
     const rows = win.document.querySelectorAll('#passList .exrow');
-    expect(rows.length).toBe(5);
+    // Capped at 3/day, matching the same cap now applied to Dryland. The session
+    // itself still holds 5 drills (see the data-integrity test above); only the
+    // day's rendered checklist is capped.
+    expect(rows.length).toBe(3);
     const text = win.document.getElementById('passList').textContent;
     expect(text).toContain('Target Net Passing');
     expect(text).toContain('Fundamental Accuracy'); // theme

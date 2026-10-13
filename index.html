@@ -3507,7 +3507,7 @@ window.thwapActiveTeam=function(coach){
      each category, so per-drill time = DAY_MIN / DAY_COUNT[cat] (the player's day
      set is ~DAY_MIN total). Coach stays under DAY_MIN for the day/category. */
   var DAY_MIN=15;
-  var DAY_COUNT={stick:3, shoot:5, dryland:6, iq:1};
+  var DAY_COUNT={stick:3, shoot:5, dryland:3, iq:1};
   function perDrillMin(cat){ var n=DAY_COUNT[cat]||6; return DAY_MIN/n; }
   function estMin(cat,count){ return Math.round(count*perDrillMin(cat)); }
   /* Largest number of drills that still fits the ~15 min/category day budget. */
@@ -4374,7 +4374,7 @@ function render(){
      exactly those (no trim). Otherwise fall back to the built-in WORKOUTS day
      through trimDrills (which anchors the run and varies day to day). */
   var coachNames=(window.thwapCoachDrillNames&&window.thwapCoachDrillNames('dryland'))||[];
-  var coachDrills=coachNames.length?(window.thwapDrylandFromNames?window.thwapDrylandFromNames(coachNames):[]):[];
+  var coachDrills=coachNames.length?(window.thwapDrylandFromNames?window.thwapDrylandFromNames(coachNames):[]).slice(0,3):[];
   var drills=coachDrills.length?coachDrills:trimDrills(w.drills);
   var dateEl=document.getElementById('drylandDate');
   if(dateEl){var ov=(window.thwapDateOverride&&window.thwapDateOverride());var d=(window.thwapToday?window.thwapToday():new Date());var o={weekday:'long',month:'long',day:'numeric'};if(ov!==null&&ov!==undefined)o.timeZone='UTC';dateEl.textContent=d.toLocaleDateString(undefined,o);}
@@ -4454,7 +4454,7 @@ function render(){
     try{
       if(!(window.thwapIsRestDay&&window.thwapIsRestDay())){
         var _cn=(window.thwapCoachDrillNames&&window.thwapCoachDrillNames('dryland'))||[];
-        var _cd=_cn.length?(window.thwapDrylandFromNames?window.thwapDrylandFromNames(_cn):[]):[];
+        var _cd=_cn.length?(window.thwapDrylandFromNames?window.thwapDrylandFromNames(_cn):[]).slice(0,3):[];
         var drills=_cd.length?_cd:(trimDrills(w.drills)||[]);
         var all=drills.length>0; for(var i=0;i<drills.length;i++){ if(!p[i]){ all=false; break; } }
         if(all && window.thwapSetDoneSignal) window.thwapSetDoneSignal('dryland',true);
@@ -7344,7 +7344,7 @@ function render(){
     return;
   }
   var today=PASS_DAYS[passDayI()];
-  var PASS=today;   /* passing runs twice a week, so each session shows its full set */
+  var PASS=today.slice(0,3);   /* passing runs twice a week; cap each session at 3 drills/day max */
   var prog=loadP();
   list.innerHTML='';
   /* Passing now has recorded Sass narration (drill/pass_NN/setup across every

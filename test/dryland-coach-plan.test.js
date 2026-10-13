@@ -2,7 +2,8 @@
 //
 // Guards that the player dryland page FOLLOWS THE COACH:
 //   - When the coach plan picks specific dryland drill names for today's weekday,
-//     the dryland list shows EXACTLY those drills (no WORKOUTS rotation / trim).
+//     the dryland list shows those drills, CAPPED AT 3/day (even if an older saved
+//     plan has more -- the picker itself now also refuses past 3 going forward).
 //   - When the coach left dryland unspecified (empty / absent), it FALLS BACK to
 //     the built-in WORKOUTS day through trimDrills, which anchors the 20-Minute
 //     Run on a conditioning day.
@@ -58,13 +59,24 @@ function drylandNames(win) {
 }
 
 describe('Dryland follows the coach plan when he picks drills', () => {
-  it('shows EXACTLY the coach-picked dryland drills (no trim) when the plan has them', async () => {
+  it('shows EXACTLY the coach-picked dryland drills (no reorder) when the plan has 3 or fewer', async () => {
     // Coach picked three specific dryland drills for today.
     const picked = ['20-Minute Run', 'Box Jumps', 'Plank with Shoulder Taps'];
     const dom = await boot(0, { dryland: picked });
     const names = drylandNames(dom.window);
     // exactly the coach's picks, in his order, nothing trimmed or added
     expect(names).toEqual(picked);
+    dom.window.close();
+  });
+
+  it('caps the coach-picked dryland list at 3/day even if an older saved plan has more', async () => {
+    // Simulates a plan saved before the 3-cap existed (the picker previously
+    // allowed up to 6/day for dryland). Players must never see more than 3.
+    const picked = ['20-Minute Run', 'Box Jumps', "Will's Squares (4-sq Drill)", 'Skater Jumps', 'Reverse Lunges', 'Wall Sit'];
+    const dom = await boot(0, { dryland: picked });
+    const names = drylandNames(dom.window);
+    expect(names.length).toBe(3);
+    expect(names).toEqual(picked.slice(0, 3));
     dom.window.close();
   });
 
