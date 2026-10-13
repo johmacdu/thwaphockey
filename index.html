@@ -2528,6 +2528,92 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
     <a class='prof-row' href='#privacy' id='profPrivacy'><span class='prof-rowlab'>Privacy Policy</span><span class='prof-rowchev'>&rsaquo;</span></a>
     <a class='prof-row' href='#terms' id='profTerms'><span class='prof-rowlab'>Terms of Use</span><span class='prof-rowchev'>&rsaquo;</span></a>
   </div>
+  <!-- ============================================================
+       NATIVE DIAGNOSTICS (native-only, read-only). One self-contained
+       block: markup + scoped CSS + JS, kept contiguous to minimise
+       merge conflicts with other in-flight index.html edits. The group
+       carries .prof-group-native, so the plain web hides it (native-css
+       rule) and the script below never populates it off-native. A dev
+       style, collapsible panel under the Profile tab that reports, at a
+       glance, platform, the is-native / is-ios / is-android flags, which
+       Capacitor plugins are present, the current theme, the safe-area
+       insets and the selected app icon, so recently merged native work
+       can be confirmed on a device. See docs/native-verification.md.
+       ============================================================ -->
+  <div class='prof-group prof-group-native' id='diagGroup'>
+    <div class='prof-grouplab'>Developer</div>
+    <button type='button' class='prof-row' id='diagToggle' aria-expanded='false' aria-controls='diagPanel'><span class='prof-rowlab'>Native diagnostics</span><span class='prof-rowchev' id='diagChev'>&rsaquo;</span></button>
+    <div id='diagPanel' class='diag-panel' hidden></div>
+    <div id='diagSafeProbe' aria-hidden='true'></div>
+  </div>
+  <style>
+  #profile #diagPanel{padding:4px 2px 2px}
+  #profile .diag-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid var(--line);font-size:var(--fs-support)}
+  #profile .diag-row:last-child{border-bottom:0}
+  #profile .diag-k{color:var(--muted);font-weight:800}
+  #profile .diag-v{color:var(--text);font-weight:800;text-align:right;word-break:break-word}
+  #profile .diag-v.no{color:var(--muted);font-weight:700}
+  #profile #diagChev{display:inline-block;transition:transform .15s ease}
+  #profile #diagGroup.open #diagChev{transform:rotate(90deg)}
+  #profile #diagSafeProbe{position:absolute;left:-9999px;top:0;width:0;height:0;visibility:hidden;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+  </style>
+  <script>
+  /* Native diagnostics: a read-only snapshot, populated only inside the app
+     shell (body.is-native). Inert on the web: the group is display:none via
+     .prof-group-native and this script returns early off-native (empty panel). */
+  (function(){
+    var group=document.getElementById('diagGroup');
+    var panel=document.getElementById('diagPanel');
+    var toggle=document.getElementById('diagToggle');
+    if(!group||!panel||!toggle) return;
+    function isNative(){ try{ return document.body.classList.contains('is-native'); }catch(e){ return false; } }
+    function row(k,v,cls){
+      var r=document.createElement('div'); r.className='diag-row';
+      var ke=document.createElement('span'); ke.className='diag-k'; ke.textContent=k;
+      var ve=document.createElement('span'); ve.className='diag-v'+(cls?(' '+cls):''); ve.textContent=v;
+      r.appendChild(ke); r.appendChild(ve); return r;
+    }
+    function boolRow(k,v){ return row(k, v?'Yes':'No', v?'yes':'no'); }
+    window.thwapRenderNativeDiag=function(){
+      if(!isNative()) return;  /* web: leave the panel empty and hidden */
+      var C=window.Capacitor||{};
+      var plat=''; try{ plat=(C.getPlatform&&C.getPlatform())||''; }catch(e){}
+      var P=(C&&C.Plugins)||{};
+      var root=document.documentElement, body=document.body;
+      var hasIcon=!!(P.DynamicAppIcon||P.CapacitorDynamicIcon||P.AppIcon);
+      var theme=''; try{ theme=localStorage.getItem('thwapTheme')||''; }catch(e){}
+      if(!theme) theme=root.getAttribute('data-theme')||'';
+      var icon='(none)';
+      try{ var raw=localStorage.getItem('thwapAppIcon'); if(raw){ var o=JSON.parse(raw); icon=(o&&(o.iosKey||o.androidAlias))?(o.iosKey||o.androidAlias):raw; } }catch(e){}
+      var saTop='0px', saBot='0px';
+      try{ var probe=document.getElementById('diagSafeProbe'); if(probe){ var cs=getComputedStyle(probe); saTop=cs.paddingTop||'0px'; saBot=cs.paddingBottom||'0px'; } }catch(e){}
+      panel.innerHTML='';
+      panel.appendChild(row('Platform', plat||'(unknown)'));
+      panel.appendChild(boolRow('is-native', body.classList.contains('is-native')));
+      panel.appendChild(boolRow('is-ios', body.classList.contains('is-ios')||root.classList.contains('is-ios')));
+      panel.appendChild(boolRow('is-android', body.classList.contains('is-android')||root.classList.contains('is-android')));
+      panel.appendChild(boolRow('StatusBar plugin', !!P.StatusBar));
+      panel.appendChild(boolRow('SystemBars plugin', !!P.SystemBars));
+      panel.appendChild(boolRow('App icon plugin', hasIcon));
+      panel.appendChild(boolRow('Haptics plugin', !!P.Haptics));
+      panel.appendChild(boolRow('Share plugin', !!P.Share));
+      panel.appendChild(row('Theme', theme||'(unset)'));
+      panel.appendChild(row('Safe area top', saTop));
+      panel.appendChild(row('Safe area bottom', saBot));
+      panel.appendChild(row('App icon', icon));
+    };
+    toggle.addEventListener('click',function(){
+      var open=group.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', open?'true':'false');
+      if(open){ window.thwapRenderNativeDiag(); panel.hidden=false; }
+      else { panel.hidden=true; }
+    });
+    /* Populate once on load inside the app so the view is ready (and testable)
+       even before it is expanded; stays empty and hidden on the web. */
+    function init(){ if(isNative()) window.thwapRenderNativeDiag(); }
+    if(document.readyState!=='loading') init(); else document.addEventListener('DOMContentLoaded', init);
+  })();
+  </script>
   <div class='prof-group'>
     <button type='button' class='prof-row prof-signout' id='profSignout'><span class='prof-rowlab prof-signout'>Sign out</span></button>
   </div>
