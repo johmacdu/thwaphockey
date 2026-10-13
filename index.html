@@ -2434,7 +2434,9 @@ body.login-locked{overflow:hidden}
           var ic=(m.icons||[]).filter(function(x){return x.skill===sk.id&&x.color===col.id;})[0]; if(!ic) return;
           var b=document.createElement('button'); b.type='button'; b.className='appicon-cell'; b.setAttribute('aria-label',sk.label+' '+col.label); b.setAttribute('data-ios',ic.iosKey);
           if(cur&&cur.skill===sk.id&&cur.color===col.id) b.classList.add('sel');
-          b.innerHTML="<img src='"+ic.preview+"' alt='' loading='lazy'>";
+          /* preview follows the SYSTEM appearance (what iOS 18 keys the icon off),
+             dark variant when available -- not the in-app theme toggle */
+          b.innerHTML=(ic.darkPreview?"<picture><source srcset='"+ic.darkPreview+"' media='(prefers-color-scheme: dark)'><img src='"+ic.preview+"' alt='' loading='lazy'></picture>":"<img src='"+ic.preview+"' alt='' loading='lazy'>");
           b.addEventListener('click',function(){
             grid.querySelectorAll('.appicon-cell.sel').forEach(function(e){e.classList.remove('sel');});
             b.classList.add('sel');
