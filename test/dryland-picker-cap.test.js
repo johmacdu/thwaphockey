@@ -1,9 +1,10 @@
 // test/dryland-picker-cap.test.js
 //
-// Guards that the coach drill-picker refuses a 4th Dryland pick for one day.
-// Dryland's per-day budget was lowered from 6 to 3 (matching the 3/day cap now
-// applied everywhere, including Passing) so a coach cannot save more than 3
-// dryland drills for a single weekday going forward.
+// Guards that the coach drill-picker refuses a 4th pick for one day in the
+// categories now capped at 3/day: Dryland (lowered 6 -> 3) and Shooting
+// (lowered 5 -> 3). Stickhandling was already 3. So a coach cannot save more
+// than 3 drills for a single weekday in any skill category going forward,
+// matching the 3/day cap applied everywhere (including Passing).
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -63,6 +64,29 @@ describe('Dryland picker budget caps at 3 drills/day', () => {
 
     win.document.getElementById('dpkSave').click();
     const chipAfter = win.document.querySelector('.plancat[data-day="tue"][data-cat="dryland"]');
+    const n = chipAfter.querySelector('.plancat-n');
+    expect(parseInt(n.textContent, 10)).toBe(3);
+  });
+});
+
+describe('Shooting picker budget caps at 3 drills/day', () => {
+  it('refuses a 4th shoot pick for the same day (flashes over, does not add it)', async () => {
+    const win = await bootCoach();
+    const chip = win.document.querySelector('.plancat[data-day="tue"][data-cat="shoot"]');
+    expect(chip).toBeTruthy();
+    chip.click(); // open the drill picker for tue/shoot
+    win.document.getElementById('dpkReset').click(); // start from zero staged picks
+
+    const rows = [...win.document.querySelectorAll('#dpkList .dpk-row')];
+    expect(rows.length).toBeGreaterThanOrEqual(4);
+    for (let i = 0; i < 4; i++) rows[i].querySelector('.dpk-main').click();
+
+    const picked = win.document.querySelectorAll('#dpkList .dpk-row.picked');
+    // Only 3 should have taken; the 4th click is refused by the budget guard.
+    expect(picked.length).toBe(3);
+
+    win.document.getElementById('dpkSave').click();
+    const chipAfter = win.document.querySelector('.plancat[data-day="tue"][data-cat="shoot"]');
     const n = chipAfter.querySelector('.plancat-n');
     expect(parseInt(n.textContent, 10)).toBe(3);
   });
