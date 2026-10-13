@@ -62,12 +62,12 @@ describe('Unified native drawn icon set', () => {
     expect(webWin.thwapGlyph('trophy', '🏆')).toBe('🏆');
   });
 
-  it('exposes a glyph for every emoji site (tab bar, disciplines, lock, trophy, star, team, profile, plan)', async () => {
+  it('exposes a bold colourful glyph for every emoji site (tab bar, disciplines, lock, trophy, star, team, profile, plan)', async () => {
     const win = await boot(true);
     const G = win.THWAP_GLYPHS;
     for (const name of ['stick', 'net', 'bolt', 'brain', 'target', 'star', 'people', 'trophy', 'person', 'clipboard', 'lock']) {
       expect(G[name], name).toContain('<svg');
-      expect(G[name]).toContain("stroke='currentColor'"); // inherits theme colour
+      expect(G[name], `${name} is colourful`).toMatch(/(fill|stroke)='#[0-9A-Fa-f]/); // kid-friendly filled colour, not a mono outline
     }
   });
 
