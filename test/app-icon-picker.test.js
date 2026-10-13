@@ -17,7 +17,7 @@ const MANIFEST = {
   skills: [{ id: 'hands', label: 'Hands' }, { id: 'shooting', label: 'Shooting' }],
   colors: [{ id: 'green', label: 'Green', hex: '#8FD65E' }, { id: 'blue', label: 'Blue', hex: '#75B8FF' }],
   icons: [
-    { skill: 'hands', color: 'green', iosKey: 'AltIcon-HandsGreen', androidAlias: 'IconHandsGreen', preview: 'app-icons/preview/hands-green.png' },
+    { skill: 'hands', color: 'green', iosKey: 'AltIcon-HandsGreen', androidAlias: 'IconHandsGreen', preview: 'app-icons/preview/hands-green.png', darkPreview: 'app-icons/preview/hands-green-dark.png' },
     { skill: 'hands', color: 'blue', iosKey: 'AltIcon-HandsBlue', androidAlias: 'IconHandsBlue', preview: 'app-icons/preview/hands-blue.png' },
     { skill: 'shooting', color: 'green', iosKey: 'AltIcon-ShootingGreen', androidAlias: 'IconShootingGreen', preview: 'app-icons/preview/shooting-green.png' },
     { skill: 'shooting', color: 'blue', iosKey: 'AltIcon-ShootingBlue', androidAlias: 'IconShootingBlue', preview: 'app-icons/preview/shooting-blue.png' },
@@ -63,6 +63,18 @@ describe('Settings app icon picker', () => {
     expect(saved).toMatchObject({ skill: 'shooting', color: 'blue', iosKey: 'AltIcon-ShootingBlue', androidAlias: 'IconShootingBlue' });
     // only one selected at a time
     expect(win.document.querySelectorAll('#appIconGrid .appicon-cell.sel').length).toBe(1);
+  });
+
+  it('previews the dark variant via <picture> + prefers-color-scheme (mirrors the iOS 18 swap)', async () => {
+    const win = await boot();
+    const cell = Array.from(win.document.querySelectorAll('#appIconGrid .appicon-cell'))
+      .find((c) => c.getAttribute('data-ios') === 'AltIcon-HandsGreen');
+    const source = cell.querySelector('picture source');
+    expect(source).toBeTruthy();
+    expect(source.getAttribute('media')).toBe('(prefers-color-scheme: dark)');
+    expect(source.getAttribute('srcset')).toContain('hands-green-dark.png');
+    // light stays the <img> fallback
+    expect(cell.querySelector('picture img').getAttribute('src')).toContain('hands-green.png');
   });
 
   it('routes the Android alias (not the iOS key) to the native bridge on Android', async () => {

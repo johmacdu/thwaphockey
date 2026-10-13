@@ -11,7 +11,8 @@ exported square + fully opaque (no alpha) so iOS applies its own rounded mask.
 
 - `scripts/gen_app_icons.py` — the generator (source of truth for skills + colors).
 - `app-icons/manifest.json` — drives the in-app picker (skills, colors, icon keys, preview paths).
-- `app-icons/preview/<skill>-<color>.png` — 256px previews, served to the web picker.
+- `app-icons/preview/<skill>-<color>.png` (+ `-dark.png`) — 256px light/dark previews for the web picker.
+- `app-icons/ios-appearance/<AltIcon>.appiconset/` — staged iOS 18 appearance sets (light + dark 1024 + `Contents.json`), ready to drop into the asset catalog.
 - `ios/App/App/AltIcon-<Skill><Color>@2x.png` (120) + `@3x.png` (180) — the iOS alternate icons.
 - `ios/App/App/Info.plist` — `CFBundleIcons -> CFBundleAlternateIcons` declares all 20.
 - `android/.../res/mipmap-<density>/ic_<skill>_<color>.png` — legacy square launcher (48-192, for API 23-25).
@@ -46,6 +47,29 @@ which the WebView can't call on its own — add ONE of:
 
 iOS shows a system alert when the icon changes — that's expected OS behavior.
 
+### Light / dark (iOS 18)
+
+Every icon has a light and a dark version (the dark background is the color pulled ~45% toward
+brand ink — a deep version of the same color). iOS 18 shows the matching one with the home-screen
+appearance, automatically, with no extra picker choice.
+
+Delivery is the asset catalog (loose `CFBundleIconFiles` PNGs can't carry appearance variants).
+The generator stages one appearance set per icon in `app-icons/ios-appearance/<AltIcon>.appiconset/`
+(light + dark 1024 + a `Contents.json` with the `luminosity` appearances). To wire it (native-side,
+needs an Xcode build — kept out of this change so it doesn't collide with the alternate-icon switch):
+
+1. Copy the `*.appiconset` folders into `ios/App/App/Assets.xcassets/`.
+2. Build settings: `INCLUDE_ALL_APPICON_ASSETS = YES` and add every set name to
+   `ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES` (the `appearanceSet` values in `manifest.json`,
+   minus `.appiconset`).
+3. `setAlternateIconName` keeps using the same name; iOS then picks light vs dark itself.
+
+The picker preview already auto-switches with the **system** appearance (via a `<picture>` +
+`prefers-color-scheme`), so it mirrors what iOS will show — independent of the in-app theme toggle.
+
+**Android note:** there's no equivalent launcher light/dark swap — Android's dark-mode icon story is
+*themed* (monochrome) icons tinted by the wallpaper, a different mechanism. Left as a later option.
+
 ### Android
 
 The assets and the 20 `<activity-alias>` entries are already generated and in the manifest (all
@@ -67,5 +91,5 @@ note is worth showing. The `MainActivity` keeps its own `LAUNCHER` filter as the
 
 ## Follow-ups (not in this PR)
 
-- **Light / dark variants** (iOS 18 auto-switch): add dark versions via an asset-catalog
-  appearance set. The generator already knows how to make a darkened background.
+- **Tinted (monochrome) iOS icons** — the third iOS 18 appearance; would need a grayscale Sass.
+- **Android themed icons** — a `<monochrome>` adaptive layer for wallpaper-tinted dark-mode launchers.
