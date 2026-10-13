@@ -52,6 +52,7 @@
       "colorLabel": "Green",
       "hex": "#8FD65E",
       "iosKey": "AltIcon-HandsGreen",
+      "androidAlias": "IconHandsGreen",
       "preview": "app-icons/preview/hands-green.png"
     },
     {
@@ -61,6 +62,7 @@
       "colorLabel": "Blue",
       "hex": "#75B8FF",
       "iosKey": "AltIcon-HandsBlue",
+      "androidAlias": "IconHandsBlue",
       "preview": "app-icons/preview/hands-blue.png"
     },
     {
@@ -70,6 +72,7 @@
       "colorLabel": "Orange",
       "hex": "#FF9D4D",
       "iosKey": "AltIcon-HandsOrange",
+      "androidAlias": "IconHandsOrange",
       "preview": "app-icons/preview/hands-orange.png"
     },
     {
@@ -79,6 +82,7 @@
       "colorLabel": "Purple",
       "hex": "#7A5AF0",
       "iosKey": "AltIcon-HandsPurple",
+      "androidAlias": "IconHandsPurple",
       "preview": "app-icons/preview/hands-purple.png"
     },
     {
@@ -88,6 +92,7 @@
       "colorLabel": "Pink",
       "hex": "#EC4E9B",
       "iosKey": "AltIcon-HandsPink",
+      "androidAlias": "IconHandsPink",
       "preview": "app-icons/preview/hands-pink.png"
     },
     {
@@ -97,6 +102,7 @@
       "colorLabel": "Green",
       "hex": "#8FD65E",
       "iosKey": "AltIcon-ShootingGreen",
+      "androidAlias": "IconShootingGreen",
       "preview": "app-icons/preview/shooting-green.png"
     },
     {
@@ -106,6 +112,7 @@
       "colorLabel": "Blue",
       "hex": "#75B8FF",
       "iosKey": "AltIcon-ShootingBlue",
+      "androidAlias": "IconShootingBlue",
       "preview": "app-icons/preview/shooting-blue.png"
     },
     {
@@ -115,6 +122,7 @@
       "colorLabel": "Orange",
       "hex": "#FF9D4D",
       "iosKey": "AltIcon-ShootingOrange",
+      "androidAlias": "IconShootingOrange",
       "preview": "app-icons/preview/shooting-orange.png"
     },
     {
@@ -124,6 +132,7 @@
       "colorLabel": "Purple",
       "hex": "#7A5AF0",
       "iosKey": "AltIcon-ShootingPurple",
+      "androidAlias": "IconShootingPurple",
       "preview": "app-icons/preview/shooting-purple.png"
     },
     {
@@ -133,6 +142,7 @@
       "colorLabel": "Pink",
       "hex": "#EC4E9B",
       "iosKey": "AltIcon-ShootingPink",
+      "androidAlias": "IconShootingPink",
       "preview": "app-icons/preview/shooting-pink.png"
     },
     {
@@ -142,6 +152,7 @@
       "colorLabel": "Green",
       "hex": "#8FD65E",
       "iosKey": "AltIcon-PassingGreen",
+      "androidAlias": "IconPassingGreen",
       "preview": "app-icons/preview/passing-green.png"
     },
     {
@@ -151,6 +162,7 @@
       "colorLabel": "Blue",
       "hex": "#75B8FF",
       "iosKey": "AltIcon-PassingBlue",
+      "androidAlias": "IconPassingBlue",
       "preview": "app-icons/preview/passing-blue.png"
     },
     {
@@ -160,6 +172,7 @@
       "colorLabel": "Orange",
       "hex": "#FF9D4D",
       "iosKey": "AltIcon-PassingOrange",
+      "androidAlias": "IconPassingOrange",
       "preview": "app-icons/preview/passing-orange.png"
     },
     {
@@ -169,6 +182,7 @@
       "colorLabel": "Purple",
       "hex": "#7A5AF0",
       "iosKey": "AltIcon-PassingPurple",
+      "androidAlias": "IconPassingPurple",
       "preview": "app-icons/preview/passing-purple.png"
     },
     {
@@ -178,6 +192,7 @@
       "colorLabel": "Pink",
       "hex": "#EC4E9B",
       "iosKey": "AltIcon-PassingPink",
+      "androidAlias": "IconPassingPink",
       "preview": "app-icons/preview/passing-pink.png"
     },
     {
@@ -187,6 +202,7 @@
       "colorLabel": "Green",
       "hex": "#8FD65E",
       "iosKey": "AltIcon-DrylandGreen",
+      "androidAlias": "IconDrylandGreen",
       "preview": "app-icons/preview/dryland-green.png"
     },
     {
@@ -196,6 +212,7 @@
       "colorLabel": "Blue",
       "hex": "#75B8FF",
       "iosKey": "AltIcon-DrylandBlue",
+      "androidAlias": "IconDrylandBlue",
       "preview": "app-icons/preview/dryland-blue.png"
     },
     {
@@ -205,6 +222,7 @@
       "colorLabel": "Orange",
       "hex": "#FF9D4D",
       "iosKey": "AltIcon-DrylandOrange",
+      "androidAlias": "IconDrylandOrange",
       "preview": "app-icons/preview/dryland-orange.png"
     },
     {
@@ -214,6 +232,7 @@
       "colorLabel": "Purple",
       "hex": "#7A5AF0",
       "iosKey": "AltIcon-DrylandPurple",
+      "androidAlias": "IconDrylandPurple",
       "preview": "app-icons/preview/dryland-purple.png"
     },
     {
@@ -223,6 +242,7 @@
       "colorLabel": "Pink",
       "hex": "#EC4E9B",
       "iosKey": "AltIcon-DrylandPink",
+      "androidAlias": "IconDrylandPink",
       "preview": "app-icons/preview/dryland-pink.png"
     }
   ]

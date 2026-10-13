@@ -17,14 +17,14 @@ const MANIFEST = {
   skills: [{ id: 'hands', label: 'Hands' }, { id: 'shooting', label: 'Shooting' }],
   colors: [{ id: 'green', label: 'Green', hex: '#8FD65E' }, { id: 'blue', label: 'Blue', hex: '#75B8FF' }],
   icons: [
-    { skill: 'hands', color: 'green', iosKey: 'AltIcon-HandsGreen', preview: 'app-icons/preview/hands-green.png' },
-    { skill: 'hands', color: 'blue', iosKey: 'AltIcon-HandsBlue', preview: 'app-icons/preview/hands-blue.png' },
-    { skill: 'shooting', color: 'green', iosKey: 'AltIcon-ShootingGreen', preview: 'app-icons/preview/shooting-green.png' },
-    { skill: 'shooting', color: 'blue', iosKey: 'AltIcon-ShootingBlue', preview: 'app-icons/preview/shooting-blue.png' },
+    { skill: 'hands', color: 'green', iosKey: 'AltIcon-HandsGreen', androidAlias: 'IconHandsGreen', preview: 'app-icons/preview/hands-green.png' },
+    { skill: 'hands', color: 'blue', iosKey: 'AltIcon-HandsBlue', androidAlias: 'IconHandsBlue', preview: 'app-icons/preview/hands-blue.png' },
+    { skill: 'shooting', color: 'green', iosKey: 'AltIcon-ShootingGreen', androidAlias: 'IconShootingGreen', preview: 'app-icons/preview/shooting-green.png' },
+    { skill: 'shooting', color: 'blue', iosKey: 'AltIcon-ShootingBlue', androidAlias: 'IconShootingBlue', preview: 'app-icons/preview/shooting-blue.png' },
   ],
 };
 
-async function boot() {
+async function boot(withCapacitor) {
   const dom = new JSDOM(html, {
     runScripts: 'dangerously',
     pretendToBeVisual: true,
@@ -36,6 +36,7 @@ async function boot() {
         if (String(u).indexOf('app-icons/manifest.json') >= 0) return Promise.resolve({ ok: true, json: () => Promise.resolve(MANIFEST) });
         return Promise.resolve({ ok: true, json: () => Promise.resolve({ ok: false }) });
       };
+      if (withCapacitor) withCapacitor(window);
     },
   });
   await new Promise((r) => setTimeout(r, 90));
@@ -59,8 +60,22 @@ describe('Settings app icon picker', () => {
     expect(() => shootingBlue.dispatchEvent(new win.Event('click', { bubbles: true }))).not.toThrow();
     expect(shootingBlue.classList.contains('sel')).toBe(true);
     const saved = JSON.parse(win.localStorage.getItem('thwapAppIcon'));
-    expect(saved).toMatchObject({ skill: 'shooting', color: 'blue', iosKey: 'AltIcon-ShootingBlue' });
+    expect(saved).toMatchObject({ skill: 'shooting', color: 'blue', iosKey: 'AltIcon-ShootingBlue', androidAlias: 'IconShootingBlue' });
     // only one selected at a time
     expect(win.document.querySelectorAll('#appIconGrid .appicon-cell.sel').length).toBe(1);
+  });
+
+  it('routes the Android alias (not the iOS key) to the native bridge on Android', async () => {
+    const calls = [];
+    const win = await boot((window) => {
+      window.Capacitor = {
+        getPlatform: () => 'android',
+        Plugins: { DynamicAppIcon: { change: (o) => { calls.push(o); return Promise.resolve(); } } },
+      };
+    });
+    const cell = Array.from(win.document.querySelectorAll('#appIconGrid .appicon-cell'))
+      .find((c) => c.getAttribute('data-ios') === 'AltIcon-HandsBlue');
+    cell.dispatchEvent(new win.Event('click', { bubbles: true }));
+    expect(calls).toEqual([{ name: 'IconHandsBlue' }]); // the activity-alias, not AltIcon-HandsBlue
   });
 });

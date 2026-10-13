@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ic_hands_green_bg">#8FD65E</color>
+    <color name="ic_hands_blue_bg">#75B8FF</color>
+    <color name="ic_hands_orange_bg">#FF9D4D</color>
+    <color name="ic_hands_purple_bg">#7A5AF0</color>
+    <color name="ic_hands_pink_bg">#EC4E9B</color>
+    <color name="ic_shooting_green_bg">#8FD65E</color>
+    <color name="ic_shooting_blue_bg">#75B8FF</color>
+    <color name="ic_shooting_orange_bg">#FF9D4D</color>
+    <color name="ic_shooting_purple_bg">#7A5AF0</color>
+    <color name="ic_shooting_pink_bg">#EC4E9B</color>
+    <color name="ic_passing_green_bg">#8FD65E</color>
+    <color name="ic_passing_blue_bg">#75B8FF</color>
+    <color name="ic_passing_orange_bg">#FF9D4D</color>
+    <color name="ic_passing_purple_bg">#7A5AF0</color>
+    <color name="ic_passing_pink_bg">#EC4E9B</color>
+    <color name="ic_dryland_green_bg">#8FD65E</color>
+    <color name="ic_dryland_blue_bg">#75B8FF</color>
+    <color name="ic_dryland_orange_bg">#FF9D4D</color>
+    <color name="ic_dryland_purple_bg">#7A5AF0</color>
+    <color name="ic_dryland_pink_bg">#EC4E9B</color>
+</resources>
