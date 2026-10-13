@@ -1331,7 +1331,7 @@ body.is-native #wipNote{display:none !important}
    body.is-native.is-android so iOS and the website are untouched. Adds the
    MD3 navigation-bar structure (taller surface, a rounded active-indicator
    pill behind the active icon) using Thwap's own green, never stock teal and
-   never a new palette. Icons stay the existing emoji; labels stay visible. --- */
+   never a new palette. Icons are the native drawn set (see 3b-i); labels stay visible. --- */
 body.is-native.is-android.is-authed:not(.login-locked) .tabbar{
   min-height:calc(80px + env(safe-area-inset-bottom,0px));
   align-items:center;
@@ -1375,6 +1375,26 @@ body.is-native.is-android .tabbar-btn.on:active .tabbar-ico{
 @media(prefers-reduced-motion:reduce){
   body.is-native.is-android .tabbar-ico{transition:none}
   body.is-native.is-android .tabbar-btn:active{transform:none}
+}
+
+/* --- 3b-i. Unified drawn icon set (NATIVE-ONLY): bold, filled, colourful glyphs
+   built for kids. These rules size the .twi SVGs per surface. The two locked-cell
+   ::after glyphs become the colourful padlock via a background image. Web untouched. */
+:root{--twi-lock:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='5' y='10.3' width='14' height='10.2' rx='2.6' fill='%23F3A712'/%3E%3Cpath d='M8 10.3V7.8a4 4 0 0 1 8 0v2.5' fill='none' stroke='%23C77F08' stroke-width='2.6'/%3E%3Ccircle cx='12' cy='15' r='1.6' fill='%237A4E05'/%3E%3C/svg%3E")}
+body.is-native .twi{width:24px;height:24px;display:block}
+body.is-native .tabbar-ico .twi{width:24px;height:24px}
+body.is-native .bskill-ico{display:inline-flex;align-items:center;justify-content:center}
+body.is-native .bskill-ico .twi{width:22px;height:22px}
+body.is-native .pl-tot .te{display:flex;align-items:center;justify-content:center}
+body.is-native .pl-tot .te .twi{width:22px;height:22px}
+body.is-native .idpdev-lock .twi{width:15px;height:15px;display:inline-block;vertical-align:-2px}
+body.is-native .stickcell.locked::after{
+  content:'';font-size:0;width:20px;height:20px;filter:none;opacity:.92;
+  background:var(--twi-lock) center/contain no-repeat;
+}
+body.is-native .cardsw.locked::after{
+  content:'';font-size:0;inset:auto;left:50%;top:50%;transform:translate(-50%,-50%);width:17px;height:17px;filter:none;opacity:.95;
+  background:var(--twi-lock) center/contain no-repeat;
 }
 
 /* --- 3c. Material 3 button treatment, ANDROID ONLY. In-app back buttons
@@ -1724,7 +1744,48 @@ body.login-locked{overflow:hidden}
    same window.Capacitor?.isNativePlatform() check as the bridge, so the plain
    website at thwaphockey.com never gets body.is-native and is completely unchanged.
    Set on <html> AND <body> as early as possible so the first paint already has it. */
-(function(){try{var C=window.Capacitor;if(C&&typeof C.isNativePlatform==='function'&&C.isNativePlatform()){var pf='';try{pf=(C.getPlatform&&C.getPlatform())||'';}catch(e2){}var pc=pf==='ios'?'is-ios':(pf==='android'?'is-android':'');var r=document.documentElement;r.classList.add('is-native');if(pc)r.classList.add(pc);var add=function(){if(document.body){document.body.classList.add('is-native');if(pc)document.body.classList.add(pc);}};add();if(!document.body)document.addEventListener('DOMContentLoaded',add);}}catch(e){}})();</script><script src='demo/demo-data.js'></script><script src='demo/demo-mode.js'></script><script>/* thwapShare: native OS share sheet via @capacitor/share when in the shell, graceful web fallback (Web Share API, then clipboard copy) otherwise. Returns a promise; never throws into the caller. */window.thwapShare=function(opts){opts=opts||{};var title=opts.title||'Thwap Hockey';var text=opts.text||'';var url=opts.url||'';function done(ok){return Promise.resolve({ok:ok});}try{var C=window.Capacitor;var native=!!(C&&typeof C.isNativePlatform==='function'&&C.isNativePlatform());if(native){var S=C.Plugins&&C.Plugins.Share;if(S&&S.share){return S.share({title:title,text:text,url:url,dialogTitle:title}).then(function(){return done(true);}).catch(function(){return done(false);});}}}catch(e){}try{if(navigator.share){return navigator.share({title:title,text:text,url:url}).then(function(){return done(true);}).catch(function(){return done(false);});}}catch(e2){}try{var payload=(text?text+(url?' ':''):'')+(url||'');if(navigator.clipboard&&navigator.clipboard.writeText){return navigator.clipboard.writeText(payload).then(function(){return done('copied');}).catch(function(){return done(false);});}}catch(e3){}return done(false);};</script><script>/* thwapSyncStatusBar: match the native status bar to the app theme. No-op on the plain web (no plugin). Dark theme -> light status-bar text on a dark bar; light theme -> dark text on a light bar. */window.thwapSyncStatusBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof C.isNativePlatform==='function'&&C.isNativePlatform()))return;var SB=C.Plugins&&C.Plugins.StatusBar;if(!SB){setTimeout(function(){try{var C2=window.Capacitor;var SB2=C2&&C2.Plugins&&C2.Plugins.StatusBar;if(SB2){if(SB2.setStyle)SB2.setStyle({style:dark?'DARK':'LIGHT'});if(SB2.setBackgroundColor)SB2.setBackgroundColor({color:dark?'#101A14':'#F3F7F4'});}}catch(e3){}},300);return;}if(SB.setStyle)SB.setStyle({style:dark?'DARK':'LIGHT'});if(SB.setBackgroundColor)SB.setBackgroundColor({color:dark?'#101A14':'#F3F7F4'});}catch(e){}};</script><div class='app'>
+(function(){try{var C=window.Capacitor;if(C&&typeof C.isNativePlatform==='function'&&C.isNativePlatform()){var pf='';try{pf=(C.getPlatform&&C.getPlatform())||'';}catch(e2){}var pc=pf==='ios'?'is-ios':(pf==='android'?'is-android':'');var r=document.documentElement;r.classList.add('is-native');if(pc)r.classList.add(pc);var add=function(){if(document.body){document.body.classList.add('is-native');if(pc)document.body.classList.add(pc);}};add();if(!document.body)document.addEventListener('DOMContentLoaded',add);}}catch(e){}})();</script><script src='demo/demo-data.js'></script><script src='demo/demo-mode.js'></script><script>/* thwapShare: native OS share sheet via @capacitor/share when in the shell, graceful web fallback (Web Share API, then clipboard copy) otherwise. Returns a promise; never throws into the caller. */window.thwapShare=function(opts){opts=opts||{};var title=opts.title||'Thwap Hockey';var text=opts.text||'';var url=opts.url||'';function done(ok){return Promise.resolve({ok:ok});}try{var C=window.Capacitor;var native=!!(C&&typeof C.isNativePlatform==='function'&&C.isNativePlatform());if(native){var S=C.Plugins&&C.Plugins.Share;if(S&&S.share){return S.share({title:title,text:text,url:url,dialogTitle:title}).then(function(){return done(true);}).catch(function(){return done(false);});}}}catch(e){}try{if(navigator.share){return navigator.share({title:title,text:text,url:url}).then(function(){return done(true);}).catch(function(){return done(false);});}}catch(e2){}try{var payload=(text?text+(url?' ':''):'')+(url||'');if(navigator.clipboard&&navigator.clipboard.writeText){return navigator.clipboard.writeText(payload).then(function(){return done('copied');}).catch(function(){return done(false);});}}catch(e3){}return done(false);};</script><script>/* thwapSyncStatusBar: match the native status bar to the app theme. No-op on the plain web (no plugin). Dark theme -> light status-bar text on a dark bar; light theme -> dark text on a light bar. */window.thwapSyncStatusBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof C.isNativePlatform==='function'&&C.isNativePlatform()))return;var SB=C.Plugins&&C.Plugins.StatusBar;if(!SB){setTimeout(function(){try{var C2=window.Capacitor;var SB2=C2&&C2.Plugins&&C2.Plugins.StatusBar;if(SB2){if(SB2.setStyle)SB2.setStyle({style:dark?'DARK':'LIGHT'});if(SB2.setBackgroundColor)SB2.setBackgroundColor({color:dark?'#101A14':'#F3F7F4'});}}catch(e3){}},300);return;}if(SB.setStyle)SB.setStyle({style:dark?'DARK':'LIGHT'});if(SB.setBackgroundColor)SB.setBackgroundColor({color:dark?'#101A14':'#F3F7F4'});}catch(e){}};</script>
+<script>
+/* Unified drawn icon set, NATIVE-ONLY. On the website the product keeps its
+   emoji; in the installed apps emoji are swapped for one consistent monoline
+   set across the tab bar, the coach by-skill panel, the standings totals and
+   the lock glyphs. stroke=currentColor, so every icon inherits the surrounding
+   text colour and theme (active tab = green, inactive = muted, etc.). */
+(function(){
+  /* Bold, filled, COLOURFUL glyphs -- built for kids (10yo): chunky shapes in
+     happy colours, disciplines in their own colour. Each path sets its own fill/
+     stroke (svg defaults to fill:none + round joins). */
+  function S(p){return "<svg class='twi' viewBox='0 0 24 24' fill='none' stroke-linecap='round' stroke-linejoin='round' aria-hidden='true'>"+p+"</svg>";}
+  var G={
+    stick:S("<path d='M18 4.2 9 13.4' stroke='#B5793B' stroke-width='3' stroke-linecap='round'/><path d='M9 13.4 4.6 15' stroke='#B5793B' stroke-width='3.6' stroke-linecap='round'/><ellipse cx='12.5' cy='18.6' rx='3.8' ry='1.7' fill='#15221B'/>"),
+    net:S("<path d='M5 18V8.6A1.6 1.6 0 0 1 6.6 7h10.8A1.6 1.6 0 0 1 19 8.6V18' fill='#FF5A5F' fill-opacity='.22'/><path d='M5 18V8.6A1.6 1.6 0 0 1 6.6 7h10.8A1.6 1.6 0 0 1 19 8.6V18' stroke='#E23B41' stroke-width='2.6'/><circle cx='12' cy='14.5' r='2.3' fill='#15221B'/>"),
+    bolt:S("<path d='M13 2.5 6 13h4.2l-1.2 8.5L18 10h-4.5z' fill='#FFB020'/>"),
+    brain:S("<path d='M12 4.2c-1.6 0-2.9.9-3.3 2.2-1.9-.3-3.5 1.1-3.5 2.9 0 .7.2 1.3.6 1.8-.8.6-1.1 1.6-.8 2.6.3 1 1.2 1.7 2.3 1.8.2 1.4 1.4 2.4 2.9 2.4H12z' fill='#C56BE6'/><path d='M12 4.2c1.6 0 2.9.9 3.3 2.2 1.9-.3 3.5 1.1 3.5 2.9 0 .7-.2 1.3-.6 1.8.8.6 1.1 1.6.8 2.6-.3 1-1.2 1.7-2.3 1.8-.2 1.4-1.4 2.4-2.9 2.4H12z' fill='#AE46D4'/><path d='M12 5.2v12' stroke='#fff' stroke-width='1.1' opacity='.75'/><path d='M8.6 8.4c1.3.3 1.6 1.3.7 2.2M9 13.4c1.2.1 1.7.9 1.1 1.9M15.4 8.4c-1.3.3-1.6 1.3-.7 2.2M15 13.4c-1.2.1-1.7.9-1.1 1.9' stroke='#8E39B0' stroke-width='1' fill='none'/>"),
+    target:S("<circle cx='12' cy='12' r='9' fill='#2E86FF'/><circle cx='12' cy='12' r='6' fill='#fff'/><circle cx='12' cy='12' r='3' fill='#E23B41'/>"),
+    star:S("<path d='M12 2.6 14.8 8.5 21.2 9.2 16.4 13.6 17.8 20 12 16.7 6.2 20 7.6 13.6 2.8 9.2 9.2 8.5z' fill='#FFC43D'/>"),
+    people:S("<circle cx='15.5' cy='9' r='2.8' fill='#2E86FF'/><path d='M11 19a4.6 4.6 0 0 1 9.2 0z' fill='#2E86FF'/><circle cx='8.5' cy='8' r='3.3' fill='#2F6B41'/><path d='M3 19.2a5.6 5.6 0 0 1 11.2 0z' fill='#2F6B41'/>"),
+    trophy:S("<path d='M7.5 4.5h9v4.3a4.5 4.5 0 0 1-9 0z' fill='#FFC43D'/><path d='M7.5 5.2H5a2 2 0 0 0 2.4 3.3M16.5 5.2H19a2 2 0 0 1-2.4 3.3' stroke='#E09600' stroke-width='1.8'/><rect x='11' y='12.3' width='2' height='3.2' fill='#E09600'/><path d='M8.6 19.6 9.3 16.5h5.4l.7 3.1z' fill='#FFC43D'/>"),
+    person:S("<circle cx='12' cy='8' r='3.7' fill='#2F6B41'/><path d='M4.8 20a7.2 7.2 0 0 1 14.4 0z' fill='#2F6B41'/>"),
+    clipboard:S("<rect x='5' y='5' width='14' height='16' rx='2.4' fill='#2E86FF'/><rect x='8.8' y='3.4' width='6.4' height='3.4' rx='1.7' fill='#1C5BB8'/><path d='M8.6 11h6.8M8.6 14h6.8M8.6 17h4.4' stroke='#fff' stroke-width='1.7'/>"),
+    lock:S("<rect x='5' y='10.3' width='14' height='10.2' rx='2.6' fill='#F3A712'/><path d='M8 10.3V7.8a4 4 0 0 1 8 0v2.5' stroke='#C77F08' stroke-width='2.6'/><circle cx='12' cy='15' r='1.6' fill='#7A4E05'/><rect x='11.2' y='15' width='1.6' height='3' rx='.8' fill='#7A4E05'/>")
+  };
+  window.THWAP_GLYPHS=G;
+  function native(){ try{ return document.documentElement.classList.contains('is-native'); }catch(e){ return false; } }
+  /* used by the JS-rendered areas: SVG in the app, the emoji fallback on the web */
+  window.thwapGlyph=function(name, fallback){ return (native()&&G[name])?G[name]:(fallback||''); };
+  var TAB={home:'stick',coachhome:'stick',stickers:'star',roster:'people',plan:'clipboard',progress:'trophy',profile:'person'};
+  function run(){
+    if(!native()) return;
+    document.querySelectorAll('.tabbar-btn[data-tab] .tabbar-ico').forEach(function(el){
+      var b=el.closest('.tabbar-btn'), t=b&&b.getAttribute('data-tab');
+      if(t&&TAB[t]&&G[TAB[t]]) el.innerHTML=G[TAB[t]];
+    });
+    document.querySelectorAll('.idpdev-lock').forEach(function(el){ el.innerHTML=G.lock; });
+  }
+  if(document.readyState!=='loading') run(); else document.addEventListener('DOMContentLoaded', run);
+})();
+</script>
+<div class='app'>
 <!-- Break the Ice login splash: two fixed layers over the real homepage.
      #loginBackdrop (frost + Sass/THWAP stage) sits BELOW the site header so its
      Sign In / Join Waitlist links stay visible and tappable; #loginOverlay (the
@@ -2844,6 +2905,7 @@ window.thwapActiveTeam=function(coach){
           function esc(x){ return String(x==null?'':x).replace(/[&<>"]/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
           function nm(m){ return ((m.firstName||m.playerId||'')+(m.lastName?(' '+m.lastName.charAt(0)+'.'):'')).trim(); }
           var SKILLS=[['stick','🏒','Hands'],['shoot','🥅','Shooting'],['dryland','⚡','Dryland'],['iq','🧠','Hockey IQ'],['pass','🎯','Passing']];
+          var SKILL_GLYPH={stick:'stick',shoot:'net',dryland:'bolt',iq:'brain',pass:'target'};  /* native drawn icons; emoji on web */
           var N=j.members.length;
           listEl.innerHTML='';
           SKILLS.forEach(function(s){
@@ -2851,7 +2913,8 @@ window.thwapActiveTeam=function(coach){
             j.members.forEach(function(m){ var w=m.week||{}; if((w[s[0]]||0)>0) did.push(nm(m)); else not.push(nm(m)); });
             var pct=N?Math.round(100*did.length/N):0;
             var row=document.createElement('button'); row.type='button'; row.className='bskill-row';
-            row.innerHTML="<span class='bskill-ico'>"+s[1]+"</span><span class='bskill-lab'>"+s[2]+"</span><span class='bskill-bar'><span class='bskill-fill' style='width:"+pct+"%'></span></span><span class='bskill-count'>"+did.length+"/"+N+"</span><span class='bskill-chev'>›</span>";
+            var sIco=(window.thwapGlyph?window.thwapGlyph(SKILL_GLYPH[s[0]], s[1]):s[1]);
+            row.innerHTML="<span class='bskill-ico'>"+sIco+"</span><span class='bskill-lab'>"+s[2]+"</span><span class='bskill-bar'><span class='bskill-fill' style='width:"+pct+"%'></span></span><span class='bskill-count'>"+did.length+"/"+N+"</span><span class='bskill-chev'>›</span>";
             var detail=document.createElement('div'); detail.className='bskill-detail'; detail.hidden=true;
             detail.innerHTML="<div class='bskill-grp'><span class='bskill-grp-lab'>Not yet</span><span class='bskill-names"+(not.length?'':' none')+"'>"+(not.length?not.map(esc).join(', '):'everyone did it')+"</span></div>"+
                              "<div class='bskill-grp'><span class='bskill-grp-lab'>Did it</span><span class='bskill-names"+(did.length?'':' none')+"'>"+(did.length?did.map(esc).join(', '):'nobody yet')+"</span></div>";
@@ -6553,6 +6616,8 @@ function build(){
   var thirdDisc=goalieView?'Net play':'Shooting';
   var DCOL={Stickhandling:'#8fd65e',Shooting:'#75B8FF','Net play':'#75B8FF',Dryland:'#FF9D4D',HockeyIQ:'#A98BFF'};
   var DEMO={Stickhandling:'🏒',Shooting:'🥅','Net play':'🥅',Dryland:'⚡',HockeyIQ:'🧠'};
+  var DEMO_GLYPH={Stickhandling:'stick',Shooting:'net','Net play':'net',Dryland:'bolt',HockeyIQ:'brain'};  /* native drawn icons; emoji on web */
+  function teGlyph(disc){ return window.thwapGlyph?window.thwapGlyph(DEMO_GLYPH[disc], DEMO[disc]):DEMO[disc]; }
   var DNAME={Stickhandling:'Hands',HockeyIQ:'Hockey IQ'};  /* display label; key stays canonical */
   function dLabel(d){ return DNAME[d]||d; }
   /* Radar spokes. 3 today (-> diamond with IQ = 4). When Passing ships, add 'Passing'
@@ -6623,8 +6688,8 @@ function build(){
       "<polygon class='pl-radar-poly grow' points='"+pts.join(' ')+"' fill='url(#plShimmer)' stroke='#7bbf3a' stroke-width='3' stroke-linejoin='round'/>"+vdots+labs+"</svg></div>";
     /* tappable totals act as the legend + filter control */
     var totals="<div class='pl-totals'>"+
-      "<button type='button' class='pl-tot"+(plFilter==='all'?' on':'')+"' data-disc='all'><div class='te'>🏆</div><div class='tn'>"+val.reduce(function(x,y){return x+y;},0)+"</div><div class='tl'>All</div></button>"+
-      discs.map(function(disc,i){return "<button type='button' class='pl-tot"+(plFilter===disc?' on':'')+"' data-disc='"+disc+"' style='--totacc:"+DCOL[disc]+"'><div class='te'>"+DEMO[disc]+"</div><div class='tn' style='color:"+DCOL[disc]+"'>"+val[i]+"</div><div class='tl'>"+dLabel(disc)+"</div></button>";}).join('')+
+      "<button type='button' class='pl-tot"+(plFilter==='all'?' on':'')+"' data-disc='all'><div class='te'>"+(window.thwapGlyph?window.thwapGlyph('trophy','🏆'):'🏆')+"</div><div class='tn'>"+val.reduce(function(x,y){return x+y;},0)+"</div><div class='tl'>All</div></button>"+
+      discs.map(function(disc,i){return "<button type='button' class='pl-tot"+(plFilter===disc?' on':'')+"' data-disc='"+disc+"' style='--totacc:"+DCOL[disc]+"'><div class='te'>"+teGlyph(disc)+"</div><div class='tn' style='color:"+DCOL[disc]+"'>"+val[i]+"</div><div class='tl'>"+dLabel(disc)+"</div></button>";}).join('')+
       "</div>";
     visual="<div class='pl-panel'><div class='pl-panel-h'>The bigger your shape, the more you have trained!</div>"+radar+totals+"</div>";
   }
