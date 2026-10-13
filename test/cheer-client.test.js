@@ -264,6 +264,17 @@ describe('Home-screen Sass cheer notification', () => {
     // each kind is picked at random so it never goes stale
     expect(html).toMatch(/pick\(CHEER_LINES\)/);
     expect(html).toMatch(/pick\(FIRE_LINES\)/);
+    // every line marks a word for the splash-green accent ([[...]]), like the
+    // splash bubble greens THWAP HOCKEY
+    expect(cheerLines.every((l) => /\[\[[^\]]+\]\]/.test(l))).toBe(true);
+    expect(fireLines.every((l) => /\[\[[^\]]+\]\]/.test(l))).toBe(true);
+  });
+
+  it('renders the [[accent]] word in the splash green', () => {
+    // show() turns [[word]] into a .cheerpop-accent span
+    expect(html).toContain("<span class='cheerpop-accent'>$1</span>");
+    // the accent colour is the splash bubble green (fixed, not theme-aware)
+    expect(html).toContain('.cheerpop-accent{color:#408868}');
   });
 
   it('never names who it came from (no roll-up, no "teammates cheered you")', () => {
