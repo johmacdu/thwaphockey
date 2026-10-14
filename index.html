@@ -37,7 +37,7 @@ a:focus-visible,button:focus-visible,[tabindex]:focus-visible,.row:focus-visible
 html[data-theme='dark']{
 /* Thwap dark theme: Ink-based surfaces, Ice text, accents kept vivid */
 --bg:#101A14;--bg2:#0B130E;--panel:#182420;--panel2:#141E19;--line:#2A3831;--text:#F3F7F4;--muted:#9DACA2;--green:#B9F06B;--green2:#CDEFA0;--soft:#1F2C24;--card:#182420;--card2:#1E2B24;--cardgrad1:#20302A;--cardgrad2:#131C16;--line2:#3A4A40;--line3:#2A3831;--linesel:#B9F06B;--text2:#D3DDD6;--muted2:#9DACA2;--chev:#7C8C82;--onaccent:#15221B;--shadow:rgba(0,0,0,.35);--warn-text:#FFB870;--alert-text:#FF8A80}
-*{box-sizing:border-box}html{background:var(--bg);-webkit-text-size-adjust:100%;text-size-adjust:100%}body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2));color:var(--text);font-family:'Nunito Sans',system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;min-height:100dvh;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+*{box-sizing:border-box}main{display:block}html{background:var(--bg);-webkit-text-size-adjust:100%;text-size-adjust:100%}body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2));color:var(--text);font-family:'Nunito Sans',system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;min-height:100dvh;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
 h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weight:600}a{color:inherit;text-decoration:none}.app{max-width:1100px;margin:auto;min-height:100vh;min-height:100dvh;padding:0 16px 44px}
 .wipnote{margin:14px 0 0;padding:10px 14px;border-radius:12px;background:var(--soft);border:1px solid var(--line);color:var(--muted);font-size:13px;font-weight:600;line-height:1.4}
 /* Sticker Book */
@@ -1703,8 +1703,8 @@ body.login-locked{overflow:hidden}
 #loginStage[data-step='run'] .sp-speed i:nth-child(4){animation-delay:.24s}
 @keyframes spWhoosh{0%{opacity:0;transform:translateX(40px)}25%{opacity:1}100%{opacity:0;transform:translateX(-140px)}}
 /* Frozen-pond ice base (no cracks) at partial opacity so the real site shows through; clears at ready */
-.sp-ice{position:absolute;inset:0;background-image:url('login/pond-landscape.jpg');background-size:cover;background-position:center;background-repeat:no-repeat;opacity:.6;transition:opacity .5s ease}
-@media (max-width:640px){.sp-ice{background-image:url('login/pond-portrait.jpg')}}
+.sp-ice{position:absolute;inset:0;background-image:url('login/pond-landscape.webp');background-size:cover;background-position:center;background-repeat:no-repeat;opacity:.6;transition:opacity .5s ease}
+@media (max-width:640px){.sp-ice{background-image:url('login/pond-portrait.webp')}}
 #loginStage[data-step='ready'] .sp-ice{opacity:.24}
 /* Cracks: hidden until Sass hits the edge (impact), then spread; fade as ice clears */
 .sp-crack{position:absolute;inset:0;background-image:url('login/cracks-landscape.webp');background-size:cover;background-position:center;background-repeat:no-repeat;opacity:0;transition:opacity .4s ease}
@@ -1981,6 +1981,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
   </form>
 </div>
 
+<main id='mainContent'>
 <section id='dryland' class='page'>
 <a class='glassclose' href='.' aria-label='Close'>✕</a>
 <div class='heroCard'><div class='big eggbolt' id='eggBolt' role='img' aria-label='Lightning'><img class='egg-ico' src='login/icon-bolt.webp' alt=''></div><h1><button type='button' class='titletip' data-daytip>Today’s<span class='titletip-date' id='drylandDate'>Sunday, September 13</span></button> Dryland</h1><p>A little of everything: agility, power, strength and core. About 15 minutes.</p><div class='pills'><span class='pill' id='drylandTime'>15 min</span></div></div>
@@ -2755,6 +2756,7 @@ window.thwapTrainingToday=function(){
 <a class='nav nav-pass' href='#pass'><div class='ico'><img class='nav-ico' src='login/icon-pass.webp' alt=''></div><div><h2>Passing</h2><p>Sweep, saucer and backhand passes, about 10 min</p></div><div class='chev'>›</div></a>
 </div>
 </section>
+</main>
 <div class='footer'><span class='slogan'>Compete. Improve.<br class='sl-br'> Have fun.</span><div class='footer-actions'><button class='sfxtoggle' id='sfxToggle' type='button' aria-label='Mute sounds' title='Mute sounds' aria-pressed='true'></button><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button><div class='footmenu-wrap'><button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button><div class='footmenu' id='footMenu' hidden role='menu'><a class='footmenu-item' href='/about' role='menuitem'>About Thwap</a><a class='footmenu-item footmenu-splash' id='menuTerms' href='#' role='menuitem'>Terms of Use</a><a class='footmenu-item footmenu-splash' id='menuPrivacy' href='#' role='menuitem'>Privacy Policy</a><a class='footmenu-item footmenu-inproduct' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a><a class='footmenu-item footmenu-inproduct' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a><a class='footmenu-item footmenu-inproduct' id='menuSignout' href='#' role='menuitem'>Sign out</a></div></div></div></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div>
 </div>
 <nav class='tabbar' id='tabbar' aria-label='Main'>
