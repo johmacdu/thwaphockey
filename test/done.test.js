@@ -184,3 +184,57 @@ describe('done handler: position gate', () => {
     }
   });
 });
+
+describe('done handler backdating (optional date)', () => {
+  // Pin the clock so "recent" is deterministic. 2026-01-14 is a Wednesday.
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-01-14T20:00:00.000Z')); // noon Vancouver
+  });
+
+  it('200 and attributes the dated event to a valid recent backdate', async () => {
+    const res = makeRes();
+    const token = mintSession('lewie', 'p@e.com');
+    await handler(postAs({ player: 'lewie', discipline: 'dryland', date: '2026-01-12' }, token), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.player.dryland).toBe(1);
+    const events = fake.map.get('events:lewie');
+    expect(events).toEqual([{ date: '2026-01-12', disc: 'dryland' }]);
+    expect(fake.map.get('days:lewie')).toEqual(['2026-01-12']);
+  });
+
+  it('400 bad date on an out-of-range (too old) backdate, no write', async () => {
+    const res = makeRes();
+    const token = mintSession('lewie', 'p@e.com');
+    await handler(postAs({ player: 'lewie', discipline: 'stick', date: '2025-12-01' }, token), res);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBe('bad date');
+    expect(fake.map.get('player:lewie')).toBeUndefined();
+  });
+
+  it('400 bad date on a future date, no write', async () => {
+    const res = makeRes();
+    const token = mintSession('lewie', 'p@e.com');
+    await handler(postAs({ player: 'lewie', discipline: 'stick', date: '2026-01-20' }, token), res);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBe('bad date');
+    expect(fake.map.get('player:lewie')).toBeUndefined();
+  });
+
+  it('400 bad date on a malformed date, no write', async () => {
+    const res = makeRes();
+    const token = mintSession('lewie', 'p@e.com');
+    await handler(postAs({ player: 'lewie', discipline: 'stick', date: 'yesterday' }, token), res);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBe('bad date');
+    expect(fake.map.get('player:lewie')).toBeUndefined();
+  });
+
+  it('an empty-string date is ignored and logs today (backward compatible)', async () => {
+    const res = makeRes();
+    const token = mintSession('lewie', 'p@e.com');
+    await handler(postAs({ player: 'lewie', discipline: 'stick', date: '' }, token), res);
+    expect(res.statusCode).toBe(200);
+    expect(fake.map.get('days:lewie')).toEqual(['2026-01-14']);
+  });
+});

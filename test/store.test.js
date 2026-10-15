@@ -42,6 +42,8 @@ const {
   sendFire,
   getRecentFirers,
   isRosterPlayer,
+  validBackdate,
+  BACKDATE_MAX_DAYS,
 } = await import('../lib/store.js');
 
 // Helper: keys the store uses.
@@ -161,6 +163,78 @@ describe('bumpPlayer', () => {
     await bumpPlayer('lewie', 'shoot');
     expect(await computeStreak('lewie')).toBe(2);
     expect(await weekCount('lewie')).toEqual({ stick: 1, shoot: 1, dryland: 0, netplay: 0, iq: 0, pass: 0 });
+  });
+});
+
+describe('validBackdate', () => {
+  // Clock is pinned to 2026-01-14 (Wednesday) by pinDate in beforeEach below's
+  // sibling blocks; this block pins its own to be explicit.
+  beforeEach(() => { pinDate('2026-01-14'); });
+
+  it('accepts today', () => {
+    expect(validBackdate('2026-01-14')).toBe('2026-01-14');
+  });
+
+  it('accepts a day within the last 7 days (Monday of this week)', () => {
+    expect(validBackdate('2026-01-12')).toBe('2026-01-12');
+  });
+
+  it('accepts exactly BACKDATE_MAX_DAYS ago', () => {
+    expect(BACKDATE_MAX_DAYS).toBe(7);
+    expect(validBackdate('2026-01-07')).toBe('2026-01-07');
+  });
+
+  it('rejects older than the window', () => {
+    expect(validBackdate('2026-01-06')).toBeNull();
+  });
+
+  it('rejects a future date', () => {
+    expect(validBackdate('2026-01-15')).toBeNull();
+  });
+
+  it('rejects malformed and non-real dates', () => {
+    expect(validBackdate('2026-1-4')).toBeNull();   // not zero-padded
+    expect(validBackdate('01-14-2026')).toBeNull(); // wrong order
+    expect(validBackdate('2026-02-31')).toBeNull(); // not a real day
+    expect(validBackdate('')).toBeNull();
+    expect(validBackdate(null)).toBeNull();
+    expect(validBackdate(20260114)).toBeNull();     // not a string
+  });
+});
+
+describe('bumpPlayer backdating', () => {
+  beforeEach(() => { pinDate('2026-01-14'); }); // Wednesday
+
+  it('attributes the day/event to a valid backdate instead of today', async () => {
+    await bumpPlayer('lewie', 'dryland', '2026-01-12'); // Monday
+    const days = fake.map.get(daysKey('lewie'));
+    const events = fake.map.get(eventsKey('lewie'));
+    expect(days).toEqual(['2026-01-12']);
+    expect(events).toEqual([{ date: '2026-01-12', disc: 'dryland' }]);
+  });
+
+  it('still increments the all-time count regardless of the backdate', async () => {
+    const res = await bumpPlayer('lewie', 'dryland', '2026-01-12');
+    expect(res.dryland).toBe(1);
+  });
+
+  it('falls back to today when the date is invalid (never a bogus event)', async () => {
+    await bumpPlayer('lewie', 'stick', '2020-01-01'); // too old -> ignored
+    const days = fake.map.get(daysKey('lewie'));
+    expect(days).toEqual(['2026-01-14']); // today
+  });
+
+  it('falls back to today when no date is passed (unchanged behaviour)', async () => {
+    await bumpPlayer('lewie', 'stick');
+    const days = fake.map.get(daysKey('lewie'));
+    expect(days).toEqual(['2026-01-14']);
+  });
+
+  it('backdated days feed computeStreak correctly (Mon+Tue+today = 3)', async () => {
+    await bumpPlayer('lewie', 'dryland', '2026-01-12'); // Mon
+    await bumpPlayer('lewie', 'stick',   '2026-01-13'); // Tue
+    await bumpPlayer('lewie', 'stick');                 // today (Wed)
+    expect(await computeStreak('lewie')).toBe(3);
   });
 });
 
