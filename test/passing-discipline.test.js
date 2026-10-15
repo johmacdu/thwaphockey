@@ -79,3 +79,53 @@ describe('Passing discipline (live)', () => {
     expect(win.localStorage.getItem(`thwapCatCeleb|${dk}|pass`)).toBe('1');
   });
 });
+
+
+// Passing must appear as a STAT on both the team Standings board and the
+// individual player stat view (radar + totals), not just as a drill page.
+describe('Passing as a stat (team + individual)', () => {
+  it('reveals the Passing metric tile on the Standings board (not left hidden)', async () => {
+    const win = await boot(4);
+    const mp = win.document.getElementById('metricPass');
+    expect(mp).toBeTruthy();
+    // The reveal must run AFTER PASS_DAYS is defined; the tile ends up visible.
+    expect(mp.hidden).toBe(false);
+    expect(mp.getAttribute('data-disc')).toBe('pass');
+    expect(mp.textContent).toContain('Passing');
+    // its running total is wired to the pass board column
+    expect(mp.querySelector("[data-total='pass']")).toBeTruthy();
+  });
+
+  it('the Standings score + team totals include the pass column', async () => {
+    const win = await boot(4);
+    // scoreOf('all') and the team-total aggregation both add p.pass
+    expect(win.document.documentElement.innerHTML).toMatch(/scoreOf[\s\S]{0,120}\(p\.pass\|\|0\)/);
+    expect(win.document.documentElement.innerHTML).toMatch(/t\.pass\+=\(p\.pass\|\|0\)/);
+  });
+
+  it('adds Passing as a 5th radar spoke with its own color, emoji and season target', async () => {
+    const win = await boot(4);
+    const h = win.document.documentElement.innerHTML;
+    // discs array now carries 'Passing' (geometry is driven off discs.length = N)
+    expect(h).toMatch(/var discs=\['Stickhandling',thirdDisc,'Dryland','HockeyIQ','Passing'\]/);
+    // supporting maps all carry a Passing entry
+    expect(h).toMatch(/DKEY=\{[^}]*Passing:'pass'/);
+    expect(h).toMatch(/DCOL=\{[^}]*Passing:'#2E86FF'/);
+    expect(h).toMatch(/DEMO=\{[^}]*Passing:'\ud83c\udfaf'/);
+    expect(h).toMatch(/SEASON_TGTMAP=\{[^}]*Passing:48/);
+  });
+
+  it('renders a Passing spoke/total in the player stat view', async () => {
+    const win = await boot(4);
+    // open a known player's stat page and let build() run
+    expect(typeof win.openPlayerPage).toBe('function');
+    win.openPlayerPage('Lewie');
+    await new Promise((r) => setTimeout(r, 60));
+    const disc = win.document.getElementById('plDisc');
+    expect(disc).toBeTruthy();
+    // all-time view carries a totals tile per discipline; Passing must be one
+    const tots = disc.querySelectorAll(".pl-tot[data-disc='Passing'], .pl-ring[data-disc='Passing']");
+    expect(tots.length).toBeGreaterThan(0);
+  });
+});
+
