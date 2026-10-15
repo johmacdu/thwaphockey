@@ -1,9 +1,16 @@
 // api/done.js
 //
-// POST /api/done  body: { player, discipline, drillId?, undo? }
+// POST /api/done  body: { player, discipline, drillId?, undo?, date? }
 //   - { player, discipline }            : marks one discipline done (bumps the
 //                                         aggregate count + dated event). Original
 //                                         behaviour, unchanged and still valid.
+//   - { ..., date:'YYYY-MM-DD' }         : OPTIONAL. Attributes the completion to
+//                                         that Vancouver-local day instead of
+//                                         today, for logging a FORGOTTEN day. Must
+//                                         be a real date within the last 7 days and
+//                                         not in the future, else 400. The all-time
+//                                         count is unaffected; only the dated
+//                                         day/event (streak + weekly split) moves.
 //   - { ..., drillId }                  : ALSO records that specific drill id in
 //                                         the player's per-day completed SET, so a
 //                                         second device can re-draw the checkmark.
@@ -38,6 +45,7 @@ import {
   removeDrillDone,
   getDrillDone,
   localDateStr,
+  validBackdate,
 } from '../lib/store.js';
 import { verifySession, readSessionCookie } from '../lib/session_store.js';
 import { getMember } from '../lib/teams_store.js';
@@ -135,7 +143,7 @@ export default async function handler(req, res) {
   }
 
   const body = parseBody(req);
-  const { player, discipline, drillId } = body;
+  const { player, discipline, drillId, date } = body;
   const undo = body.undo === true || body.undo === 'true';
 
   // Validate player exists on the roster (needed for both bump and drill paths).
@@ -193,8 +201,23 @@ export default async function handler(req, res) {
     return res.status(402).json({ error: 'season not active', gated: true });
   }
 
-  // Bump the aggregate count + dated event (unchanged behaviour).
-  const updated = await bumpPlayer(entry.id, discipline);
+  // Optional backdating: a player (or a parent on their behalf) correcting a
+  // forgotten log may attribute this completion to a recent day. When `date` is
+  // supplied it MUST be a valid, recent 'YYYY-MM-DD' (within the last 7 days, not
+  // in the future); an invalid value is REJECTED here rather than silently filed
+  // as today, so a bad date can never corrupt the streak/weekly split. Absent
+  // `date` logs today, exactly as before.
+  let when = null;
+  if (date !== undefined && date !== null && date !== '') {
+    when = validBackdate(date);
+    if (!when) {
+      return res.status(400).json({ error: 'bad date' });
+    }
+  }
+
+  // Bump the aggregate count + dated event (unchanged behaviour; `when` only
+  // moves the day the days/events are attributed to, never the all-time count).
+  const updated = await bumpPlayer(entry.id, discipline, when);
 
   // If a stable drill id was supplied, record it in the per-day completed set so
   // other devices can re-draw the checkmark. A missing drillId keeps the endpoint
