@@ -12,7 +12,7 @@ const html = readFileSync(join(__dirname, '..', 'index.html'), 'utf8');
 // ring automatically, regardless of how much the kid had actually trained.
 describe('radar season-target scaling (no auto-max bug)', () => {
   it('defines per-discipline season targets [120,120,72] (24wk: 5/5/3 per week)', () => {
-    expect(html).toMatch(/SEASON_TGTMAP=\{[^}]*Stickhandling:120[^}]*Shooting:120[^}]*Dryland:72/);
+    expect(html).toMatch(/SEASON_TGTMAP=\{[^}]*Stickhandling:120[^}]*Shooting:120[^}]*Dryland:72[^}]*HockeyIQ:48[^}]*Passing:48/);
   });
 
   it('scales each spoke by its own target, clamped to 1', () => {
@@ -27,7 +27,7 @@ describe('radar season-target scaling (no auto-max bug)', () => {
 
   // Behavioural check of the exact formula shipped in index.html.
   it('a beginner is near center and only a full season touches the ring', () => {
-    const SEASON_TGT = [120, 120, 72, 48];
+    const SEASON_TGT = [120, 120, 72, 48, 48];  // Hands, Shoot, Dryland, IQ, Passing (24wk)
     const frac = (val, a) => Math.min(1, val[a] / SEASON_TGT[a]);
     // beginner: tiny, not pinned
     expect(frac([3, 2, 1], 0)).toBeCloseTo(0.025, 3);
