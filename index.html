@@ -158,7 +158,9 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
    Tints the icon tile and adds a colored left edge so the three read as a set. */
 .nav-stick{--dc:#8fd65e}.nav-shoot{--dc:#75B8FF}.nav-dryland{--dc:#FF9D4D}.nav-iq{--dc:#A98BFF}.nav-pass{--dc:#5CD6C8}
 .nav-stick,.nav-shoot,.nav-dryland,.nav-iq,.nav-pass{border-left:5px solid var(--dc)}
-.nav-stick .ico,.nav-shoot .ico,.nav-dryland .ico,.nav-iq .ico,.nav-pass .ico{background:color-mix(in srgb,var(--dc) 26%,transparent)}.nav-ico{width:34px;height:auto;display:block}.soontag{font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--green);border:1px solid var(--line3);border-radius:999px;padding:4px 8px;align-self:center;white-space:nowrap}
+.nav-stick .ico,.nav-shoot .ico,.nav-dryland .ico,.nav-iq .ico,.nav-pass .ico{background:color-mix(in srgb,var(--dc) 26%,transparent)}
+/* Dark theme: richer tile tint so the discipline chips stay vibrant on the dark panel. */
+html[data-theme='dark'] .nav-stick .ico,html[data-theme='dark'] .nav-shoot .ico,html[data-theme='dark'] .nav-dryland .ico,html[data-theme='dark'] .nav-iq .ico,html[data-theme='dark'] .nav-pass .ico{background:color-mix(in srgb,var(--dc) 45%,transparent)}.nav-ico{width:34px;height:auto;display:block}.soontag{font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--green);border:1px solid var(--line3);border-radius:999px;padding:4px 8px;align-self:center;white-space:nowrap}
 .heroCard{padding:6px 2px 4px;margin-top:6px}.heroCard h1{font-size:40px}.big{font-size:38px}.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;margin-bottom:16px}.pill{padding:7px 10px;border-radius:999px;background:var(--soft);color:var(--green2);font-size:12px;font-weight:900}
 .pill-optional[hidden]{display:none}
 .pilltip{position:relative;padding:7px 12px;border-radius:999px;background:var(--soft);color:var(--green2);font:inherit;font-size:12px;font-weight:900;border:0;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;-webkit-tap-highlight-color:transparent}
