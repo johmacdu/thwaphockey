@@ -281,6 +281,58 @@ describe('Passing as a stat (team + individual)', () => {
     expect(ring.textContent.replace(/\s/g, '')).toBe('2/2');  // displayed count caps at the weekly goal
   });
 
+
+  // GUARD: for the SELF view in WEEK mode, the detail checks the drills ACTUALLY
+  // done (from GET /api/done?week=1 name-slug ids), not the first-N by position.
+  // '20-Minute Run' sits deep in the dryland catalog (not in the first few), so a
+  // position-based check would never mark it; the slug-set check must.
+  it('week detail checks the real drills done (self view), not first-N by position', async () => {
+    const board = { players: [
+      { id: 'lewie', stick: 0, shoot: 0, dryland: 2, pass: 0, iq: 0, netplay: 0, streak: 0, stickers: 0 },
+    ] };
+    const dom = new JSDOM(html, {
+      runScripts: 'dangerously',
+      pretendToBeVisual: true,
+      url: 'https://thwaphockey.com/',
+      beforeParse(window) {
+        window.scrollTo = () => {};
+        window.HTMLMediaElement.prototype.play = () => Promise.resolve();
+        window.fetch = (u) => {
+          const url = String(u);
+          if (url.includes('/api/done') && url.includes('week=1')) {
+            // real week set: only the specific slug for 20-Minute Run
+            return Promise.resolve({ ok: true, json: () => Promise.resolve(
+              { ok: true, week: { start: '2026-10-12', end: '2026-10-16' }, drills: ['dryland#20-minute-run'], disciplines: { dryland: true } }) });
+          }
+          if (url.includes('/api/done')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ ok: true, drills: [], disciplines: {} }) });
+          return Promise.resolve({ ok: true, json: () => Promise.resolve(board) });
+        };
+        try { window.localStorage.setItem('bfPlayer', 'lewie'); } catch (e) {}
+        window.document.cookie = 'thwapAuth=1';
+      },
+    });
+    const win = dom.window;
+    await new Promise((r) => setTimeout(r, 300));
+    win.openPlayerPage('Lewie');
+    // allow the self-week fetch + its re-render
+    await new Promise((r) => setTimeout(r, 2200));
+    // open the Dryland card
+    win.document.querySelector("#plDisc .pl-ring[data-disc='Dryland']").click();
+    await new Promise((r) => setTimeout(r, 1400));
+    const dryCard = [...win.document.querySelectorAll('#plDisc .pl-exrow')].find(
+      (c) => c.querySelector('h3') && c.querySelector('h3').textContent.trim() === 'Dryland');
+    expect(dryCard).toBeTruthy();
+    const rows = [...dryCard.querySelectorAll('.pl-ex')];
+    const runRow = rows.find((r) => /20-Minute Run/i.test(r.textContent));
+    expect(runRow).toBeTruthy();
+    // the specific drill done is CHECKED...
+    expect(runRow.classList.contains('done')).toBe(true);
+    // ...and exactly one row is checked (the slug set has one entry), proving it is
+    // not the position-based first-N check (which would check the first 2 rows).
+    const checked = rows.filter((r) => r.classList.contains('done'));
+    expect(checked.length).toBe(1);
+  });
+
   it('renders a Passing spoke/total in the player stat view', async () => {
     const win = await boot(4);
     // open a known player's stat page and let build() run

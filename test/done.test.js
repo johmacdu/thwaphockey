@@ -290,3 +290,47 @@ describe('done handler backfill (record drill id, no count bump)', () => {
   });
 });
 
+
+describe('done handler: name-stable slug id + self-only week read', () => {
+  it('a mark with drillName ALSO records a name-slug id "<disc>#<slug>" alongside the positional id', async () => {
+    const token = mintSession('lewie', 'p@e.com');
+    const res = makeRes();
+    await handler(postAs({ player: 'lewie', discipline: 'dryland', drillId: 'dryland:0', drillName: 'Plank with Shoulder Taps' }, token), res);
+    expect(res.statusCode).toBe(200);
+    const gres = makeRes();
+    await handler({ method: 'GET', headers: { cookie: `thwapSession=${mintSession('lewie', 'p@e.com')}` } }, gres);
+    // both the positional id and the stable slug id are present
+    expect(gres.body.drills).toEqual(expect.arrayContaining(['dryland:0', 'dryland#plank-with-shoulder-taps']));
+  });
+
+  it('a backfill with drillName records the slug id without a count bump', async () => {
+    const token = mintSession('lewie', 'p@e.com');
+    const res = makeRes();
+    await handler(postAs({ player: 'lewie', drillId: 'dryland:2', drillName: '20-Minute Run', backfill: true }, token), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.backfill).toBe(true);
+    expect(res.body.drills).toEqual(expect.arrayContaining(['dryland:2', 'dryland#20-minute-run']));
+    const player = fake.map.get('player:lewie');
+    expect(player == null || !(Number(player.dryland) > 0)).toBe(true);
+  });
+
+  it('GET ?week=1 unions the signed-in player\u2019s drill ids across the week (self-only)', async () => {
+    const token = mintSession('lewie', 'p@e.com');
+    // record two drills today
+    for (const [id, nm] of [['dryland:0', 'Plank with Shoulder Taps'], ['dryland:1', '20-Minute Run']]) {
+      const r = makeRes();
+      await handler(postAs({ player: 'lewie', discipline: 'dryland', drillId: id, drillName: nm }, token), r);
+    }
+    const gres = makeRes();
+    await handler({ method: 'GET', query: { week: '1' }, headers: { cookie: `thwapSession=${mintSession('lewie', 'p@e.com')}` } }, gres);
+    expect(gres.statusCode).toBe(200);
+    expect(gres.body.week).toBeTruthy();
+    expect(gres.body.drills).toEqual(expect.arrayContaining(['dryland#plank-with-shoulder-taps', 'dryland#20-minute-run']));
+  });
+
+  it('GET ?week=1 requires a session (401 without one)', async () => {
+    const gres = makeRes();
+    await handler({ method: 'GET', query: { week: '1' } }, gres);
+    expect(gres.statusCode).toBe(401);
+  });
+});
