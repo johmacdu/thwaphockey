@@ -145,6 +145,36 @@ describe('Passing as a stat (team + individual)', () => {
     expect(parseInt(num.textContent, 10)).toBe(5);
   });
 
+  // REGRESSION GUARD: a completed passing drill must re-draw as done on the drill
+  // page via cross-device hydration. This needs (a) markDone to send a 'pass:N'
+  // drillId, (b) a registered __thwapDrillApply.pass applier, and (c) 'pass' in the
+  // listIds map. Previously pass sent no drillId and had no applier, so the server
+  // returned no pass ids and the drills never showed done on another device.
+  it('re-draws completed passing drills as done from the server (hydration)', async () => {
+    const dom = new JSDOM(html, {
+      runScripts: 'dangerously',
+      pretendToBeVisual: true,
+      url: 'https://thwaphockey.com/#pass',
+      beforeParse(window) {
+        window.scrollTo = () => {};
+        window.HTMLMediaElement.prototype.play = () => Promise.resolve();
+        window.fetch = () => Promise.resolve({ ok: true, json: () => Promise.resolve({ ok: true, drills: ['pass:0', 'pass:1', 'pass:2'] }) });
+      },
+    });
+    await new Promise((r) => setTimeout(r, 150));
+    const win = dom.window;
+    // the pass applier must be registered
+    expect(typeof win.__thwapDrillApply.pass).toBe('function');
+    win.thwapApplyServerDone(['pass:0', 'pass:1', 'pass:2'], false);
+    await new Promise((r) => setTimeout(r, 120));
+    const list = win.document.getElementById('passList');
+    const rows = list.querySelectorAll('.exrow');
+    const done = list.querySelectorAll('.exrow.done');
+    expect(rows.length).toBeGreaterThan(0);
+    // every rendered pass row re-draws as done
+    expect(done.length).toBe(rows.length);
+  });
+
   it('renders a Passing spoke/total in the player stat view', async () => {
     const win = await boot(4);
     // open a known player's stat page and let build() run
