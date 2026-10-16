@@ -238,3 +238,55 @@ describe('done handler backdating (optional date)', () => {
     expect(fake.map.get('days:lewie')).toEqual(['2026-01-14']);
   });
 });
+
+describe('done handler backfill (record drill id, no count bump)', () => {
+  it('records the drill id in the per-day set WITHOUT bumping the count', async () => {
+    const res = makeRes();
+    const token = mintSession('lewie', 'p@e.com');
+    await handler(postAs({ player: 'lewie', drillId: 'pass:0', backfill: true }, token), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.backfill).toBe(true);
+    // the drill id is now in today's completed set...
+    expect(res.body.drills).toContain('pass:0');
+    // ...but the aggregate player count was NEVER created/bumped (no pass:1).
+    const player = fake.map.get('player:lewie');
+    expect(player == null || !(Number(player.pass) > 0)).toBe(true);
+  });
+
+  it('records multiple backfilled drill ids for the day', async () => {
+    const token = mintSession('lewie', 'p@e.com');
+    for (const id of ['pass:0', 'pass:1', 'pass:2']) {
+      const res = makeRes();
+      await handler(postAs({ player: 'lewie', drillId: id, backfill: true }, token), res);
+      expect(res.statusCode).toBe(200);
+    }
+    // GET reflects all three with no count bump.
+    const gres = makeRes();
+    await handler({ method: 'GET', headers: { cookie: `thwapSession=${mintSession('lewie', 'p@e.com')}` } }, gres);
+    expect(gres.body.drills).toEqual(expect.arrayContaining(['pass:0', 'pass:1', 'pass:2']));
+    const player = fake.map.get('player:lewie');
+    expect(player == null || !(Number(player.pass) > 0)).toBe(true);
+  });
+
+  it('400 when backfill is sent without a drillId', async () => {
+    const res = makeRes();
+    const token = mintSession('lewie', 'p@e.com');
+    await handler(postAs({ player: 'lewie', backfill: true }, token), res);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBe('drillId required for backfill');
+  });
+
+  it('403 backfill for a different player than the session', async () => {
+    const res = makeRes();
+    const token = mintSession('lewie', 'p@e.com');
+    await handler(postAs({ player: 'william', drillId: 'pass:0', backfill: true }, token), res);
+    expect(res.statusCode).toBe(403);
+  });
+
+  it('401 backfill with no session', async () => {
+    const res = makeRes();
+    await handler(post({ player: 'lewie', drillId: 'pass:0', backfill: true }), res);
+    expect(res.statusCode).toBe(401);
+  });
+});
+

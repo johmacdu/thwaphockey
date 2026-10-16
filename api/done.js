@@ -19,6 +19,12 @@
 //                                         the aggregate count or stickers (an undo
 //                                         should not decrement earned work). No
 //                                         `discipline` bump happens on an undo.
+//   - { player, drillId, backfill:true }: RECORDS that drill id for today WITHOUT a
+//                                         count bump. For correcting a completion
+//                                         counted before its per-drill id existed
+//                                         (older client sent no drillId), so a
+//                                         second device can re-draw the checkmark
+//                                         without double-counting. Session-gated.
 //
 // GET  /api/done   (authenticated)      : returns the signed-in player's completed
 //                                         drill ids for TODAY plus which disciplines
@@ -145,6 +151,7 @@ export default async function handler(req, res) {
   const body = parseBody(req);
   const { player, discipline, drillId, date } = body;
   const undo = body.undo === true || body.undo === 'true';
+  const backfill = body.backfill === true || body.backfill === 'true';
 
   // Validate player exists on the roster (needed for both bump and drill paths).
   const entry = findPlayer(player);
@@ -171,6 +178,21 @@ export default async function handler(req, res) {
     }
     const drills = await removeDrillDone(entry.id, String(drillId));
     return res.status(200).json({ ok: true, undo: true, drills });
+  }
+
+  // --- Backfill path: record a drill id for today, no count change ----------
+  // Mirror of the undo path, for correcting completions that were counted
+  // BEFORE the per-drill id was recorded (e.g. passing logged by an older client
+  // that sent no drillId). The aggregate count is already correct, so a normal
+  // mark would double-count; this records ONLY the per-day drill id so a second
+  // device can re-draw the checkmark. Session-gated to the player's own account
+  // exactly like undo, and like undo it never touches the count or stickers.
+  if (backfill) {
+    if (!drillId) {
+      return res.status(400).json({ error: 'drillId required for backfill' });
+    }
+    const drills = await addDrillDone(entry.id, String(drillId));
+    return res.status(200).json({ ok: true, backfill: true, drills });
   }
 
   // --- Mark path -----------------------------------------------------------
