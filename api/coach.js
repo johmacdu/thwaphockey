@@ -784,15 +784,18 @@ async function resolveSuggestion(req, res) {
 }
 
 // POST correct a player's discipline counts by a signed delta. Admin-only.
-// Body: { playerId, stick?, shoot?, dryland?, onDate? }  (deltas, usually negative)
-// Used for one-off data corrections (e.g. undoing double-counted completions from
-// a bug). Decrements the aggregate counts (clamped at 0) AND removes the matching
-// number of dated events for onDate (default today) so the weekly split corrects
-// too. Returns the updated player object.
+// Body: { playerId, stick?, shoot?, dryland?, netplay?, iq?, pass?, onDate? } (deltas,
+// usually negative). Used for one-off data corrections (e.g. undoing double-counted
+// completions from a bug, or trimming an over-count down to the real total).
+// Decrements the aggregate counts (clamped at 0) AND removes the matching number of
+// dated events for onDate (default today) so the weekly split corrects too. All six
+// disciplines are accepted (adjustPlayer already loops over every DISCIPLINE); the
+// handler previously destructured only stick/shoot/dryland, so iq/pass/netplay could
+// not be corrected. Returns the updated player object.
 async function adjustCounts(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
   if (!(await requireAdmin(req, res))) return;
-  const { playerId, stick, shoot, dryland, onDate } = parseBody(req);
+  const { playerId, stick, shoot, dryland, netplay, iq, pass, onDate } = parseBody(req);
   const pid = String(playerId || '').toLowerCase();
   if (!pid || !ROSTER.some((p) => p.id === pid)) {
     return res.status(400).json({ error: 'unknown player' });
@@ -801,6 +804,9 @@ async function adjustCounts(req, res) {
     stick: Number(stick) || 0,
     shoot: Number(shoot) || 0,
     dryland: Number(dryland) || 0,
+    netplay: Number(netplay) || 0,
+    iq: Number(iq) || 0,
+    pass: Number(pass) || 0,
   };
   const date = (typeof onDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(onDate)) ? onDate : undefined;
   const updated = date ? await adjustPlayer(pid, deltas, date) : await adjustPlayer(pid, deltas);
