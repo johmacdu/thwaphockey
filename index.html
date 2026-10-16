@@ -156,9 +156,9 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .nav.soon{cursor:default;opacity:.72}.nav.soon:hover{border-color:var(--line);transform:none}
 /* Bolder, consistent discipline color: green stick, blue shoot, orange dryland.
    Tints the icon tile and adds a colored left edge so the three read as a set. */
-.nav-stick{--dc:#8fd65e}.nav-shoot{--dc:#75B8FF}.nav-dryland{--dc:#FF9D4D}
-.nav-stick,.nav-shoot,.nav-dryland{border-left:5px solid var(--dc)}
-.nav-stick .ico,.nav-shoot .ico,.nav-dryland .ico{background:color-mix(in srgb,var(--dc) 26%,transparent)}.nav-ico{width:34px;height:auto;display:block}.soontag{font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--green);border:1px solid var(--line3);border-radius:999px;padding:4px 8px;align-self:center;white-space:nowrap}
+.nav-stick{--dc:#8fd65e}.nav-shoot{--dc:#75B8FF}.nav-dryland{--dc:#FF9D4D}.nav-iq{--dc:#A98BFF}.nav-pass{--dc:#5CD6C8}
+.nav-stick,.nav-shoot,.nav-dryland,.nav-iq,.nav-pass{border-left:5px solid var(--dc)}
+.nav-stick .ico,.nav-shoot .ico,.nav-dryland .ico,.nav-iq .ico,.nav-pass .ico{background:color-mix(in srgb,var(--dc) 26%,transparent)}.nav-ico{width:34px;height:auto;display:block}.soontag{font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--green);border:1px solid var(--line3);border-radius:999px;padding:4px 8px;align-self:center;white-space:nowrap}
 .heroCard{padding:6px 2px 4px;margin-top:6px}.heroCard h1{font-size:40px}.big{font-size:38px}.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;margin-bottom:16px}.pill{padding:7px 10px;border-radius:999px;background:var(--soft);color:var(--green2);font-size:12px;font-weight:900}
 .pill-optional[hidden]{display:none}
 .pilltip{position:relative;padding:7px 12px;border-radius:999px;background:var(--soft);color:var(--green2);font:inherit;font-size:12px;font-weight:900;border:0;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;-webkit-tap-highlight-color:transparent}
@@ -230,6 +230,7 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 #shoot .exrow{--exacc:#75B8FF;--exacc2:#3e86d6}
 #dryland .exrow{--exacc:#FF9D4D;--exacc2:#e58a2e}
 #iq .exrow{--exacc:#A98BFF;--exacc2:#7A5AF0}
+#pass .exrow{--exacc:#5CD6C8;--exacc2:#2fb3a6}
 /* Hockey IQ quiz: MC options + free-text reflection. Reuses the exrow shell. */
 .iq-card{margin:0;border:2px solid var(--line);border-radius:20px;background:var(--card);padding:22px;box-shadow:0 6px 18px var(--shadow);transition:border-color .15s ease,box-shadow .15s ease}
 #iq .iq-card{--iqacc:#7A5AF0}
@@ -277,7 +278,6 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .iq-submit{display:block;width:100%;font-family:inherit;font-size:17px;font-weight:900;letter-spacing:.01em;padding:16px;min-height:56px;border-radius:16px;border:0;background:#7A5AF0;color:#fff;cursor:pointer;transition:opacity .12s ease,transform .08s ease}
 .iq-submit:active{transform:scale(.99)}
 .iq-submit:disabled{opacity:.45;cursor:default}
-.nav-iq .ico{background:linear-gradient(135deg,#A98BFF,#7A5AF0)}
 
 /* THWAP stamp when a drill is checked done */
 .exthwap{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%) rotate(-8deg) scale(0);font-family:'Archivo Black',system-ui,sans-serif;font-size:52px;color:var(--lime);-webkit-text-stroke:3px var(--ink);pointer-events:none;z-index:60;opacity:0}
@@ -6748,7 +6748,7 @@ function build(){
   var wrap=document.getElementById('plDisc'); if(!wrap)return;
   var goalieView=(window.THWAP_GOALIE_NAMES&&window.THWAP_GOALIE_NAMES.indexOf(String(slug||'').toLowerCase().replace(/[^a-z]/g,''))>=0);
   var thirdDisc=goalieView?'Net play':'Shooting';
-  var DCOL={Stickhandling:'#8fd65e',Shooting:'#75B8FF','Net play':'#75B8FF',Dryland:'#FF9D4D',HockeyIQ:'#A98BFF',Passing:'#2E86FF'};
+  var DCOL={Stickhandling:'#8fd65e',Shooting:'#75B8FF','Net play':'#75B8FF',Dryland:'#FF9D4D',HockeyIQ:'#A98BFF',Passing:'#5CD6C8'};
   var DEMO={Stickhandling:'🏒',Shooting:'🥅','Net play':'🥅',Dryland:'⚡',HockeyIQ:'🧠',Passing:'🎯'};
   var DEMO_GLYPH={Stickhandling:'stick',Shooting:'net','Net play':'net',Dryland:'bolt',HockeyIQ:'brain',Passing:'target'};  /* native drawn icons; emoji on web */
   function teGlyph(disc){ return window.thwapGlyph?window.thwapGlyph(DEMO_GLYPH[disc], DEMO[disc]):DEMO[disc]; }
@@ -6851,7 +6851,7 @@ function build(){
   /* Tapping a totals tile filters the list to that one category; All shows every
      category. (plFilter is 'all' | 'Stickhandling' | 'Shooting' | 'Dryland'.) */
   var showDiscs=(plFilter!=='all' && discs.indexOf(plFilter)>=0)?[plFilter]:discs;
-  var DACC={Stickhandling:'#8fd65e',Shooting:'#75B8FF','Net play':'#75B8FF',Dryland:'#FF9D4D',HockeyIQ:'#A98BFF',Passing:'#2E86FF'};
+  var DACC={Stickhandling:'#8fd65e',Shooting:'#75B8FF','Net play':'#75B8FF',Dryland:'#FF9D4D',HockeyIQ:'#A98BFF',Passing:'#5CD6C8'};
   /* contrast-safe text variants for the name (vivid DACC fails as text on near-white) */
   var DNAMECOL={Stickhandling:'#4E9128',Shooting:'#3E88D8','Net play':'#3E88D8',Dryland:'#E07A1F',HockeyIQ:'#7A5AF0'};
   var meId2=(window.thwapPlayerId?window.thwapPlayerId():'');
