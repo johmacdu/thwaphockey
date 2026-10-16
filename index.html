@@ -7475,13 +7475,14 @@ function render(){
         row.classList.add('done');
         var _l=row.parentNode;
         if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('pass');
-        if(window.thwapMarkDone)window.thwapMarkDone('pass');
+        if(window.thwapMarkDone)window.thwapMarkDone('pass','pass:'+i);
         if(window.thwapStampToday)window.thwapStampToday('pass',true);
         btn.textContent='Done ✓';
       };
       var unMark=function(){
         var p=loadP(); p[i]=false; saveP(p);
         row.classList.remove('done');
+        if(window.thwapUnmarkDone)window.thwapUnmarkDone('pass:'+i);
         if(window.thwapStampToday)window.thwapStampToday('pass',false);
         btn.textContent='Start';
       };
@@ -7491,6 +7492,26 @@ function render(){
     });
   });
 }
+/* Cross-device hydration: write the server's completed passing indices into the
+   local pass prog, re-derive the done signal from PROG vs today's capped set
+   (render() returns early on the home screen so a DOM rollup never fires there),
+   then re-render. Mirrors the stick/shoot/dryland appliers. */
+(window.__thwapDrillApply=window.__thwapDrillApply||{}).pass=function(indices){
+  try{
+    var p=loadP();
+    indices.forEach(function(i){ p[i]=true; });
+    saveP(p);
+    try{
+      if(PASS_DAYS.length){
+        var set=(PASS_DAYS[passDayI()]||[]).slice(0,3);
+        var cnt=set.length;
+        var all=cnt>0; for(var i=0;i<cnt;i++){ if(!p[i]){ all=false; break; } }
+        if(all && window.thwapSetDoneSignal) window.thwapSetDoneSignal('pass',true);
+      }
+    }catch(e){}
+  }catch(e){}
+  try{ render(); }catch(e){}
+};
 render();
 window.addEventListener('hashchange',function(){ if(location.hash==='#pass') render(); });
 /* Reveal the Passing metric tile on the Standings board now that PASS_DAYS is
@@ -8394,7 +8415,7 @@ window.thwapApplyServerDone=function(drillIds, authoritative){
   /* After hydration + re-render, mark a discipline's signal done only when every
      rendered row of its list is checked (so a partial sync does not falsely claim
      the whole discipline). The list ids mirror the hash routes: #stick/#shoot/#dryland. */
-  var listIds={stick:'stickList', shoot:'shootList', dryland:'drylandList'};
+  var listIds={stick:'stickList', shoot:'shootList', dryland:'drylandList', pass:'passList'};
   Object.keys(byDisc).forEach(function(disc){
     try{
       var el=document.getElementById(listIds[disc]); if(!el) return;
