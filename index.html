@@ -158,7 +158,7 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
    Tints the icon tile and adds a colored left edge so the three read as a set. */
 .nav-stick{--dc:#8fd65e}.nav-shoot{--dc:#75B8FF}.nav-dryland{--dc:#FF9D4D}.nav-iq{--dc:#A98BFF}.nav-pass{--dc:#5CD6C8}
 .nav-stick,.nav-shoot,.nav-dryland,.nav-iq,.nav-pass{border-left:5px solid var(--dc)}
-.nav-stick .ico,.nav-shoot .ico,.nav-dryland .ico,.nav-iq .ico,.nav-pass .ico{background:color-mix(in srgb,var(--dc) 26%,transparent)}.nav-ico{width:34px;height:auto;display:block}.soontag{font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--green);border:1px solid var(--line3);border-radius:999px;padding:4px 8px;align-self:center;white-space:nowrap}
+.nav-stick .ico,.nav-shoot .ico,.nav-dryland .ico,.nav-iq .ico,.nav-pass .ico{background:color-mix(in srgb,var(--dc) 26%,transparent)}.nav-ico{width:34px;height:auto;display:block;filter:saturate(1.35)}.soontag{font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--green);border:1px solid var(--line3);border-radius:999px;padding:4px 8px;align-self:center;white-space:nowrap}
 .heroCard{padding:6px 2px 4px;margin-top:6px}.heroCard h1{font-size:40px}.big{font-size:38px}.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;margin-bottom:16px}.pill{padding:7px 10px;border-radius:999px;background:var(--soft);color:var(--green2);font-size:12px;font-weight:900}
 .pill-optional[hidden]{display:none}
 .pilltip{position:relative;padding:7px 12px;border-radius:999px;background:var(--soft);color:var(--green2);font:inherit;font-size:12px;font-weight:900;border:0;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;-webkit-tap-highlight-color:transparent}
@@ -180,6 +180,7 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .exrow:active{transform:scale(.995)}
 .exhead{display:grid;grid-template-columns:56px 1fr auto;gap:14px;align-items:center;padding:18px 16px;cursor:pointer;min-height:72px}
 .exhead .exem{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;font-size:30px;line-height:1;background:color-mix(in srgb,var(--exacc) 22%,transparent)}
+.exicon{filter:saturate(1.35)}
 .exhead .exem .exicon{width:46px;height:46px;object-fit:contain;display:block}
 .exhead h3{margin:0;font-size:22px;font-weight:800;letter-spacing:.005em}
 .exhead .exdose{font-size:12px;color:var(--muted);margin-top:4px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
