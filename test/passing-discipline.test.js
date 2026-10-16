@@ -181,6 +181,44 @@ describe('Passing as a stat (team + individual)', () => {
   // though Standings showed the real count. Boot with a live board carrying
   // pass:3 for Lewie, open his stat page, and assert the Passing ring reads the
   // real value, not zero.
+  // GUARD: the week stat view shows an "All" ring tile (first) + exactly 3 tiles
+  // per row, and the Hockey IQ detail card expands with real content (its catalog
+  // was empty, so the card expanded to nothing).
+  it('shows an All tile and a non-empty Hockey IQ catalog in the stat view', async () => {
+    const board = { players: [
+      { id: 'lewie', stick: 23, shoot: 27, dryland: 14, pass: 3, iq: 3, netplay: 0, streak: 3, stickers: 0 },
+    ] };
+    const dom = new JSDOM(html, {
+      runScripts: 'dangerously',
+      pretendToBeVisual: true,
+      url: 'https://thwaphockey.com/',
+      beforeParse(window) {
+        window.scrollTo = () => {};
+        window.HTMLMediaElement.prototype.play = () => Promise.resolve();
+        window.fetch = (u) => Promise.resolve({ ok: true, json: () => Promise.resolve(
+          String(u).includes('/api/done') ? { ok: true, drills: [], disciplines: {} } : board) });
+        try { window.localStorage.setItem('bfPlayer', 'lewie'); } catch (e) {}
+        window.document.cookie = 'thwapAuth=1';
+      },
+    });
+    const win = dom.window;
+    await new Promise((r) => setTimeout(r, 300));
+    win.openPlayerPage('Lewie');
+    await new Promise((r) => setTimeout(r, 1600));
+    // All tile present as a ring
+    expect(win.document.querySelector("#plDisc .pl-ring[data-disc='all']")).toBeTruthy();
+    // 3-column grid (jsdom reports the raw declared value, not an expanded track list)
+    const grid = win.getComputedStyle(win.document.querySelector('#plDisc .pl-rings')).gridTemplateColumns;
+    expect(grid.replace(/\s/g, '')).toBe('repeat(3,1fr)');
+    // Hockey IQ catalog is non-empty (card would otherwise expand to nothing)
+    const cat = win.buildCatalog ? win.buildCatalog() : null;
+    // buildCatalog is module-local; assert via the rendered IQ card body having rows instead
+    const iqCard = [...win.document.querySelectorAll('#plDisc .pl-exrow')].find(
+      (c) => c.querySelector('h3') && c.querySelector('h3').textContent.trim() === 'Hockey IQ');
+    expect(iqCard).toBeTruthy();
+    expect(iqCard.querySelectorAll('.pl-ex').length).toBeGreaterThan(0);
+  });
+
   it('carries pass from the live board into the player stat view (not 0)', async () => {
     const board = { players: [
       { id: 'lewie', stick: 23, shoot: 27, dryland: 14, pass: 3, iq: 6, netplay: 0, streak: 3, stickers: 0 },
@@ -204,7 +242,7 @@ describe('Passing as a stat (team + individual)', () => {
     await new Promise((r) => setTimeout(r, 1600));
     const ring = win.document.querySelector("#plDisc .pl-ring[data-disc='Passing'] .pl-ring-n");
     expect(ring).toBeTruthy();
-    expect(ring.textContent.replace(/\s/g, '')).toBe('3/2');
+    expect(ring.textContent.replace(/\s/g, '')).toBe('2/2');  // displayed count caps at the weekly goal
   });
 
   it('renders a Passing spoke/total in the player stat view', async () => {
