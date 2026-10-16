@@ -52,10 +52,26 @@ import {
   getDrillDone,
   localDateStr,
   validBackdate,
+  weekDates,
 } from '../lib/store.js';
 import { verifySession, readSessionCookie } from '../lib/session_store.js';
 import { getMember } from '../lib/teams_store.js';
 import { isGated } from '../lib/billing_store.js';
+
+// Build a name-stable drill id '<disc>#<slug>' from a discipline key and a drill
+// NAME. This is the key the stat week-detail matches against, because the
+// positional '<disc>:<index>' id is only meaningful within one day's rendered
+// list and cannot be mapped back to a catalog name after the fact. Lower-cases
+// and strips to [a-z0-9], collapsing runs to a single '-'. Returns '' for a
+// blank/absent name (so a missing drillName simply records no slug id).
+function nameSlugId(disc, name) {
+  const slug = String(name || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  if (!slug) return '';
+  return `${disc}#${slug}`;
+}
 
 // Look up a roster entry by player id (lowercase first name).
 function findPlayer(id) {
@@ -127,6 +143,30 @@ async function handleGet(req, res) {
   if (!entry) {
     return res.status(400).json({ error: 'unknown player' });
   }
+  // ?week=1 : union the signed-in player's completed drill ids across the current
+  // Monday-based week (self-only by construction, since the player is taken from
+  // the SESSION, never a client id). Lets a kid's own stat page mark the exact
+  // drills they did this week. Default (no week) stays today-only, unchanged.
+  const wantWeek = String((req.query && req.query.week) || '') === '1';
+  if (wantWeek) {
+    const days = weekDates();
+    const sets = await Promise.all(days.map((d) => getDrillDone(entry.id, d)));
+    const seen = Object.create(null);
+    const drills = [];
+    for (const set of sets) {
+      for (const id of set) {
+        if (!seen[id]) { seen[id] = 1; drills.push(id); }
+      }
+    }
+    return res.status(200).json({
+      ok: true,
+      player: entry.id,
+      week: { start: days[0], end: days[days.length - 1] },
+      drills,
+      disciplines: doneDisciplines(drills),
+    });
+  }
+
   const date = localDateStr();
   const drills = await getDrillDone(entry.id, date);
   return res.status(200).json({
@@ -149,7 +189,7 @@ export default async function handler(req, res) {
   }
 
   const body = parseBody(req);
-  const { player, discipline, drillId, date } = body;
+  const { player, discipline, drillId, drillName, date } = body;
   const undo = body.undo === true || body.undo === 'true';
   const backfill = body.backfill === true || body.backfill === 'true';
 
@@ -191,7 +231,22 @@ export default async function handler(req, res) {
     if (!drillId) {
       return res.status(400).json({ error: 'drillId required for backfill' });
     }
-    const drills = await addDrillDone(entry.id, String(drillId));
+    // A backfill may target a specific past day (same validated window as a mark),
+    // so a forgotten completion can be re-identified on the day it happened.
+    let bfWhen = null;
+    if (date !== undefined && date !== null && date !== '') {
+      bfWhen = validBackdate(date);
+      if (!bfWhen) return res.status(400).json({ error: 'bad date' });
+    }
+    const onDay = bfWhen || localDateStr();
+    let drills = await addDrillDone(entry.id, String(drillId), onDay);
+    // Optional name-stable id, so the week-detail can mark the exact drill. The
+    // discipline is taken from the drillId prefix ('<disc>:<index>').
+    if (drillName) {
+      const disc = String(drillId).split(':')[0];
+      const slugId = nameSlugId(disc, drillName);
+      if (slugId) drills = await addDrillDone(entry.id, slugId, onDay);
+    }
     return res.status(200).json({ ok: true, backfill: true, drills });
   }
 
@@ -246,7 +301,14 @@ export default async function handler(req, res) {
   // fully backward-compatible (old clients send only { player, discipline }).
   let drills;
   if (drillId) {
-    drills = await addDrillDone(entry.id, String(drillId));
+    drills = await addDrillDone(entry.id, String(drillId), when || localDateStr());
+  }
+  // Also record a NAME-STABLE id so the stat week-detail can mark the exact drill
+  // done (the positional id above is only resolvable within one day's list).
+  // Stamped on the SAME day as the completion (`when` for a backdate, else today).
+  if (drillName) {
+    const slugId = nameSlugId(discipline, drillName);
+    if (slugId) drills = await addDrillDone(entry.id, slugId, when || localDateStr());
   }
 
   return res.status(200).json({ player: updated, ok: true, drills: drills || null });

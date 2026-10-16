@@ -1101,7 +1101,7 @@ img.plflame{width:1.15em;height:auto;vertical-align:-.22em}
 @keyframes plpulse{0%,100%{opacity:.82}50%{opacity:1}}
 .pl-spoke{stroke-dasharray:120;stroke-dashoffset:120;animation:plshoot .35s cubic-bezier(.2,.9,.3,1) forwards}
 @keyframes plshoot{to{stroke-dashoffset:0}}
-.pl-totals{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:28px}
+.pl-totals{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:28px}
 .idp{margin:18px 0 32px;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--card2)}
 .idp-head{font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);display:flex;align-items:center;gap:8px}
 .idp-emoji{font-size:36px}
@@ -4513,7 +4513,7 @@ function render(){
         row.classList.add('done');
         var _l=row.parentNode;
         if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('dryland');
-        if(window.thwapMarkDone)window.thwapMarkDone('dryland','dryland:'+i);
+        if(window.thwapMarkDone)window.thwapMarkDone('dryland','dryland:'+i,false,(drills[i]&&drills[i].name)||'');
         if(window.thwapStampToday)window.thwapStampToday('dryland',true); try{ if(window.thwapSfx)thwapSfx('drylandReward'); }catch(e){} try{ if(window.thwapHaptic)thwapHaptic('done'); }catch(e){}
         btn.textContent='Done ✓';
       };
@@ -6332,7 +6332,7 @@ function render(){
         row.classList.add('done');
         var _l=row.parentNode;
         if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('stick');
-        if(window.thwapMarkDone)window.thwapMarkDone('stick','stick:'+i);
+        if(window.thwapMarkDone)window.thwapMarkDone('stick','stick:'+i,false,(picks[i]&&picks[i].name)||'');
         if(window.thwapStampToday)window.thwapStampToday('stick',true); try{ if(window.thwapSfx)thwapSfx('handsReward'); }catch(e){} try{ if(window.thwapHaptic)thwapHaptic('done'); }catch(e){}
         btn.textContent='Done ✓';
       };
@@ -6499,6 +6499,14 @@ window.thwapEnsureBoard=statsFetch;  /* let the card back pull live stats on ope
 var section=document.getElementById('player');
 var tfEl=document.getElementById('plTf');
 var current=null, tf='week', plFilter='all', plFrom='leaderboard';
+/* Self-only week drill set: when a kid views THEIR OWN stats in week mode we
+   fetch the exact drills they completed this week (GET /api/done?week=1, session
+   -gated) so the week detail checks the real drills, not the first-N by position.
+   null = not loaded / not applicable (other player, all-time, or fetch failed ->
+   fall back to position-based). plWeekFor records which player the set belongs to. */
+var plWeekSet=null, plWeekFor=null, plWeekLoading=false;
+/* Name-stable slug id '<disc>#<slug>', MUST match api/done.js nameSlugId exactly. */
+function plNameSlug(disc,name){ var g=String(name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); return g?(disc+'#'+g):''; }
 
 window.openPlayerPage=function(name, from){
   current=name.trim();
@@ -6705,6 +6713,25 @@ window.thwapStatsRefresh=function(){ if(current && location.hash==='#player') bu
 function build(){
   if(!current)return;
   var first=current.split(' ')[0];
+  /* Load this player's real week drill set when viewing SELF in week mode. The
+     fetch is self-gated server-side; for any other player or all-time we never
+     call it and the detail falls back to position-based. One fetch per player;
+     on resolve we re-render so the checkmarks reflect actual drills. */
+  (function(){
+    var meId=(window.thwapPlayerId?window.thwapPlayerId():'');
+    var viewId=first.toLowerCase().replace(/[^a-z]/g,'');
+    var selfWeek=(tf==='week' && meId && viewId===meId);
+    if(!selfWeek){ if(plWeekFor!==null){ plWeekSet=null; plWeekFor=null; } return; }
+    if(plWeekFor===viewId || plWeekLoading) return;   /* already have it / in flight */
+    if(typeof fetch!=='function') return;              /* no fetch (test env): stay position-based */
+    plWeekLoading=true;
+    fetch('/api/done?week=1',{cache:'no-store',credentials:'include',headers:{'Accept':'application/json'}})
+      .then(function(r){ return r.ok?r.json():null; })
+      .then(function(j){
+        plWeekLoading=false;
+        if(j && j.ok && Array.isArray(j.drills)){ plWeekSet=j.drills; plWeekFor=viewId; build(); }
+      }, function(){ plWeekLoading=false; });   /* fail-open: leave set null */
+  })();
   var info=INFO[first]||{num:'',pos:'F'};
   var slug=first.toLowerCase().replace(/[^a-z]/g,'');
   var photo=document.getElementById('plPhoto');
@@ -6827,14 +6854,29 @@ function build(){
   var DACC={Stickhandling:'#8fd65e',Shooting:'#75B8FF','Net play':'#75B8FF',Dryland:'#FF9D4D',HockeyIQ:'#A98BFF',Passing:'#2E86FF'};
   /* contrast-safe text variants for the name (vivid DACC fails as text on near-white) */
   var DNAMECOL={Stickhandling:'#4E9128',Shooting:'#3E88D8','Net play':'#3E88D8',Dryland:'#E07A1F',HockeyIQ:'#7A5AF0'};
+  var meId2=(window.thwapPlayerId?window.thwapPlayerId():'');
+  var viewId2=first.toLowerCase().replace(/[^a-z]/g,'');
+  /* Use the real completed-drill set only for SELF + WEEK, when it is loaded for
+     THIS player; otherwise fall back to the historical position-based check. */
+  var useWeekSet=(tf==='week' && plWeekSet && plWeekFor===viewId2 && viewId2===meId2);
   var list=showDiscs.map(function(disc){
     var exs=buildCatalog()[disc]||[]; var done=demoDone(first,disc,tf);
-    var rows=exs.map(function(name,i){var isDone=i<done;
+    /* map canonical discipline -> drill-id prefix the client emits */
+    var DPFX={Stickhandling:'stick',Shooting:'shoot','Net play':'netplay',Dryland:'dryland',HockeyIQ:'iq',Passing:'pass'};
+    var checkedN=0;
+    var rows=exs.map(function(name,i){
+      var isDone;
+      if(useWeekSet){ isDone=plWeekSet.indexOf(plNameSlug(DPFX[disc]||disc,name))>=0; }
+      else { isDone=i<done; }
+      if(isDone) checkedN++;
       return "<div class='pl-ex"+(isDone?' done':'')+"'>"+
         "<span class='pl-exicon'>"+(EXICON[name]||'🏒')+"</span>"+
         "<span class='pl-exname'>"+esc(name)+"</span>"+
         "<span class='pl-exdot'>"+(isDone?'✓':'')+"</span></div>";
     }).join('');
+    /* When the real week set drives the checks, the dose counts the ACTUAL checked
+       drills (so 'N of M' matches the checkmarks); otherwise keep the count-based dose. */
+    var doseN=useWeekSet?checkedN:done;
     /* Reuse the home/drill-page expand/collapse card pattern (.exrow/.exhead/.exbody),
        default collapsed, so the stat-page discipline sections match the rest of the app. */
     /* When a tile is tapped (plFilter === this disc), the card renders already
@@ -6842,7 +6884,7 @@ function build(){
     var preOpen=(plFilter===disc)?' open':'';
     return "<div class='exrow pl-exrow"+preOpen+"' style='--exacc:"+DACC[disc]+"'>"+
       "<div class='exhead'><div class='exem'>"+DEMO[disc]+"</div>"+
-      "<div><h3>"+dLabel(disc)+"</h3><div class='exdose'>"+done+" of "+exs.length+" done</div></div>"+
+      "<div><h3>"+dLabel(disc)+"</h3><div class='exdose'>"+doseN+" of "+exs.length+" done</div></div>"+
       "<div class='exchev'>›</div></div>"+
       "<div class='exbody'>"+rows+"</div></div>";
   }).join('');
@@ -7353,7 +7395,7 @@ function render(){
            today" for the daily celebration/streak, and the goalie's third page IS
            the shoot route. */
         if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('shoot');
-        if(window.thwapMarkDone)window.thwapMarkDone(goalie?'netplay':'shoot','shoot:'+i);
+        if(window.thwapMarkDone)window.thwapMarkDone(goalie?'netplay':'shoot','shoot:'+i,false,(SHOOT[i]&&SHOOT[i].name)||'');
         if(window.thwapStampToday)window.thwapStampToday('shoot',true); try{ if(window.thwapSfx)thwapSfx('shootReward'); }catch(e){} try{ if(window.thwapHaptic)thwapHaptic('done'); }catch(e){}
         try{ if(window.thwapRefreshHero) window.thwapRefreshHero(); }catch(e){}
         btn.textContent='Done ✓';
@@ -7502,7 +7544,7 @@ function render(){
         row.classList.add('done');
         var _l=row.parentNode;
         if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('pass');
-        if(window.thwapMarkDone)window.thwapMarkDone('pass','pass:'+i);
+        if(window.thwapMarkDone)window.thwapMarkDone('pass','pass:'+i,false,(PASS[i]&&PASS[i].name)||'');
         if(window.thwapStampToday)window.thwapStampToday('pass',true);
         btn.textContent='Done ✓';
       };
@@ -8107,7 +8149,7 @@ window.thwapDoneNotSaved=function(){
     window.__thwapSaveNoteT=setTimeout(function(){ if(host) host.className='thwap-savenote'; },6000);
   }catch(e){}
 };
-window.thwapMarkDone=function(discipline, drillId, undo){
+window.thwapMarkDone=function(discipline, drillId, undo, drillName){
   /* A logged-in player logs their own work. /api/done REQUIRES a server session;
      if this browser lacks one, a 401 (or a transient network error on the very
      first tap) triggers a transparent session mint and a SINGLE retry, so the
@@ -8120,6 +8162,7 @@ window.thwapMarkDone=function(discipline, drillId, undo){
   var send=function(){
     var payload={player:PLAYER.toLowerCase(), discipline:discipline};
     if(drillId) payload.drillId=drillId;
+    if(drillName) payload.drillName=drillName;
     return fetch('/api/done',{
       method:'POST', headers:{'Content-Type':'application/json'}, cache:'no-store',
       credentials:'include',
@@ -8212,7 +8255,7 @@ window.thwapUnmarkDone=function(drillId){
     if(document.body) ready(); else document.addEventListener('DOMContentLoaded',ready);
     var cookieHas=function(n){ return new RegExp('(?:^|; )'+n+'=').test(document.cookie); };
     var orig=window.thwapMarkDone;
-    window.thwapMarkDone=function(discipline, drillId, undo){
+    window.thwapMarkDone=function(discipline, drillId, undo, drillName){
       var a=null; try{ a=(typeof readAuth==='function')?readAuth():null; }catch(e){}
       var pid=a&&a.pid, num=(a&&typeof NUMS!=='undefined')?NUMS[a.pid]:undefined;
       log('--- tap '+discipline+(drillId?(' '+drillId):'')+' ---');
@@ -8221,7 +8264,7 @@ window.thwapUnmarkDone=function(drillId){
       var ens=(window.thwapEnsureSession?window.thwapEnsureSession():Promise.resolve({reason:'no-ensure'}));
       return Promise.resolve(ens).then(function(er){
         log('pre-ensure -> '+(er?JSON.stringify(er):'(void)')+'  thwapSession now='+cookieHas('thwapSession'));
-        return orig(discipline, drillId, undo);
+        return orig(discipline, drillId, undo, drillName);
       }).then(function(res){
         log('POST /api/done -> '+(res?JSON.stringify(res):'(void)'));
         return fetch('/api/done',{method:'GET',cache:'no-store',credentials:'include',headers:{'Accept':'application/json'}})
