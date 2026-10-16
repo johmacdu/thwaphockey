@@ -184,3 +184,153 @@ describe('done handler: position gate', () => {
     }
   });
 });
+
+describe('done handler backdating (optional date)', () => {
+  // Pin the clock so "recent" is deterministic. 2026-01-14 is a Wednesday.
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-01-14T20:00:00.000Z')); // noon Vancouver
+  });
+
+  it('200 and attributes the dated event to a valid recent backdate', async () => {
+    const res = makeRes();
+    const token = mintSession('lewie', 'p@e.com');
+    await handler(postAs({ player: 'lewie', discipline: 'dryland', date: '2026-01-12' }, token), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.player.dryland).toBe(1);
+    const events = fake.map.get('events:lewie');
+    expect(events).toEqual([{ date: '2026-01-12', disc: 'dryland' }]);
+    expect(fake.map.get('days:lewie')).toEqual(['2026-01-12']);
+  });
+
+  it('400 bad date on an out-of-range (too old) backdate, no write', async () => {
+    const res = makeRes();
+    const token = mintSession('lewie', 'p@e.com');
+    await handler(postAs({ player: 'lewie', discipline: 'stick', date: '2025-12-01' }, token), res);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBe('bad date');
+    expect(fake.map.get('player:lewie')).toBeUndefined();
+  });
+
+  it('400 bad date on a future date, no write', async () => {
+    const res = makeRes();
+    const token = mintSession('lewie', 'p@e.com');
+    await handler(postAs({ player: 'lewie', discipline: 'stick', date: '2026-01-20' }, token), res);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBe('bad date');
+    expect(fake.map.get('player:lewie')).toBeUndefined();
+  });
+
+  it('400 bad date on a malformed date, no write', async () => {
+    const res = makeRes();
+    const token = mintSession('lewie', 'p@e.com');
+    await handler(postAs({ player: 'lewie', discipline: 'stick', date: 'yesterday' }, token), res);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBe('bad date');
+    expect(fake.map.get('player:lewie')).toBeUndefined();
+  });
+
+  it('an empty-string date is ignored and logs today (backward compatible)', async () => {
+    const res = makeRes();
+    const token = mintSession('lewie', 'p@e.com');
+    await handler(postAs({ player: 'lewie', discipline: 'stick', date: '' }, token), res);
+    expect(res.statusCode).toBe(200);
+    expect(fake.map.get('days:lewie')).toEqual(['2026-01-14']);
+  });
+});
+
+describe('done handler backfill (record drill id, no count bump)', () => {
+  it('records the drill id in the per-day set WITHOUT bumping the count', async () => {
+    const res = makeRes();
+    const token = mintSession('lewie', 'p@e.com');
+    await handler(postAs({ player: 'lewie', drillId: 'pass:0', backfill: true }, token), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.backfill).toBe(true);
+    // the drill id is now in today's completed set...
+    expect(res.body.drills).toContain('pass:0');
+    // ...but the aggregate player count was NEVER created/bumped (no pass:1).
+    const player = fake.map.get('player:lewie');
+    expect(player == null || !(Number(player.pass) > 0)).toBe(true);
+  });
+
+  it('records multiple backfilled drill ids for the day', async () => {
+    const token = mintSession('lewie', 'p@e.com');
+    for (const id of ['pass:0', 'pass:1', 'pass:2']) {
+      const res = makeRes();
+      await handler(postAs({ player: 'lewie', drillId: id, backfill: true }, token), res);
+      expect(res.statusCode).toBe(200);
+    }
+    // GET reflects all three with no count bump.
+    const gres = makeRes();
+    await handler({ method: 'GET', headers: { cookie: `thwapSession=${mintSession('lewie', 'p@e.com')}` } }, gres);
+    expect(gres.body.drills).toEqual(expect.arrayContaining(['pass:0', 'pass:1', 'pass:2']));
+    const player = fake.map.get('player:lewie');
+    expect(player == null || !(Number(player.pass) > 0)).toBe(true);
+  });
+
+  it('400 when backfill is sent without a drillId', async () => {
+    const res = makeRes();
+    const token = mintSession('lewie', 'p@e.com');
+    await handler(postAs({ player: 'lewie', backfill: true }, token), res);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.error).toBe('drillId required for backfill');
+  });
+
+  it('403 backfill for a different player than the session', async () => {
+    const res = makeRes();
+    const token = mintSession('lewie', 'p@e.com');
+    await handler(postAs({ player: 'william', drillId: 'pass:0', backfill: true }, token), res);
+    expect(res.statusCode).toBe(403);
+  });
+
+  it('401 backfill with no session', async () => {
+    const res = makeRes();
+    await handler(post({ player: 'lewie', drillId: 'pass:0', backfill: true }), res);
+    expect(res.statusCode).toBe(401);
+  });
+});
+
+
+describe('done handler: name-stable slug id + self-only week read', () => {
+  it('a mark with drillName ALSO records a name-slug id "<disc>#<slug>" alongside the positional id', async () => {
+    const token = mintSession('lewie', 'p@e.com');
+    const res = makeRes();
+    await handler(postAs({ player: 'lewie', discipline: 'dryland', drillId: 'dryland:0', drillName: 'Plank with Shoulder Taps' }, token), res);
+    expect(res.statusCode).toBe(200);
+    const gres = makeRes();
+    await handler({ method: 'GET', headers: { cookie: `thwapSession=${mintSession('lewie', 'p@e.com')}` } }, gres);
+    // both the positional id and the stable slug id are present
+    expect(gres.body.drills).toEqual(expect.arrayContaining(['dryland:0', 'dryland#plank-with-shoulder-taps']));
+  });
+
+  it('a backfill with drillName records the slug id without a count bump', async () => {
+    const token = mintSession('lewie', 'p@e.com');
+    const res = makeRes();
+    await handler(postAs({ player: 'lewie', drillId: 'dryland:2', drillName: '20-Minute Run', backfill: true }, token), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.backfill).toBe(true);
+    expect(res.body.drills).toEqual(expect.arrayContaining(['dryland:2', 'dryland#20-minute-run']));
+    const player = fake.map.get('player:lewie');
+    expect(player == null || !(Number(player.dryland) > 0)).toBe(true);
+  });
+
+  it('GET ?week=1 unions the signed-in player\u2019s drill ids across the week (self-only)', async () => {
+    const token = mintSession('lewie', 'p@e.com');
+    // record two drills today
+    for (const [id, nm] of [['dryland:0', 'Plank with Shoulder Taps'], ['dryland:1', '20-Minute Run']]) {
+      const r = makeRes();
+      await handler(postAs({ player: 'lewie', discipline: 'dryland', drillId: id, drillName: nm }, token), r);
+    }
+    const gres = makeRes();
+    await handler({ method: 'GET', query: { week: '1' }, headers: { cookie: `thwapSession=${mintSession('lewie', 'p@e.com')}` } }, gres);
+    expect(gres.statusCode).toBe(200);
+    expect(gres.body.week).toBeTruthy();
+    expect(gres.body.drills).toEqual(expect.arrayContaining(['dryland#plank-with-shoulder-taps', 'dryland#20-minute-run']));
+  });
+
+  it('GET ?week=1 requires a session (401 without one)', async () => {
+    const gres = makeRes();
+    await handler({ method: 'GET', query: { week: '1' } }, gres);
+    expect(gres.statusCode).toBe(401);
+  });
+});

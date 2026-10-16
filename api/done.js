@@ -1,9 +1,16 @@
 // api/done.js
 //
-// POST /api/done  body: { player, discipline, drillId?, undo? }
+// POST /api/done  body: { player, discipline, drillId?, undo?, date? }
 //   - { player, discipline }            : marks one discipline done (bumps the
 //                                         aggregate count + dated event). Original
 //                                         behaviour, unchanged and still valid.
+//   - { ..., date:'YYYY-MM-DD' }         : OPTIONAL. Attributes the completion to
+//                                         that Vancouver-local day instead of
+//                                         today, for logging a FORGOTTEN day. Must
+//                                         be a real date within the last 7 days and
+//                                         not in the future, else 400. The all-time
+//                                         count is unaffected; only the dated
+//                                         day/event (streak + weekly split) moves.
 //   - { ..., drillId }                  : ALSO records that specific drill id in
 //                                         the player's per-day completed SET, so a
 //                                         second device can re-draw the checkmark.
@@ -12,6 +19,12 @@
 //                                         the aggregate count or stickers (an undo
 //                                         should not decrement earned work). No
 //                                         `discipline` bump happens on an undo.
+//   - { player, drillId, backfill:true }: RECORDS that drill id for today WITHOUT a
+//                                         count bump. For correcting a completion
+//                                         counted before its per-drill id existed
+//                                         (older client sent no drillId), so a
+//                                         second device can re-draw the checkmark
+//                                         without double-counting. Session-gated.
 //
 // GET  /api/done   (authenticated)      : returns the signed-in player's completed
 //                                         drill ids for TODAY plus which disciplines
@@ -38,10 +51,27 @@ import {
   removeDrillDone,
   getDrillDone,
   localDateStr,
+  validBackdate,
+  weekDates,
 } from '../lib/store.js';
 import { verifySession, readSessionCookie } from '../lib/session_store.js';
 import { getMember } from '../lib/teams_store.js';
 import { isGated } from '../lib/billing_store.js';
+
+// Build a name-stable drill id '<disc>#<slug>' from a discipline key and a drill
+// NAME. This is the key the stat week-detail matches against, because the
+// positional '<disc>:<index>' id is only meaningful within one day's rendered
+// list and cannot be mapped back to a catalog name after the fact. Lower-cases
+// and strips to [a-z0-9], collapsing runs to a single '-'. Returns '' for a
+// blank/absent name (so a missing drillName simply records no slug id).
+function nameSlugId(disc, name) {
+  const slug = String(name || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  if (!slug) return '';
+  return `${disc}#${slug}`;
+}
 
 // Look up a roster entry by player id (lowercase first name).
 function findPlayer(id) {
@@ -113,6 +143,30 @@ async function handleGet(req, res) {
   if (!entry) {
     return res.status(400).json({ error: 'unknown player' });
   }
+  // ?week=1 : union the signed-in player's completed drill ids across the current
+  // Monday-based week (self-only by construction, since the player is taken from
+  // the SESSION, never a client id). Lets a kid's own stat page mark the exact
+  // drills they did this week. Default (no week) stays today-only, unchanged.
+  const wantWeek = String((req.query && req.query.week) || '') === '1';
+  if (wantWeek) {
+    const days = weekDates();
+    const sets = await Promise.all(days.map((d) => getDrillDone(entry.id, d)));
+    const seen = Object.create(null);
+    const drills = [];
+    for (const set of sets) {
+      for (const id of set) {
+        if (!seen[id]) { seen[id] = 1; drills.push(id); }
+      }
+    }
+    return res.status(200).json({
+      ok: true,
+      player: entry.id,
+      week: { start: days[0], end: days[days.length - 1] },
+      drills,
+      disciplines: doneDisciplines(drills),
+    });
+  }
+
   const date = localDateStr();
   const drills = await getDrillDone(entry.id, date);
   return res.status(200).json({
@@ -135,8 +189,9 @@ export default async function handler(req, res) {
   }
 
   const body = parseBody(req);
-  const { player, discipline, drillId } = body;
+  const { player, discipline, drillId, drillName, date } = body;
   const undo = body.undo === true || body.undo === 'true';
+  const backfill = body.backfill === true || body.backfill === 'true';
 
   // Validate player exists on the roster (needed for both bump and drill paths).
   const entry = findPlayer(player);
@@ -163,6 +218,36 @@ export default async function handler(req, res) {
     }
     const drills = await removeDrillDone(entry.id, String(drillId));
     return res.status(200).json({ ok: true, undo: true, drills });
+  }
+
+  // --- Backfill path: record a drill id for today, no count change ----------
+  // Mirror of the undo path, for correcting completions that were counted
+  // BEFORE the per-drill id was recorded (e.g. passing logged by an older client
+  // that sent no drillId). The aggregate count is already correct, so a normal
+  // mark would double-count; this records ONLY the per-day drill id so a second
+  // device can re-draw the checkmark. Session-gated to the player's own account
+  // exactly like undo, and like undo it never touches the count or stickers.
+  if (backfill) {
+    if (!drillId) {
+      return res.status(400).json({ error: 'drillId required for backfill' });
+    }
+    // A backfill may target a specific past day (same validated window as a mark),
+    // so a forgotten completion can be re-identified on the day it happened.
+    let bfWhen = null;
+    if (date !== undefined && date !== null && date !== '') {
+      bfWhen = validBackdate(date);
+      if (!bfWhen) return res.status(400).json({ error: 'bad date' });
+    }
+    const onDay = bfWhen || localDateStr();
+    let drills = await addDrillDone(entry.id, String(drillId), onDay);
+    // Optional name-stable id, so the week-detail can mark the exact drill. The
+    // discipline is taken from the drillId prefix ('<disc>:<index>').
+    if (drillName) {
+      const disc = String(drillId).split(':')[0];
+      const slugId = nameSlugId(disc, drillName);
+      if (slugId) drills = await addDrillDone(entry.id, slugId, onDay);
+    }
+    return res.status(200).json({ ok: true, backfill: true, drills });
   }
 
   // --- Mark path -----------------------------------------------------------
@@ -193,15 +278,37 @@ export default async function handler(req, res) {
     return res.status(402).json({ error: 'season not active', gated: true });
   }
 
-  // Bump the aggregate count + dated event (unchanged behaviour).
-  const updated = await bumpPlayer(entry.id, discipline);
+  // Optional backdating: a player (or a parent on their behalf) correcting a
+  // forgotten log may attribute this completion to a recent day. When `date` is
+  // supplied it MUST be a valid, recent 'YYYY-MM-DD' (within the last 7 days, not
+  // in the future); an invalid value is REJECTED here rather than silently filed
+  // as today, so a bad date can never corrupt the streak/weekly split. Absent
+  // `date` logs today, exactly as before.
+  let when = null;
+  if (date !== undefined && date !== null && date !== '') {
+    when = validBackdate(date);
+    if (!when) {
+      return res.status(400).json({ error: 'bad date' });
+    }
+  }
+
+  // Bump the aggregate count + dated event (unchanged behaviour; `when` only
+  // moves the day the days/events are attributed to, never the all-time count).
+  const updated = await bumpPlayer(entry.id, discipline, when);
 
   // If a stable drill id was supplied, record it in the per-day completed set so
   // other devices can re-draw the checkmark. A missing drillId keeps the endpoint
   // fully backward-compatible (old clients send only { player, discipline }).
   let drills;
   if (drillId) {
-    drills = await addDrillDone(entry.id, String(drillId));
+    drills = await addDrillDone(entry.id, String(drillId), when || localDateStr());
+  }
+  // Also record a NAME-STABLE id so the stat week-detail can mark the exact drill
+  // done (the positional id above is only resolvable within one day's list).
+  // Stamped on the SAME day as the completion (`when` for a backdate, else today).
+  if (drillName) {
+    const slugId = nameSlugId(discipline, drillName);
+    if (slugId) drills = await addDrillDone(entry.id, slugId, when || localDateStr());
   }
 
   return res.status(200).json({ player: updated, ok: true, drills: drills || null });

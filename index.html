@@ -156,9 +156,9 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .nav.soon{cursor:default;opacity:.72}.nav.soon:hover{border-color:var(--line);transform:none}
 /* Bolder, consistent discipline color: green stick, blue shoot, orange dryland.
    Tints the icon tile and adds a colored left edge so the three read as a set. */
-.nav-stick{--dc:#8fd65e}.nav-shoot{--dc:#75B8FF}.nav-dryland{--dc:#FF9D4D}
-.nav-stick,.nav-shoot,.nav-dryland{border-left:5px solid var(--dc)}
-.nav-stick .ico,.nav-shoot .ico,.nav-dryland .ico{background:color-mix(in srgb,var(--dc) 26%,transparent)}.nav-ico{width:34px;height:auto;display:block}.soontag{font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--green);border:1px solid var(--line3);border-radius:999px;padding:4px 8px;align-self:center;white-space:nowrap}
+.nav-stick{--dc:#8fd65e}.nav-shoot{--dc:#75B8FF}.nav-dryland{--dc:#FF9D4D}.nav-iq{--dc:#A98BFF}.nav-pass{--dc:#5CD6C8}
+.nav-stick,.nav-shoot,.nav-dryland,.nav-iq,.nav-pass{border-left:5px solid var(--dc)}
+.nav-stick .ico,.nav-shoot .ico,.nav-dryland .ico,.nav-iq .ico,.nav-pass .ico{background:color-mix(in srgb,var(--dc) 26%,transparent)}.nav-ico{width:34px;height:auto;display:block}.soontag{font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--green);border:1px solid var(--line3);border-radius:999px;padding:4px 8px;align-self:center;white-space:nowrap}
 .heroCard{padding:6px 2px 4px;margin-top:6px}.heroCard h1{font-size:40px}.big{font-size:38px}.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;margin-bottom:16px}.pill{padding:7px 10px;border-radius:999px;background:var(--soft);color:var(--green2);font-size:12px;font-weight:900}
 .pill-optional[hidden]{display:none}
 .pilltip{position:relative;padding:7px 12px;border-radius:999px;background:var(--soft);color:var(--green2);font:inherit;font-size:12px;font-weight:900;border:0;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;-webkit-tap-highlight-color:transparent}
@@ -230,6 +230,7 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 #shoot .exrow{--exacc:#75B8FF;--exacc2:#3e86d6}
 #dryland .exrow{--exacc:#FF9D4D;--exacc2:#e58a2e}
 #iq .exrow{--exacc:#A98BFF;--exacc2:#7A5AF0}
+#pass .exrow{--exacc:#5CD6C8;--exacc2:#2fb3a6}
 /* Hockey IQ quiz: MC options + free-text reflection. Reuses the exrow shell. */
 .iq-card{margin:0;border:2px solid var(--line);border-radius:20px;background:var(--card);padding:22px;box-shadow:0 6px 18px var(--shadow);transition:border-color .15s ease,box-shadow .15s ease}
 #iq .iq-card{--iqacc:#7A5AF0}
@@ -277,7 +278,6 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .iq-submit{display:block;width:100%;font-family:inherit;font-size:17px;font-weight:900;letter-spacing:.01em;padding:16px;min-height:56px;border-radius:16px;border:0;background:#7A5AF0;color:#fff;cursor:pointer;transition:opacity .12s ease,transform .08s ease}
 .iq-submit:active{transform:scale(.99)}
 .iq-submit:disabled{opacity:.45;cursor:default}
-.nav-iq .ico{background:color-mix(in srgb,#7A5AF0 26%,transparent)}
 
 /* THWAP stamp when a drill is checked done */
 .exthwap{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%) rotate(-8deg) scale(0);font-family:'Archivo Black',system-ui,sans-serif;font-size:52px;color:var(--lime);-webkit-text-stroke:3px var(--ink);pointer-events:none;z-index:60;opacity:0}
@@ -1079,8 +1079,8 @@ img.plflame{width:1.15em;height:auto;vertical-align:-.22em}
 .plfire-lab{font-family:'Archivo Black',system-ui,sans-serif;font-size:.7em;color:#FF7A1A;text-transform:uppercase;letter-spacing:.04em;margin-left:4px}
 @keyframes plflare{0%{transform:scale(1)}30%{transform:scale(1.6) rotate(-6deg);filter:drop-shadow(0 0 14px rgba(255,150,40,.95))}60%{transform:scale(1.3) rotate(5deg)}100%{transform:scale(1)}}
 @keyframes plflick{0%{transform:scale(1) rotate(-4deg);opacity:1}25%{transform:scale(1.18,1.24) rotate(3deg);opacity:.85}50%{transform:scale(.94,1.1) rotate(-2deg);opacity:1}75%{transform:scale(1.12,1.16) rotate(4deg);opacity:.9}100%{transform:scale(1) rotate(-4deg);opacity:1}}
-.pl-rings{display:grid;grid-template-columns:repeat(auto-fit,minmax(72px,1fr));gap:12px;margin-bottom:18px}
-.pl-ring{width:100%;font-family:inherit;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px 6px 12px;text-align:center;cursor:pointer;transition:opacity .12s ease,border-color .12s ease,box-shadow .12s ease}
+.pl-rings{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.pl-ring{width:100%;font-family:inherit;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px 6px 12px;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;transition:opacity .12s ease,border-color .12s ease,box-shadow .12s ease}
 .pl-ring.pl-ring-sel{border-color:var(--lime);box-shadow:inset 0 0 0 2px var(--lime)}
 .pl-ring.pl-ring-dim{opacity:.45}
 .pl-ring svg{display:block;margin:auto}
@@ -1101,7 +1101,7 @@ img.plflame{width:1.15em;height:auto;vertical-align:-.22em}
 @keyframes plpulse{0%,100%{opacity:.82}50%{opacity:1}}
 .pl-spoke{stroke-dasharray:120;stroke-dashoffset:120;animation:plshoot .35s cubic-bezier(.2,.9,.3,1) forwards}
 @keyframes plshoot{to{stroke-dashoffset:0}}
-.pl-totals{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:28px}
+.pl-totals{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:28px}
 .idp{margin:18px 0 32px;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--card2)}
 .idp-head{font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);display:flex;align-items:center;gap:8px}
 .idp-emoji{font-size:36px}
@@ -4513,7 +4513,7 @@ function render(){
         row.classList.add('done');
         var _l=row.parentNode;
         if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('dryland');
-        if(window.thwapMarkDone)window.thwapMarkDone('dryland','dryland:'+i);
+        if(window.thwapMarkDone)window.thwapMarkDone('dryland','dryland:'+i,false,(drills[i]&&drills[i].name)||'');
         if(window.thwapStampToday)window.thwapStampToday('dryland',true); try{ if(window.thwapSfx)thwapSfx('drylandReward'); }catch(e){} try{ if(window.thwapHaptic)thwapHaptic('done'); }catch(e){}
         btn.textContent='Done ✓';
       };
@@ -4943,7 +4943,7 @@ function countUp(el,target,fmt){
    weekly split at /api/board?tf=week and cumulative all-time at /api/board. */
 var LIVE={week:null, all:null};
 function mapPlayers(list){
-  return list.map(function(p){ return {n:(p.id.charAt(0).toUpperCase()+p.id.slice(1)), stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0, netplay:p.netplay||0, iq:p.iq||0}; });
+  return list.map(function(p){ return {n:(p.id.charAt(0).toUpperCase()+p.id.slice(1)), stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0, netplay:p.netplay||0, iq:p.iq||0, pass:p.pass||0}; });
 }
 /* Global real-data store so the stats page reads the SAME live numbers, not a
    name-hash demo. Keyed by lowercase first name. streak is the honest computed
@@ -6332,7 +6332,7 @@ function render(){
         row.classList.add('done');
         var _l=row.parentNode;
         if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('stick');
-        if(window.thwapMarkDone)window.thwapMarkDone('stick','stick:'+i);
+        if(window.thwapMarkDone)window.thwapMarkDone('stick','stick:'+i,false,(picks[i]&&picks[i].name)||'');
         if(window.thwapStampToday)window.thwapStampToday('stick',true); try{ if(window.thwapSfx)thwapSfx('handsReward'); }catch(e){} try{ if(window.thwapHaptic)thwapHaptic('done'); }catch(e){}
         btn.textContent='Done ✓';
       };
@@ -6415,17 +6415,25 @@ function buildCatalog(){
   var stick=[], shoot=[], dry=[], net=[];
   /* These arrays live in OTHER script-tag IIFEs, so they are only reachable via
      window (a bare reference would ReferenceError and fall back to the stub). */
-  var DR=window.DRILLS||[], SD=window.SHOOT_DAYS||[], WK=window.WORKOUTS||[], NP=window.NETPLAY_DAYS||[];
+  var DR=window.DRILLS||[], SD=window.SHOOT_DAYS||[], WK=window.WORKOUTS||[], NP=window.NETPLAY_DAYS||[], PD=window.PASS_DAYS||[];
   try{ DR.forEach(function(d){ stick.push([d.name,d.emoji]); }); }catch(e){}
   try{ SD.forEach(function(day){ (day||[]).forEach(function(s){ shoot.push([s.name,s.emoji]); }); }); }catch(e){}
   try{ WK.forEach(function(w){ (w.drills||[]).forEach(function(ex){ dry.push([ex.name,ex.emoji]); }); }); }catch(e){}
   try{ NP.forEach(function(day){ (day||[]).forEach(function(s){ net.push([s.name,s.emoji]); }); }); }catch(e){}
-  var uStick=uniq(stick), uShoot=uniq(shoot), uDry=uniq(dry), uNet=uniq(net);
+  var pas=[];
+  try{ PD.forEach(function(day){ (day||[]).forEach(function(s){ pas.push([s.name,s.emoji]); }); }); }catch(e){}
+  /* Hockey IQ items are video reviews (each carries a real title); list those by
+     title so the IQ detail card expands with real content instead of an empty body. */
+  var iq=[];
+  try{ (window.IQ_OFFENSE||[]).concat(window.IQ_DEFENSE||[]).forEach(function(v){ if(v&&v.title) iq.push([v.title,'\ud83e\udde0']); }); }catch(e){}
+  var uStick=uniq(stick), uShoot=uniq(shoot), uDry=uniq(dry), uNet=uniq(net), uPas=uniq(pas), uIq=uniq(iq);
   _catalogCache={
     Stickhandling: uStick.length?uStick:CATALOG.Stickhandling,
     Shooting: uShoot.length?uShoot:CATALOG.Shooting,
     'Net play': uNet.length?uNet:[],
-    Dryland: uDry.length?uDry:CATALOG.Dryland
+    Dryland: uDry.length?uDry:CATALOG.Dryland,
+    Passing: uPas.length?uPas:[],
+    HockeyIQ: uIq
   };
   return _catalogCache;
 }
@@ -6461,7 +6469,7 @@ window.thwapDrillCatalog=function(cat){
 /* Real per-player completion counts, read from the same live board the leaderboard
    uses (window.thwapBoard, populated below). disc is the display name; the board
    keys are stick/shoot/dryland. Everyone reads 0 until the API responds. */
-var DKEY={Stickhandling:'stick',Shooting:'shoot','Net play':'netplay',Dryland:'dryland',HockeyIQ:'iq'};
+var DKEY={Stickhandling:'stick',Shooting:'shoot','Net play':'netplay',Dryland:'dryland',HockeyIQ:'iq',Passing:'pass'};
 function boardRow(name,tf){
   var b=window.thwapBoard; if(!b) return null;
   var m=(tf==='all')?b.all:b.week;
@@ -6476,7 +6484,7 @@ function statsFetch(){
     var url=(which==='week')?'/api/board?tf=week':'/api/board';
     try{ fetch(url,{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(j){
       if(j&&j.players&&j.players.length){
-        var m={}; j.players.forEach(function(p){ m[String(p.id).toLowerCase()]={stick:p.stick||0,shoot:p.shoot||0,dryland:p.dryland||0,netplay:p.netplay||0,iq:p.iq||0,streak:p.streak||0}; });
+        var m={}; j.players.forEach(function(p){ m[String(p.id).toLowerCase()]={stick:p.stick||0,shoot:p.shoot||0,dryland:p.dryland||0,netplay:p.netplay||0,iq:p.iq||0,pass:p.pass||0,streak:p.streak||0}; });
         window.thwapBoard=window.thwapBoard||{week:{},all:{},ready:false};
         window.thwapBoard[which]=m; window.thwapBoard.ready=true;
         if(window.thwapStatsRefresh) window.thwapStatsRefresh();
@@ -6491,6 +6499,14 @@ window.thwapEnsureBoard=statsFetch;  /* let the card back pull live stats on ope
 var section=document.getElementById('player');
 var tfEl=document.getElementById('plTf');
 var current=null, tf='week', plFilter='all', plFrom='leaderboard';
+/* Self-only week drill set: when a kid views THEIR OWN stats in week mode we
+   fetch the exact drills they completed this week (GET /api/done?week=1, session
+   -gated) so the week detail checks the real drills, not the first-N by position.
+   null = not loaded / not applicable (other player, all-time, or fetch failed ->
+   fall back to position-based). plWeekFor records which player the set belongs to. */
+var plWeekSet=null, plWeekFor=null, plWeekLoading=false;
+/* Name-stable slug id '<disc>#<slug>', MUST match api/done.js nameSlugId exactly. */
+function plNameSlug(disc,name){ var g=String(name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); return g?(disc+'#'+g):''; }
 
 window.openPlayerPage=function(name, from){
   current=name.trim();
@@ -6697,6 +6713,25 @@ window.thwapStatsRefresh=function(){ if(current && location.hash==='#player') bu
 function build(){
   if(!current)return;
   var first=current.split(' ')[0];
+  /* Load this player's real week drill set when viewing SELF in week mode. The
+     fetch is self-gated server-side; for any other player or all-time we never
+     call it and the detail falls back to position-based. One fetch per player;
+     on resolve we re-render so the checkmarks reflect actual drills. */
+  (function(){
+    var meId=(window.thwapPlayerId?window.thwapPlayerId():'');
+    var viewId=first.toLowerCase().replace(/[^a-z]/g,'');
+    var selfWeek=(tf==='week' && meId && viewId===meId);
+    if(!selfWeek){ if(plWeekFor!==null){ plWeekSet=null; plWeekFor=null; } return; }
+    if(plWeekFor===viewId || plWeekLoading) return;   /* already have it / in flight */
+    if(typeof fetch!=='function') return;              /* no fetch (test env): stay position-based */
+    plWeekLoading=true;
+    fetch('/api/done?week=1',{cache:'no-store',credentials:'include',headers:{'Accept':'application/json'}})
+      .then(function(r){ return r.ok?r.json():null; })
+      .then(function(j){
+        plWeekLoading=false;
+        if(j && j.ok && Array.isArray(j.drills)){ plWeekSet=j.drills; plWeekFor=viewId; build(); }
+      }, function(){ plWeekLoading=false; });   /* fail-open: leave set null */
+  })();
   var info=INFO[first]||{num:'',pos:'F'};
   var slug=first.toLowerCase().replace(/[^a-z]/g,'');
   var photo=document.getElementById('plPhoto');
@@ -6713,24 +6748,30 @@ function build(){
   var wrap=document.getElementById('plDisc'); if(!wrap)return;
   var goalieView=(window.THWAP_GOALIE_NAMES&&window.THWAP_GOALIE_NAMES.indexOf(String(slug||'').toLowerCase().replace(/[^a-z]/g,''))>=0);
   var thirdDisc=goalieView?'Net play':'Shooting';
-  var DCOL={Stickhandling:'#8fd65e',Shooting:'#75B8FF','Net play':'#75B8FF',Dryland:'#FF9D4D',HockeyIQ:'#A98BFF'};
-  var DEMO={Stickhandling:'🏒',Shooting:'🥅','Net play':'🥅',Dryland:'⚡',HockeyIQ:'🧠'};
-  var DEMO_GLYPH={Stickhandling:'stick',Shooting:'net','Net play':'net',Dryland:'bolt',HockeyIQ:'brain'};  /* native drawn icons; emoji on web */
+  var DCOL={Stickhandling:'#8fd65e',Shooting:'#75B8FF','Net play':'#75B8FF',Dryland:'#FF9D4D',HockeyIQ:'#A98BFF',Passing:'#5CD6C8'};
+  var DEMO={Stickhandling:'🏒',Shooting:'🥅','Net play':'🥅',Dryland:'⚡',HockeyIQ:'🧠',Passing:'🎯'};
+  var DEMO_GLYPH={Stickhandling:'stick',Shooting:'net','Net play':'net',Dryland:'bolt',HockeyIQ:'brain',Passing:'target'};  /* native drawn icons; emoji on web */
   function teGlyph(disc){ return window.thwapGlyph?window.thwapGlyph(DEMO_GLYPH[disc], DEMO[disc]):DEMO[disc]; }
   var DNAME={Stickhandling:'Hands',HockeyIQ:'Hockey IQ'};  /* display label; key stays canonical */
   function dLabel(d){ return DNAME[d]||d; }
   /* Radar spokes. 3 today (-> diamond with IQ = 4). When Passing ships, add 'Passing'
      here and the geometry below (driven off discs.length = N) becomes a pentagon with
      no further edits. */
-  var discs=['Stickhandling',thirdDisc,'Dryland','HockeyIQ'];
+  var discs=['Stickhandling',thirdDisc,'Dryland','HockeyIQ','Passing'];
   var N=discs.length;
 
   var visual='';
   if(tf==='week'){
     /* three chunky rings toward this week's goal */
-    visual="<div class='pl-rings'>"+discs.map(function(disc){
-      var CAT_ALL=buildCatalog(); var done=demoDone(first,disc,'week');
-      var goal=(disc==='HockeyIQ')?2:(CAT_ALL[disc]?CAT_ALL[disc].length:0);  /* IQ runs Thu/Fri = 2/wk */
+    /* goal per discipline this week (IQ Thu/Fri, Passing 2 days/wk = 2/wk each) */
+    var CAT_ALL=buildCatalog();
+    function weekGoal(disc){ return (disc==='HockeyIQ'||disc==='Passing')?2:(CAT_ALL[disc]?CAT_ALL[disc].length:0); }
+    function ringTile(disc){
+      var done=demoDone(first,disc,'week');
+      var goal=weekGoal(disc);
+      /* the DISPLAYED count never exceeds the goal: a kid cannot be 3/2. The ring
+         fill (pct) is already capped; cap the number text to match so it reads 2/2. */
+      var shown=goal?Math.min(done,goal):done;
       var r=32,circ=2*Math.PI*r,pct=Math.min(1,goal?done/goal:0),off=circ*(1-pct);
       var dim=(plFilter!=='all'&&plFilter!==disc)?" pl-ring-dim":"";
       var sel=(plFilter===disc)?" pl-ring-sel":"";
@@ -6739,8 +6780,21 @@ function build(){
         "<circle cx='40' cy='40' r='"+r+"' fill='none' stroke='var(--soft)' stroke-width='9'/>"+
         "<circle class='pl-ringfill' cx='40' cy='40' r='"+r+"' fill='none' stroke='"+DCOL[disc]+"' stroke-width='9' stroke-linecap='round' stroke-dasharray='"+circ+"' stroke-dashoffset='"+circ+"' data-off='"+off+"' transform='rotate(-90 40 40)'/>"+
         "<text x='40' y='50' text-anchor='middle' font-size='24'>"+DEMO[disc]+"</text></svg>"+
-        "<div class='pl-ring-l'>"+dLabel(disc)+"</div><div class='pl-ring-n'>"+done+" / "+goal+"</div></button>";
-    }).join('')+"</div>";
+        "<div class='pl-ring-l'>"+dLabel(disc)+"</div><div class='pl-ring-n'>"+shown+" / "+goal+"</div></button>";
+    }
+    /* 'All' tile first (mirrors the team Standings All metric): sums done + goal
+       across every discipline, filters back to the full list when tapped. */
+    var allDone=discs.reduce(function(x,disc){var g=weekGoal(disc);return x+(g?Math.min(demoDone(first,disc,'week'),g):demoDone(first,disc,'week'));},0);
+    var allGoal=discs.reduce(function(x,disc){return x+weekGoal(disc);},0);
+    var allPct=Math.min(1,allGoal?allDone/allGoal:0),allR=32,allCirc=2*Math.PI*allR,allOff=allCirc*(1-allPct);
+    var allSel=(plFilter==='all')?" pl-ring-sel":"";
+    var allTile="<button type='button' class='pl-ring"+allSel+"' data-disc='all' data-full='"+(allPct>=1)+"'>"+
+      "<svg width='80' height='80' viewBox='0 0 80 80'>"+
+      "<circle cx='40' cy='40' r='"+allR+"' fill='none' stroke='var(--soft)' stroke-width='9'/>"+
+      "<circle class='pl-ringfill' cx='40' cy='40' r='"+allR+"' fill='none' stroke='var(--lime)' stroke-width='9' stroke-linecap='round' stroke-dasharray='"+allCirc+"' stroke-dashoffset='"+allCirc+"' data-off='"+allOff+"' transform='rotate(-90 40 40)'/>"+
+      "<text x='40' y='50' text-anchor='middle' font-size='24'>"+(window.thwapGlyph?window.thwapGlyph('trophy','\ud83c\udfc6'):'\ud83c\udfc6')+"</text></svg>"+
+      "<div class='pl-ring-l'>All</div><div class='pl-ring-n'>"+allDone+" / "+allGoal+"</div></button>";
+    visual="<div class='pl-rings'>"+allTile+discs.map(ringTile).join('')+"</div>";
   } else {
     /* all-time: glowing power triangle + big totals, bigger and numbered */
     var cx=150,cy=150,R=104;
@@ -6754,7 +6808,7 @@ function build(){
     /* 24-week season ceilings per discipline: Stickhandling/Shooting 5/wk=120,
        Dryland 3/wk=72, Hockey IQ 2/wk (Thu/Fri)=48. Each spoke scales to its OWN
        target so it only touches the ring at 100% of that discipline's season goal. */
-    var SEASON_TGTMAP={Stickhandling:120,Shooting:120,'Net play':120,Dryland:72,HockeyIQ:48};
+    var SEASON_TGTMAP={Stickhandling:120,Shooting:120,'Net play':120,Dryland:72,HockeyIQ:48,Passing:48};
     var frac=function(a){var t=SEASON_TGTMAP[discs[a]]||120;return Math.min(1,val[a]/t);};
     var grid='';
     for(var g=1;g<=3;g++){var rr=R*g/3,p=[];for(var a=0;a<N;a++){var ang=angOf(a);p.push((cx+rr*Math.cos(ang)).toFixed(1)+','+(cy+rr*Math.sin(ang)).toFixed(1));}grid+="<polygon points='"+p.join(' ')+"' fill='none' stroke='var(--line)' stroke-width='1.5'/>";}
@@ -6797,22 +6851,40 @@ function build(){
   /* Tapping a totals tile filters the list to that one category; All shows every
      category. (plFilter is 'all' | 'Stickhandling' | 'Shooting' | 'Dryland'.) */
   var showDiscs=(plFilter!=='all' && discs.indexOf(plFilter)>=0)?[plFilter]:discs;
-  var DACC={Stickhandling:'#8fd65e',Shooting:'#75B8FF','Net play':'#75B8FF',Dryland:'#FF9D4D',HockeyIQ:'#A98BFF'};
+  var DACC={Stickhandling:'#8fd65e',Shooting:'#75B8FF','Net play':'#75B8FF',Dryland:'#FF9D4D',HockeyIQ:'#A98BFF',Passing:'#5CD6C8'};
   /* contrast-safe text variants for the name (vivid DACC fails as text on near-white) */
   var DNAMECOL={Stickhandling:'#4E9128',Shooting:'#3E88D8','Net play':'#3E88D8',Dryland:'#E07A1F',HockeyIQ:'#7A5AF0'};
+  var meId2=(window.thwapPlayerId?window.thwapPlayerId():'');
+  var viewId2=first.toLowerCase().replace(/[^a-z]/g,'');
+  /* Use the real completed-drill set only for SELF + WEEK, when it is loaded for
+     THIS player; otherwise fall back to the historical position-based check. */
+  var useWeekSet=(tf==='week' && plWeekSet && plWeekFor===viewId2 && viewId2===meId2);
   var list=showDiscs.map(function(disc){
     var exs=buildCatalog()[disc]||[]; var done=demoDone(first,disc,tf);
-    var rows=exs.map(function(name,i){var isDone=i<done;
+    /* map canonical discipline -> drill-id prefix the client emits */
+    var DPFX={Stickhandling:'stick',Shooting:'shoot','Net play':'netplay',Dryland:'dryland',HockeyIQ:'iq',Passing:'pass'};
+    var checkedN=0;
+    var rows=exs.map(function(name,i){
+      var isDone;
+      if(useWeekSet){ isDone=plWeekSet.indexOf(plNameSlug(DPFX[disc]||disc,name))>=0; }
+      else { isDone=i<done; }
+      if(isDone) checkedN++;
       return "<div class='pl-ex"+(isDone?' done':'')+"'>"+
         "<span class='pl-exicon'>"+(EXICON[name]||'🏒')+"</span>"+
         "<span class='pl-exname'>"+esc(name)+"</span>"+
         "<span class='pl-exdot'>"+(isDone?'✓':'')+"</span></div>";
     }).join('');
+    /* When the real week set drives the checks, the dose counts the ACTUAL checked
+       drills (so 'N of M' matches the checkmarks); otherwise keep the count-based dose. */
+    var doseN=useWeekSet?checkedN:done;
     /* Reuse the home/drill-page expand/collapse card pattern (.exrow/.exhead/.exbody),
        default collapsed, so the stat-page discipline sections match the rest of the app. */
-    return "<div class='exrow pl-exrow' style='--exacc:"+DACC[disc]+"'>"+
+    /* When a tile is tapped (plFilter === this disc), the card renders already
+       EXPANDED so the player immediately sees what was done, every time. */
+    var preOpen=(plFilter===disc)?' open':'';
+    return "<div class='exrow pl-exrow"+preOpen+"' style='--exacc:"+DACC[disc]+"'>"+
       "<div class='exhead'><div class='exem'>"+DEMO[disc]+"</div>"+
-      "<div><h3>"+dLabel(disc)+"</h3><div class='exdose'>"+done+" of "+exs.length+" done</div></div>"+
+      "<div><h3>"+dLabel(disc)+"</h3><div class='exdose'>"+doseN+" of "+exs.length+" done</div></div>"+
       "<div class='exchev'>›</div></div>"+
       "<div class='exbody'>"+rows+"</div></div>";
   }).join('');
@@ -6824,7 +6896,7 @@ function build(){
     "<div><h3>Game and Individual Goals</h3><div class='exdose' id='gigDose'>Tap to see your goals</div></div>"+
     "<div class='exchev'>›</div></div>"+
     "<div class='exbody'><div id='gigBody'><div class='idphist-empty'>Loading your goals...</div></div></div></div>";
-  wrap.innerHTML=visual+"<div class='pl-list'>"+list+gigCard+"</div>";
+  wrap.innerHTML=visual+"<div class='pl-list'>"+list+(plFilter==='all'?gigCard:'')+"</div>";
   if(window.thwapRenderGIG) window.thwapRenderGIG(slug);
 
   /* collapse/expand each discipline card (default collapsed), home-page .exrow pattern */
@@ -7323,7 +7395,7 @@ function render(){
            today" for the daily celebration/streak, and the goalie's third page IS
            the shoot route. */
         if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('shoot');
-        if(window.thwapMarkDone)window.thwapMarkDone(goalie?'netplay':'shoot','shoot:'+i);
+        if(window.thwapMarkDone)window.thwapMarkDone(goalie?'netplay':'shoot','shoot:'+i,false,(SHOOT[i]&&SHOOT[i].name)||'');
         if(window.thwapStampToday)window.thwapStampToday('shoot',true); try{ if(window.thwapSfx)thwapSfx('shootReward'); }catch(e){} try{ if(window.thwapHaptic)thwapHaptic('done'); }catch(e){}
         try{ if(window.thwapRefreshHero) window.thwapRefreshHero(); }catch(e){}
         btn.textContent='Done ✓';
@@ -7472,13 +7544,14 @@ function render(){
         row.classList.add('done');
         var _l=row.parentNode;
         if(window.thwapCategoryDone && _l && _l.querySelectorAll('.exrow').length===_l.querySelectorAll('.exrow.done').length) window.thwapCategoryDone('pass');
-        if(window.thwapMarkDone)window.thwapMarkDone('pass');
+        if(window.thwapMarkDone)window.thwapMarkDone('pass','pass:'+i,false,(PASS[i]&&PASS[i].name)||'');
         if(window.thwapStampToday)window.thwapStampToday('pass',true);
         btn.textContent='Done ✓';
       };
       var unMark=function(){
         var p=loadP(); p[i]=false; saveP(p);
         row.classList.remove('done');
+        if(window.thwapUnmarkDone)window.thwapUnmarkDone('pass:'+i);
         if(window.thwapStampToday)window.thwapStampToday('pass',false);
         btn.textContent='Start';
       };
@@ -7488,8 +7561,33 @@ function render(){
     });
   });
 }
+/* Cross-device hydration: write the server's completed passing indices into the
+   local pass prog, re-derive the done signal from PROG vs today's capped set
+   (render() returns early on the home screen so a DOM rollup never fires there),
+   then re-render. Mirrors the stick/shoot/dryland appliers. */
+(window.__thwapDrillApply=window.__thwapDrillApply||{}).pass=function(indices){
+  try{
+    var p=loadP();
+    indices.forEach(function(i){ p[i]=true; });
+    saveP(p);
+    try{
+      if(PASS_DAYS.length){
+        var set=(PASS_DAYS[passDayI()]||[]).slice(0,3);
+        var cnt=set.length;
+        var all=cnt>0; for(var i=0;i<cnt;i++){ if(!p[i]){ all=false; break; } }
+        if(all && window.thwapSetDoneSignal) window.thwapSetDoneSignal('pass',true);
+      }
+    }catch(e){}
+  }catch(e){}
+  try{ render(); }catch(e){}
+};
 render();
 window.addEventListener('hashchange',function(){ if(location.hash==='#pass') render(); });
+/* Reveal the Passing metric tile on the Standings board now that PASS_DAYS is
+   defined. The early reveal gate (in an earlier script block) runs BEFORE this
+   block assigns window.PASS_DAYS, so it always saw undefined and left the tile
+   hidden; doing it here, after the data exists, is what actually un-hides it. */
+(function(){ var mp=document.getElementById('metricPass'); if(mp && Array.isArray(window.PASS_DAYS) && window.PASS_DAYS.length) mp.hidden=false; })();
 })();</script>
 
 <script>(function(){
@@ -8051,7 +8149,7 @@ window.thwapDoneNotSaved=function(){
     window.__thwapSaveNoteT=setTimeout(function(){ if(host) host.className='thwap-savenote'; },6000);
   }catch(e){}
 };
-window.thwapMarkDone=function(discipline, drillId, undo){
+window.thwapMarkDone=function(discipline, drillId, undo, drillName){
   /* A logged-in player logs their own work. /api/done REQUIRES a server session;
      if this browser lacks one, a 401 (or a transient network error on the very
      first tap) triggers a transparent session mint and a SINGLE retry, so the
@@ -8064,6 +8162,7 @@ window.thwapMarkDone=function(discipline, drillId, undo){
   var send=function(){
     var payload={player:PLAYER.toLowerCase(), discipline:discipline};
     if(drillId) payload.drillId=drillId;
+    if(drillName) payload.drillName=drillName;
     return fetch('/api/done',{
       method:'POST', headers:{'Content-Type':'application/json'}, cache:'no-store',
       credentials:'include',
@@ -8156,7 +8255,7 @@ window.thwapUnmarkDone=function(drillId){
     if(document.body) ready(); else document.addEventListener('DOMContentLoaded',ready);
     var cookieHas=function(n){ return new RegExp('(?:^|; )'+n+'=').test(document.cookie); };
     var orig=window.thwapMarkDone;
-    window.thwapMarkDone=function(discipline, drillId, undo){
+    window.thwapMarkDone=function(discipline, drillId, undo, drillName){
       var a=null; try{ a=(typeof readAuth==='function')?readAuth():null; }catch(e){}
       var pid=a&&a.pid, num=(a&&typeof NUMS!=='undefined')?NUMS[a.pid]:undefined;
       log('--- tap '+discipline+(drillId?(' '+drillId):'')+' ---');
@@ -8165,7 +8264,7 @@ window.thwapUnmarkDone=function(drillId){
       var ens=(window.thwapEnsureSession?window.thwapEnsureSession():Promise.resolve({reason:'no-ensure'}));
       return Promise.resolve(ens).then(function(er){
         log('pre-ensure -> '+(er?JSON.stringify(er):'(void)')+'  thwapSession now='+cookieHas('thwapSession'));
-        return orig(discipline, drillId, undo);
+        return orig(discipline, drillId, undo, drillName);
       }).then(function(res){
         log('POST /api/done -> '+(res?JSON.stringify(res):'(void)'));
         return fetch('/api/done',{method:'GET',cache:'no-store',credentials:'include',headers:{'Accept':'application/json'}})
@@ -8386,7 +8485,7 @@ window.thwapApplyServerDone=function(drillIds, authoritative){
   /* After hydration + re-render, mark a discipline's signal done only when every
      rendered row of its list is checked (so a partial sync does not falsely claim
      the whole discipline). The list ids mirror the hash routes: #stick/#shoot/#dryland. */
-  var listIds={stick:'stickList', shoot:'shootList', dryland:'drylandList'};
+  var listIds={stick:'stickList', shoot:'shootList', dryland:'drylandList', pass:'passList'};
   Object.keys(byDisc).forEach(function(disc){
     try{
       var el=document.getElementById(listIds[disc]); if(!el) return;

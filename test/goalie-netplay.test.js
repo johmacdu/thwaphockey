@@ -51,7 +51,7 @@ describe('goalie Net play wiring (source guards)', () => {
 
   it('the player radar third spoke is Net play for a goalie, wired to netplay data', () => {
     expect(html).toMatch(/var thirdDisc=goalieView\?'Net play':'Shooting'/);
-    expect(html).toMatch(/var discs=\['Stickhandling',thirdDisc,'Dryland','HockeyIQ'\]/);
+    expect(html).toMatch(/var discs=\['Stickhandling',thirdDisc,'Dryland','HockeyIQ','Passing'\]/);
     // display name resolves to the netplay storage key + a catalog for the ring goal
     expect(html).toMatch(/'Net play':'netplay'/);
     expect(html).toMatch(/'Net play': uNet\.length\?uNet:\[\]/);
@@ -95,7 +95,7 @@ describe('goalie Net play server slot + board plumbing (regression: fairness rul
   // as Shooting. The done-handler must post `netplay` for a goalie, and the
   // board plumbing (mapPlayers/stashBoard) must carry `netplay` through.
   it('the shoot-page done-handler posts netplay for a goalie, shoot otherwise', () => {
-    expect(html).toMatch(/window\.thwapMarkDone\(goalie\?'netplay':'shoot','shoot:'\+i\)/);
+    expect(html).toMatch(/window\.thwapMarkDone\(goalie\?'netplay':'shoot','shoot:'\+i/);
   });
 
   it('mapPlayers carries netplay through to the board', () => {
