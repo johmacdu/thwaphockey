@@ -110,7 +110,7 @@ describe('Passing as a stat (team + individual)', () => {
     expect(h).toMatch(/var discs=\['Stickhandling',thirdDisc,'Dryland','HockeyIQ','Passing'\]/);
     // supporting maps all carry a Passing entry
     expect(h).toMatch(/DKEY=\{[^}]*Passing:'pass'/);
-    expect(h).toMatch(/DCOL=\{[^}]*Passing:'#2E86FF'/);
+    expect(h).toMatch(/DCOL=\{[^}]*Passing:'#5CD6C8'/);
     expect(h).toMatch(/DEMO=\{[^}]*Passing:'\ud83c\udfaf'/);
     expect(h).toMatch(/SEASON_TGTMAP=\{[^}]*Passing:48/);
   });
