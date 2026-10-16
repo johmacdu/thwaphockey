@@ -6837,7 +6837,10 @@ function build(){
     }).join('');
     /* Reuse the home/drill-page expand/collapse card pattern (.exrow/.exhead/.exbody),
        default collapsed, so the stat-page discipline sections match the rest of the app. */
-    return "<div class='exrow pl-exrow' style='--exacc:"+DACC[disc]+"'>"+
+    /* When a tile is tapped (plFilter === this disc), the card renders already
+       EXPANDED so the player immediately sees what was done, every time. */
+    var preOpen=(plFilter===disc)?' open':'';
+    return "<div class='exrow pl-exrow"+preOpen+"' style='--exacc:"+DACC[disc]+"'>"+
       "<div class='exhead'><div class='exem'>"+DEMO[disc]+"</div>"+
       "<div><h3>"+dLabel(disc)+"</h3><div class='exdose'>"+done+" of "+exs.length+" done</div></div>"+
       "<div class='exchev'>›</div></div>"+
