@@ -4943,7 +4943,7 @@ function countUp(el,target,fmt){
    weekly split at /api/board?tf=week and cumulative all-time at /api/board. */
 var LIVE={week:null, all:null};
 function mapPlayers(list){
-  return list.map(function(p){ return {n:(p.id.charAt(0).toUpperCase()+p.id.slice(1)), stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0, netplay:p.netplay||0, iq:p.iq||0}; });
+  return list.map(function(p){ return {n:(p.id.charAt(0).toUpperCase()+p.id.slice(1)), stick:p.stick||0, shoot:p.shoot||0, dryland:p.dryland||0, netplay:p.netplay||0, iq:p.iq||0, pass:p.pass||0}; });
 }
 /* Global real-data store so the stats page reads the SAME live numbers, not a
    name-hash demo. Keyed by lowercase first name. streak is the honest computed
