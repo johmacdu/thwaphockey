@@ -219,6 +219,42 @@ describe('Passing as a stat (team + individual)', () => {
     expect(iqCard.querySelectorAll('.pl-ex').length).toBeGreaterThan(0);
   });
 
+  // GUARD: tapping a category tile must auto-EXPAND that discipline's card so the
+  // player sees what was done -- not leave it collapsed. Filtering already hid the
+  // others; the filtered card must render with the `open` class.
+  it('auto-expands the discipline card when a tile is tapped', async () => {
+    const board = { players: [
+      { id: 'lewie', stick: 23, shoot: 27, dryland: 14, pass: 3, iq: 3, netplay: 0, streak: 3, stickers: 0 },
+    ] };
+    const dom = new JSDOM(html, {
+      runScripts: 'dangerously',
+      pretendToBeVisual: true,
+      url: 'https://thwaphockey.com/',
+      beforeParse(window) {
+        window.scrollTo = () => {};
+        window.HTMLMediaElement.prototype.play = () => Promise.resolve();
+        window.fetch = (u) => Promise.resolve({ ok: true, json: () => Promise.resolve(
+          String(u).includes('/api/done') ? { ok: true, drills: [], disciplines: {} } : board) });
+        try { window.localStorage.setItem('bfPlayer', 'lewie'); } catch (e) {}
+        window.document.cookie = 'thwapAuth=1';
+      },
+    });
+    const win = dom.window;
+    await new Promise((r) => setTimeout(r, 300));
+    win.openPlayerPage('Lewie');
+    await new Promise((r) => setTimeout(r, 1600));
+    // tap the Hands (Stickhandling) ring tile
+    win.document.querySelector("#plDisc .pl-ring[data-disc='Stickhandling']").click();
+    await new Promise((r) => setTimeout(r, 1500));
+    const cards = [...win.document.querySelectorAll('#plDisc .pl-exrow')];
+    // only the Hands card is shown...
+    expect(cards.length).toBe(1);
+    expect(cards[0].querySelector('h3').textContent.trim()).toBe('Hands');
+    // ...and it is already expanded (open), with its drill rows visible
+    expect(cards[0].classList.contains('open')).toBe(true);
+    expect(cards[0].querySelectorAll('.pl-ex').length).toBeGreaterThan(0);
+  });
+
   it('carries pass from the live board into the player stat view (not 0)', async () => {
     const board = { players: [
       { id: 'lewie', stick: 23, shoot: 27, dryland: 14, pass: 3, iq: 6, netplay: 0, streak: 3, stickers: 0 },
