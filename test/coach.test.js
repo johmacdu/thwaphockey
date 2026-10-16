@@ -1051,3 +1051,42 @@ describe('multiple guardian emails per player', () => {
     expect(recipients).toEqual(['a@x.com', 'b@x.com', 'c@x.com']);
   });
 });
+
+describe('Thwap admin: adjust-counts corrects iq/pass (not just stick/shoot/dryland)', () => {
+  const KEY = 'admin-test-token';
+  it('lowers a stored iq count by removing a dated event', async () => {
+    const store = await import('../lib/store.js');
+    const pid = store.ROSTER[0].id;
+    // seed 3 iq events today (per-video completions)
+    await store.bumpPlayer(pid, 'iq');
+    await store.bumpPlayer(pid, 'iq');
+    await store.bumpPlayer(pid, 'iq');
+    let p = await store.getPlayer(pid);
+    expect(Number(p.iq)).toBe(3);
+    // correct down to 2 via the admin endpoint (previously impossible: iq was not
+    // in the handler's destructure, so the delta was silently dropped)
+    const res = makeRes();
+    await _handlers.adjustCounts(post({ playerId: pid, iq: -1 }, { key: KEY }), res);
+    expect(res.statusCode).toBe(200);
+    expect(Number(res.body.player.iq)).toBe(2);
+    p = await store.getPlayer(pid);
+    expect(Number(p.iq)).toBe(2);
+    // the weekly split (dated events) also drops to 2
+    const wb = await store.weekBoard();
+    const row = wb.find((r) => r.id === pid);
+    expect(row.iq).toBe(2);
+  });
+
+  it('lowers a stored pass count the same way', async () => {
+    const store = await import('../lib/store.js');
+    const pid = store.ROSTER[0].id;
+    await store.bumpPlayer(pid, 'pass');
+    await store.bumpPlayer(pid, 'pass');
+    await store.bumpPlayer(pid, 'pass');
+    const res = makeRes();
+    await _handlers.adjustCounts(post({ playerId: pid, pass: -1 }, { key: KEY }), res);
+    expect(res.statusCode).toBe(200);
+    expect(Number(res.body.player.pass)).toBe(2);
+  });
+});
+
