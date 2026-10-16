@@ -175,6 +175,38 @@ describe('Passing as a stat (team + individual)', () => {
     expect(done.length).toBe(rows.length);
   });
 
+  // REGRESSION GUARD: statsFetch() builds its OWN per-player board map for the
+  // individual stat view (radar/rings/totals), separate from mapPlayers. It
+  // previously dropped `pass`, so Passing showed 0/2 on a player's stats even
+  // though Standings showed the real count. Boot with a live board carrying
+  // pass:3 for Lewie, open his stat page, and assert the Passing ring reads the
+  // real value, not zero.
+  it('carries pass from the live board into the player stat view (not 0)', async () => {
+    const board = { players: [
+      { id: 'lewie', stick: 23, shoot: 27, dryland: 14, pass: 3, iq: 6, netplay: 0, streak: 3, stickers: 0 },
+    ] };
+    const dom = new JSDOM(html, {
+      runScripts: 'dangerously',
+      pretendToBeVisual: true,
+      url: 'https://thwaphockey.com/',
+      beforeParse(window) {
+        window.scrollTo = () => {};
+        window.HTMLMediaElement.prototype.play = () => Promise.resolve();
+        window.fetch = (u) => Promise.resolve({ ok: true, json: () => Promise.resolve(
+          String(u).includes('/api/done') ? { ok: true, drills: [], disciplines: {} } : board) });
+        try { window.localStorage.setItem('bfPlayer', 'lewie'); } catch (e) {}
+        window.document.cookie = 'thwapAuth=1';
+      },
+    });
+    const win = dom.window;
+    await new Promise((r) => setTimeout(r, 300));
+    win.openPlayerPage('Lewie');
+    await new Promise((r) => setTimeout(r, 1600));
+    const ring = win.document.querySelector("#plDisc .pl-ring[data-disc='Passing'] .pl-ring-n");
+    expect(ring).toBeTruthy();
+    expect(ring.textContent.replace(/\s/g, '')).toBe('3/2');
+  });
+
   it('renders a Passing spoke/total in the player stat view', async () => {
     const win = await boot(4);
     // open a known player's stat page and let build() run
