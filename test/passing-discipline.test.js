@@ -115,6 +115,36 @@ describe('Passing as a stat (team + individual)', () => {
     expect(h).toMatch(/SEASON_TGTMAP=\{[^}]*Passing:48/);
   });
 
+  // REGRESSION GUARD: mapPlayers() must carry the pass column from the live
+  // /api/board into each board row. It previously dropped `pass`, so a player's
+  // real passing count never reached the Standings metric (tile showed 0 despite
+  // the server storing the count). Boot with a live board and assert the tile
+  // reflects the real number, not zero.
+  it('carries pass from the live board into the Standings metric total', async () => {
+    const board = { players: [
+      { id: 'lewie', stick: 22, shoot: 26, dryland: 12, pass: 3, iq: 5, netplay: 0, streak: 6, stickers: 0 },
+      { id: 'anton', stick: 10, shoot: 8, dryland: 4, pass: 2, iq: 1, netplay: 0, streak: 2, stickers: 0 },
+    ] };
+    const dom = new JSDOM(html, {
+      runScripts: 'dangerously',
+      pretendToBeVisual: true,
+      url: 'https://thwaphockey.com/#pass',
+      beforeParse(window) {
+        window.scrollTo = () => {};
+        window.HTMLMediaElement.prototype.play = () => Promise.resolve();
+        window.fetch = () => Promise.resolve({ ok: true, json: () => Promise.resolve(board) });
+      },
+    });
+    // Wait past the countUp animation so the tile shows its settled value.
+    await new Promise((r) => setTimeout(r, 1500));
+    const win = dom.window;
+    const num = win.document.querySelector("#metrics .metric[data-disc='pass'] [data-total='pass']");
+    expect(num).toBeTruthy();
+    // Default timeframe is "This week"; both players' week pass (3 + 2) must reach
+    // the team total. The mapPlayers drop bug left this at 0.
+    expect(parseInt(num.textContent, 10)).toBe(5);
+  });
+
   it('renders a Passing spoke/total in the player stat view', async () => {
     const win = await boot(4);
     // open a known player's stat page and let build() run
