@@ -12,10 +12,34 @@ function render(weekend, done, goalie) {
     "window.thwapToday=function(){return new Date(2026,8,28);};" +
     "var _g=Storage.prototype.getItem;Storage.prototype.getItem=function(k){if(k in window.__done)return window.__done[k];return _g.call(this,k);};<\/script>";
   let doc = html.replace('<head>', '<head>' + inject);
+  // These core tests describe a plain weekday where only Hands/Shooting/Dryland are
+  // scheduled. Hockey IQ (Thu/Fri) and Passing (Tue/Fri) run on their own days, so
+  // their nav cards are hidden here (mirroring the day-gate the app applies), then
+  // the hero is repainted. A dedicated describe below covers the IQ/Passing days.
+  doc = doc.replace('</body>',
+    "<script>['iq','pass'].forEach(function(k){var c=document.querySelector('.nav-'+k);if(c)c.style.display='none';});" +
+    "if(typeof window.thwapRefreshHero==='function')window.thwapRefreshHero();<\/script></body>");
   if (goalie) {
     // Force the goalie flag AFTER the app defines its helpers (they live late in the file), then re-render the summary.
     doc = doc.replace('</body>', "<script>window.thwapIsGoalie=function(){return true;};if(typeof window.thwapRefreshHero==='function')window.thwapRefreshHero();<\/script></body>");
   }
+  const dom = new JSDOM(doc, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'http://localhost/' });
+  return dom.window.document;
+}
+
+// Render with a specific set of discipline cards VISIBLE (the rest hidden), so a
+// test can assert the hero sentence on an IQ day (Thu/Fri) or a Passing day
+// (Tue/Fri) without depending on the real wall-clock weekday.
+function renderWithCards(visible) {
+  const inject = "<script>window.__wk=false;" +
+    "Object.defineProperty(window,'thwapIsWeekend',{configurable:true,value:function(){return false;}});" +
+    "window.thwapToday=function(){return new Date(2026,8,28);};<\/script>";
+  let doc = html.replace('<head>', '<head>' + inject);
+  const vis = JSON.stringify(visible);
+  doc = doc.replace('</body>',
+    "<script>var VIS=" + vis + ";['stick','shoot','dryland','iq','pass'].forEach(function(k){" +
+    "var c=document.querySelector('.nav-'+k); if(c) c.style.display=(VIS.indexOf(k)>=0)?'':'none';});" +
+    "if(typeof window.thwapRefreshHero==='function')window.thwapRefreshHero();<\/script></body>");
   const dom = new JSDOM(doc, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'http://localhost/' });
   return dom.window.document;
 }
@@ -104,6 +128,7 @@ function renderGated() {
   let doc = html.replace('<head>', '<head>' + inject);
   doc = doc.replace('</body>',
     "<script>var c=document.querySelector('.nav-dryland'); if(c) c.style.display='none';" +
+    "['iq','pass'].forEach(function(k){var e=document.querySelector('.nav-'+k); if(e) e.style.display='none';});" +
     "if(typeof window.thwapRefreshHero==='function') window.thwapRefreshHero();<\/script></body>");
   const dom = new JSDOM(doc, { runScripts: 'dangerously', pretendToBeVisual: true, url: 'http://localhost/' });
   return dom.window.document;
@@ -149,5 +174,48 @@ describe('Home hero do-summary — goalie', () => {
     expect(lead.textContent).toContain('Dryland');
     expect(lead.textContent).not.toContain('Shooting');
     expect(lead.textContent).not.toContain('Net play');
+  });
+});
+
+describe('Home hero do-summary — Hockey IQ and Passing join the sentence on their days', () => {
+  // The hero sentence lists exactly the disciplines whose nav card is scheduled
+  // (visible) today. Hockey IQ runs Thu/Fri and Passing Tue/Fri, so on those days
+  // their card shows and they must appear in "Today's training is ...".
+  it('lists Hockey IQ when its card is scheduled (Thu/Fri)', () => {
+    const d = renderWithCards(['stick', 'shoot', 'dryland', 'iq']);
+    const lead = d.getElementById('doLead');
+    const names = [...lead.querySelectorAll('.disc')].map(s => s.className.match(/disc-(\w+)/)[1]);
+    expect(names).toContain('iq');
+    expect(lead.textContent).toContain('Hockey IQ');
+    const iqLink = [...lead.querySelectorAll('a.disc')].find(a => /disc-iq/.test(a.className));
+    expect(iqLink.getAttribute('href')).toBe('#iq');
+  });
+
+  it('lists Passing when its card is scheduled (Tue/Fri)', () => {
+    const d = renderWithCards(['stick', 'shoot', 'dryland', 'pass']);
+    const lead = d.getElementById('doLead');
+    const names = [...lead.querySelectorAll('.disc')].map(s => s.className.match(/disc-(\w+)/)[1]);
+    expect(names).toContain('pass');
+    expect(lead.textContent).toContain('Passing');
+    const passLink = [...lead.querySelectorAll('a.disc')].find(a => /disc-pass/.test(a.className));
+    expect(passLink.getAttribute('href')).toBe('#pass');
+  });
+
+  it('on a Friday both Hockey IQ and Passing appear alongside the core three', () => {
+    const d = renderWithCards(['stick', 'shoot', 'dryland', 'iq', 'pass']);
+    const lead = d.getElementById('doLead');
+    const names = [...lead.querySelectorAll('.disc')].map(s => s.className.match(/disc-(\w+)/)[1]);
+    expect(names).toEqual(['stick', 'shoot', 'dryland', 'iq', 'pass']);
+    expect(lead.textContent).toContain('Hockey IQ');
+    expect(lead.textContent).toContain('Passing');
+  });
+
+  it('omits Hockey IQ and Passing when their cards are hidden (a plain Mon/Wed day)', () => {
+    const d = renderWithCards(['stick', 'shoot', 'dryland']);
+    const lead = d.getElementById('doLead');
+    const names = [...lead.querySelectorAll('.disc')].map(s => s.className.match(/disc-(\w+)/)[1]);
+    expect(names).toEqual(['stick', 'shoot', 'dryland']);
+    expect(lead.textContent).not.toContain('Hockey IQ');
+    expect(lead.textContent).not.toContain('Passing');
   });
 });

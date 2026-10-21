@@ -160,7 +160,7 @@ a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient
 .nav-stick,.nav-shoot,.nav-dryland,.nav-iq,.nav-pass{border-left:5px solid var(--dc)}
 .nav-stick .ico,.nav-shoot .ico,.nav-dryland .ico,.nav-iq .ico,.nav-pass .ico{background:color-mix(in srgb,var(--dc) 26%,transparent)}
 /* Dark theme: richer tile tint so the discipline chips stay vibrant on the dark panel. */
-html[data-theme='dark'] .nav-stick .ico,html[data-theme='dark'] .nav-shoot .ico,html[data-theme='dark'] .nav-dryland .ico,html[data-theme='dark'] .nav-iq .ico,html[data-theme='dark'] .nav-pass .ico{background:color-mix(in srgb,var(--dc) 45%,transparent)}.nav-ico{width:34px;height:auto;display:block}.soontag{font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--green);border:1px solid var(--line3);border-radius:999px;padding:4px 8px;align-self:center;white-space:nowrap}
+html[data-theme='dark'] .nav-stick .ico,html[data-theme='dark'] .nav-shoot .ico,html[data-theme='dark'] .nav-dryland .ico,html[data-theme='dark'] .nav-iq .ico,html[data-theme='dark'] .nav-pass .ico{background:color-mix(in srgb,var(--dc) 45%,transparent)}html[data-theme='dark'] .disc-iq{color:#A98BFF}html[data-theme='dark'] .disc-pass{color:#5CD6C8}.nav-ico{width:34px;height:auto;display:block}.soontag{font-size:11px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--green);border:1px solid var(--line3);border-radius:999px;padding:4px 8px;align-self:center;white-space:nowrap}
 .heroCard{padding:6px 2px 4px;margin-top:6px}.heroCard h1{font-size:40px}.big{font-size:38px}.pills{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;margin-bottom:16px}.pill{padding:7px 10px;border-radius:999px;background:var(--soft);color:var(--green2);font-size:12px;font-weight:900}
 .pill-optional[hidden]{display:none}
 .pilltip{position:relative;padding:7px 12px;border-radius:999px;background:var(--soft);color:var(--green2);font:inherit;font-size:12px;font-weight:900;border:0;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;-webkit-tap-highlight-color:transparent}
@@ -335,7 +335,7 @@ body.login-locked .topbar{position:fixed;top:0;left:0;right:0;z-index:95;backgro
 .disc .chk{display:none;font-weight:900}
 .disc.done{opacity:.5}
 .disc.done .chk{display:inline}
-.disc-stick{color:#4E9128}.disc-shoot{color:#3E88D8}.disc-dryland{color:#E07A1F}
+.disc-stick{color:#4E9128}.disc-shoot{color:#3E88D8}.disc-dryland{color:#E07A1F}.disc-iq{color:#7A5AF0}.disc-pass{color:#1E8C7E}
 .dosep{color:var(--muted);font-weight:600;padding:0 3px}
 /* Inline tappable "today" -> reveals the date, part of the sentence (replaces the floating chip). */
 .todayword{position:relative;display:inline;color:inherit;font:inherit;font-weight:800;background:none;border:0;padding:0;margin:0;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;-webkit-tap-highlight-color:transparent}
@@ -2727,7 +2727,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
    hero and the "all done" celebration read this so required vs optional stays in
    one place. Fail-open: a missing card is skipped. */
 window.thwapTrainingToday=function(){
-  var ks=['stick','shoot','dryland']; var req=[], opt=[];
+  var ks=['stick','shoot','dryland','iq','pass']; var req=[], opt=[];
   ks.forEach(function(k){
     var c=null; try{ c=document.querySelector('.nav-'+k); }catch(e){}
     if(!c || c.style.display==='none') return;
@@ -6968,7 +6968,7 @@ function fill(){
   var third=isGoalie
     ? (netLive?[{k:'netplay',label:'Net play',emo:'🧤',cls:'disc-shoot'}]:[])
     : [{k:'shoot',label:'Shooting',emo:'🥅',cls:'disc-shoot'}];
-  var DEFS=[{k:'stick',label:'Hands',emo:'🏒',cls:'disc-stick',href:'#stick'}].concat(third,[{k:'dryland',label:'Dryland',emo:'⚡',cls:'disc-dryland',href:'#dryland'}]);
+  var DEFS=[{k:'stick',label:'Hands',emo:'🏒',cls:'disc-stick',href:'#stick'}].concat(third,[{k:'dryland',label:'Dryland',emo:'⚡',cls:'disc-dryland',href:'#dryland'},{k:'iq',label:'Hockey IQ',emo:'🧠',cls:'disc-iq',href:'#iq'},{k:'pass',label:'Passing',emo:'🎯',cls:'disc-pass',href:'#pass'}]);
   /* goalie third discipline links to #shoot (its page) when net play is not live;
      net play has no page yet, so it falls back to #shoot too. */
   DEFS.forEach(function(d){ if(!d.href) d.href = (d.k==='netplay')?'#shoot':('#'+d.k); });
@@ -8408,8 +8408,8 @@ window.thwapCheckToday=function(){
   /* "All done" means every REQUIRED discipline is done. Optional (bonus) ones never
      gate the celebration, and a day with nothing required never fires it. Fail open
      to all three if the plan has not resolved (helper missing/throws). */
-  var req=['stick','shoot','dryland'];  /* iq is never required for the daily all-done celebration */
-  try{ if(window.thwapTrainingToday){ var tt=window.thwapTrainingToday(); if(tt&&tt.required) req=tt.required.filter(function(d){return d!=='iq';}); } }catch(e){}
+  var req=['stick','shoot','dryland'];  /* iq and pass are never required for the daily all-done celebration */
+  try{ if(window.thwapTrainingToday){ var tt=window.thwapTrainingToday(); if(tt&&tt.required) req=tt.required.filter(function(d){return d!=='iq'&&d!=='pass';}); } }catch(e){}
   if(!req.length) return;                          /* nothing required today */
   if(!req.every(isDone)) return;                   /* not every required discipline done yet */
   var ck=celebratedKey(); try{ if(localStorage.getItem(ck)==='1') return; }catch(e){}  /* once per day */
