@@ -334,3 +334,64 @@ describe('done handler: name-stable slug id + self-only week read', () => {
     expect(gres.statusCode).toBe(401);
   });
 });
+
+// --- Per-drill count idempotency (the leaderboard over-count fix) -----------
+// Root cause of the Joziah passing over-count: bumpPlayer ran on EVERY mark with
+// no dedup, so re-POSTing the same completion (another device, a storage clear,
+// a rotated per-day key) inflated the weekly/all-time count. The fix skips the
+// bump when the supplied drillId is already in that day's done set.
+describe('done handler: per-drill count idempotency', () => {
+  it('re-marking the SAME drillId on the same day bumps the count only once', async () => {
+    const token = mintSession('lewie', 'parent@example.com');
+    const r1 = makeRes();
+    await handler(postAs({ player: 'lewie', discipline: 'pass', drillId: 'pass:0', drillName: 'Target Net Passing' }, token), r1);
+    expect(r1.statusCode).toBe(200);
+    expect(r1.body.player.pass).toBe(1);
+
+    const r2 = makeRes();
+    await handler(postAs({ player: 'lewie', discipline: 'pass', drillId: 'pass:0', drillName: 'Target Net Passing' }, token), r2);
+    expect(r2.statusCode).toBe(200);
+    expect(r2.body.duplicate).toBe(true);
+    // Count must NOT have grown.
+    expect(fake.map.get('player:lewie').pass).toBe(1);
+  });
+
+  it('marking two DIFFERENT drillIds on the same day bumps twice', async () => {
+    const token = mintSession('lewie', 'parent@example.com');
+    for (const id of ['pass:0', 'pass:1']) {
+      const res = makeRes();
+      await handler(postAs({ player: 'lewie', discipline: 'pass', drillId: id }, token), res);
+      expect(res.statusCode).toBe(200);
+    }
+    expect(fake.map.get('player:lewie').pass).toBe(2);
+  });
+
+  it('a count-only mark (no drillId) still bumps every time (legacy clients)', async () => {
+    const token = mintSession('lewie', 'parent@example.com');
+    for (let i = 0; i < 3; i++) {
+      const res = makeRes();
+      await handler(postAs({ player: 'lewie', discipline: 'stick' }, token), res);
+      expect(res.statusCode).toBe(200);
+    }
+    expect(fake.map.get('player:lewie').stick).toBe(3);
+  });
+
+  it('the duplicate guard does not block a genuine re-mark on a DIFFERENT day', async () => {
+    const token = mintSession('lewie', 'parent@example.com');
+    // Two distinct in-window days: yesterday and today (computed off the real
+    // clock so validBackdate always accepts them). Same drillId, different days
+    // => two legitimate completions, no duplicate suppression.
+    const d = new Date();
+    const iso = (x) => x.toISOString().slice(0, 10);
+    const today = iso(d);
+    const yest = iso(new Date(d.getTime() - 86400000));
+    const r1 = makeRes();
+    await handler(postAs({ player: 'lewie', discipline: 'pass', drillId: 'pass:0', date: yest }, token), r1);
+    expect(r1.statusCode).toBe(200);
+    const r2 = makeRes();
+    await handler(postAs({ player: 'lewie', discipline: 'pass', drillId: 'pass:0', date: today }, token), r2);
+    expect(r2.statusCode).toBe(200);
+    expect(r2.body.duplicate).toBeUndefined();
+    expect(fake.map.get('player:lewie').pass).toBe(2);
+  });
+});
