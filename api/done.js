@@ -47,6 +47,7 @@ import {
   DISCIPLINES,
   disciplinesFor,
   bumpPlayer,
+  getPlayer,
   addDrillDone,
   removeDrillDone,
   getDrillDone,
@@ -289,6 +290,29 @@ export default async function handler(req, res) {
     when = validBackdate(date);
     if (!when) {
       return res.status(400).json({ error: 'bad date' });
+    }
+  }
+
+  // Per-drill idempotency guard (prevents the leaderboard over-count bug).
+  // The client's own done-state guard is per-device (DOM class + localStorage),
+  // so re-POSTing the same completion from another device, after a storage
+  // clear, or after the per-day key rotates would otherwise bump the aggregate
+  // count AND append a second dated event every time -- silently inflating the
+  // weekly/all-time totals (observed on Passing, whose 10-drill/2-session layout
+  // made duplicate marks easy to trigger). When a stable `drillId` is supplied
+  // and that id is ALREADY recorded in the target day's completed set, this is a
+  // duplicate mark: record nothing new and return the current counts unchanged.
+  // The drill-done set is the server's authoritative "did this exact drill that
+  // day" record (addDrillDone is itself idempotent), so it is the right key to
+  // dedup the count against. Marks WITHOUT a drillId (legacy clients) cannot be
+  // deduped and keep the prior always-bump behaviour.
+  if (drillId) {
+    const dayFor = when || localDateStr();
+    const already = await getDrillDone(entry.id, dayFor);
+    if (already.includes(String(drillId))) {
+      const cur = await getPlayer(entry.id);
+      const player = cur ? { id: String(entry.id).toLowerCase(), ...cur } : null;
+      return res.status(200).json({ player, ok: true, duplicate: true, drills: already });
     }
   }
 
