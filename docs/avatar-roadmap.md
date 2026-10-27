@@ -51,6 +51,10 @@ From the public leaderboard (`/api/board`), all-time activity totals across
   the counters and days are not), so credit for past training works at launch.
 - Not checked: per-player active-day counts (stored server-side, not exposed
   on the public board).
+- This is one month of data from a brand-new app, so the quiet spell may be
+  novelty wearing off rather than the real season pace. Treat the ladder
+  numbers as a starting point and recheck them against December's data
+  before Phase 2 ships.
 
 ## Unlock ladder
 
