@@ -4,6 +4,7 @@
 // GET  /api/board?tf=week       -> { players: [ { id, stick, shoot, dryland, netplay, iq, pass, cheers }, ... ] }  (current week counts)
 // POST /api/board?action=cheer  body: { to }  -> { ok, count } | { ok, already } | 4xx
 // POST /api/board?action=fire   body: { to }  -> { ok, count } | { ok, already } | 4xx
+// GET  /api/board?action=journey -> the signed-in player's Season Book | 401
 //
 // The GET half is the read-only leaderboard: it always returns the full roster
 // (zeroed for players not yet in the store) and now folds in each player's
@@ -17,7 +18,8 @@
 // store. The sender is NEVER taken from the body: it is the signed-in session, so
 // a kid cannot cheer as someone else.
 
-import { listPlayers, weekBoard, listCheers, sendCheer, listFires, sendFire, isRosterPlayer, getRecentCheerers, getRecentFirers } from '../lib/store.js';
+import { listPlayers, weekBoard, listCheers, sendCheer, listFires, sendFire, isRosterPlayer, getRecentCheerers, getRecentFirers, getTrainingDays, localDateStr } from '../lib/store.js';
+import { journeyFor } from '../lib/journey.js';
 import { verifySession, readSessionCookie } from '../lib/session_store.js';
 import { handleLooks, handleLookGet, handleLookPost } from '../lib/look_api.js';
 
@@ -108,6 +110,20 @@ export default async function handler(req, res) {
   // GET /api/board?action=look (own look + unlocks) / ?action=looks (roster).
   if (req.query && req.query.action === 'look') return handleLookGet(req, res);
   if (req.query && req.query.action === 'looks') return handleLooks(req, res);
+
+  // GET /api/board?action=journey : the SIGNED-IN player's Season Book
+  // (training days this season, tier and step, days per month). Read-only and
+  // gated to the session player: a kid can only read their own book.
+  if (req.query && req.query.action === 'journey') {
+    const claims = verifySession(readSessionCookie(req));
+    if (!claims) {
+      return res.status(401).json({ error: 'session required' });
+    }
+    const me = String(claims.playerId || '').toLowerCase();
+    const book = journeyFor(await getTrainingDays(me), localDateStr());
+    res.setHeader('Cache-Control', 'no-store');
+    return res.status(200).json({ id: me, ...book });
+  }
 
   // GET /api/board?action=cheers-for : the SIGNED-IN player's own recent cheer
   // givers, newest first, for the home-screen "N teammates cheered you" roll-up.
