@@ -47,7 +47,7 @@
   // (x,y,z) is the box CENTER; y is height above the ice (up is positive).
   function face(cls,w,h,tf,bg,inner){
     return "<div class='av-f "+cls+"' style='width:"+w+"em;height:"+h+"em;margin:-"+(h/2)+"em 0 0 -"+(w/2)+"em;"+
-      "transform:"+tf+";background:"+bg+"'>"+(inner||'')+"</div>";
+      "transform:"+tf+";background:"+bg+";background-size:100% 100%'>"+(inner||'')+"</div>";
   }
   function box(o){
     var w=o.w,h=o.h,d=o.d, c=o.c;
@@ -88,9 +88,9 @@
     // face (top lighter, sides darker), so these must stay flat (no baked lighting).
     var JTEX={red:1,black:1,white:1};
     var jKey=JERSEY[look.jersey]?look.jersey:DEFAULT_LOOK.jersey;
-    var jTex=JTEX[jKey]?"url('avatar-tex/jersey-"+jKey+".png')":J.body;
+    var jTex=JTEX[jKey]?"url(avatar-tex/jersey-"+jKey+".png)":J.body;
     // helmet.png is the ink (black) shell; white and chrome helmets stay flat color.
-    var helTex=helmet==='#141414'?"url('avatar-tex/helmet.png')":helmet;
+    var helTex=helmet==='#141414'?"url(avatar-tex/helmet.png)":helmet;
     var helFaces={front:helTex,back:helTex,side:helTex,top:helTex,bottom:helTex};
     var stripeTop=look.stripe&&look.stripe!=='none'
       ? 'linear-gradient(90deg,'+helmet+' 0 '+(look.stripe==='twin'?'34%,'+J.body+' 34% 42%,'+helmet+' 42% 58%,'+J.body+' 58% 66%,'+helmet+' 66%':'44%,'+J.body+' 44% 56%,'+helmet+' 56%')+')'

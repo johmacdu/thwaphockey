@@ -81,3 +81,16 @@ describe('buildFront in the real page', () => {
     expect(out).toContain('>72<');
   });
 });
+
+describe('texture urls', () => {
+  it('never put a quoted url inside the single-quoted style attribute', () => {
+    const w = load('https://thwaphockey.com/');
+    for (const jersey of ['red', 'black', 'white', 'forest']) {
+      const h = w.thwapAvatar.html({ jersey, num: '9' });
+      expect(h).not.toMatch(/url\('/);
+      const doc = new JSDOM('<div>' + h + '</div>').window.document;
+      // Every face keeps its full style (a broken quote would cut it short).
+      for (const f of doc.querySelectorAll('.av-f')) expect(f.getAttribute('style')).toMatch(/background-size:100% 100%/);
+    }
+  });
+});
