@@ -39,7 +39,8 @@
 import { verifySession, readSessionCookie } from '../lib/session_store.js';
 import { parseBody } from '../lib/photo_common.js';
 import { ROSTER } from '../lib/store.js';
-import { listMembers, getAdmin } from '../lib/teams_store.js';
+import { listMembers, getAdmin, listAllTeamCodes } from '../lib/teams_store.js';
+import { resolvePlayer, teamPlayerIds } from '../lib/team_players.js';
 import {
   registerToken, unregisterToken, listTokens, sendToTokens, pushConfigured,
   statusSummary,
@@ -100,8 +101,12 @@ async function register(req, res) {
   if (!String(token || '').trim()) return res.status(400).json({ error: 'token required' });
   const claims = verifySession(readSessionCookie(req));
   if (!claims || !claims.playerId) return res.status(401).json({ error: 'sign in required' });
+  // The session player must be a real player on some team (any team, the 16
+  // Jr. Rangers 10U players included). A stale or non-player session is refused.
+  const me = await resolvePlayer(claims.playerId);
+  if (!me) return res.status(400).json({ error: 'unknown player' });
   const ua = (req.headers && (req.headers['user-agent'] || req.headers['User-Agent'])) || '';
-  const tokens = await registerToken(claims.playerId, { token, platform, ua });
+  const tokens = await registerToken(me.id, { token, platform, ua });
   return res.status(200).json({ ok: true, count: tokens.length });
 }
 
@@ -139,7 +144,7 @@ async function send(req, res) {
   const { playerId, team, payload } = parseBody(req);
   if (!playerId && !team) return res.status(400).json({ error: 'playerId or team required' });
   if (!payload || typeof payload !== 'object') return res.status(400).json({ error: 'payload required' });
-  if (playerId && !ROSTER.some((p) => p.id === String(playerId).toLowerCase())) {
+  if (playerId && !(await resolvePlayer(playerId))) {
     return res.status(400).json({ error: 'unknown player' });
   }
   if (!(await isAdmin(req))) return res.status(401).json({ error: 'admin auth required' });
@@ -171,7 +176,17 @@ async function status(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (!(await isAdmin(req))) return res.status(401).json({ error: 'admin auth required' });
 
-  const summary = await statusSummary(ROSTER.map((p) => p.id));
+  // Every known player: the Jr. Rangers 10U ROSTER first (original order), then
+  // each team's members. ?team=CODE narrows it to one team.
+  const team = String((req.query && req.query.team) || parseBody(req).team || '').trim();
+  let ids;
+  if (team) {
+    ids = await teamPlayerIds(team);
+  } else {
+    ids = ROSTER.map((p) => p.id);
+    for (const code of await listAllTeamCodes()) ids = ids.concat(await teamPlayerIds(code));
+  }
+  const summary = await statusSummary(ids);
   return res.status(200).json(summary);
 }
 

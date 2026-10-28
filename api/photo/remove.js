@@ -5,7 +5,7 @@
 // POST (admin)  { all: true }                                   -> DRY RUN
 // POST (admin)  { all: true, confirm: 'DELETE ALL PLAYER PHOTOS' } -> deletes
 //   Retires every stored player photo once the character has replaced them
-//   (docs/avatar-roadmap.md). For each roster player: deletes the blob, the
+//   (docs/avatar-roadmap.md). For each player on every team: deletes the blob, the
 //   photo record and the parent-consent record. Without the exact confirm
 //   phrase it only reports what WOULD be deleted, so the admin page can show the
 //   list first. Lives in this file (not a new one) to stay under the Vercel
@@ -15,6 +15,16 @@ import { del } from '@vercel/blob';
 import { getKv, parseBody, isRosterPlayer, uploadConfigured, adminOk } from '../../lib/photo_common.js';
 import { verifyToken, getPhoto, removePhoto, getConsent, removeConsent } from '../../lib/photo_store.js';
 import { ROSTER } from '../../lib/store.js';
+import { listAllTeamCodes } from '../../lib/teams_store.js';
+import { teamPlayerIds } from '../../lib/team_players.js';
+
+// Every known player id: the Jr. Rangers 10U ROSTER first, then each team's
+// members, deduped. The retire sweep covers every team, not only the 16.
+async function allPlayerIds() {
+  let ids = ROSTER.map((p) => p.id);
+  for (const code of await listAllTeamCodes()) ids = ids.concat(await teamPlayerIds(code));
+  return Array.from(new Set(ids));
+}
 
 export const RETIRE_CONFIRM = 'DELETE ALL PLAYER PHOTOS';
 
@@ -22,7 +32,8 @@ async function retireAll(req, res, body) {
   const kv = getKv();
   const doIt = body.confirm === RETIRE_CONFIRM;
   const players = [];
-  for (const p of ROSTER) {
+  for (const id of await allPlayerIds()) {
+    const p = { id };
     const [photo, consent] = await Promise.all([getPhoto(kv, p.id), getConsent(kv, p.id)]);
     const hasPhoto = !!(photo && photo.url);
     const hasConsent = !!consent;
@@ -59,7 +70,7 @@ export default async function handler(req, res) {
   }
 
   const { playerId } = body;
-  if (!isRosterPlayer(playerId)) return res.status(400).json({ error: 'unknown player' });
+  if (!(await isRosterPlayer(playerId))) return res.status(400).json({ error: 'unknown player' });
 
   const tokenPlayer = verifyToken(bearer(req));
   if (!tokenPlayer || tokenPlayer !== String(playerId).toLowerCase()) {
