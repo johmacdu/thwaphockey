@@ -1,0 +1,186 @@
+{
+ "weekday": {
+  "stick": {
+   "mon": [
+    "stick:0=Stationary Side-to-Side",
+    "stick:1=Front-to-Back",
+    "stick:2=The \"L\" Shape"
+   ],
+   "tue": [
+    "stick:0=Wide Extensions",
+    "stick:1=Narrow-to-Wide",
+    "stick:2=Figure-8 Around Cones"
+   ],
+   "wed": [
+    "stick:0=The Triangle Drill",
+    "stick:1=The Diamond Matrix",
+    "stick:2=Z-Pattern Slalom"
+   ],
+   "thu": [
+    "stick:0=The Square Box",
+    "stick:1=Top-Hand Only",
+    "stick:2=Figure-8 Roll"
+   ],
+   "fri": [
+    "stick:0=Toe Drag & Rescue",
+    "stick:1=Heel-to-Toe Flips",
+    "stick:2=Flip Over Objects"
+   ]
+  },
+  "shoot": {
+   "mon": [
+    "shoot:0=Moving Warm-Up",
+    "shoot:1=Change the Angle",
+    "shoot:2=Random Target"
+   ],
+   "tue": [
+    "shoot:0=Backhand Basics",
+    "shoot:1=Backhand Accuracy",
+    "shoot:2=Moving Backhand"
+   ],
+   "wed": [
+    "shoot:0=Quick Hands",
+    "shoot:1=Catch and Release",
+    "shoot:2=Pull Across"
+   ],
+   "thu": [
+    "shoot:0=Carry / Pass / Shoot",
+    "shoot:1=Bad Puck Challenge",
+    "shoot:2=Angle Attack"
+   ],
+   "fri": [
+    "shoot:0=Moving Warm-Up",
+    "shoot:1=Backhand Accuracy",
+    "shoot:2=Catch and Release"
+   ]
+  },
+  "netplay": {
+   "mon": [
+    "shoot:0=Ready Stance"
+   ],
+   "tue": [
+    "shoot:0=Tape Your Line",
+    "shoot:1=Shuffle the Crease"
+   ],
+   "wed": [
+    "shoot:0=Wall Toss Catch",
+    "shoot:1=Glove-Side Catches"
+   ],
+   "thu": [
+    "shoot:0=Follow the Ball",
+    "shoot:1=Head on a Swivel"
+   ],
+   "fri": [
+    "shoot:0=Stance Warm-Up",
+    "shoot:1=Shuffle and Set",
+    "shoot:2=Wall Toss Catch"
+   ]
+  },
+  "dryland": {}
+ },
+ "library": {
+  "DRILLS": [
+   "Stationary Side-to-Side",
+   "Front-to-Back",
+   "The \"L\" Shape",
+   "Wide Extensions",
+   "Narrow-to-Wide",
+   "Figure-8 Around Cones",
+   "The Triangle Drill",
+   "The Diamond Matrix",
+   "Z-Pattern Slalom",
+   "The Square Box",
+   "Top-Hand Only",
+   "Figure-8 Roll",
+   "Toe Drag & Rescue",
+   "Heel-to-Toe Flips",
+   "Flip Over Objects",
+   "Eyes-Up Glancing",
+   "The Wall Bounce",
+   "Cone Weave Course",
+   "Chaos Dribbling"
+  ],
+  "SHOOT_DAYS": [
+   [
+    "Moving Warm-Up",
+    "Change the Angle",
+    "Random Target",
+    "Under Two Seconds",
+    "Ten Different Goals"
+   ],
+   [
+    "Backhand Basics",
+    "Backhand Accuracy",
+    "Moving Backhand",
+    "Forehand to Backhand",
+    "Backhand Only"
+   ],
+   [
+    "Quick Hands",
+    "Catch and Release",
+    "Pull Across",
+    "Forehand / Backhand Finish",
+    "Rebound Finish"
+   ],
+   [
+    "Carry / Pass / Shoot",
+    "Bad Puck Challenge",
+    "Angle Attack",
+    "Random Target",
+    "Quick Release Challenge"
+   ],
+   [
+    "Moving Warm-Up",
+    "Backhand Accuracy",
+    "Catch and Release",
+    "Carry / Pass / Shoot",
+    "Ten Different Goals"
+   ]
+  ],
+  "NETPLAY_DAYS": [
+   [
+    "Ready Stance",
+    "Butterfly Down-Ups",
+    "Butterfly Holds"
+   ],
+   [
+    "Tape Your Line",
+    "Shuffle the Crease",
+    "T-Push to the Post",
+    "Recover to Your Feet"
+   ],
+   [
+    "Wall Toss Catch",
+    "Glove-Side Catches",
+    "Two-Ball Drop",
+    "Bounce and React"
+   ],
+   [
+    "Follow the Ball",
+    "Head on a Swivel",
+    "Track Behind a Screen",
+    "Line Up the Shooter"
+   ],
+   [
+    "Stance Warm-Up",
+    "Shuffle and Set",
+    "Wall Toss Catch",
+    "Follow the Ball",
+    "Butterfly Hold Finish"
+   ]
+  ],
+  "WORKOUTS": [
+   "w1wed: Will's Squares (4-sq Drill) / Skater Jumps / Broad Jumps / Box Jumps / Reverse Lunges / Single-Leg RDL / Wall Sit / Sit-ups / Plank with Shoulder Taps",
+   "w1thu: Will's Squares (4-sq Drill) / Stair Sprints / Sprint Starts / 20-Minute Run / Sprints / Reaction Start / Split Squat Hold / Calf Raises / Dead Bugs / Plank with Shoulder Taps",
+   "w1fri: Will's Squares (4-sq Drill) / Skater Jumps / Box Jumps / Single-Leg RDL / Wall Sit / Sit-ups / McDavid's",
+   "w2wed: Will's Squares (4-sq Drill) / Skater Jumps / Broad Jumps / Box Jumps / Reverse Lunges / Single-Leg RDL / Wall Sit / Sit-ups / Plank with Shoulder Taps",
+   "w2fri: Will's Squares (4-sq Drill) / Stair Sprints / Sprint Starts / 20-Minute Run / Sprints / Reaction Start / Split Squat Hold / Calf Raises / Dead Bugs / Plank with Shoulder Taps",
+   "w2sat: Will's Squares (4-sq Drill) / Skater Jumps / Box Jumps / Single-Leg RDL / Wall Sit / Sit-ups / McDavid's",
+   "w3wed: Will's Squares (4-sq Drill) / Skater Jumps / Broad Jumps / Box Jumps / Reverse Lunges / Single-Leg RDL / Wall Sit / Sit-ups / Plank with Shoulder Taps",
+   "w3fri: Will's Squares (4-sq Drill) / Stair Sprints / Sprint Starts / 20-Minute Run / Sprints / Reaction Start / Split Squat Hold / Calf Raises / Dead Bugs / Plank with Shoulder Taps",
+   "w3sat: Will's Squares (4-sq Drill) / Skater Jumps / Box Jumps / Single-Leg RDL / Wall Sit / Sit-ups / McDavid's",
+   "w4wed: Will's Squares (4-sq Drill) / Skater Jumps / Broad Jumps / Box Jumps / Reverse Lunges / Single-Leg RDL / Wall Sit / Sit-ups / Plank with Shoulder Taps",
+   "w4fri: Will's Squares (4-sq Drill) / Stair Sprints / Sprint Starts / 20-Minute Run / Sprints / Reaction Start / Split Squat Hold / Calf Raises / McDavid's"
+  ]
+ }
+}

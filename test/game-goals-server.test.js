@@ -69,7 +69,7 @@ describe('save-game-goals + my-game-goals: own picks', () => {
     expect(r.statusCode).toBe(200);
     expect(r.body.ok).toBe(true);
     expect(r.body.saved).toBe(true);
-    expect(r.body.game).toEqual({ id: 'g-1031', date: '2026-10-31', time: '16:00', opponent: 'Tacoma Rockets', home: true, place: 'Home' });
+    expect(r.body.game).toEqual({ id: 'g-1031', kind: 'game', date: '2026-10-31', endDate: null, time: '16:00', opponent: 'Tacoma Rockets', home: true, place: 'Home' });
     expect(r.body.goals.map((g) => g.id)).toEqual(['g1', 'g7']);
     expect(r.body.goals[0].title).toBe('Scan Twice');
     expect(r.body.teamGoal).toBeNull();
@@ -192,11 +192,46 @@ describe('gameDay follows the Vancouver date of the next game', () => {
     expect(past.body.goals.map((g) => g.id)).toEqual(['g1']);
   });
 
-  it('tournaments are skipped when finding the next game', async () => {
-    at('2026-11-14'); // inside the Nov 13-15 tournament
+  // Tournaments are game days too, the same as hockey_game_goals.html's header
+  // (next.nextGame from lib/schedule_store nextEvent, which counts any event
+  // that has not ended yet).
+  it('a tournament is the next game day once it is the soonest event', async () => {
+    at('2026-11-02'); // after the Nov 1 game, before the Nov 13-15 tournament
     const r = await read({}, 'alder');
-    expect(r.body.game.id).toBe('g-1121');
+    expect(r.body.game).toMatchObject({ id: 't-1113', kind: 'tournament', date: '2026-11-13', endDate: '2026-11-15' });
     expect(r.body.gameDay).toBe(false);
+  });
+
+  it('every day of a tournament is game day, including the middle and last day', async () => {
+    for (const d of ['2026-11-13', '2026-11-14', '2026-11-15']) {
+      at(d);
+      const r = await read({}, 'alder');
+      expect(r.body.game.id).toBe('t-1113');
+      expect(r.body.gameDay).toBe(true);
+    }
+    at('2026-11-16');
+    const after = await read({}, 'alder');
+    expect(after.body.game.id).toBe('g-1121');
+    expect(after.body.gameDay).toBe(false);
+  });
+
+  it('picks save against the tournament mid-tournament and read back', async () => {
+    at('2026-11-14');
+    const s = await save({ goalIds: ['g3'] }, 'alder');
+    expect(s.statusCode).toBe(200);
+    expect(s.body.gameId).toBe('t-1113');
+    expect((await read({}, 'alder')).body.goals.map((g) => g.id)).toEqual(['g3']);
+  });
+
+  it('matches the page header: server next game === schedule nextEvent().nextGame', async () => {
+    const { nextEvent, ensureSchedule } = await import('../lib/schedule_store.js');
+    const sched = await ensureSchedule('RANGERS72');
+    for (const d of ['2026-10-09', '2026-10-11', '2026-10-13', '2026-11-12', '2026-11-15', '2026-12-13']) {
+      at(d);
+      const r = await read({}, 'alder');
+      const page = nextEvent(sched, d).nextGame;
+      expect(r.body.game ? r.body.game.id : null).toBe(page ? page.id : null);
+    }
   });
 
   it('no upcoming game: read returns game null, save is refused with 409', async () => {
