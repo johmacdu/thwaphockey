@@ -46,20 +46,23 @@ describe('avatar stances', () => {
   });
 
   it('leans and sinks the upper body for a stance, not for Ready', () => {
-    expect(A.html({ pose: 'butterfly' })).toMatch(/av-upper' style='transform:translate3d\(0,-9\.2em,0\) rotateX\(-4deg\)/);
-    expect(A.html({})).toMatch(/av-upper' style='transform:translate3d\(0,-14\.6em,0\) rotateX\(0deg\)/);
+    expect(A.html({ pose: 'butterfly' })).toMatch(/av-upper' style='transform:translate3d\(0,-9\.2em,0\) rotateZ\(0deg\) rotateX\(-4deg\)/);
+    expect(A.html({})).toMatch(/av-upper' style='transform:translate3d\(0,-14\.6em,0\) rotateZ\(0deg\) rotateX\(0deg\)/);
+  });
+
+  it('tips Toe drag sideways, mirrored for a lefty', () => {
+    expect(A.html({ pose: 'dangle' })).toContain('rotateZ(-14deg)');
+    expect(A.html({ pose: 'dangle', hand: 'left' })).toContain('rotateZ(14deg)');
   });
 
   it('mirrors a stance for a lefty', () => {
     expect(A.html({ pose: 'shooting', hand: 'left' })).not.toBe(A.html({ pose: 'shooting', hand: 'right' }));
   });
 
-  it('puts a puck on the stickhandling stances only', () => {
+  it('puts a puck on the puck stances only', () => {
     const puck = /background:#111111/;
-    expect(A.html({ pose: 'stickhandling' })).toMatch(puck);
-    expect(A.html({ pose: 'dangle' })).toMatch(puck);
-    expect(A.html({ pose: 'reading' })).toMatch(puck);
-    expect(A.html({ pose: 'shooting' })).not.toMatch(puck);
+    for (const p of ['stickhandling', 'dangle', 'reading', 'passing']) expect(A.html({ pose: p })).toMatch(puck);
+    for (const p of ['shooting', 'power', 'butterfly']) expect(A.html({ pose: p })).not.toMatch(puck);
     expect(A.html({})).not.toMatch(puck);
   });
 

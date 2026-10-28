@@ -164,31 +164,35 @@
   // predate the names: pose-dangle is 'Toe drag', pose-stickhandling is 'Dangle').
   // 'ready' has no entry on purpose: it is the card's standing grip, unchanged.
   var POSES={
-    // Dangle: low and wide, puck out on the forehand.
-    stickhandling:{ lean:14, drop:.8, bot:.38,
-      elTop:[-3.6,15.4,5], elBot:[4.8,13,5],
-      knob:[0.2,12.6,6.6], heel:[4.6,0.7,10.2], toe:[4.6,0.8,13.2], puck:[2.6,.45,9.4],
-      kneeL:[-2.8,5.8,2.6], ankL:[-2.9,2.4,1], kneeR:[2.8,5.8,2.6], ankR:[2.9,2.4,1] },
-    // Toe drag: blade pulled across to the backhand, puck on the toe.
-    dangle:{ lean:16, drop:1, bot:.38,
-      elTop:[-2.6,15.6,5.6], elBot:[3.6,13.6,5.6],
-      knob:[1.6,12.6,6.8], heel:[-3.6,0.7,9.6], toe:[-1.4,0.8,12.4], puck:[-1.2,.45,8.6],
-      kneeL:[-3,5.8,2.4], ankL:[-3.4,2.4,.8], kneeR:[2.6,6,1.8], ankR:[2.8,2.4,.4] },
+    // Dangle: very wide and low, stick reaching far out to the forehand side,
+    // puck on the blade. The shape that reads: arms and stick out to one side.
+    stickhandling:{ lean:18, drop:1.8, bot:.36,
+      elTop:[-1.6,15,4.4], elBot:[6.6,12.6,.6],
+      knob:[1.4,12.8,4.4], heel:[9.4,0.7,-7.2], toe:[10.2,0.8,-4.4], puck:[7.6,.5,-5.6],
+      kneeL:[-3.8,5.2,2.2], ankL:[-4.4,2.4,.6], kneeR:[3.8,5.2,2.2], ankR:[4.4,2.4,.6], skL:-12, skR:12 },
+    // Toe drag: body tips over the bent backhand leg, the other leg kicked
+    // straight out, puck pulled back beside the back skate on the blade's toe.
+    dangle:{ lean:14, drop:1.4, roll:-14, bot:.36,
+      elTop:[-5.6,14.8,4], elBot:[1.6,13,6.4],
+      knob:[-1,12.6,6.4], heel:[-9.8,0.7,-1.6], toe:[-7.6,0.8,1], puck:[-9,.5,.2],
+      kneeL:[-3.4,5,2], ankL:[-3.8,2.4,.4], kneeR:[5,6.4,.8], ankR:[8.4,2.4,.4], skR:20 },
     // Snipe: shot follow-through, blade up high, back leg extended.
     shooting:{ lean:8, drop:0, bot:.32,
       elTop:[-4.4,18.6,3.6], elBot:[3.6,19,6.4],
       knob:[-1.8,16.4,5.2], heel:[4.6,21.6,9.6], toe:[6.4,22.8,10.4],
       kneeL:[-2.2,6.4,2.8], ankL:[-2.2,2.4,1.8], kneeR:[2.4,6.6,-1], ankR:[2.6,2.6,-3] },
-    // Tape to tape: pass follow-through, blade closed toward the target.
-    passing:{ lean:12, drop:.6, bot:.4,
-      elTop:[-3.4,16,5.4], elBot:[4.2,13,6.6],
-      knob:[-0.4,13,7], heel:[3.6,0.7,13.6], toe:[1,0.8,15.6],
-      kneeL:[-2.6,6,2.4], ankL:[-2.8,2.4,.8], kneeR:[2.6,6,1], ankR:[3,2.4,-.6] },
-    // Head up: carrying the puck in stride, eyes up the ice.
-    reading:{ lean:10, drop:.4, head:-16, bot:.36,
-      elTop:[-3.8,16.2,4.6], elBot:[4.6,14,4.6],
-      knob:[0.4,13.2,6.2], heel:[3.6,0.7,10.6], toe:[3.6,0.8,13.6], puck:[2,.45,9.6],
-      kneeL:[-2.2,6.2,2.2], ankL:[-2.2,2.4,.9], kneeR:[2.4,6,.2], ankR:[3.4,2.6,-2.6], skR:-30 },
+    // Tape to tape: standing tall after the pass, arms straight out, stick pointing
+    // at the target, the puck already sliding away across the ice.
+    passing:{ lean:4, drop:0, bot:.3,
+      elTop:[-2.6,18.4,6.4], elBot:[2.4,17.2,8],
+      knob:[0.6,16.8,8.4], heel:[-6.2,7,8.4], toe:[-9,7.6,8.8], puck:[-9.4,.5,1.8],
+      kneeL:[-2.2,6.4,2.4], ankL:[-2.2,2.4,1.4], kneeR:[2.4,6.4,.4], ankR:[2.6,2.4,-1] },
+    // Head up: skating stride, one hand pushing the puck ahead, the free hand
+    // pointing up the ice at the play, chin up.
+    reading:{ lean:8, drop:.4, head:-18, bot:.36,
+      elTop:[-4.6,17,4.4], elBot:[7,20.4,3.6], handBot:[8.4,22.4,8.4],
+      knob:[-2.4,13.6,5.6], heel:[-1.6,0.7,3.4], toe:[-4.2,0.8,4], puck:[-3.4,.5,2.2],
+      kneeL:[-2.2,6,2.6], ankL:[-2.2,2.4,1.2], kneeR:[2.4,6.8,-2.4], ankR:[2.8,7.4,-6.4], skR:-30 },
     // Power (dryland): deep squat, stick held level across the body, arms out front.
     power:{ lean:12, drop:2.2,
       elTop:[-5.6,16.4,5.2], elBot:[5.6,16.4,5.2], handTop:[-4,15.6,8.4], handBot:[4,15.6,8.4],
@@ -258,11 +262,18 @@
     // Stance: Ready (no entry) keeps the standing grip below, unchanged.
     var P=POSES[look.pose]||null;
     var lean=P?(P.lean||0):0, drop=P?(P.drop||0):0, headTilt=P?(P.head||0):0;
+    // roll: sideways lean at the waist (degrees, positive tips toward +x), mirrored for lefties.
+    var roll=P?((P.roll||0)*(look.hand==='left'?-1:1)):0;
     // Where a point on the upper body ends up after it leans forward around the
     // waist (y 14.6) and sinks by drop. Used for the shoulders, so the arms stay
     // attached while the torso group leans.
     var ls=Math.sin(lean*Math.PI/180), lc=Math.cos(lean*Math.PI/180);
-    function up(p){ var dy=p[1]-14.6, dz=p[2]; return [p[0], 14.6+dy*lc-dz*ls-drop, dy*ls+dz*lc]; }
+    var rs=Math.sin(roll*Math.PI/180), rc=Math.cos(roll*Math.PI/180);
+    function up(p){
+      var dy=p[1]-14.6, dz=p[2];
+      var y1=dy*lc-dz*ls, z1=dy*ls+dz*lc;             // forward lean
+      return [p[0]*rc+y1*rs, 14.6-p[0]*rs+y1*rc-drop, z1];   // then sideways roll
+    }
     var shTop=M(up([-4.6,22.4,1])), shBot=M(up([4.6,22.4,1]));       // shoulders
     // Arm + stick points per pose. elTop/elBot are elbows.
     var elTop,elBot,handTop,handBot,knob,ice,bladeToe;
@@ -318,12 +329,12 @@
       limb(lerp(knob,ice,.9),ice,1.5,'#E8E8E8'),
       limb(ice,bladeToe,1.6,stickC)
     ];
-    var puck=(P&&P.puck)?(function(p){ p=M(p); return box({w:2.6,h:.9,d:2.6,x:p[0],y:p[1],z:p[2],c:'#111111'}); })(P.puck):'';
+    var puck=(P&&P.puck)?(function(p){ p=M(p); return box({w:3,h:1,d:3,x:p[0],y:p[1],z:p[2],c:'#111111'}); })(P.puck):'';
 
     // Upper body (torso + head) as one group that leans at the waist and sinks by
     // drop; the head group inside it tilts at the neck. CSS y runs down, so a
     // forward lean is a negative rotateX.
-    var upperTf='translate3d(0,'+(drop-14.6)+'em,0) rotateX('+(-lean)+'deg) translate3d(0,14.6em,0)';
+    var upperTf='translate3d(0,'+(drop-14.6)+'em,0) rotateZ('+roll+'deg) rotateX('+(-lean)+'deg) translate3d(0,14.6em,0)';
     var headTf='translate3d(0,-24.2em,0) rotateX('+(-headTilt)+'deg) translate3d(0,24.2em,0)';
 
     var parts=[
