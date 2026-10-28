@@ -51,3 +51,33 @@ describe('buildFront wiring', () => {
     expect(INDEX).toMatch(/var photo = avOn\s*\n\s*\? window\.thwapAvatar\.html/);
   });
 });
+
+describe('buildFront in the real page', () => {
+  async function page(flag) {
+    const html = INDEX.replace("<script src='avatar.js'></script>", '<script>' + SRC + '</script>');
+    const dom = new JSDOM(html, {
+      url: 'https://thwaphockey.com/' + (flag ? '?avatar=1' : ''),
+      runScripts: 'dangerously',
+      pretendToBeVisual: true,
+      beforeParse(window) {
+        window.fetch = () => Promise.resolve({ ok: true, json: () => Promise.resolve({ ok: false }) });
+        window.scrollTo = () => {};
+      },
+    });
+    await new Promise((r) => setTimeout(r, 50));
+    return dom.window;
+  }
+  it('shows the photo when the flag is off', async () => {
+    const w = await page(false);
+    const out = w.buildFront({ first: 'Lewie', num: '72', pos: 'FD' }, 'lewie', null);
+    expect(out).toContain('cf2-photo');
+    expect(out).not.toContain('av-wrap');
+  });
+  it('shows the character (with the roster number) when the flag is on', async () => {
+    const w = await page(true);
+    const out = w.buildFront({ first: 'Lewie', num: '72', pos: 'FD' }, 'lewie', 'cards/x.png');
+    expect(out).toContain('av-wrap');
+    expect(out).not.toContain('cf2-photo');
+    expect(out).toContain('>72<');
+  });
+});
