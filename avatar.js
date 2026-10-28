@@ -28,8 +28,14 @@
   function on(){ if(LIVE) return true; try{ return localStorage.getItem('thwapAvatarPreview')==='1'; }catch(_){ return false; } }
 
   // --- Palette (placeholder colors until the art kit lands) -------------------
-  var SKIN={ s1:'#F4D3B5', s2:'#E6B793', s3:'#C99470', s4:'#A26E4B', s5:'#7A4E32', s6:'#4E3121' };
-  var HAIR={ black:'#1E1A18', brown:'#5A3A22', auburn:'#8A3B1E', blonde:'#D9B163', red:'#B5522A', grey:'#9A9A9A' };
+  // Skin: a fair->deep ramp. s1-s6 are the originals (do not renumber -- stored
+  // looks reference them); s7-s11 fill the gaps and extend the range.
+  var SKIN={ s1:'#F4D3B5', s2:'#E6B793', s3:'#C99470', s4:'#A26E4B', s5:'#7A4E32', s6:'#4E3121',
+    s7:'#F0C9A8', s8:'#D8A87E', s9:'#B07E54', s10:'#8A5A38', s11:'#2F1D12' };
+  // Hair colors: the common natural shades (single-word keys so the label reads
+  // cleanly next to the swatch).
+  var HAIR={ black:'#1E1A18', brown:'#5A3A22', auburn:'#8A3B1E', blonde:'#D9B163', red:'#B5522A', grey:'#9A9A9A',
+    cocoa:'#3B2515', chestnut:'#8B5A2B', sandy:'#AF8C56', platinum:'#ECE0B8', white:'#EDEDED' };
   var JERSEY={
     red:  { body:'#C8102E', stripe:'#111111', trim:'#FFFFFF', num:'#FFFFFF' },
     black:{ body:'#151515', stripe:'#C8102E', trim:'#FFFFFF', num:'#FFFFFF' },
@@ -39,7 +45,10 @@
   };
   var GLOVES={ black:'#141414', red:'#C8102E', ice:'#BFE6F2' };
   var STICK={ classic:'#2B2B2B', wood:'#B07A45', gold:'#D4A72C' };
-  var DEFAULT_LOOK={ skin:'s3', hair:'brown', hairstyle:'flow', jersey:'red', helmet:'team', gloves:'black', stick:'classic', num:'' };
+  // hand/facing are free preference slots (server catalog: hand-*, facing-*).
+  // grip is how the stick is held (oneHand/twoHand) -- a render default, not a
+  // catalog slot, kept separate from the server's unlockable 'pose' (stances).
+  var DEFAULT_LOOK={ skin:'s3', hair:'brown', hairstyle:'flow', jersey:'red', helmet:'team', gloves:'black', stick:'classic', num:'', hand:'right', facing:'left', grip:'oneHand' };
 
   // Server looks use catalog ids ('jersey-red', 'skin-s3'); the renderer keys
   // on the part after the slot prefix. Unknown values fall back to defaults.
@@ -71,6 +80,17 @@
   }
 
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(ch){ return '&#'+ch.charCodeAt(0)+';'; }); }
+
+  // A limb as a box from point p1 to point p2 (hip->knee, shoulder->elbow, ...),
+  // square section of side t. Poses become points, so elbows and knees bend on
+  // their own and handedness is just an x-mirror of the points.
+  function limb(p1,p2,t,c,faces){
+    var dx=p2[0]-p1[0], dy=p2[1]-p1[1], dz=p2[2]-p1[2];
+    var L=Math.sqrt(dx*dx+dy*dy+dz*dz)||0.0001;
+    var ang=Math.acos(dy/L)*180/Math.PI;
+    var rot='rotate3d('+(-dz)+',0,'+dx+','+ang+'deg)';
+    return box({w:t,h:L,d:t,x:(p1[0]+p2[0])/2,y:(p1[1]+p2[1])/2,z:(p1[2]+p2[2])/2,c:c,faces:faces,rot:rot});
+  }
 
   // --- Hair styles (Minnesota hockey hair) --------------------------------------
   // The head box spans y 24.2-31.8, z -3.8..3.8; the helmet's side pieces sit at
@@ -113,7 +133,22 @@
     locs:function(c){ var out=[];
       [-2.6,-1.3,0,1.3,2.6].forEach(function(x,i){ out.push(box({w:.85,h:5-(i%2)*.7,d:.85,x:x,y:23.3+(i%2)*.35,z:-4.4,c:c})); });
       [-1,1].forEach(function(s){ out.push(box({w:.8,h:4,d:.8,x:4.3*s,y:23.8,z:-.8,c:c})); out.push(box({w:.8,h:3.4,d:.8,x:4.3*s,y:24.1,z:.8,c:c})); });
-      return out; }
+      return out; },
+    // Big round volume at the back and sides.
+    afro:function(c){ return [
+      box({w:9,h:5.2,d:2.4,y:24.6,z:-4.7,c:c}),
+      box({w:2,h:5,d:4.6,x:-4.7,y:25,z:-.2,c:c}), box({w:2,h:5,d:4.6,x:4.7,y:25,z:-.2,c:c}),
+      box({w:7.2,h:1.6,d:1.2,y:21.6,z:-4.5,c:c}) ]; },
+    // A bun high on the back of the head, thin hair at the nape and sides.
+    bun:function(c){ return [
+      box({w:3.2,h:3.2,d:2.8,y:29.2,z:-5,c:c}),
+      box({w:6.8,h:1.4,d:1,y:25.3,z:-4.1,c:c}),
+      box({w:.6,h:1.8,d:2.4,x:-4,y:25.3,z:1,c:c}), box({w:.6,h:1.8,d:2.4,x:4,y:25.3,z:1,c:c}) ]; },
+    // Two tied bunches out the sides.
+    pigtails:function(c){ return [
+      box({w:6.8,h:1.4,d:1,y:25.3,z:-4.1,c:c}),
+      box({w:1.8,h:1.8,d:1.8,x:-4.6,y:26.4,z:-.6,c:c}), box({w:1.5,h:3.8,d:1.5,x:-5,y:23.6,z:-.6,c:c}),
+      box({w:1.8,h:1.8,d:1.8,x:4.6,y:26.4,z:-.6,c:c}), box({w:1.5,h:3.8,d:1.5,x:5,y:23.6,z:-.6,c:c}) ]; }
   };
   function hairBoxes(style,c){ return (HAIR_STYLES[style]||HAIR_STYLES[DEFAULT_LOOK.hairstyle])(c).join(''); }
 
@@ -136,6 +171,15 @@
     var torsoBg='linear-gradient(0deg,'+J.stripe+' 0 9%,'+J.trim+' 9% 12%,'+J.body+' 12% 100%)';
     var sleeveBg='linear-gradient(0deg,'+J.body+' 0 38%,'+J.trim+' 38% 44%,'+J.stripe+' 44% 58%,'+J.trim+' 58% 64%,'+J.body+' 64% 100%)';
     var sockBg='linear-gradient(0deg,'+J.body+' 0 40%,'+J.stripe+' 40% 55%,'+J.trim+' 55% 62%,'+J.body+' 62% 100%)';
+    // Pixel weave: a transparent 2x2-checker tile over every fill, so sleeves, socks,
+    // pants, gloves and skates read as the same style-A fabric as the jersey (whose
+    // tile bakes the weave in). It rides on top of the colorway gradients and solids,
+    // so all five jersey colors still work.
+    function gr(fill){ return 'url(avatar-tex/grain.png),'+fill; }
+    var sleeveTx=gr(sleeveBg), sockTx=gr(sockBg);
+    var pantsFaces={front:gr(black),back:gr(black),side:gr(black),top:gr(black),bottom:gr(black)};
+    var gloveFaces={front:gr(gloveC),back:gr(gloveC),side:gr(gloveC),top:gr(gloveC),bottom:gr(gloveC)};
+    var skateFaces={front:gr(black),back:gr(black),side:gr(black),top:gr(black),bottom:gr(black)};
     // Phase 1 pixel textures (style A). Flat tiles -- the code still shades each
     // face (top lighter, sides darker), so these must stay flat (no baked lighting).
     var JTEX={red:1,black:1,white:1};
@@ -156,25 +200,60 @@
     // Cage: a steel grid on a see-through face.
     var cageBg='repeating-linear-gradient(90deg,'+steel+' 0 .22em,transparent .22em 1.3em),repeating-linear-gradient(0deg,'+steel+' 0 .22em,transparent .22em 1.3em)';
 
+    // Handedness: lefty puts the right hand on top of the stick; righty the left.
+    // Mirror every arm/stick point across x; the blade follows to the matching side.
+    var lefty=(look.hand==='left');
+    function M(p){ return lefty?[-p[0],p[1],p[2]]:p; }
+
+    var shTop=M([-4.6,22.4,1]), shBot=M([4.6,22.4,1]);       // shoulders
+    // Arm + stick points per pose. elTop/elBot are elbows (= Phase-3 elbow joints).
+    var elTop,elBot,handTop,handBot,knob,ice,bladeToe;
+    if(look.grip==='twoHand'){
+      // Two-handed ready grip: both hands in front, top hand on the knob, bottom a
+      // forearm down the shaft, blade flat on the ice.
+      elTop=M([-3.5,16.5,3.6]); elBot=M([4,14.6,4.2]);
+      handTop=M([0.4,12.5,6]); handBot=M([1.2,9,7]);
+      knob=M([0.1,13.7,5.7]); ice=M([3.2,0.7,9.6]); bladeToe=M([3.2,0.8,12.8]);
+    } else {
+      // One-handed knob hold (card default): top hand on the knob, stick angled down
+      // to the ice in front; the other arm hangs relaxed at the side.
+      elTop=M([-4.8,18,3.6]); handTop=M([-2.3,13.8,5.4]);
+      knob=M([-2.6,14.6,5.1]); ice=M([0.6,0.7,9.5]); bladeToe=M([0.6,0.8,12.7]);
+      elBot=M([5.3,17.4,1.4]); handBot=M([4.8,12.8,1.8]);   // arm hangs at the side
+    }
+
+    // Legs: hockey pants (breezers) cover hips + thighs to the knee, so only the
+    // shin (sock) shows below. Knee pushed forward for an athletic stance; the knee
+    // is a real joint now (Phase-3 ready), capped by the shin-guard pad.
+    var kneeBend=1.5;
+    var kneeL=[-2.1,6.2,kneeBend], ankL=[-2.1,2.4,.6];
+    var kneeR=[2.1,6.2,kneeBend], ankR=[2.1,2.4,.6];
+
     var parts=[
       // Skates: blade + boot
       box({w:.5,h:.6,d:5.4,x:-2.1,y:.3,z:.6,c:steel}),
       box({w:.5,h:.6,d:5.4,x:2.1,y:.3,z:.6,c:steel}),
-      box({w:3,h:1.6,d:5,x:-2.1,y:1.4,z:.6,c:black}),
-      box({w:3,h:1.6,d:5,x:2.1,y:1.4,z:.6,c:black}),
-      // Legs (socks over shin guards)
-      box({w:3.4,h:7.8,d:3.6,x:-2.1,y:6.1,c:J.body,faces:{front:sockBg,back:sockBg,side:sockBg}}),
-      box({w:3.4,h:7.8,d:3.6,x:2.1,y:6.1,c:J.body,faces:{front:sockBg,back:sockBg,side:sockBg}}),
-      // Pants
-      box({w:8.6,h:4.6,d:4.8,y:12.3,c:black}),
+      box({w:3,h:1.6,d:5,x:-2.1,y:1.4,z:.6,c:black,faces:skateFaces}),
+      box({w:3,h:1.6,d:5,x:2.1,y:1.4,z:.6,c:black,faces:skateFaces}),
+      // Shins (socks over shin guards), knee -> ankle: the bent knee shows here.
+      limb(kneeL,ankL,3.4,J.body,{front:sockTx,back:sockTx,side:sockTx,top:sockTx}),
+      limb(kneeR,ankR,3.4,J.body,{front:sockTx,back:sockTx,side:sockTx,top:sockTx}),
+      // Knee caps (shin-guard pads) at the bend, bulging forward past the pant hem.
+      box({w:3.6,h:2.8,d:3.8,x:kneeL[0],y:kneeL[1],z:kneeL[2]+.3,c:J.body,faces:{front:sockTx,back:sockTx,side:sockTx,top:sockTx,bottom:sockTx}}),
+      box({w:3.6,h:2.8,d:3.8,x:kneeR[0],y:kneeR[1],z:kneeR[2]+.3,c:J.body,faces:{front:sockTx,back:sockTx,side:sockTx,top:sockTx,bottom:sockTx}}),
+      // Hockey pants (breezers) to the knees: bulky, cover hips + thighs.
+      box({w:9,h:8,d:5.2,y:11,c:black,faces:pantsFaces}),
       // Torso (jersey over shoulder pads)
       box({w:9.6,h:9.4,d:5.4,y:19.3,c:J.body,faces:{front:jTex,back:jTex,side:jTex,top:jTex},frontInner:chestNum,backInner:backNum}),
-      // Arms, slightly forward in a ready stance
-      box({w:3.4,h:8.4,d:3.6,x:-6.6,y:19.6,z:1,c:J.body,faces:{front:sleeveBg,back:sleeveBg,side:sleeveBg},rot:'rotateX(18deg)'}),
-      box({w:3.4,h:8.4,d:3.6,x:6.6,y:19.6,z:1,c:J.body,faces:{front:sleeveBg,back:sleeveBg,side:sleeveBg},rot:'rotateX(18deg)'}),
-      // Gloves
-      box({w:3.8,h:3.6,d:4,x:-6.6,y:14.4,z:2.6,c:gloveC}),
-      box({w:3.8,h:3.6,d:4,x:6.6,y:14.4,z:2.6,c:gloveC}),
+      // Arms: upper arm (shoulder->elbow) + forearm (elbow->hand), bending onto the
+      // stick so the character actually holds it (both hands land on the grip).
+      limb(shTop,elTop,3.4,J.body,{front:sleeveTx,back:sleeveTx,side:sleeveTx,top:sleeveTx}),
+      limb(elTop,handTop,3.2,J.body,{front:sleeveTx,back:sleeveTx,side:sleeveTx,top:sleeveTx}),
+      limb(shBot,elBot,3.4,J.body,{front:sleeveTx,back:sleeveTx,side:sleeveTx,top:sleeveTx}),
+      limb(elBot,handBot,3.2,J.body,{front:sleeveTx,back:sleeveTx,side:sleeveTx,top:sleeveTx}),
+      // Gloves at the two grip points
+      box({w:3.8,h:3.4,d:3.8,x:handTop[0],y:handTop[1],z:handTop[2],c:gloveC,faces:gloveFaces}),
+      box({w:3.8,h:3.4,d:3.8,x:handBot[0],y:handBot[1],z:handBot[2],c:gloveC,faces:gloveFaces}),
       // Head
       box({w:7.6,h:7.6,d:7.6,y:28,c:skin,frontInner:faceInner}),
       // Hair: style is a few boxes around the helmet (see hairBoxes).
@@ -186,11 +265,16 @@
       box({w:1,h:4.8,d:5.6,x:4.2,y:27.9,z:.6,c:helmet,faces:helFaces}),
       // Cage
       "<div class='av-b' style='transform:translate3d(0,-27.4em,4.3em)'>"+face('av-cage',7.8,6.4,'none',cageBg)+"</div>",
-      // Stick: shaft from the right glove to the ice, blade forward
-      box({w:.7,h:18.4,d:.7,x:5.6,y:8.4,z:5,c:stickC,rot:'rotateX(-24deg) rotateZ(-8deg)'}),
-      box({w:4.4,h:1.2,d:.6,x:2.9,y:.6,z:8.6,c:stickC})
+      // Stick (knob -> ice shaft, white tape at the heel, blade along the ice to the
+      // toe). Recolored by the unlocked stick (stickC: classic / wood / gold).
+      limb(knob,ice,1.3,stickC),
+      box({w:1.5,h:1.6,d:1.6,x:ice[0],y:2.2,z:ice[2]-0.4,c:'#E8E8E8'}),
+      box({w:1.4,h:2.2,d:(bladeToe[2]-ice[2]),x:ice[0],y:1.3,z:(ice[2]+bladeToe[2])/2,c:stickC})
     ];
-    return "<div class='av-wrap' aria-hidden='true'><div class='av-scene'>"+parts.join('')+"</div></div>";
+    // Facing: left 3/4 is the default; right mirrors it, center faces head-on. Set
+    // as a CSS var so the builder's spin and the mini previews still win.
+    var faceY=(look.facing==='right')?25:((look.facing==='center')?0:-25);
+    return "<div class='av-wrap' aria-hidden='true'><div class='av-scene' style='--av-face:"+faceY+"deg'>"+parts.join('')+"</div></div>";
   }
 
   // Look for a player. Order: the server roster looks (fetched below, cached on
@@ -243,7 +327,7 @@
     ".av-wrap{position:absolute;inset:0;z-index:2;pointer-events:none;perspective:60em;perspective-origin:50% 30%;"+
       "font-size:min(9px,2.2vw)}"+
     ".av-scene{position:absolute;left:50%;bottom:9%;width:0;height:0;transform-style:preserve-3d;"+
-      "transform:rotateX(-10deg) rotateY(-25deg)}"+
+      "transform:rotateX(-10deg) rotateY(var(--av-face,-25deg))}"+
     ".av-b{position:absolute;left:0;top:0;width:0;height:0;transform-style:preserve-3d}"+
     ".av-f{position:absolute;left:0;top:0;backface-visibility:hidden;box-shadow:inset 0 0 0 .06em rgba(0,0,0,.35);background-size:100% 100%;image-rendering:pixelated}"+
     ".av-top{filter:brightness(1.18)}.av-right,.av-left{filter:brightness(.78)}.av-back{filter:brightness(.88)}.av-bottom{filter:brightness(.6)}"+
@@ -266,7 +350,7 @@
   // Opens from the My Player button on the player's own card. Tap an owned item: it goes on the
   // character and saves to the server. Tap a locked item: try it on, with the
   // progress line; nothing is saved. Unlocks come from the server only.
-  var GEAR_TABS=[['skin','Skin'],['hairstyle','Hair'],['hair','Hair color'],['jersey','Jersey'],['helmet','Helmet'],['stripe','Stripe'],['gloves','Gloves'],['stick','Stick']];
+  var GEAR_TABS=[['skin','Skin'],['hairstyle','Hair'],['hair','Hair color'],['jersey','Jersey'],['helmet','Helmet'],['stripe','Stripe'],['gloves','Gloves'],['stick','Stick'],['hand','Shot'],['facing','View']];
   var TIER_LABEL={ common:'', rare:'Pro', epic:'All-Star', legendary:'Legend' };
   var L={ data:null, look:null, saved:null, tab:'skin', trying:null, changed:false, me:null };
 
@@ -300,11 +384,19 @@
     var look=norm(L.look||{}); look.hairstyle=style; look.num='';
     return "<span class='lk-mini' aria-hidden='true'>"+html(look)+"</span>";
   }
+  // Preview a free preference (hand/facing) on the player, seen from the front
+  // (not the hair back-view) so the stick side and the facing read.
+  function miniOpt(slot,val){
+    var look=norm(L.look||{}); look[slot]=val; look.num='';
+    return "<span class='lk-mini face' aria-hidden='true'>"+html(look)+"</span>";
+  }
 
   // First-run builder: three steps, everything pre-picked, so a kid can tap Done.
-  var BUILD_STEPS=[['skin','Pick your skin tone'],['hairstyle','Pick your hockey hair'],['hair','Pick your hair color'],['jersey','Pick your jersey']];
+  var BUILD_STEPS=[['skin','Pick your skin tone'],['hairstyle','Pick your hockey hair'],['hair','Pick your hair color'],['jersey','Pick your jersey'],['hand','Which way do you shoot?'],['facing','Which way to face?']];
   // Hair is easiest to judge from behind, so those tabs turn the player around.
-  function spinFor(tab){ return (tab==='hair'||tab==='hairstyle')?150:-25; }
+  // Facing turns the player to the picked side so the stage shows the real view.
+  function faceSpin(f){ return f==='right'?25:(f==='center'?0:-25); }
+  function spinFor(tab){ return (tab==='hair'||tab==='hairstyle')?150:(tab==='facing'?faceSpin(norm(L.look||{}).facing):-25); }
   // Unlock tracking on this device: ids already shown, and ids still marked New.
   function readList(k){ try{ var v=JSON.parse(localStorage.getItem(k)||'null'); return Array.isArray(v)?v:null; }catch(_){ return null; } }
   function writeList(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(_){} }
@@ -328,6 +420,7 @@
       ".lk-mini{position:relative;display:block;width:64px;height:52px;overflow:hidden;pointer-events:none}"+
       ".lk-mini .av-wrap{font-size:3.2px;perspective:none}"+
       ".lk-mini .av-scene{bottom:-58px;transform:rotateX(-8deg) rotateY(150deg)}"+
+      ".lk-mini.face .av-scene{transform:rotateX(-8deg) rotateY(var(--av-face,-25deg))}"+
       ".lk-lbl{font-size:13px;font-weight:800;text-align:center;line-height:1.15}"+
       ".lk-sub{font-size:11px;color:var(--muted,#5F6F64);text-align:center;line-height:1.2}"+
       ".lk-item.locked .lk-sw{opacity:.45}"+
@@ -386,7 +479,7 @@
       return "<button type='button' class='lk-item"+(own?'':' locked')+"' data-id='"+esc(it.id)+"' aria-pressed='"+on+"'"+
         " aria-label='"+esc(lbl+(own?'':', locked. '+ruleText(it)+' to unlock'))+"'>"+
         (own?'':"<i class='lk-lock' aria-hidden='true'></i>")+(own&&isNew(it.id)?"<i class='lk-new'>New</i>":"")+
-        (it.slot==='hairstyle'?miniHead(short):"<span class='lk-sw' style='background:"+swatch(it.slot,short)+"'></span>")+
+        (it.slot==='hairstyle'?miniHead(short):(it.slot==='hand'||it.slot==='facing')?miniOpt(it.slot,short):"<span class='lk-sw' style='background:"+swatch(it.slot,short)+"'></span>")+
         "<span class='lk-lbl'>"+esc(lbl)+"</span>"+(sub?"<span class='lk-sub'>"+esc(sub)+"</span>":"")+"</button>";
     }).join('');
   }
@@ -426,6 +519,7 @@
     if(L.look[it.slot]===id){ paintStage(); return; }
     var prev={}; for(var k2 in L.look) prev[k2]=L.look[k2];
     L.look[it.slot]=id; paintGrid();
+    if(it.slot==='facing') L.spin=faceSpin(id.slice(it.slot.length+1)); // turn the stage to the picked view
     if(L.build!=null){ paintStage(); return; } // the builder saves once, on Done
     save(prev);
     try{ if(window.thwapHaptic) window.thwapHaptic('tap'); }catch(_){}
@@ -483,6 +577,7 @@
       var nx=(j.next||[])[0];
       L.status=nx?('Next up: '+nx.label+'. '+nx.left+' to go.'):'';
       if(!j.saved || opts.builder){ L.build=0; L.tab=BUILD_STEPS[0][0]; L.status=''; }
+      L.spin=spinFor(L.tab); // open at the right angle (hair from behind, facing to its side)
       if(!readList('thwapUnlockSeen')) writeList('thwapUnlockSeen',j.unlocked||[]);
       paintTabs(); paintGrid(); paintStage();
       // New tags show once: opening the My Player counts as seeing them.

@@ -39,7 +39,7 @@ describe('My Player', () => {
     const { w } = await open();
     expect(w.document.querySelector('.lk[role=dialog]')).toBeTruthy();
     expect(w.document.querySelector('.lk h2').textContent).toBe('My Player');
-    expect(w.document.querySelectorAll('.lk-tab').length).toBe(8);
+    expect(w.document.querySelectorAll('.lk-tab').length).toBe(10);
     expect(w.document.querySelector('.lk-stage .av-wrap')).toBeTruthy();
     expect(w.document.querySelector('.lk-btn')).toBeNull();
   });
@@ -89,18 +89,22 @@ describe('My Player', () => {
 });
 
 describe('first-run builder', () => {
-  it('a player with no saved look gets four steps (skin, hair, hair color, jersey), and Done saves once', async () => {
+  it('a player with no saved look gets six steps (skin, hair, hair color, jersey, shot, facing), and Done saves once', async () => {
     const { w, posts } = await open({ saved: false });
     const d = w.document;
-    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 1 of 4/);
+    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 1 of 6/);
     d.querySelector('[data-id=skin-s5]').click();
     expect(posts.length).toBe(0); // no save mid-build
     d.querySelector('[data-build=next]').click();
-    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 2 of 4.*hockey hair/i);
+    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 2 of 6.*hockey hair/i);
     d.querySelector('[data-id=hairstyle-mullet]').click();
     d.querySelector('[data-build=next]').click();
-    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 3 of 4.*hair color/i);
-    d.querySelector('[data-build=next]').click();
+    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 3 of 6.*hair color/i);
+    d.querySelector('[data-build=next]').click(); // -> step 4: jersey
+    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 4 of 6.*jersey/i);
+    d.querySelector('[data-build=next]').click(); // -> step 5: shot (handedness)
+    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 5 of 6.*shoot/i);
+    d.querySelector('[data-build=next]').click(); // -> step 6: facing
     const done = d.querySelector('[data-build=next]');
     expect(done.textContent).toBe('Done');
     done.click();
@@ -115,12 +119,12 @@ describe('first-run builder', () => {
     const d = w.document;
     d.querySelector('[data-build=next]').click();
     d.querySelector('[data-build=back]').click();
-    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 1 of 4/);
+    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 1 of 6/);
   });
 });
 
 describe('hair styles', () => {
-  const STYLES = ['buzz', 'short', 'flow', 'lettuce', 'mullet', 'wings', 'curls', 'ponytail', 'braids', 'locs'];
+  const STYLES = ['buzz', 'short', 'flow', 'lettuce', 'mullet', 'wings', 'curls', 'ponytail', 'braids', 'locs', 'afro', 'bun', 'pigtails'];
   it('every style is free from day one, even for a brand-new player', () => {
     const owned = A.unlockedIds(A.progressFrom(null, 0));
     for (const s of STYLES) expect(owned).toContain(`hairstyle-${s}`);
