@@ -1,7 +1,7 @@
 // test/game-goals-keep-until-thursday.test.js
 //
-// Guards for the "keep a just-passed game's card until Thursday 06:00
-// America/Vancouver, unless this player already set that game's goals" rule.
+// Guards for the "keep a just-passed game's card for 10 days after the game
+// (America/Vancouver), unless this player already set that game's goals" rule.
 //
 // index.html cannot boot under jsdom (its YouTube iframes crash it), so the pure
 // date + pick helpers are exposed on window.ThwapGameDay. This test EXTRACTS that
@@ -39,30 +39,29 @@ function loadGameDay() {
 let GD;
 beforeAll(() => { GD = loadGameDay(); });
 
-describe('Vancouver Thursday 06:00 cutoff', () => {
+describe('passed-game keep window: 10 days from the game date', () => {
   it('exposes the pure helpers on window.ThwapGameDay', () => {
-    expect(typeof GD.thursday6amCutoffMs).toBe('function');
+    expect(typeof GD.gameKeepUntilMs).toBe('function');
     expect(typeof GD.pickGameToShow).toBe('function');
     expect(typeof GD.mostRecentPastGame).toBe('function');
     expect(typeof GD.gameDoneKey).toBe('function');
+    expect(GD.KEEP_DAYS).toBe(10);
   });
 
-  it('cutoff lands on Thursday 06:00 Vancouver wall-clock', () => {
-    // Sun Oct 4 2026 12:00 Vancouver -> cutoff should be Thu Oct 8 2026 06:00 Vancouver.
-    const now = GD.vancouverWallMs(2026, 10, 4, 12, 0);
-    const cut = GD.thursday6amCutoffMs(now);
-    const p = GD.vancouverParts(cut);
-    expect(p.dow).toBe(4);              // Thursday
-    expect(`${p.y}-${p.m}-${p.d}`).toBe('2026-10-8');
-    expect(cut).toBe(GD.vancouverWallMs(2026, 10, 8, 6, 0));
+  it('keep-until is anchored to the GAME date, not to now', () => {
+    expect(GD.gameKeepUntilMs({ date: '2026-10-18' })).toBe(GD.vancouverWallMs(2026, 10, 28, 0, 0));
+    expect(GD.gameKeepUntilMs({ date: '2026-10-25' })).toBe(GD.vancouverWallMs(2026, 11, 4, 0, 0));
   });
 
-  it('one minute BEFORE Thursday 6am is still in-window; one minute AFTER is past it', () => {
-    const cut = GD.vancouverWallMs(2026, 10, 8, 6, 0);
-    const before = cut - 60000;
-    const after = cut + 60000;
-    expect(before < GD.thursday6amCutoffMs(before)).toBe(true);
-    expect(after < GD.thursday6amCutoffMs(after)).toBe(false);
+  it('regression: an unlogged Oct 18 game is gone by Oct 28 (was stuck forever)', () => {
+    const evs = [{ id: 'g-1018', kind: 'game', date: '2026-10-18', time: '12:00', opponent: 'Tri-Cities Jr Americans' }];
+    const next = { id: 'g-1031', kind: 'game', date: '2026-10-31', time: '16:00', opponent: 'Tacoma Rockets' };
+    const day9 = GD.vancouverWallMs(2026, 10, 27, 20, 0);
+    const day10 = GD.vancouverWallMs(2026, 10, 28, 12, 11);
+    expect(GD.pickGameToShow({ events: evs, nextGame: next, nowMs: day9, isDone: () => false }).game.id).toBe('g-1018');
+    const pick = GD.pickGameToShow({ events: evs, nextGame: next, nowMs: day10, isDone: () => false });
+    expect(pick.passed).toBe(false);
+    expect(pick.game.id).toBe('g-1031');
   });
 });
 
@@ -96,8 +95,8 @@ describe('pickGameToShow -- passed, uncompleted game surfaces in-window', () => 
     expect(GD.pickGameToShow({ events: EVENTS, nextGame: NEXT, nowMs: nowOct5(), isDone: doneB }).game.id).toBe('g-1004');
   });
 
-  it('after Thursday 6am the passed game is gone and nextGame returns', () => {
-    const past = GD.vancouverWallMs(2026, 10, 8, 6, 1); // just after cutoff
+  it('10 days after the game the passed game is gone and nextGame returns', () => {
+    const past = GD.vancouverWallMs(2026, 10, 14, 0, 1); // g-1004 + 10 days
     const pick = GD.pickGameToShow({ events: EVENTS, nextGame: NEXT, nowMs: past, isDone: () => false });
     expect(pick.passed).toBe(false);
     expect(pick.game.id).toBe('g-1017');
