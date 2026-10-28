@@ -27,7 +27,7 @@
 
 import crypto from 'crypto';
 import { parseBody } from '../lib/photo_common.js';
-import { mintSession, verifySession } from '../lib/session_store.js';
+import { mintSession, verifySession, readSessionCookie } from '../lib/session_store.js';
 import { ROSTER, weekBoard, monthTrend, adjustPlayer, getGrants, setGrants } from '../lib/store.js';
 import { LETTERS, MAX_A, letterFromGrants, withLetter } from '../lib/avatar_items.js';
 import {
@@ -218,6 +218,12 @@ async function coachRunsTeam(coach, code) {
   return coaches.some((x) => String(x.email || '').toLowerCase() === email);
 }
 
+async function playerOnTeam(code, playerId) {
+  const pid = String(playerId || '').trim().toLowerCase();
+  if (!pid) return false;
+  return (await listMembers(code)).map((m) => String(m).toLowerCase()).includes(pid);
+}
+
 // POST ?action=set-letter { coachToken, code, playerId, letter: 'C' | 'A' | '' }
 //   -> the coach gives a player the C or an A, or takes it off (''). The coach
 //   must run the team and the player must be on it. One C per team: giving the
@@ -369,6 +375,7 @@ async function addPlayer(req, res) {
   const coach = await requireCoach(req, res); if (!coach) return;
   const { code, firstName, lastName, number, position, parentEmail, parentEmail2, parentEmails, photo } = parseBody(req);
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  if (!(await coachRunsTeam(coach, code))) return res.status(403).json({ error: 'not your team' });
   if (!String(firstName || '').trim()) return res.status(400).json({ error: 'first name required' });
   // Accept the flexible list; fall back to the legacy two fields.
   const pe = normalizeParentEmails(parentEmails !== undefined ? parentEmails : [parentEmail, parentEmail2]);
@@ -385,6 +392,8 @@ async function removePlayer(req, res) {
   const coach = await requireCoach(req, res); if (!coach) return;
   const { code, playerId } = parseBody(req);
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  if (!(await coachRunsTeam(coach, code))) return res.status(403).json({ error: 'not your team' });
+  if (!(await playerOnTeam(code, playerId))) return res.status(404).json({ error: 'player is not on this team' });
   const out = await removeMember(code, playerId);
   return res.status(200).json({ ok: true, ...out });
 }
@@ -395,6 +404,8 @@ async function updatePlayer(req, res) {
   const coach = await requireCoach(req, res); if (!coach) return;
   const { code, playerId, firstName, lastName, number, position, photo, parentEmail, parentEmail2, parentEmails } = parseBody(req);
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  if (!(await coachRunsTeam(coach, code))) return res.status(403).json({ error: 'not your team' });
+  if (!(await playerOnTeam(code, playerId))) return res.status(404).json({ error: 'player is not on this team' });
   if (firstName !== undefined && !String(firstName || '').trim()) {
     return res.status(400).json({ error: 'first name cannot be empty' });
   }
@@ -619,6 +630,15 @@ async function roster(req, res) {
   const code = (req.query && req.query.code) || SEED_TEAM_CODE;
   const team = await getTeam(code);
   if (!team) return res.status(404).json({ error: 'unknown team' });
+  // Parent emails are children's-family contact details: only a coach who runs
+  // this team sees them all; a signed-in player sees only their own (the
+  // self-edit sheet). Everyone else gets the roster without them.
+  const tok = (req.query && req.query.coachToken) || '';
+  const cTok = tok ? coachFromToken(tok) : null;
+  const cRec = cTok ? await getCoach(cTok.email) : null;
+  const seesAllEmails = !!(cRec && (await coachRunsTeam(cRec, code)));
+  const session = verifySession(readSessionCookie(req));
+  const selfId = session ? String(session.playerId || '').toLowerCase() : '';
   const ids = await listMembers(code);
   const board = await weekBoard(); // [{id, stick, shoot, dryland}]
   const byId = Object.fromEntries(board.map((b) => [b.id, b]));
@@ -633,7 +653,7 @@ async function roster(req, res) {
       firstName: (m && m.firstName) || '', lastName: (m && m.lastName) || '',
       number: m ? m.number : null, position: (m && m.position) || '',
       status: (m && m.status) || 'active',
-      parentEmails: parentEmailList(m),
+      parentEmails: (seesAllEmails || pid === selfId) ? parentEmailList(m) : [],
       // Full weekly split so the coach dashboard can break participation down by
       // skill (stick/shoot/dryland are the required triad; iq + pass are bonus).
       week: {
@@ -703,6 +723,7 @@ async function addEvent(req, res) {
   const coach = await requireCoach(req, res); if (!coach) return;
   const { code, event } = parseBody(req);
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  if (!(await coachRunsTeam(coach, code))) return res.status(403).json({ error: 'not your team' });
   if (!event || !event.date) return res.status(400).json({ error: 'event date required' });
   const sched = await addScheduleEvent(code, event);
   return res.status(200).json({ ok: true, schedule: sched, next: nextEvent(sched) });
@@ -747,6 +768,7 @@ async function setPlan(req, res) {
   const coach = await requireCoach(req, res); if (!coach) return;
   const { code, plan } = parseBody(req);
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  if (!(await coachRunsTeam(coach, code))) return res.status(403).json({ error: 'not your team' });
   // Paywall: no editing the weekly plan when the team's season is unpaid. No-op
   // until BILLING_ENFORCED=1, and fails open if billing can't be read.
   if (await isGated(code)) return res.status(402).json({ error: 'season not active', gated: true });
@@ -769,6 +791,7 @@ async function setTeamGoalHandler(req, res) {
   const coach = await requireCoach(req, res); if (!coach) return;
   const { code, text } = parseBody(req);
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  if (!(await coachRunsTeam(coach, code))) return res.status(403).json({ error: 'not your team' });
   const rec = await setTeamGoal(code, { text });
   return res.status(200).json({ ok: true, teamGoal: rec });
 }
@@ -779,6 +802,7 @@ async function suggestDrill(req, res) {
   const coach = await requireCoach(req, res); if (!coach) return;
   const { code, category, text } = parseBody(req);
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  if (!(await coachRunsTeam(coach, code))) return res.status(403).json({ error: 'not your team' });
   const rec = await addDrillSuggestion(code, { category, text, byCoach: coach.email });
   if (!rec) return res.status(400).json({ error: 'a drill description is required' });
   return res.status(200).json({ ok: true, suggestion: rec });
@@ -790,6 +814,7 @@ async function drillSuggestions(req, res) {
   const coach = await requireCoach(req, res); if (!coach) return;
   const code = (req.query && req.query.code) || SEED_TEAM_CODE;
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  if (!(await coachRunsTeam(coach, code))) return res.status(403).json({ error: 'not your team' });
   res.setHeader('Cache-Control', 'no-store');
   return res.status(200).json({ ok: true, suggestions: await listDrillSuggestions(code) });
 }

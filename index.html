@@ -10224,8 +10224,10 @@ function openSelfEdit(){
   window.thwapEmailUI.render(psEmailList, []);
   if(psPin) psPin.textContent=pinFor(num);
   sheetShow(true);
-  /* Fill emails + canonical fields from the roster in the background. */
-  fetch('/api/coach?action=roster&code='+encodeURIComponent(TEAM))
+  /* Fill emails + canonical fields from the roster in the background. The roster
+     returns parent emails only for the signed-in player's own record, so the
+     session cookie must go with it (credentials:'include', see PR #302). */
+  fetch('/api/coach?action=roster&code='+encodeURIComponent(TEAM),{credentials:'include'})
     .then(function(r){ return r.json(); }).then(function(j){
       var m=(j&&j.members||[]).filter(function(x){ return (x.playerId||x.firstName||'').toLowerCase()===myPid(); })[0];
       if(!m) return;
