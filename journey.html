@@ -141,6 +141,7 @@ html.has-stamp .seal .d{align-items:end;padding-bottom:16%;font-size:10px}
 .tl li b{font-family:'Oswald',sans-serif;font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-size:13px}
 .tl li p{margin:0;font-size:var(--fs-support)}
 .tl li.future{color:var(--muted)}
+.tl li:last-child{border-bottom:0}
 
 /* FINALE */
 .finale .art.scene{--ar:1600/1000;margin-top:12px}
@@ -176,13 +177,12 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
 <header class="jhead">
   <p class="eyebrow" id="jSeason">Season 2026-27</p>
   <h1>My Season Journey</h1>
-  <p class="who"><span id="jName">Lewie M.</span> <b id="jNum">#81</b><span class="meta" id="jMeta">Forward &nbsp; Jr. Rangers 10U</span></p>
 </header>
 
 <!-- 2 MY JOURNEY -->
 <section class="pg" aria-labelledby="h-journey">
   <h2 id="h-journey">Where I am</h2>
-  <div class="tiernow"><b id="jTier">Practice Ice</b><span id="jStep">Step 2 of 3</span><span class="sample" data-sample>Sample</span></div>
+  <div class="tiernow"><b id="jTier">Practice Ice</b><span id="jStep">Step 2 of 3</span></div>
 
   <div class="rinkwrap" id="jRink" style="--x:43%">
     <div class="art" data-art="rink-path.webp"><span>rink-path.webp 1600x700</span></div>
@@ -205,14 +205,14 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="now"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
   </div>
   <p class="nextup" id="jNext">5 more training days to step 3</p>
-  <p class="why">Any day you do one drill counts. Miss a week and your spot waits for you.</p>
+  <p class="why">Do a drill any day to move up. Miss more than 4 days in a row and you slip back a step.</p>
 </section>
 
 <!-- 4 MY BADGES -->
 <section class="pg" aria-labelledby="h-badges">
   <div class="badgehead">
     <div><p class="eyebrow">Earn stars, level up</p><h2 id="h-badges">My Badges</h2>
-      <p class="sub">Every badge has 3 stars. Train to earn them. <span class="sample">Badge list from Woody</span></p></div>
+      <p class="sub">Every badge has 3 stars. Train to earn them.</p></div>
     <div class="art has"><img src="login/sass-welcome.webp" alt=""></div>
   </div>
   <div class="badges">
@@ -233,9 +233,8 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
   <ul class="tl" id="jMonths">
     <li><b>Sep</b><p>11 training days. Reached Locker Room. 3 badge stars.</p></li>
     <li><b>Oct</b><p>12 training days so far. Reached Practice Ice. 2 badge stars.</p></li>
-    <li class="future"><b>Nov</b><p>Your next page.</p></li>
+    <li class="future"><b>Nov</b><p>Coming up.</p></li>
   </ul>
-  <p class="why"><span class="sample" data-sample>Sample</span></p>
 </section>
 
 <!-- 7 FINALE -->
@@ -276,14 +275,6 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
   function txt(id,v){var el=document.getElementById(id);if(el)el.textContent=v;}
   function render(b){
     txt('jSeason','Season '+b.season.label);
-    if(b.player&&b.player.name){
-      txt('jName',b.player.name);
-      var num=document.getElementById('jNum'); if(b.player.number!=null){num.textContent='#'+b.player.number;num.hidden=false;}else{num.hidden=true;}
-      var pos=b.player.position?String(b.player.position):'';
-      pos=pos?pos.charAt(0).toUpperCase()+pos.slice(1):'';
-      var meta=[pos,b.player.team||''].filter(Boolean);
-      var m=document.getElementById('jMeta'); m.textContent=meta.join('\u00a0\u00a0 '); m.hidden=!meta.length;
-    }
     txt('jTier',b.tier);
     txt('jStep',b.complete?'Top of the book':'Step '+b.step+' of 3');
     document.getElementById('jRink').style.setProperty('--x',xFor(b.stepsDone)+'%');
@@ -306,7 +297,7 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
       pp.textContent=m.days+' training day'+(m.days===1?'':'s')+'.';
       li.appendChild(bb);li.appendChild(pp);ul.appendChild(li);
     });
-    if(!b.seasonOver){var f=document.createElement('li');f.className='future';f.innerHTML='<b>Next</b><p>Your next page.</p>';ul.appendChild(f);}
+    if(!b.seasonOver){var f=document.createElement('li');f.className='future';f.innerHTML='<b>Next</b><p>Coming up.</p>';ul.appendChild(f);}
     txt('jFinDays',b.trainingDays); txt('jFinTier',b.tier);
     if(b.seasonOver)document.getElementById('finale').hidden=false;
     document.querySelectorAll('[data-sample]').forEach(function(el){el.hidden=true;});
