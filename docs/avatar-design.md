@@ -1,7 +1,7 @@
 # Player character: visual and interaction design
 
 Companion to `docs/avatar-roadmap.md`. Check this before generating art or
-changing the Locker Room.
+changing the My Player screen.
 
 ## Visual strategy
 
@@ -33,12 +33,36 @@ changing the Locker Room.
 
 ### Color and rarity
 - Base gear in Rangers red, black and white.
-- Rarity reads in the material: team colors (common), chrome (rare), gold
-  (epic), ice or shimmer (legendary). The tier is always written too, never
+- Rarity reads in the material: Rangers colors (Rookie, no label), glacier
+  ice (Pro), gold (All-Star), Bigfoot (Legend). The tier is always written too, never
   color alone.
 - Same saturation discipline as the discipline icon set. Must read on light
   and dark card plates; the code adds a thin dark edge so the character never
   melts into a dark background.
+
+## Naming
+
+Every name comes from Thwap's own world, never from a competitor's app.
+A reference screenshot is inspiration, not a source of words.
+
+- **Sources:** Rangers colors, the Bigfoot mascot, the THWAP sound, the app's
+  own discipline words (Hands, Shooting, Passing, Dryland, Hockey IQ, Net
+  play) and real kid hockey slang (snipe, dangle, tape to tape, toe drag).
+- **Matches existing features:** a plain, kid-obvious name like Sticker Book,
+  Standings and Players. The screen is **My Player**.
+- **Tiers:** Rookie (no label), Pro, All-Star, Legend. Hockey words, not
+  generic game rarity words.
+- **Voice:** `docs/ux-writing.md`, grade 3 to 4, verb first, no "activities".
+
+| Slot | Thwap names |
+|---|---|
+| Jersey | Rangers Red, Rink Black, Ice White, Thwap Green, Bigfoot Legend |
+| Helmet | Game helmet, Glacier helmet |
+| Stripe | Plain, Bolt stripe, Double Bolt |
+| Gloves | Game gloves, Rangers Red gloves, Bigfoot gloves |
+| Stick | Game stick, Old School stick, Golden Stick |
+| Pose | Ready, Toe drag, Dangle, Snipe, Tape to tape, Head up, Power, Big save |
+| Celebration | THWAP!, Knee slide |
 
 ## Interaction strategy
 
@@ -47,22 +71,23 @@ changing the Locker Room.
   kid can tap Done.
 - Then the card reveal: the character lands on the card with the THWAP sound.
 
-### Locker Room: one category at a time
+### My Player: one category at a time
 - Big live preview at the top that stays put. Drag to spin.
-- Tabs: Gear, then Moves (Phase 3), then Collection (Phase 6). One gear type
+- Tabs are the gear types (Skin, Hair, Jersey, Helmet, Stripe, Gloves, Stick),
+  then Poses and Celebrations in Phase 3. Past seasons live in the Sticker Book. One gear type
   shows at a time, never one endless scroll.
 - Tiles at least 48px with 8px spacing.
 - Tap an owned item: it goes on the character and saves. No Save button.
-- Tap a locked item: try it on, with a progress line ("Gold stick. Unlocks at
+- Tap a locked item: try it on, with a progress line ("Golden Stick. Train 100 days to unlock.
   100 training days. You're at 62.").
 
 ### Unlock moment, where it was earned
 - After marking a drill done: a short "New gear!" moment (200 to 400ms, never
-  blocks the next tap). Tap it to open the Locker Room on that item.
-- A dot on the Locker Room entry stays until the new item has been seen.
+  blocks the next tap). Tap it to try the item on in My Player.
+- A dot on the My Player entry stays until the new item has been seen.
 
 ### Poses and celebrations (Phase 3)
-- Picked in the Moves tab.
+- Picked in the Poses and Celebrations tabs.
 - Celebrations play on milestone days and from a Play button, never on a card
   tap (tap flips, double tap spins).
 - Reduced motion shows the final frame, no animation.
@@ -73,7 +98,8 @@ changing the Locker Room.
   C and A.
 
 ### Copy
-Short, kid voice: "Locker Room", "Your look", "Unlocks at 50". Longer
+Short, kid voice, verb first: "My Player", "Finish 5 drills to unlock",
+"Train 100 days to unlock". Never "activities" (banned in `ux-writing.md`). Longer
 explanations sit behind a Why layer.
 
 ## Style test (Woody's laptop)
@@ -113,5 +139,5 @@ Push the winner, or all three, on `art/avatar-style-test`.
 - In the app: add `?avatar=1` to any URL. This device then shows characters in
   every card's photo slot. `?avatar=0` turns it off. Players never see it
   unless they add the flag.
-- Locker Room: with the flag on, tap the Locker Room button or open `#locker`.
+- My Player: with the flag on, tap the My Player button or open `#locker`.
   It needs a signed-in player. Saved looks show on every card after closing.
