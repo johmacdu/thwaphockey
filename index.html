@@ -2154,6 +2154,11 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
       <option value='G'>Goalie</option>
       <option value='FD'>Forward/Defense</option>
     </select></label>
+    <label class='sheet-lab'>Letter<select class='pgate-in' id='peLetter'>
+      <option value=''>None</option>
+      <option value='C'>C (captain)</option>
+      <option value='A'>A (assistant captain)</option>
+    </select></label>
     <div class='pe-elist' id='peEmailList'></div>
     <div class='sheet-pin'>Player code (PIN)<span class='sheet-pin-val' id='pePin'></span><span class='sheet-pin-hint'>In case the player or parent forgets it.</span><button type='button' class='sheet-pin-btn' id='peReqCode'>Request new code</button></div>
     <button type='submit' class='pgate-go' id='peSave'>Save</button>
@@ -3304,6 +3309,7 @@ window.thwapActiveTeam=function(coach){
     var peForm=document.getElementById('playerEditForm');
     var peFirst=document.getElementById('peFirst'), peLast=document.getElementById('peLast'),
         peNum=document.getElementById('peNum'), pePos=document.getElementById('pePos'),
+        peLetter=document.getElementById('peLetter'), peLetterWas='',
         peEmailList=document.getElementById('peEmailList'),
         pePin=document.getElementById('pePin'), peMsg=document.getElementById('peMsg'),
         peRemove=document.getElementById('peRemove');
@@ -3326,6 +3332,9 @@ window.thwapActiveTeam=function(coach){
       if(peLast) peLast.value=last;
       if(peNum) peNum.value=cardNum||(seed&&seed.info&&seed.info.num!=null?seed.info.num:'');
       if(pePos) pePos.value=(seed&&seed.info&&seed.info.pos)||'F';
+      /* The C or A comes from the team's letters (avatar.js), set by set-letter. */
+      peLetterWas=(window.thwapAvatar&&window.thwapAvatar.letterOf&&window.thwapAvatar.letterOf(pePid))||'';
+      if(peLetter) peLetter.value=peLetterWas;
       window.thwapEmailUI.render(peEmailList, []);
       if(pePin) pePin.textContent=pinFor(cardNum||(seed&&seed.info&&seed.info.num));
       peSheetShow(true);
@@ -3377,8 +3386,17 @@ window.thwapActiveTeam=function(coach){
         firstName:peFirst.value,lastName:peLast.value,number:peNum.value,position:pePos.value,
         parentEmails:window.thwapEmailUI.collect(peEmailList)};
       if(peMsg) peMsg.textContent='Saving...';
-      fetch('/api/coach?action=update-player',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
-        .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
+      var letterNow=peLetter?peLetter.value:'';
+      function postJSON(action,b){ return fetch('/api/coach?action='+action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)})
+        .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); }); }
+      postJSON('update-player',body)
+        .then(function(res){
+          if(!(res.ok&&res.j.ok)) return res;
+          /* Then the letter, only when the coach changed it. A refusal (a third A)
+             keeps the sheet open with the reason, so nothing changes silently. */
+          if(letterNow===peLetterWas) return res;
+          return postJSON('set-letter',{code:code,coachToken:coach.token,playerId:pePid,letter:letterNow});
+        })
         .then(function(res){ if(res.ok&&res.j.ok){ peSheetShow(false); location.reload(); } else if(peMsg){ peMsg.textContent=(res.j&&res.j.error)||'Could not save.'; } })
         .catch(function(){ if(peMsg) peMsg.textContent='Could not reach the server.'; });
     });

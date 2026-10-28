@@ -28,7 +28,8 @@
 import crypto from 'crypto';
 import { parseBody } from '../lib/photo_common.js';
 import { mintSession, verifySession } from '../lib/session_store.js';
-import { ROSTER, weekBoard, monthTrend, adjustPlayer } from '../lib/store.js';
+import { ROSTER, weekBoard, monthTrend, adjustPlayer, getGrants, setGrants } from '../lib/store.js';
+import { LETTERS, MAX_A, letterFromGrants, withLetter } from '../lib/avatar_items.js';
 import {
   getTeam, setTeam, listMembers, addMember, getMember, removeMember,
   getCoach, setCoach, getIdpGoal, setIdpGoal, getGameGoalLog, logGameGoal, getIdpGoalLog,
@@ -200,6 +201,54 @@ async function requireCoach(req, res) {
   const rec = await getCoach(c.email);
   if (!rec) { res.status(401).json({ error: 'unknown coach' }); return null; }
   return rec;
+}
+
+// Does this coach run this team? Head or assistant on the team's coach list, the
+// team's own coachEmail, or the team in the coach's own record. Being *a* coach
+// is not enough: anyone can register as one.
+async function coachRunsTeam(coach, code) {
+  const c = String(code || '').trim().toUpperCase();
+  const email = String(coach && coach.email || '').toLowerCase();
+  if (!c || !email) return false;
+  const team = await getTeam(c);
+  if (!team) return false;
+  if (String(team.coachEmail || '').toLowerCase() === email) return true;
+  if ((coach.teams || []).map((t) => String(t).toUpperCase()).includes(c)) return true;
+  const coaches = await listTeamCoaches(c);
+  return coaches.some((x) => String(x.email || '').toLowerCase() === email);
+}
+
+// POST ?action=set-letter { coachToken, code, playerId, letter: 'C' | 'A' | '' }
+//   -> the coach gives a player the C or an A, or takes it off (''). The coach
+//   must run the team and the player must be on it. One C per team: giving the
+//   C to someone takes it off whoever had it. At most two A's: a third is
+//   refused so the coach decides who comes off. Stored in the player's coach
+//   grants; every card picks it up from ?action=looks.
+async function setLetter(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  const coach = await requireCoach(req, res); if (!coach) return;
+  const { code, playerId, letter } = parseBody(req);
+  const want = String(letter || '').toUpperCase();
+  if (want && !LETTERS[want]) return res.status(400).json({ error: 'letter must be C, A or empty' });
+  if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  if (!(await coachRunsTeam(coach, code))) return res.status(403).json({ error: 'not your team' });
+  const pid = String(playerId || '').toLowerCase();
+  const members = (await listMembers(code)).map((m) => String(m).toLowerCase());
+  if (!pid || !members.includes(pid)) return res.status(404).json({ error: 'player is not on this team' });
+  const others = members.filter((m) => m !== pid);
+  const otherGrants = await Promise.all(others.map((m) => getGrants(m)));
+  let moved = null;
+  if (want === 'A') {
+    const aCount = otherGrants.filter((g) => letterFromGrants(g) === 'A').length;
+    if (aCount >= MAX_A) return res.status(409).json({ error: 'Two players already have an A. Take one off first.' });
+  }
+  if (want === 'C') {
+    for (let i = 0; i < others.length; i++) {
+      if (letterFromGrants(otherGrants[i]) === 'C') { await setGrants(others[i], withLetter(otherGrants[i], '')); moved = others[i]; }
+    }
+  }
+  const grants = await setGrants(pid, withLetter(await getGrants(pid), want));
+  return res.status(200).json({ ok: true, playerId: pid, letter: letterFromGrants(grants), movedFrom: moved });
 }
 
 // --- admin session token (email + password) --------------------------------
@@ -992,6 +1041,7 @@ export default async function handler(req, res) {
     case 'add-player': return addPlayer(req, res);
     case 'remove-player': return removePlayer(req, res);
     case 'update-player': return updatePlayer(req, res);
+    case 'set-letter': return setLetter(req, res);
     case 'self-update-player': return selfUpdatePlayer(req, res);
     case 'admin-roster': return adminRoster(req, res);
     case 'admin-update-player': return adminUpdatePlayer(req, res);
@@ -1035,7 +1085,7 @@ export default async function handler(req, res) {
 // Exported for unit tests (call sub-handlers directly with a query.action-free req).
 export const _handlers = {
   coachLogin, coachRegister, createTeam, addPlayer, removePlayer, roster, playerRollup,
-  updatePlayer, setPassword, requestPassword, resetPassword, requestCode,
+  updatePlayer, setLetter, setPassword, requestPassword, resetPassword, requestCode,
   adminRoster, adminUpdatePlayer,
   adminLogin, adminSetPassword, adminStatus,
   join, schedule, setIdp, idpGoal, logGoal, gameGoalLogRead, historyRead, setGamePosition,

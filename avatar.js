@@ -328,6 +328,12 @@
     var helTop={front:helTex,back:helTex,side:helTex,top:stripeTop,bottom:helTex};
     var backNum="<span class='av-num' style='color:"+J.num+"'>"+num+"</span>";
     var chestNum="<span class='av-num av-num-sm' style='color:"+J.num+"'>"+num+"</span>";
+    // The coach-granted C or A, high on the chest above the number (Phase 4).
+    var L8=String(look.letter||'').toUpperCase();
+    // Outlined like a stitched letter; the outline uses the stripe color unless it
+    // matches the letter (white jersey: red on red), then the trim color.
+    var lo=(J.stripe===J.num)?J.trim:J.stripe;
+    if(L8==='C'||L8==='A') chestNum="<span class='av-letter' style='color:"+J.num+";text-shadow:.08em .08em 0 "+lo+",-.08em -.08em 0 "+lo+",.08em -.08em 0 "+lo+",-.08em .08em 0 "+lo+"'>"+L8+"</span>"+chestNum;
 
     // Face: simple blocky eyes and brows, focused, not cute.
     var faceInner="<i class='av-brow l'></i><i class='av-brow r'></i><i class='av-eye l'></i><i class='av-eye r'></i><i class='av-mouth'></i>";
@@ -470,8 +476,10 @@
   // Look for a player. Order: the server roster looks (fetched below, cached on
   // the device so the next load paints right away), then this device's saved
   // look, then the default. The number always comes from the roster.
-  var teamLooks=null;
+  var teamLooks=null, teamLetters={};
   try{ teamLooks=JSON.parse(localStorage.getItem('thwapLooksCache')||'null'); }catch(_){}
+  try{ teamLetters=JSON.parse(localStorage.getItem('thwapLettersCache')||'{}')||{}; }catch(_){}
+  function letterOf(id){ return teamLetters[String(id||'').toLowerCase()]||null; }
   // A player who has never built a character still gets one on their card: a
   // starter look picked from their name, so the roster is not a row of twins.
   // Hair style, hair color and the three free Rangers jerseys vary (all free;
@@ -493,8 +501,9 @@
     if(teamLooks && teamLooks[id]) src=norm(teamLooks[id]);
     if(!src){ try{ src=(JSON.parse(localStorage.getItem('thwapLooks')||'{}'))[id]||null; }catch(_){} }
     if(!src) src=starterLook(id);
-    for(var m in src) if(m!=='num') look[m]=src[m];
+    for(var m in src) if(m!=='num' && m!=='letter') look[m]=src[m];
     look.num=(p&&p.num)||'';
+    look.letter=letterOf(id); // the coach decides the letter, never the saved look
     return look;
   }
   function refreshTeamLooks(){
@@ -502,9 +511,10 @@
     try{
       fetch('/api/board?action=looks',{credentials:'same-origin'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){
         if(!j || !j.looks) return;
-        var changed=JSON.stringify(j.looks)!==JSON.stringify(teamLooks||null);
-        teamLooks=j.looks;
-        try{ localStorage.setItem('thwapLooksCache',JSON.stringify(j.looks)); }catch(_){}
+        var letters=j.letters||{};
+        var changed=JSON.stringify(j.looks)!==JSON.stringify(teamLooks||null) || JSON.stringify(letters)!==JSON.stringify(teamLetters);
+        teamLooks=j.looks; teamLetters=letters;
+        try{ localStorage.setItem('thwapLooksCache',JSON.stringify(j.looks)); localStorage.setItem('thwapLettersCache',JSON.stringify(letters)); }catch(_){}
         try{ document.dispatchEvent(new CustomEvent('thwap:looks')); }catch(_){}
         // A teammate built or changed their player since the cache: redraw the roster.
         if(changed){ try{ if(window.thwapRepaintRoster) window.thwapRepaintRoster(); }catch(_){} }
@@ -539,6 +549,7 @@
     ".av-cage{box-shadow:none;backface-visibility:visible;opacity:.95}"+
     ".av-num{position:absolute;left:0;right:0;top:36%;text-align:center;font:900 3.6em/1 system-ui,-apple-system,sans-serif;letter-spacing:-.02em}"+
     ".av-num-sm{font-size:2em;top:30%;left:auto;right:12%;text-align:right}"+
+    ".av-letter{position:absolute;right:14%;top:3%;font:900 2.4em/1 system-ui,-apple-system,sans-serif}"+
     ".av-eye,.av-brow,.av-mouth{position:absolute;background:#141414;display:block}"+
     ".av-eye{width:1.2em;height:1.2em;top:3.4em}.av-eye.l{left:1.4em}.av-eye.r{right:1.4em}"+
     ".av-brow{width:1.9em;height:.45em;top:2.5em}.av-brow.l{left:1.1em;transform:rotate(8deg)}.av-brow.r{right:1.1em;transform:rotate(-8deg)}"+
@@ -673,7 +684,7 @@
       ".lk-new{position:absolute;top:6px;left:6px;font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:8px;background:var(--lime,#B9F06B);color:#15221B}"+
       ".lk-dot{display:inline-block;vertical-align:middle;width:10px;height:10px;border-radius:50%;background:var(--lime,#B9F06B);margin-left:8px;box-shadow:0 0 0 2px var(--card,#fff)}"+
       ".lk-toast{position:fixed;left:50%;bottom:24px;z-index:10000;transform:translateX(-50%);min-height:56px;max-width:min(92vw,420px);display:flex;align-items:center;gap:12px;padding:8px 18px 8px 10px;border-radius:28px;border:2px solid var(--lime,#B9F06B);background:var(--card,#fff);color:var(--text,#15221B);font:inherit;font-weight:900;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.25)}"+
-      ".lk-toast .lk-sw{flex:none}.lk-toast small{display:block;font-weight:700;font-size:12px;color:var(--muted,#5F6F64)}"+
+      ".lk-toast .lk-sw{flex:none}.lk-letter-sw{display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;background:#C8102E;color:#fff}.lk-toast small{display:block;font-weight:700;font-size:12px;color:var(--muted,#5F6F64)}"+
       "@media (prefers-reduced-motion:no-preference){.lk-stage .av-scene{transition:transform .25s ease}"+
         ".lk-toast{animation:lkUp .3s ease-out}@keyframes lkUp{from{transform:translate(-50%,24px);opacity:0}to{transform:translate(-50%,0);opacity:1}}"+
         ".av-reveal .av-scene{animation:avDrop .35s cubic-bezier(.2,.9,.3,1.2)}@keyframes avDrop{from{translate:0 -6em;opacity:0}to{translate:0 0;opacity:1}}}";
@@ -694,6 +705,9 @@
       if(sc){ sc.style.transform='rotateX(-10deg) rotateY('+L.spin+'deg)'; sc.style.translate=sx?(sx+'em 0'):''; }
     },function(){ L.playing=null; paintStage(); });
   }
+  function ensureLockerCss(){
+    if(!document.getElementById('lk-css')){ var s=document.createElement('style'); s.id='lk-css'; s.textContent=lockerCss(); document.head.appendChild(s); }
+  }
   function paintStage(){
     var st=document.querySelector('.lk-stage'); if(!st) return;
     var play=document.querySelector('.lk-play');
@@ -701,7 +715,7 @@
     // A celebration is playing: let it finish (it repaints when done); only the note updates.
     if(!L.playing){
       var look=L.trying?L.trying.look:L.look;
-      var r=norm(look); r.num=L.num||'';
+      var r=norm(look); r.num=L.num||''; r.letter=(L.data&&L.data.letter)||null;
       st.innerHTML=html(r);
       var sc=st.querySelector('.av-scene'); if(sc) sc.style.transform='rotateX(-10deg) rotateY('+L.spin+'deg)';
     }
@@ -829,7 +843,7 @@
   function openLocker(opts){
     opts=opts||{};
     if(document.querySelector('.lk')) return;
-    if(!document.getElementById('lk-css')){ var s=document.createElement('style'); s.id='lk-css'; s.textContent=lockerCss(); document.head.appendChild(s); }
+    ensureLockerCss();
     L={ onClose:opts.onClose||null, data:null, look:null, tab:opts.tab||'skin', trying:null, changed:false, me:null, spin:-25, status:'', num:'', build:null };
     var el=document.createElement('div'); el.className='lk'; el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true'); el.setAttribute('aria-label','My Player');
     el.innerHTML="<div class='lk-head'><h2>My Player</h2><button type='button' class='lk-x' aria-label='Close'>&#10005;</button></div>"+
@@ -884,6 +898,17 @@
     try{ if(window.thwapHaptic) window.thwapHaptic('done'); }catch(_){}
     clearTimeout(toastTimer); toastTimer=setTimeout(function(){ if(b.parentNode) b.remove(); },5000);
   }
+  // The coach gave this player the C or an A: a one-time message on this device.
+  function showLetterToast(letter){
+    var old=document.querySelector('.lk-toast'); if(old) old.remove();
+    var b=document.createElement('button'); b.type='button'; b.className='lk-toast'; b.setAttribute('role','status');
+    b.innerHTML="<span class='lk-sw lk-letter-sw' aria-hidden='true'>"+letter+"</span><span>Coach gave you the "+letter+"!"+
+      "<small>"+(letter==='C'?'You\u2019re the captain.':'You\u2019re an assistant captain.')+" It\u2019s on your jersey now.</small></span>";
+    b.addEventListener('click',function(){ b.remove(); });
+    document.body.appendChild(b);
+    try{ if(window.thwapSfx) window.thwapSfx('unlock'); }catch(_){}
+    clearTimeout(toastTimer); toastTimer=setTimeout(function(){ if(b.parentNode) b.remove(); },5000);
+  }
   // Dot on the card's Edit player button while new gear is waiting.
   var DOT_TARGETS='#cardImageBtn';
   function markDot(){
@@ -896,6 +921,12 @@
     if(!on() || typeof fetch!=='function') return Promise.resolve(null);
     return fetch('/api/board?action=look',{credentials:'same-origin'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){
       if(!j) return null;
+      var prevLetter=null; try{ prevLetter=localStorage.getItem('thwapLetterSeen'); }catch(_){}
+      var curLetter=j.letter||'';
+      if(curLetter!==(prevLetter||'')){
+        try{ localStorage.setItem('thwapLetterSeen',curLetter); }catch(_){}
+        if(curLetter && !document.querySelector('.lk')){ ensureLockerCss(); showLetterToast(curLetter); return j; }
+      }
       // Only announce items a kid can actually see and wear: slots with a tab
       // in My Player. Celebrations have no tab until they can play, so they
       // stay unseen (not announced, not recorded) and announce when it ships.
@@ -940,7 +971,7 @@
     window.addEventListener('hashchange',function(){ if(location.hash==='#myplayer') openLocker(); });
     // The entry point is the player's own card (My Player button), not a
     // floating button. Styles are needed up front for the dot and the toast.
-    if(!document.getElementById('lk-css')){ var s=document.createElement('style'); s.id='lk-css'; s.textContent=lockerCss(); document.head.appendChild(s); }
+    ensureLockerCss();
     if((readList('thwapUnlockNew')||[]).length) markDot();
     window.addEventListener('load',function(){ if((readList('thwapUnlockNew')||[]).length) markDot(); });
     hookMarkDone(); window.addEventListener('load',hookMarkDone);
@@ -951,5 +982,5 @@
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bootLocker); else bootLocker();
 
-  window.thwapAvatar={ on:on, live:LIVE, html:html, lookFor:lookFor, refreshTeamLooks:refreshTeamLooks, openLocker:openLocker, checkUnlocks:checkUnlocks, norm:norm, SKIN:SKIN, HAIR:HAIR, JERSEY:JERSEY, DEFAULT_LOOK:DEFAULT_LOOK, POSES:['ready'].concat(Object.keys(POSES)), CELLYS:Object.keys(CELLYS), playCelly:playCelly };
+  window.thwapAvatar={ on:on, live:LIVE, html:html, lookFor:lookFor, refreshTeamLooks:refreshTeamLooks, openLocker:openLocker, checkUnlocks:checkUnlocks, norm:norm, SKIN:SKIN, HAIR:HAIR, JERSEY:JERSEY, DEFAULT_LOOK:DEFAULT_LOOK, POSES:['ready'].concat(Object.keys(POSES)), CELLYS:Object.keys(CELLYS), playCelly:playCelly, letterOf:letterOf };
 })();
