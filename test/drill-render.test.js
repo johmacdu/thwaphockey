@@ -64,8 +64,9 @@ describe('Drill intensity reduced (shooting -2, dryland cap 4)', () => {
     // 20-Minute Run (so the run is anchored AND a rotating Speed drill still shows)
     expect(html).toMatch(/var CAP=hasRun\?5:4;/);
     expect(html).toMatch(/var hasRun=dr\.some\(function\(x\)\{ return x\.key==='run20'; \}\);/);
-    // shooting render-time slice
-    expect(html).toMatch(/SHOOT=SHOOT\.slice\(0, Math\.max\(1, SHOOT\.length-2\)\)/);
+    // shooting render-time slice (now in lib/drills.js shootForDay, inlined into index.html)
+    expect(html).toMatch(/return set\.slice\(0, Math\.max\(1, set\.length-2\)\);/);
+    expect(html).toMatch(/SHOOT=window\.ThwapDrills\.shootForDay\(dayIndex\(\), goalie, window\.NETPLAY_ENABLED\);/);
   });
   it('renders the reduced counts (dryland cap 4 on a non-run day; shooting = day length - 2)', () => {
     // uses the win from the earlier beforeAll in this file (?day=0 -> w2wed, a Power day: no run20, cap 4)

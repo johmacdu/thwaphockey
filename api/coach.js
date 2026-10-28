@@ -51,6 +51,7 @@ import {
 } from '../lib/teams_store.js';
 import { ensureSchedule, getSchedule, addEvent as addScheduleEvent, nextEvent, localDateStr } from '../lib/schedule_store.js';
 import { resolveSigninPlayer, RANGERS_TEAM_CODE } from '../lib/signin_players.js';
+import { teamPlayerIds } from '../lib/team_players.js';
 import { GAME_GOAL_TARGET, gameGoalById } from '../lib/game_goals_catalog.js';
 import { getGamePick, setGamePick } from '../lib/game_picks_store.js';
 import { isGated, billingStatus } from '../lib/billing_store.js';
@@ -710,7 +711,9 @@ async function roster(req, res) {
   const session = verifySession(readSessionCookie(req));
   const selfId = session ? String(session.playerId || '').toLowerCase() : '';
   const ids = await listMembers(code);
-  const board = await weekBoard(); // [{id, stick, shoot, dryland}]
+  // This team's week only. weekBoard() with no ids reads the Jr. Rangers 10U
+  // roster, which left every other team's coach looking at zeros.
+  const board = await weekBoard(await teamPlayerIds(team.code)); // [{id, stick, shoot, dryland}]
   const byId = Object.fromEntries(board.map((b) => [b.id, b]));
   const members = [];
   for (const pid of ids) {
@@ -748,7 +751,7 @@ async function playerRollup(req, res) {
   const pid = String((req.query && req.query.playerId) || '').toLowerCase();
   if (!pid) return res.status(400).json({ error: 'playerId required' });
   const m = await getMember(pid);
-  const board = await weekBoard();
+  const board = await weekBoard([pid]); // this player's week, on any team
   const wk = board.find((b) => b.id === pid) || { stick: 0, shoot: 0, dryland: 0 };
   const goal = await getIdpGoal(pid);
   const log = await getGameGoalLog(pid);
@@ -1121,21 +1124,22 @@ async function gameGoalLogRead(req, res) {
 }
 
 // --- Game Day Goals picks (server copy, for other devices and the watch) ----
-// Game day follows the web app's "next game" card: an event with kind 'game' on
-// today's Vancouver date (lib/schedule_store localDateStr). With no gameId the
-// target is the player's next game: the soonest kind 'game' event dated today or
-// later. A gameId names one event on the player's team schedule.
+// Game day follows the web app's "next game" card and hockey_game_goals.html's
+// header, which both read next.nextGame from lib/schedule_store nextEvent(): the
+// soonest scheduled event, a game OR a tournament, that has not ended yet
+// (endDate, else date, on or after today's Vancouver date). A tournament counts
+// as game day on every date from its start through its endDate. With no gameId
+// the target is that next event; a gameId names one event on the team schedule.
 
 // The player's team schedule. The Rangers seed team seeds its schedule on first
 // read (same as ?action=schedule); other teams read what their coach entered.
 async function teamScheduleFor(code) {
   return code === RANGERS_TEAM_CODE ? ensureSchedule(code) : getSchedule(code);
 }
+const GAME_DAY_KINDS = ['game', 'tournament'];
 function nextGameOf(sched, today) {
-  const games = (sched.events || [])
-    .filter((e) => e && e.kind === 'game' && e.date && e.date >= today)
-    .sort((a, b) => (a.date + (a.time || '99:99')).localeCompare(b.date + (b.time || '99:99')));
-  return games[0] || null;
+  const events = (sched.events || []).filter((e) => e && e.date && GAME_DAY_KINDS.includes(e.kind || 'game'));
+  return nextEvent({ ...sched, events }, today).nextGame;
 }
 // { game } or { error, status }. today is the Vancouver date.
 function resolvePickGame(sched, gameId, today) {
@@ -1154,8 +1158,8 @@ function isGameDay(game, today) {
 function publicGame(g) {
   if (!g) return null;
   return {
-    id: g.id, date: g.date, time: g.time || null, opponent: g.opponent || '',
-    home: !!g.home, place: g.place || '',
+    id: g.id, kind: g.kind || 'game', date: g.date, endDate: g.endDate || null,
+    time: g.time || null, opponent: g.opponent || '', home: !!g.home, place: g.place || '',
   };
 }
 // How many goals a player may pick: the full plan minus the coach's team goal
