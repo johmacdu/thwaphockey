@@ -58,20 +58,39 @@ Box parts `avatar.js` renders (see `html()`), and the tile each needs for the ba
 |------|------|--------|
 | torso (jersey) | `jersey-{red,black,white}.png` (body + hem stripe) | **done** |
 | helmet shell | `helmet.png` | **done** |
-| arms (sleeves) | `sleeve-{red,black,white}.png` (two-stripe) | todo |
-| legs (socks) | `sock-{red,black,white}.png` | todo |
-| pants | `pants.png` (black, flat) | todo |
-| gloves | `glove.png` (black, knuckle segments) | todo |
-| skate boot | `skate.png` (black) | todo |
-| head (skin) | `skin-s{1..6}.png` (flat; or keep flat color) | todo |
-| hair flow | `hair-{color}.png` (flat; or keep flat color) | todo |
-| cage / blade / stick | keep flat (steel / dark), they read fine | n/a |
+| arms (sleeves) | `grain.png` over the sleeve gradient | **done** |
+| legs (socks) | `grain.png` over the sock gradient | **done** |
+| pants (breezers) | `grain.png` over black | **done** |
+| gloves | `grain.png` over the glove color | **done** |
+| skate boot | `grain.png` over black | **done** |
+| head (skin) | flat `SKIN` color (voxel skin reads fine flat) | **done** (flat) |
+| hair (all styles) | flat `HAIR` color | **done** (flat) |
+| cage / blade / stick | keep flat (steel / dark / stick color), they read fine | n/a |
 
 Numbers (chest/back) stay as the `.av-num` text layer over the jersey tile, not baked into it,
 so any number works.
 
+## The weave overlay (`grain.png`)
+
+The jersey and helmet are opaque per-colorway tiles that bake the style-A weave in. The
+rest of the fabric (sleeves, socks, pants, gloves, skates) does **not** get its own
+per-colorway tile -- instead a single transparent 16x16 tile, `grain.png`, is laid **over**
+each part's existing fill:
+
+- `grain.png` is the jersey's exact weave as transparency: a 2x2-block checker, half the
+  pixels transparent and half black at ~18% alpha (`#C8102E` -> `#A50D25` is x0.825). Laid
+  over any color it reproduces the same two-tone weave.
+- In `html()`, `gr(fill)` returns `url(avatar-tex/grain.png),<fill>`. The sleeve/sock
+  **gradients** (which carry each colorway's stripes) and the pants/glove/skate **solids**
+  show through underneath, so **all five jersey colorways still work** -- no per-colorway
+  sleeve/sock tiles needed, and forest/legend are covered for free.
+- It stays flat (no baked lighting), so the code's per-face shading still composes cleanly.
+
+Skin and hair stay flat colors on purpose (voxel skin/hair read fine flat); no tiles.
+
 ## What "done" means for Phase 1 textures
 
-Every visible part uses a flat style-A tile (3 jersey colorways), the character reads as a
-pixel-voxel hockey player at 120px on light and dark, and nothing looks muddy under the code
+Every visible fabric part carries the same style-A weave (jersey/helmet tiles + the
+`grain.png` overlay on everything else), the character reads as a pixel-voxel hockey player
+at 120px on light and dark across all colorways, and nothing looks muddy under the code
 shading. Then it's wired into the card everywhere (replacing the photo slot when a look exists).

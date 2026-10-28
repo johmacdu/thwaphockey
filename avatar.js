@@ -140,6 +140,15 @@
     var torsoBg='linear-gradient(0deg,'+J.stripe+' 0 9%,'+J.trim+' 9% 12%,'+J.body+' 12% 100%)';
     var sleeveBg='linear-gradient(0deg,'+J.body+' 0 38%,'+J.trim+' 38% 44%,'+J.stripe+' 44% 58%,'+J.trim+' 58% 64%,'+J.body+' 64% 100%)';
     var sockBg='linear-gradient(0deg,'+J.body+' 0 40%,'+J.stripe+' 40% 55%,'+J.trim+' 55% 62%,'+J.body+' 62% 100%)';
+    // Pixel weave: a transparent 2x2-checker tile over every fill, so sleeves, socks,
+    // pants, gloves and skates read as the same style-A fabric as the jersey (whose
+    // tile bakes the weave in). It rides on top of the colorway gradients and solids,
+    // so all five jersey colors still work.
+    function gr(fill){ return 'url(avatar-tex/grain.png),'+fill; }
+    var sleeveTx=gr(sleeveBg), sockTx=gr(sockBg);
+    var pantsFaces={front:gr(black),back:gr(black),side:gr(black),top:gr(black),bottom:gr(black)};
+    var gloveFaces={front:gr(gloveC),back:gr(gloveC),side:gr(gloveC),top:gr(gloveC),bottom:gr(gloveC)};
+    var skateFaces={front:gr(black),back:gr(black),side:gr(black),top:gr(black),bottom:gr(black)};
     // Phase 1 pixel textures (style A). Flat tiles -- the code still shades each
     // face (top lighter, sides darker), so these must stay flat (no baked lighting).
     var JTEX={red:1,black:1,white:1};
@@ -193,27 +202,27 @@
       // Skates: blade + boot
       box({w:.5,h:.6,d:5.4,x:-2.1,y:.3,z:.6,c:steel}),
       box({w:.5,h:.6,d:5.4,x:2.1,y:.3,z:.6,c:steel}),
-      box({w:3,h:1.6,d:5,x:-2.1,y:1.4,z:.6,c:black}),
-      box({w:3,h:1.6,d:5,x:2.1,y:1.4,z:.6,c:black}),
+      box({w:3,h:1.6,d:5,x:-2.1,y:1.4,z:.6,c:black,faces:skateFaces}),
+      box({w:3,h:1.6,d:5,x:2.1,y:1.4,z:.6,c:black,faces:skateFaces}),
       // Shins (socks over shin guards), knee -> ankle: the bent knee shows here.
-      limb(kneeL,ankL,3.4,J.body,{front:sockBg,back:sockBg,side:sockBg,top:sockBg}),
-      limb(kneeR,ankR,3.4,J.body,{front:sockBg,back:sockBg,side:sockBg,top:sockBg}),
+      limb(kneeL,ankL,3.4,J.body,{front:sockTx,back:sockTx,side:sockTx,top:sockTx}),
+      limb(kneeR,ankR,3.4,J.body,{front:sockTx,back:sockTx,side:sockTx,top:sockTx}),
       // Knee caps (shin-guard pads) at the bend, bulging forward past the pant hem.
-      box({w:3.6,h:2.8,d:3.8,x:kneeL[0],y:kneeL[1],z:kneeL[2]+.3,c:J.body,faces:{front:sockBg,back:sockBg,side:sockBg,top:sockBg,bottom:sockBg}}),
-      box({w:3.6,h:2.8,d:3.8,x:kneeR[0],y:kneeR[1],z:kneeR[2]+.3,c:J.body,faces:{front:sockBg,back:sockBg,side:sockBg,top:sockBg,bottom:sockBg}}),
+      box({w:3.6,h:2.8,d:3.8,x:kneeL[0],y:kneeL[1],z:kneeL[2]+.3,c:J.body,faces:{front:sockTx,back:sockTx,side:sockTx,top:sockTx,bottom:sockTx}}),
+      box({w:3.6,h:2.8,d:3.8,x:kneeR[0],y:kneeR[1],z:kneeR[2]+.3,c:J.body,faces:{front:sockTx,back:sockTx,side:sockTx,top:sockTx,bottom:sockTx}}),
       // Hockey pants (breezers) to the knees: bulky, cover hips + thighs.
-      box({w:9,h:8,d:5.2,y:11,c:black}),
+      box({w:9,h:8,d:5.2,y:11,c:black,faces:pantsFaces}),
       // Torso (jersey over shoulder pads)
       box({w:9.6,h:9.4,d:5.4,y:19.3,c:J.body,faces:{front:jTex,back:jTex,side:jTex,top:jTex},frontInner:chestNum,backInner:backNum}),
       // Arms: upper arm (shoulder->elbow) + forearm (elbow->hand), bending onto the
       // stick so the character actually holds it (both hands land on the grip).
-      limb(shTop,elTop,3.4,J.body,{front:sleeveBg,back:sleeveBg,side:sleeveBg,top:sleeveBg}),
-      limb(elTop,handTop,3.2,J.body,{front:sleeveBg,back:sleeveBg,side:sleeveBg,top:sleeveBg}),
-      limb(shBot,elBot,3.4,J.body,{front:sleeveBg,back:sleeveBg,side:sleeveBg,top:sleeveBg}),
-      limb(elBot,handBot,3.2,J.body,{front:sleeveBg,back:sleeveBg,side:sleeveBg,top:sleeveBg}),
+      limb(shTop,elTop,3.4,J.body,{front:sleeveTx,back:sleeveTx,side:sleeveTx,top:sleeveTx}),
+      limb(elTop,handTop,3.2,J.body,{front:sleeveTx,back:sleeveTx,side:sleeveTx,top:sleeveTx}),
+      limb(shBot,elBot,3.4,J.body,{front:sleeveTx,back:sleeveTx,side:sleeveTx,top:sleeveTx}),
+      limb(elBot,handBot,3.2,J.body,{front:sleeveTx,back:sleeveTx,side:sleeveTx,top:sleeveTx}),
       // Gloves at the two grip points
-      box({w:3.8,h:3.4,d:3.8,x:handTop[0],y:handTop[1],z:handTop[2],c:gloveC}),
-      box({w:3.8,h:3.4,d:3.8,x:handBot[0],y:handBot[1],z:handBot[2],c:gloveC}),
+      box({w:3.8,h:3.4,d:3.8,x:handTop[0],y:handTop[1],z:handTop[2],c:gloveC,faces:gloveFaces}),
+      box({w:3.8,h:3.4,d:3.8,x:handBot[0],y:handBot[1],z:handBot[2],c:gloveC,faces:gloveFaces}),
       // Head
       box({w:7.6,h:7.6,d:7.6,y:28,c:skin,frontInner:faceInner}),
       // Hair: style is a few boxes around the helmet (see hairBoxes).
