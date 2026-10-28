@@ -76,22 +76,22 @@ const badgeBtns = (w) => Array.from(w.document.querySelectorAll('#jBadges .badge
 const tap = (w, el) => el.dispatchEvent(new w.Event('click', { bubbles: true }));
 
 describe('signed out', () => {
-  it('keeps the sample book with its Sample tags showing', async () => {
+  it('keeps the sample content showing when signed out', async () => {
     const w = await boot({ api: 401 });
-    expect(visibleSamples(w)).toBeGreaterThan(0);
-    expect($(w, 'jName').textContent).toBe('Lewie M.');
+    expect($(w, 'jTier').textContent).toBe('Practice Ice'); // static sample stays
     expect(badgeBtns(w).map((b) => b.querySelector('b').textContent)).toEqual(
       ['Dangler', 'Sniper', 'Engine', 'Tape to Tape', 'Hockey Brain', 'On a Heater', 'Full Week', 'Hype Squad']);
   });
 
   it('a network error also leaves the sample in place', async () => {
     const w = await boot({ api: 'throw' });
-    expect(visibleSamples(w)).toBeGreaterThan(0);
+    expect($(w, 'jTier').textContent).toBe('Practice Ice');
+    expect(badgeBtns(w).length).toBe(8);
   });
 
   it('an answer without months is ignored, not half-rendered', async () => {
     const w = await boot({ api: { season: { label: '2026-27' } } });
-    expect(visibleSamples(w)).toBeGreaterThan(0);
+    expect($(w, 'jTier').textContent).toBe('Practice Ice'); // static stays, not half-rendered
   });
 
   it('tapping a badge asks the kid to sign in', async () => {
@@ -101,23 +101,11 @@ describe('signed out', () => {
   });
 });
 
-describe('signed in: cover', () => {
-  it('shows the player name, number, position and team', async () => {
+describe('signed in: header', () => {
+  it('shows the season label and title in the header', async () => {
     const w = await boot({ api: book() });
-    expect($(w, 'jSeason').textContent).toBe('2026-27 Jr. Rangers 10U');
-    expect(w.document.querySelector('.cover h1, h1').textContent).toBe('My Journey');
-    expect($(w, 'jName').textContent).toBe('Lewie M.');
-    expect($(w, 'jNum').textContent).toBe('#81');
-    expect($(w, 'jNum').hidden).toBe(false);
-    expect($(w, 'jMeta').textContent).toBe('Forward'); // team moved up to the season line
-  });
-
-  it('hides the number and meta line when the roster has neither', async () => {
-    const w = await boot({ api: book({ player: { name: 'Alder', number: null, position: null, team: null } }) });
-    expect($(w, 'jName').textContent).toBe('Alder');
-    expect($(w, 'jNum').hidden).toBe(true);
-    expect($(w, 'jMeta').hidden).toBe(true);
-    expect($(w, 'jSeason').textContent).toBe('2026-27 Season'); // no team on file
+    expect($(w, 'jSeason').textContent).toBe('Season 2026-27');
+    expect(w.document.querySelector('.jhead h1').textContent).toBe('My Season Journey');
   });
 
   it('hides every Sample tag once real data loads', async () => {
@@ -127,16 +115,15 @@ describe('signed in: cover', () => {
 });
 
 describe('signed in: tier path', () => {
-  it('page 1 is headed Where I Am, under a plain Page 1 eyebrow', async () => {
+  it('the journey heading is the tier, under a "Where I am" eyebrow', async () => {
     const w = await boot({ api: 401 });
-    expect($(w, 'h-journey').textContent).toBe('Where I Am');
-    expect($(w, 'h-journey').previousElementSibling.textContent.trim()).toBe('Page 1');
+    expect($(w, 'h-journey').textContent).toBe('Practice Ice'); // static tier in the heading
+    expect($(w, 'h-journey').previousElementSibling.textContent.trim()).toBe('Where I am');
   });
 
   it('a new player is on step 1 of Locker Room, 3 days from the next step', async () => {
     const w = await boot({ api: book() });
     expect($(w, 'jTier').textContent).toBe('Locker Room');
-    expect($(w, 'jStep').textContent).toBe('Step 1 of 3');
     expect($(w, 'jNext').textContent).toBe('3 more training days to the next step');
     const notes = Array.from($(w, 'jTiers').children).map((t) => t.lastChild.textContent);
     expect(notes).toEqual(['You are here', 'Next stop', 'Later', 'Later']);
@@ -146,7 +133,6 @@ describe('signed in: tier path', () => {
     // 20 days -> 3 steps done (thresholds 3, 11, 19): Practice Ice, step 1.
     const w = await boot({ api: book({ days: range('2026-09-01', 20) }) });
     expect($(w, 'jTier').textContent).toBe('Practice Ice');
-    expect($(w, 'jStep').textContent).toBe('Step 1 of 3');
     expect($(w, 'jNext').textContent).toBe('7 more training days to the next step');
     const tiers = Array.from($(w, 'jTiers').children);
     expect(tiers.map((t) => t.className)).toEqual(['on', 'on', 'off', 'off']);
@@ -168,17 +154,19 @@ describe('signed in: tier path', () => {
     // 95 days by Jan 10 passes the last threshold (91).
     const w = await boot({ api: book({ days: range('2026-09-01', 95), today: '2027-01-10' }), now: '2027-01-10T19:00:00Z' });
     expect($(w, 'jTier').textContent).toBe('Legend');
-    expect($(w, 'jStep').textContent).toBe('Top of the book');
     expect($(w, 'jNext').textContent).toBe('You finished the whole book. Legend.');
     expect(Array.from($(w, 'jTiers').children).map((t) => t.lastChild.textContent)).toEqual(['Done', 'Done', 'Done', 'Done']);
   });
 });
 
 describe('signed in: My Season So Far', () => {
-  it('lists each month with its training days, then a Next row', async () => {
+  it('lists each month with its training days, then the months still ahead', async () => {
     const w = await boot({ api: book({ days: [...range('2026-09-01', 11), '2026-10-01'] }) });
     const rows = Array.from($(w, 'jMonths').children).map((li) => [li.querySelector('b').textContent, li.querySelector('p').textContent]);
-    expect(rows).toEqual([['Sep', '11 training days.'], ['Oct', '1 training day.'], ['Next', 'Your next page.']]);
+    expect(rows).toEqual([
+      ['Sep', '11 training days.'], ['Oct', '1 training day.'],
+      ['Nov', 'Keep stacking training days.'], ['Dec', 'Winter break. A great time to train.'],
+      ['Jan', 'New year, keep climbing.'], ['Feb', 'Push before the season ends.']]);
     expect($(w, 'jMonths').lastElementChild.className).toBe('future');
   });
 
@@ -272,16 +260,16 @@ describe('Season Complete', () => {
     expect($(signedOut, 'finale').hidden).toBe(true);
     const signedIn = await boot({ api: book({ today: '2027-09-15' }), now: '2027-09-15T19:00:00Z' });
     expect($(signedIn, 'finale').hidden).toBe(true);
-    expect($(signedIn, 'jSeason').textContent).toBe('2027-28 Jr. Rangers 10U');
+    expect($(signedIn, 'jSeason').textContent).toBe('Season 2027-28');
   });
 });
 
 describe('art slots', () => {
   it('fill in when the art file exists', async () => {
     const w = await boot({ api: 401 });
-    const cover = w.document.querySelector('[data-art="cover.webp"]');
-    expect(cover.classList.contains('has')).toBe(true);
-    expect(cover.firstChild.tagName).toBe('IMG');
+    const rink = w.document.querySelector('[data-art="rink-path.webp"]');
+    expect(rink.classList.contains('has')).toBe(true);
+    expect(rink.firstChild.tagName).toBe('IMG');
   });
 
   it('keep the gray placeholder when a file is missing', async () => {

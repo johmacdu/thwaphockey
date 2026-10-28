@@ -74,9 +74,3 @@ describe('not color alone', () => {
   });
 });
 
-describe('cover', () => {
-  it('the player line sits on a dark scrim over the art', () => {
-    const over = /\.cover \.over\{[^}]*\}/.exec(css)[0];
-    expect(over).toMatch(/linear-gradient\(to top,rgba\(11,19,14,\.88\)/);
-  });
-});

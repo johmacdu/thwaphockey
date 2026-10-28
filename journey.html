@@ -26,7 +26,13 @@ html[data-theme='dark']{
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:'Nunito Sans',system-ui,sans-serif;font-size:var(--fs-body);line-height:1.4}
-.book{max-width:460px;margin:0 auto;padding:76px 14px 64px;display:flex;flex-direction:column;gap:22px}
+.book{max-width:min(820px,96vw);margin:0 auto;padding:76px 18px 64px;display:flex;flex-direction:column;gap:0}
+.jhead{padding:0 4px}
+.jhead h1{margin:2px 0 0}
+.jhead .who{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:20px;margin:10px 0 0;color:var(--text)}
+.jhead .who b{color:var(--acc)}
+.jhead .who .meta{display:block;font-family:'Nunito Sans',sans-serif;font-weight:700;font-size:var(--fs-support);color:var(--muted);margin-top:3px}
+html.embed .jhead .who{display:none}
 .eyebrow{font-family:'Oswald',system-ui,sans-serif;font-weight:600;font-size:var(--fs-eyebrow);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
 h1,h2,h3{font-family:'Archivo Black',system-ui,sans-serif;font-weight:400;margin:0;line-height:1.05}
 h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
@@ -35,9 +41,10 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 [data-sample][hidden]{display:none}
 .note{font-size:12px;color:var(--muted);border-left:3px solid var(--sample);padding:4px 0 4px 10px;margin:0}
 
-/* A book page. The page itself is not interactive, it is the paper. */
-.pg{position:relative;background:var(--page);border-radius:6px 18px 18px 6px;box-shadow:0 10px 30px var(--shadow),inset 6px 0 0 var(--line);padding:26px 22px 40px 28px;overflow:hidden}
-.pg .folio{position:absolute;bottom:12px;right:20px;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.12em;color:var(--muted)}
+/* A content section: flat on the page, separated by spacing only (no dividers). */
+.pg{position:relative;padding:26px 4px}
+.pg:first-of-type{padding-top:34px}
+.pg.seasonfar{padding-top:52px}
 .pg h2{margin-bottom:4px}
 .rule{border:0;border-top:1px solid var(--line);margin:18px 0}
 
@@ -48,20 +55,6 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .art.has{background:none;border:0}
 .art.has>span{display:none}
 .art.fill>img{object-fit:cover}
-
-/* COVER */
-.cover{padding:0;border-radius:6px 22px 22px 6px;color:#F3F7F4;background:#1F3A2A}
-.cover .art{border-radius:0;border:0;--ar:1200/1600}
-.cover .art:not(.has){background:#1F3A2A}
-.cover .art:not(.has)>span{color:#9DACA2}
-.cover .over{position:absolute;inset:0;padding:30px 26px;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none;
-  /* Scrim: the player line sits over bright art (lime stripe, ice spray), so the
-     bottom of the cover darkens enough for 4.5:1 on any illustration. */
-  background:linear-gradient(to top,rgba(11,19,14,.88) 0%,rgba(11,19,14,.88) 19%,rgba(11,19,14,0) 40%);border-radius:inherit}
-.cover .t1{font-family:'Oswald',sans-serif;letter-spacing:.2em;font-size:13px;text-transform:uppercase;color:#B9F06B}
-.cover h1{color:#F3F7F4;text-shadow:0 2px 10px rgba(0,0,0,.45)}
-.cover .who{font-family:'Archivo Black',sans-serif;font-size:22px;text-shadow:0 2px 8px rgba(0,0,0,.5)}
-.cover .who b{color:#B9F06B;font-weight:400}
 
 /* WHO I AM */
 .idrow{display:flex;gap:18px;align-items:center;margin-top:14px}
@@ -75,10 +68,10 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .tiernow{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:10px}
 .tiernow b{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:30px;color:var(--acc)}
 .tiernow span{color:var(--muted);font-weight:700}
-.rinkwrap{position:relative;margin:56px -6px 6px}
+.rinkwrap{position:relative;margin:22px -6px 6px}
 .rinkwrap .art{--ar:1600/700}
 .rinkwrap svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-.rinkwrap .sassp{position:absolute;width:24%;left:var(--x);bottom:58%;transform:translateX(-50%);animation:skate 400ms ease-out both}
+.rinkwrap .sassp{position:absolute;width:20%;left:var(--x);bottom:57%;transform:translateX(-50%);filter:drop-shadow(0 4px 7px rgba(20,40,25,.35));animation:skate 400ms ease-out both}
 .rinkwrap .sassp .art{--ar:1}
 @keyframes skate{from{left:var(--from,6%)}to{left:var(--x)}}
 /* Celebrations (played once per new star / tier, remembered per device).
@@ -137,8 +130,7 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .crushed li span{color:var(--muted);font-weight:600;font-size:var(--fs-support);white-space:nowrap}
 
 /* BADGES: tappable tiles */
-.badgehead{display:grid;grid-template-columns:1fr 30%;align-items:end;gap:8px}
-.badgehead .art{--ar:1}
+.badgehead{margin-bottom:2px}
 .badges{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:14px}
 .badge{min-width:0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 4px;text-align:center;min-height:48px;cursor:pointer;color:var(--text);font:inherit}
 .badge:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
@@ -155,9 +147,9 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 
 /* SEASON SO FAR */
 .tl{list-style:none;padding:0;margin:10px 0 0}
-.tl li{display:grid;grid-template-columns:44px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
-.tl li b{font-family:'Oswald',sans-serif;font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-size:13px}
-.tl li p{margin:0;font-size:var(--fs-support)}
+.tl li{display:grid;grid-template-columns:52px 1fr;gap:14px;padding:12px 0;align-items:baseline}
+.tl li b{font-family:'Oswald',sans-serif;font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-size:16px}
+.tl li p{margin:0;font-size:17px;line-height:1.45}
 .tl li.future{color:var(--muted)}
 
 /* FINALE */
@@ -176,12 +168,30 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .promise .sc .art{--ar:1}
 
 /* MY BOOKS (seasons shelf) */
-.shelf{display:flex;gap:10px;margin-top:14px;align-items:flex-end}
-.spine{width:58px;height:150px;border-radius:4px 8px 8px 4px;background:var(--acc);color:var(--page);display:flex;align-items:flex-end;justify-content:center;padding-bottom:10px;font-family:'Oswald',sans-serif;font-weight:600;font-size:12px;letter-spacing:.08em;writing-mode:vertical-rl;transform:rotate(180deg);box-shadow:inset -6px 0 0 rgba(0,0,0,.18)}
-.spine.next{background:none;border:2px dashed var(--line2);color:var(--muted);box-shadow:none}
+/* Skeuomorphic hardcover books standing on a shelf. */
+.shelf{display:flex;gap:16px;align-items:flex-end;margin-top:18px;padding:0 2px 12px;position:relative}
+.shelf::after{content:"";position:absolute;left:-2px;right:-2px;bottom:0;height:8px;border-radius:2px;background:linear-gradient(180deg,var(--line2),transparent)}
+.spine{position:relative;width:68px;height:180px;border-radius:2px 7px 7px 2px;background:var(--acc);
+  box-shadow:inset -6px 0 8px rgba(0,0,0,.32),inset 7px 0 7px rgba(255,255,255,.16),0 10px 12px -7px rgba(20,40,25,.55)}
+.spine>span{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:center;padding-bottom:16px;
+  writing-mode:vertical-rl;transform:rotate(180deg);font-family:'Oswald',sans-serif;font-weight:600;font-size:12px;letter-spacing:.12em;color:var(--page)}
+/* raised hardcover bands near the top and bottom of the spine */
+.spine::before,.spine::after{content:"";position:absolute;left:6px;right:11px;height:5px;background:rgba(0,0,0,.22);border-radius:1px}
+.spine::before{top:14px}.spine::after{bottom:14px}
+/* current season: a fresh, unfinished book (not finished-green) with a bookmark */
+.spine.current{background:var(--card);box-shadow:inset -6px 0 8px rgba(0,0,0,.07),inset 7px 0 7px rgba(255,255,255,.6),0 10px 12px -7px rgba(20,40,25,.28),inset 0 0 0 1px var(--line)}
+.spine.current>span{color:var(--text)}
+.spine.current::before,.spine.current::after{background:rgba(47,107,65,.22)}
+.spine.current .ribbon{position:absolute;top:-10px;right:16px;width:9px;height:28px;background:var(--acc);border-radius:1px 1px 0 0;box-shadow:0 2px 3px rgba(0,0,0,.2)}
+/* future season: not a book yet, a faint empty slot */
+.spine.next{background:none;border:2px dashed var(--line2);border-radius:2px 7px 7px 2px;box-shadow:none}
+.spine.next>span{color:var(--muted)}
+.spine.next::before,.spine.next::after{display:none}
 
 html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed body{background:transparent}
-.glassclose{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);right:max(16px, calc(50vw - 250px));z-index:50;display:inline-grid;place-items:center;width:48px;height:48px;border-radius:50%;font-size:20px;font-weight:700;color:var(--text);text-decoration:none;background:var(--card);border:1px solid var(--line);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);box-shadow:0 6px 20px var(--shadow)}
+.glassclose{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);right:max(16px, calc(50vw - 534px));z-index:50;display:inline-grid;place-items:center;width:48px;height:48px;border-radius:50%;font-size:20px;font-weight:700;color:var(--text);cursor:pointer;text-decoration:none;background:color-mix(in srgb,var(--card) 62%,transparent);border:1px solid color-mix(in srgb,var(--text) 12%,transparent);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);box-shadow:0 6px 20px var(--shadow)}
+.glassclose:hover{background:color-mix(in srgb,var(--card) 80%,transparent)}
+.glassclose:active{transform:scale(.94)}
 @media (prefers-reduced-motion:reduce){.rinkwrap .sassp,.rinkwrap.tierup .sassp,.badge.stamp .stars .new,.badge.stamp::after,.badge.stamp .newchip,.tiers .pop .ic,#jTier.swap{animation:none}.jburst{display:none}}
 </style>
 </head>
@@ -190,20 +200,17 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
 
 <main class="book">
 
-<!-- COVER -->
-<section class="pg cover" aria-label="Season book cover">
-  <div class="art fill" data-art="cover.webp"><span>cover.webp 1200x1600</span></div>
-  <div class="over">
-    <div><div class="t1" id="jSeason">2026-27 Jr. Rangers 10U</div><h1>My Journey</h1></div>
-    <div><div class="who"><span id="jName">Lewie M.</span> <b id="jNum">#81</b></div><div class="t1" id="jMeta" style="margin-top:6px;color:#F3F7F4">Forward</div></div>
-  </div>
-</section>
+<!-- HEADER (on-screen, not a book cover) -->
+<header class="jhead">
+  <p class="eyebrow" id="jSeason">Season 2026-27</p>
+  <h1>My Season Journey</h1>
+</header>
 
 <!-- 2 MY JOURNEY -->
 <section class="pg" aria-labelledby="h-journey">
-  <p class="eyebrow">Page 1</p>
-  <h2 id="h-journey">Where I Am</h2>
-  <div class="tiernow"><b id="jTier">Practice Ice</b><span id="jStep">Step 2 of 3</span><span class="sample" data-sample>Sample</span></div>
+  <p class="eyebrow">Where I am</p>
+  <h2 id="h-journey"><span id="jTier">Practice Ice</span></h2>
+  <p class="sub">Climb from Locker Room to Legend.</p>
 
   <div class="rinkwrap" id="jRink" style="--x:43%">
     <div class="art" data-art="rink-path.webp"><span>rink-path.webp 1600x700</span></div>
@@ -228,16 +235,14 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="now"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
   </div>
   <p class="nextup" id="jNext">5 more training days to step 3</p>
-  <p class="why">Any day you do one drill counts. Miss a week and your spot waits for you.</p>
-  <span class="folio">1</span>
+  <p class="why">Do a drill any day to move up. Miss more than 4 days in a row and you slip back a step.</p>
 </section>
 
 <!-- 4 MY BADGES -->
 <section class="pg" aria-labelledby="h-badges">
   <div class="badgehead">
-    <div><p class="eyebrow">Page 2 &nbsp; Earn stars, level up</p><h2 id="h-badges">My Badges</h2>
-      <p class="sub">Every badge has 3 stars. Train to earn them. Tap a badge to see how. <span class="sample" data-sample>Sample</span></p></div>
-    <div class="art has"><img src="login/sass-welcome.webp" alt=""></div>
+    <p class="eyebrow">Earn stars, level up</p><h2 id="h-badges">My Badges</h2>
+    <p class="sub">Every badge has 3 stars. Train to earn them. Tap a badge to see how.</p>
   </div>
   <div class="badges" id="jBadges">
     <button type="button" class="badge" data-i="0"><div class="art" data-art="badge-01.webp"><span>01</span></div><b>Dangler</b><div class="stars" aria-label="2 of 3 stars">★★<span class="off">☆</span></div></button>
@@ -250,25 +255,25 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     <button type="button" class="badge locked" data-i="7"><div class="art" data-art="badge-08.webp"><span>08</span></div><b>Hype Squad</b><div class="stars" aria-label="Not started"><span class="off">☆☆☆</span></div></button>
   </div>
   <p class="why" id="jBadgeNote" aria-live="polite"></p>
-  <span class="folio">2</span>
 </section>
 
 <!-- 6 SEASON SO FAR -->
-<section class="pg" aria-labelledby="h-season">
-  <p class="eyebrow">Page 3</p>
+<section class="pg seasonfar" aria-labelledby="h-season">
+  <p class="eyebrow">Month by month</p>
   <h2 id="h-season">My Season So Far</h2>
   <ul class="tl" id="jMonths">
     <li><b>Sep</b><p>11 training days. Reached Locker Room. 3 badge stars.</p></li>
     <li><b>Oct</b><p>12 training days so far. Reached Practice Ice. 2 badge stars.</p></li>
-    <li class="future"><b>Nov</b><p>Your next page.</p></li>
+    <li class="future"><b>Nov</b><p>Keep stacking training days.</p></li>
+    <li class="future"><b>Dec</b><p>Winter break. A great time to train.</p></li>
+    <li class="future"><b>Jan</b><p>New year, keep climbing.</p></li>
+    <li class="future"><b>Feb</b><p>Push before the season ends.</p></li>
   </ul>
-  <p class="why"><span class="sample" data-sample>Sample</span></p>
-  <span class="folio">3</span>
 </section>
 
 <!-- 7 FINALE -->
 <section class="pg finale" id="finale" hidden aria-labelledby="h-finale">
-  <p class="eyebrow">Last page</p>
+  <p class="eyebrow">You did it</p>
   <h2 id="h-finale">Season Complete</h2>
   <div class="art fill scene" data-art="finale.webp"><span>finale.webp 1600x1000</span></div>
   <div class="sf"><div class="art has"><img src="login/sass-celly.webp" alt="Sass celebrating"></div></div>
@@ -278,18 +283,18 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     <div><b id="jFinStars">19</b><span>Badge stars</span></div>
     <div><b id="jFinWeeks">24</b><span>Weeks of hockey</span></div>
   </div>
-  <p class="why">Next season starts a fresh book. <span class="sample" data-sample>Sample</span></p>
-  <span class="folio">4</span>
+  <p class="why">Next season starts a fresh book.</p>
 </section>
 
 <!-- MY BOOKS -->
-<section aria-labelledby="h-books" style="padding:6px 6px 0">
+<section aria-labelledby="h-books" style="padding:44px 4px 8px">
   <p class="eyebrow">My books</p>
   <h2 id="h-books" style="font-size:22px">Every season, a new book</h2>
   <div class="shelf">
-    <div class="spine">2026-27</div>
-    <div class="spine next">2027-28</div>
+    <div class="spine current"><span>2026-27</span><i class="ribbon"></i></div>
+    <div class="spine next"><span>2027-28</span></div>
   </div>
+  <p class="why" style="margin-top:12px">This season's book opens when the season ends in the spring.</p>
 </section>
 
 </main>
@@ -304,24 +309,14 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
   // Real numbers for the signed-in player (GET /api/board?action=journey).
   // Signed out or on any error the sample data stays, still tagged Sample.
   var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  // Subtle "what's ahead" line per upcoming month (calendar-anchored, not a promise).
+  var AHEAD={11:'Keep stacking training days.',12:'Winter break. A great time to train.',1:'New year, keep climbing.',2:'Push before the season ends.'};
   var STOP=[[0,12],[3,34],[6,61],[9,89],[12,89]]; // stepsDone -> % across the rink
   function xFor(n){for(var i=1;i<STOP.length;i++){var a=STOP[i-1],b=STOP[i];if(n<=b[0])return a[1]+(b[1]-a[1])*(n-a[0])/(b[0]-a[0]);}return 89;}
   function txt(id,v){var el=document.getElementById(id);if(el)el.textContent=v;}
   function render(b){
-    // Season line: the season plus the player's team (which carries the age
-    // level, e.g. Jr. Rangers 10U), so each book labels itself on the shelf.
-    var team=b.player&&b.player.team?String(b.player.team):'';
-    txt('jSeason',b.season.label+' '+(team||'Season'));
-    if(b.player&&b.player.name){
-      txt('jName',b.player.name);
-      var num=document.getElementById('jNum'); if(b.player.number!=null){num.textContent='#'+b.player.number;num.hidden=false;}else{num.hidden=true;}
-      var pos=b.player.position?String(b.player.position):'';
-      pos=pos?pos.charAt(0).toUpperCase()+pos.slice(1):'';
-      var meta=[pos].filter(Boolean);
-      var m=document.getElementById('jMeta'); m.textContent=meta.join('\u00a0\u00a0 '); m.hidden=!meta.length;
-    }
+    txt('jSeason','Season '+b.season.label);
     txt('jTier',b.tier);
-    txt('jStep',b.complete?'Top of the book':'Step '+b.step+' of 3');
     document.getElementById('jRink').style.setProperty('--x',xFor(b.stepsDone)+'%');
     var tiers=document.getElementById('jTiers').children;
     for(var i=0;i<tiers.length;i++){
@@ -342,7 +337,14 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
       pp.textContent=m.days+' training day'+(m.days===1?'':'s')+'.';
       li.appendChild(bb);li.appendChild(pp);ul.appendChild(li);
     });
-    if(!b.seasonOver){var f=document.createElement('li');f.className='future';f.innerHTML='<b>Next</b><p>Your next page.</p>';ul.appendChild(f);}
+    if(!b.seasonOver){ // show the rest of the season (through February) as still-ahead rows
+      var lm=b.months.length?b.months[b.months.length-1].month:null;
+      var yy=lm?Number(lm.slice(0,4)):new Date().getFullYear(), mm=lm?Number(lm.slice(5)):9;
+      for(var gi=0;gi<7;gi++){ mm++; if(mm>12){mm=1;yy++;}
+        var fl=document.createElement('li'); fl.className='future';
+        fl.innerHTML='<b>'+MON[mm-1]+'</b><p>'+(AHEAD[mm]||'Still ahead.')+'</p>'; ul.appendChild(fl);
+        if(mm===2) break; }
+    }
     txt('jFinDays',b.trainingDays); txt('jFinTier',b.tier);
     if(typeof b.weeksTrained==='number')txt('jFinWeeks',b.weeksTrained);
     if(Array.isArray(b.badges)){BADGES=b.badges;renderBadges();txt('jFinStars',b.badgeStars);}
