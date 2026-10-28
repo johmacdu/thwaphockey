@@ -10,15 +10,60 @@ export class FakeRedis {
     this.map = new Map();
   }
 
-  // eslint-disable-next-line require-await
-  async get(key) {
-    return this.map.has(key) ? this.map.get(key) : null;
+  // Key expiry (TTL), emulated against Date.now() so tests can move the clock
+  // with vi.setSystemTime. Only keys given a TTL (set {ex|px} or expire) expire.
+  _live(key) {
+    const exp = this.ttls && this.ttls.get(key);
+    if (exp != null && Date.now() >= exp) {
+      this.map.delete(key);
+      this.ttls.delete(key);
+    }
+    return this.map.has(key);
   }
 
   // eslint-disable-next-line require-await
-  async set(key, value) {
+  async get(key) {
+    return this._live(key) ? this.map.get(key) : null;
+  }
+
+  // Supports the Upstash { ex } / { px } / { nx } options; any other set clears the TTL.
+  // With nx, returns null (and writes nothing) when the key already exists.
+  // eslint-disable-next-line require-await
+  async set(key, value, opts) {
+    if (opts && opts.nx && this._live(key)) return null;
     this.map.set(key, value);
+    if (!this.ttls) this.ttls = new Map();
+    if (opts && (opts.ex || opts.px)) {
+      this.ttls.set(key, Date.now() + (opts.px ? opts.px : opts.ex * 1000));
+    } else {
+      this.ttls.delete(key);
+    }
     return 'OK';
+  }
+
+  // eslint-disable-next-line require-await
+  async incr(key) {
+    const live = this._live(key);
+    if (!live && this.ttls) this.ttls.delete(key); // a fresh key starts with no TTL, like Redis
+    const cur = live ? Number(this.map.get(key)) || 0 : 0;
+    this.map.set(key, cur + 1);
+    return cur + 1;
+  }
+
+  // eslint-disable-next-line require-await
+  async expire(key, seconds) {
+    if (!this._live(key)) return 0;
+    if (!this.ttls) this.ttls = new Map();
+    this.ttls.set(key, Date.now() + seconds * 1000);
+    return 1;
+  }
+
+  // -2 when the key is missing, -1 when it has no TTL, else whole seconds left.
+  // eslint-disable-next-line require-await
+  async ttl(key) {
+    if (!this._live(key)) return -2;
+    const exp = this.ttls && this.ttls.get(key);
+    return exp == null ? -1 : Math.ceil((exp - Date.now()) / 1000);
   }
 
   // Variadic mget: returns values in the same order as the keys, null if missing.

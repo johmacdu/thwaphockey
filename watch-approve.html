@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<title>Thwap Hockey: Approve a watch</title>
+<script>try{if(localStorage.getItem('thwapTheme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Oswald:wght@500;600&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Parent page for the Apple Watch sign-in (docs/apple-watch-design.md section 6).
+   Opened from the approval email. Two modes, picked by the link's #fragment:
+     #t=<approve token>   approve or deny one watch (single use, 15 minutes)
+     #m=<manage link>     see and remove this player's watches (30 days)
+   The token sits in the fragment so it is never sent to a server in a page
+   request or a Referer header; the page strips it from the address bar at once.
+   Tokens match the site (journey.html). Light default, dark via data-theme. */
+:root{
+  --bg:#F3F7F4;--text:#15221B;--muted:#5F6F64;--line:#DCE5DE;--acc:#2F6B41;--lime:#B9F06B;--onlime:#15221B;
+  --alert-text:#C0362C;--fs-eyebrow:12px;--fs-support:14px;--fs-body:clamp(15px,4vw,17px);--fs-title:clamp(28px,8vw,40px);
+}
+html[data-theme='dark']{--bg:#0B130E;--text:#F3F7F4;--muted:#9DACA2;--line:#2A3831;--acc:#B9F06B;--alert-text:#FF8A80}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Nunito Sans',system-ui,sans-serif;font-size:var(--fs-body);line-height:1.45}
+main{max-width:460px;margin:0 auto;padding:56px 18px 64px;display:flex;flex-direction:column;gap:18px}
+.eyebrow{font-family:'Oswald',system-ui,sans-serif;font-weight:600;font-size:var(--fs-eyebrow);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0}
+h1{font-family:'Archivo Black',system-ui,sans-serif;font-weight:400;font-size:var(--fs-title);line-height:1.08;margin:0}
+p{margin:0}
+.sub{color:var(--muted);font-size:var(--fs-support)}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
+button{font:inherit;font-weight:800;min-height:48px;min-width:48px;padding:0 22px;border-radius:999px;cursor:pointer;border:2px solid var(--acc);background:transparent;color:var(--acc)}
+button.primary{background:var(--lime);border-color:var(--lime);color:var(--onlime)}
+button:focus-visible{outline:3px solid var(--acc);outline-offset:3px}
+button[disabled]{opacity:.55;cursor:default}
+a{color:var(--acc);font-weight:700}
+.err{color:var(--alert-text)}
+ul.watches{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+ul.watches li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+ul.watches .lbl{font-weight:700}
+[hidden]{display:none !important}
+</style>
+</head>
+<body>
+<main id="app" aria-live="polite">
+  <p class="eyebrow">Thwap Hockey</p>
+  <h1 id="title">One moment</h1>
+  <p id="msg" class="sub">Checking your link.</p>
+  <div id="ask" class="actions" hidden>
+    <button id="approveBtn" class="primary" type="button">Approve</button>
+    <button id="denyBtn" type="button">Not me</button>
+  </div>
+  <ul id="list" class="watches" hidden></ul>
+  <p id="foot" class="sub" hidden></p>
+</main>
+<script>
+(function () {
+  var API = '/api/login?action=';
+  var hash = String(location.hash || '').replace(/^#/, '');
+  var mode = '';
+  var token = '';
+  var m = /^(t|m)=([A-Za-z0-9._-]{10,200})$/.exec(hash);
+  if (m) { mode = m[1]; token = m[2]; }
+  try { history.replaceState(null, '', location.pathname); } catch (e) { /* old browser: keep going */ }
+
+  var el = function (id) { return document.getElementById(id); };
+  function show(title, msg, isErr) {
+    el('title').textContent = title;
+    el('msg').textContent = msg;
+    el('msg').className = isErr ? 'sub err' : 'sub';
+  }
+  function getJson(url) {
+    return fetch(url, { credentials: 'omit', cache: 'no-store' }).then(function (r) { return r.json(); });
+  }
+  function postJson(url, body) {
+    return fetch(url, {
+      method: 'POST', credentials: 'omit', cache: 'no-store',
+      headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    }).then(function (r) { return r.json(); });
+  }
+  function oops() { show('Something went wrong', 'Check your connection and open the link from the email again.', true); }
+  function expired() {
+    el('ask').hidden = true;
+    show('This link has expired', 'It was already used or is more than 15 minutes old. Your player can ask again from the watch.');
+  }
+  function fmtDate(ms) {
+    try { return new Date(ms).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }); } catch (e) { return ''; }
+  }
+
+  function startApprove() {
+    getJson(API + 'watch-approve&t=' + encodeURIComponent(token)).then(function (d) {
+      if (!d || !d.ok) return expired();
+      show('Approve ' + d.player.name + '\u2019s watch?',
+        d.player.name + ' wants to use Thwap Hockey on "' + d.deviceLabel + '". If you approve, this watch stays signed in for 30 days.');
+      el('ask').hidden = false;
+      el('approveBtn').focus();
+    }, oops);
+  }
+
+  function decide(decision) {
+    el('approveBtn').disabled = true;
+    el('denyBtn').disabled = true;
+    postJson(API + 'watch-approve', { t: token, decision: decision }).then(function (d) {
+      el('ask').hidden = true;
+      if (!d || !d.ok) return expired();
+      if (d.status === 'denied') {
+        show('Got it', 'That watch is not signed in. Nothing else changed.');
+        return;
+      }
+      show('Approved', d.player.name + ' can use Thwap on "' + d.deviceLabel + '" now.');
+      if (d.manage) {
+        var foot = el('foot');
+        foot.textContent = '';
+        var a = document.createElement('a');
+        a.href = '#m=' + d.manage;
+        a.textContent = 'See or remove watches';
+        a.addEventListener('click', function (ev) {
+          ev.preventDefault();
+          token = d.manage;
+          foot.hidden = true;
+          startManage();
+        });
+        foot.appendChild(a);
+        foot.hidden = false;
+      }
+    }, oops);
+  }
+
+  function startManage() {
+    getJson(API + 'watch-list&t=' + encodeURIComponent(token)).then(function (d) {
+      if (!d || !d.ok) {
+        show('This link has expired', 'Open the newest watch email from Thwap Hockey to get a fresh link.');
+        return;
+      }
+      var who = d.player.name;
+      var ul = el('list');
+      ul.textContent = '';
+      if (!d.watches.length) {
+        show(who + '\u2019s watches', 'No watches are signed in as ' + who + '.');
+        ul.hidden = true;
+        return;
+      }
+      show(who + '\u2019s watches', 'Remove a watch and it is signed out right away.');
+      d.watches.forEach(function (w) {
+        var li = document.createElement('li');
+        var info = document.createElement('div');
+        var lbl = document.createElement('div');
+        lbl.className = 'lbl';
+        lbl.textContent = w.label;
+        var when = document.createElement('div');
+        when.className = 'sub';
+        when.textContent = 'Approved ' + fmtDate(w.approvedAt);
+        info.appendChild(lbl);
+        info.appendChild(when);
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = 'Remove';
+        btn.setAttribute('aria-label', 'Remove ' + w.label);
+        btn.addEventListener('click', function () {
+          btn.disabled = true;
+          postJson(API + 'watch-revoke', { t: token, deviceId: w.deviceId }).then(function (r) {
+            if (r && r.ok) {
+              btn.remove();
+              when.textContent = 'Removed. This watch is signed out.';
+            } else {
+              btn.disabled = false;
+              when.textContent = 'Could not remove it. Try again.';
+            }
+          }, function () { btn.disabled = false; when.textContent = 'Could not remove it. Try again.'; });
+        });
+        li.appendChild(info);
+        li.appendChild(btn);
+        ul.appendChild(li);
+      });
+      ul.hidden = false;
+    }, oops);
+  }
+
+  el('approveBtn').addEventListener('click', function () { decide('approve'); });
+  el('denyBtn').addEventListener('click', function () { decide('deny'); });
+
+  if (mode === 't') startApprove();
+  else if (mode === 'm') startManage();
+  else show('This link is not complete', 'Open the link from the email again, or copy the whole address.', true);
+})();
+</script>
+</body>
+</html>

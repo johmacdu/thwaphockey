@@ -84,7 +84,7 @@ import {
   weekDates,
   weekBoard,
 } from '../lib/store.js';
-import { verifySession, readSessionCookie } from '../lib/session_store.js';
+import { sessionClaims } from '../lib/watch_store.js';
 import { getMember } from '../lib/teams_store.js';
 import { isGated } from '../lib/billing_store.js';
 import { resolvePlayer } from '../lib/team_players.js';
@@ -168,7 +168,7 @@ function doneDisciplines(drillIds) {
 
 // GET: return the authenticated player's completed drill ids for today.
 async function handleGet(req, res) {
-  const claims = verifySession(readSessionCookie(req));
+  const claims = await sessionClaims(req);
   if (!claims) {
     return res.status(401).json({ error: 'session required' });
   }
@@ -289,7 +289,7 @@ export default async function handler(req, res) {
 
   // Session gate (applies to every write). A valid session is REQUIRED and may
   // only log its OWN player's work: no session -> 401, a different player -> 403.
-  const claims = verifySession(readSessionCookie(req));
+  const claims = await sessionClaims(req);
   if (!claims) {
     return res.status(401).json({ error: 'session required' });
   }
