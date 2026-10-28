@@ -68,6 +68,13 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
 .consent-row label{display:flex;flex-direction:column;gap:3px;font-size:11px;font-weight:800;text-transform:uppercase;color:var(--muted)}
 .consent-row input,.consent-row select{padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:14px;background:var(--panel);color:var(--text);font-weight:500}
 .consent .filepick{margin-top:8px;font-size:13px}
+.retire{margin-top:28px;padding-top:16px;border-top:1px solid var(--line)}
+.retire h2{font-size:16px;margin:0 0 4px}
+.retire label{display:block;font-size:13px;margin:12px 0 6px}
+.retire input{width:100%;max-width:340px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:var(--panel);color:var(--text)}
+.retire button{margin-top:8px;min-height:44px}
+#retireGo{background:#B3261E;color:#fff;border-color:#B3261E}
+#retireGo:disabled{opacity:.45}
 </style>
 <script type="module">
   // In-browser background removal (ONNX/WASM). Runs entirely client-side, so a
@@ -110,6 +117,17 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
     <p class="sub">Edit player details, and add a photo with recorded parent consent.</p>
     <div id="rmsg" class="msg">Load with your admin key to see the roster.</div>
     <div id="rlist"></div>
+    <div class="retire" id="retire">
+      <h2>Retire player photos</h2>
+      <p class="sub">Players use their character now, so stored player photos are no longer shown. This permanently deletes every stored player photo and its parent-consent record. It cannot be undone. Coach photos are not touched.</p>
+      <button id="retireCheck" type="button">Check what is stored</button>
+      <div id="retireMsg" class="msg"></div>
+      <div id="retireConfirm" hidden>
+        <label for="retirePhrase">Type <b>DELETE ALL PLAYER PHOTOS</b> to confirm</label>
+        <input id="retirePhrase" type="text" autocomplete="off" spellcheck="false">
+        <button id="retireGo" type="button" disabled>Delete player photos</button>
+      </div>
+    </div>
   </div>
 </div>
 <script>
@@ -405,6 +423,42 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
       document.getElementById('viewDrills').hidden = v!=='drills';
       document.getElementById('viewRoster').hidden = v!=='roster';
     });
+  });
+
+  // Retire player photos. Always a dry run first (lists what is stored); the
+  // delete button only enables when the exact phrase is typed, and the server
+  // checks the phrase again, so a stray click cannot delete anything.
+  var PHRASE='DELETE ALL PLAYER PHOTOS';
+  var rCheck=document.getElementById('retireCheck'), rMsg=document.getElementById('retireMsg'),
+      rConfirm=document.getElementById('retireConfirm'), rPhrase=document.getElementById('retirePhrase'),
+      rGo=document.getElementById('retireGo');
+  function retireCall(body){
+    return fetch('/api/photo/remove?'+tokenQS(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+      .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,status:r.status,j:j}; }); });
+  }
+  function retireList(players){
+    return players.map(function(p){ return esc(p.id)+(p.hasPhoto?' (photo':' (')+(p.hasConsent?(p.hasPhoto?' + consent)':'consent)'):')'); }).join(', ');
+  }
+  if(rCheck) rCheck.addEventListener('click',function(){
+    if(!token){ rMsg.textContent='Sign in first.'; return; }
+    rMsg.textContent='Checking...'; rConfirm.hidden=true;
+    retireCall({all:true}).then(function(x){
+      if(!x.ok){ rMsg.textContent='Could not check ('+x.status+'): '+((x.j&&x.j.error)||'error'); return; }
+      var ps=x.j.players||[];
+      if(!ps.length){ rMsg.textContent='No player photos or consent records are stored. Nothing to delete.'; return; }
+      rMsg.textContent=ps.length+' players have stored data: '+retireList(ps)+'.';
+      rPhrase.value=''; rGo.disabled=true; rConfirm.hidden=false;
+    }).catch(function(){ rMsg.textContent='Could not reach the server.'; });
+  });
+  if(rPhrase) rPhrase.addEventListener('input',function(){ rGo.disabled = rPhrase.value!==PHRASE; });
+  if(rGo) rGo.addEventListener('click',function(){
+    if(rPhrase.value!==PHRASE) return;
+    rGo.disabled=true; rMsg.textContent='Deleting...';
+    retireCall({all:true,confirm:PHRASE}).then(function(x){
+      if(!x.ok || x.j.dryRun){ rMsg.textContent='Nothing was deleted ('+x.status+'): '+((x.j&&x.j.error)||'confirm phrase not accepted'); return; }
+      rConfirm.hidden=true;
+      rMsg.textContent='Deleted stored data for '+x.j.deleted+' players. Player photos are gone.';
+    }).catch(function(){ rMsg.textContent='Could not reach the server. Check again before retrying.'; });
   });
 })();
 </script>

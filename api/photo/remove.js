@@ -1,10 +1,43 @@
 // api/photo/remove.js
 //
 // POST (Authorization: Bearer <uploadToken>) { playerId } -> deletes the photo.
+//
+// POST (admin)  { all: true }                                   -> DRY RUN
+// POST (admin)  { all: true, confirm: 'DELETE ALL PLAYER PHOTOS' } -> deletes
+//   Retires every stored player photo once the character has replaced them
+//   (docs/avatar-roadmap.md). For each roster player: deletes the blob, the
+//   photo record and the parent-consent record. Without the exact confirm
+//   phrase it only reports what WOULD be deleted, so the admin page can show the
+//   list first. Lives in this file (not a new one) to stay under the Vercel
+//   Hobby 12-function cap.
 
 import { del } from '@vercel/blob';
-import { getKv, parseBody, isRosterPlayer, uploadConfigured } from '../../lib/photo_common.js';
-import { verifyToken, getPhoto, removePhoto } from '../../lib/photo_store.js';
+import { getKv, parseBody, isRosterPlayer, uploadConfigured, adminOk } from '../../lib/photo_common.js';
+import { verifyToken, getPhoto, removePhoto, getConsent, removeConsent } from '../../lib/photo_store.js';
+import { ROSTER } from '../../lib/store.js';
+
+export const RETIRE_CONFIRM = 'DELETE ALL PLAYER PHOTOS';
+
+async function retireAll(req, res, body) {
+  const kv = getKv();
+  const doIt = body.confirm === RETIRE_CONFIRM;
+  const players = [];
+  for (const p of ROSTER) {
+    const [photo, consent] = await Promise.all([getPhoto(kv, p.id), getConsent(kv, p.id)]);
+    const hasPhoto = !!(photo && photo.url);
+    const hasConsent = !!consent;
+    if (!hasPhoto && !hasConsent) continue;
+    players.push({ id: p.id, hasPhoto, hasConsent });
+    if (!doIt) continue;
+    if (hasPhoto) {
+      try { await del(photo.url, { token: process.env.BLOB_READ_WRITE_TOKEN }); } catch { /* blob may already be gone */ }
+      await removePhoto(kv, p.id);
+    }
+    if (hasConsent) await removeConsent(kv, p.id);
+  }
+  res.setHeader('Cache-Control', 'no-store');
+  return res.status(200).json({ dryRun: !doIt, deleted: doIt ? players.length : 0, players });
+}
 
 function bearer(req) {
   const h = req.headers && (req.headers.authorization || req.headers.Authorization);
@@ -19,7 +52,13 @@ export default async function handler(req, res) {
   }
   if (!uploadConfigured()) return res.status(503).json({ error: 'photo service not configured' });
 
-  const { playerId } = parseBody(req);
+  const body = parseBody(req);
+  if (body.all === true) {
+    if (!adminOk(req)) return res.status(401).json({ error: 'unauthorized' });
+    return retireAll(req, res, body);
+  }
+
+  const { playerId } = body;
   if (!isRosterPlayer(playerId)) return res.status(400).json({ error: 'unknown player' });
 
   const tokenPlayer = verifyToken(bearer(req));

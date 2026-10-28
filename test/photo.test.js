@@ -264,3 +264,50 @@ describe('admin-put (admin-recorded consent)', () => {
     expect(consent.emailHash).toBeUndefined();
   });
 });
+
+describe('admin photo retirement (POST /api/photo/remove { all })', () => {
+  const adminHdr = { authorization: 'Bearer admin-test-token' };
+  const goodConsent = { method: 'text', grantedBy: 'A parent' };
+  async function seed() {
+    for (const id of ['lewie', 'teddy']) {
+      await adminPut(post({ playerId: id, imageData: IMG, consent: goodConsent }, adminHdr), makeRes());
+    }
+  }
+  it('refuses without the admin login', async () => {
+    await seed();
+    const res = makeRes();
+    await remove(post({ all: true, confirm: 'DELETE ALL PLAYER PHOTOS' }), res);
+    expect(res.statusCode).toBe(401);
+    expect(blobDel).not.toHaveBeenCalled();
+  });
+  it('dry run by default: lists what would be deleted and deletes nothing', async () => {
+    await seed();
+    const res = makeRes();
+    await remove(post({ all: true }, adminHdr), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.dryRun).toBe(true);
+    expect(res.body.deleted).toBe(0);
+    expect(res.body.players.map((p) => p.id).sort()).toEqual(['lewie', 'teddy']);
+    expect(blobDel).not.toHaveBeenCalled();
+    expect(await getConsent(getKv(), 'lewie')).toBeTruthy();
+  });
+  it('a near-miss confirm phrase is still only a dry run', async () => {
+    await seed();
+    const res = makeRes();
+    await remove(post({ all: true, confirm: 'delete all player photos' }, adminHdr), res);
+    expect(res.body.dryRun).toBe(true);
+    expect(blobDel).not.toHaveBeenCalled();
+  });
+  it('the exact phrase deletes every photo blob, photo record and consent record', async () => {
+    await seed();
+    const res = makeRes();
+    await remove(post({ all: true, confirm: 'DELETE ALL PLAYER PHOTOS' }, adminHdr), res);
+    expect(res.body.dryRun).toBe(false);
+    expect(res.body.deleted).toBe(2);
+    expect(blobDel).toHaveBeenCalledTimes(2);
+    expect(await getConsent(getKv(), 'lewie')).toBeNull();
+    const g = makeRes();
+    await getPhoto(get({ playerId: 'lewie' }), g);
+    expect(g.body && g.body.url).toBeFalsy();
+  });
+});

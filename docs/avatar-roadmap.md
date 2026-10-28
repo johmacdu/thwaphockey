@@ -174,3 +174,9 @@ the hockey year, August to June, and rolls over in August.
   My Player button)
 - [ ] Launch: character on for everyone, real My Player entry point,
   photo upload removed (stored photos deleted only after Woody confirms)
+- Launch switch: `var LIVE` in `avatar.js` (ships false). A player who has not
+  built a character keeps the Big Number card until they do, so the roster is
+  never a row of identical default players.
+- Photo retirement: admin page, Roster tab, "Retire player photos". Always a
+  dry run first; deleting needs the exact phrase DELETE ALL PLAYER PHOTOS.
+  Run it about a week after launch, once the characters are confirmed working.
