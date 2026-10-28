@@ -132,11 +132,32 @@ the hockey year, August to June, and rolls over in August.
 - Done when: a kid picks a pose and celebration and it shows everywhere.
 
 ### Phase 4, March to April: the team layer
-- Weekly team goal hit (the ramp in `TEAM_GOAL_SCHEDULE`) gives everyone a
-  shared item that week.
-- Coach grants the C and A. Coach home shows the roster's characters.
-- Playoff or tournament jersey, only during that window.
-- Art: team items, playoff jersey.
+- **Team set (decided Oct 28 2026).** Each week the team hits the weekly goal
+  (the ramp in `TEAM_GOAL_SCHEDULE`) unlocks the NEXT item in a fixed,
+  visible order, for everyone on the roster, kept forever. No random drops.
+  Team items are Rangers-themed, so they read as "we did it" next to the
+  personal ladder's "I trained". Starting order (names are placeholders to
+  check against the brand doc):
+  1. Rangers tape (red and black tape on the stick blade)
+  2. Rangers decal (an R on the helmet side)
+  3. Team socks (a Rangers sock pattern)
+  4. Rangers gloves (team-colored cuffs)
+  5. Warm-up jersey (the team practice jersey)
+  6. Team celly (a group celebration)
+  7. Bigger items later in the season
+  Everyone gets it, including kids who did not train that week: the message
+  ("The Rangers did it! New team item: Rangers tape") is how quiet kids come
+  back. The message also says how many drills each kid added.
+- **Before building:** check how many weeks since launch the team actually hit
+  the goal. In October one week had 16 team activities against a goal of 125.
+  If the team almost never hits it, lower the goal or unlock team items on
+  the way to it, so the team goal is not something kids always miss.
+- Coach grants the C and A (done, #457). Coach home shows the roster's characters.
+- **Tournament jersey (decided Oct 28 2026).** The coach marks an event on the
+  team schedule as a tournament; the jersey opens that week. Earned, not
+  handed out: train 2 days during tournament week, then it is kept forever
+  (like the Frozen Pond winter jersey). No dates in code.
+- Art: optional, team items can be drawn in team colors in code.
 - Done when: a team goal shows on every card and the coach can grant letters.
 
 ### Phase 5, May to June: season finale
@@ -204,6 +225,6 @@ the hockey year, August to June, and rolls over in August.
   edit-player sheet (`?action=set-letter`). Coach must run the team; one C
   per team (giving it moves it); at most two A's. Drawn high on the chest on
   every card; the kid gets "Coach gave you the C!" once.
-- [ ] Phase 4 weekly team item and playoff jersey: waiting on decisions (what
-  the item is and whether it stays, and the playoff dates).
+- [ ] Phase 4 team set and tournament jersey: decided (see Phase 4 above).
+  First step is checking how often the team has hit the weekly goal.
 - [ ] Unlock ladder check against December's data (early January).
