@@ -68,7 +68,7 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .tiernow{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:10px}
 .tiernow b{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:30px;color:var(--acc)}
 .tiernow span{color:var(--muted);font-weight:700}
-.rinkwrap{position:relative;margin:56px -6px 6px}
+.rinkwrap{position:relative;margin:22px -6px 6px}
 .rinkwrap .art{--ar:1600/700}
 .rinkwrap svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .rinkwrap .sassp{position:absolute;width:17%;left:var(--x);bottom:58%;transform:translateX(-50%);filter:drop-shadow(0 4px 7px rgba(20,40,25,.35));animation:skate 400ms ease-out both}
@@ -170,8 +170,9 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
 
 <!-- 2 MY JOURNEY -->
 <section class="pg" aria-labelledby="h-journey">
-  <h2 id="h-journey">Where I am</h2>
-  <div class="tiernow"><b id="jTier">Practice Ice</b></div>
+  <p class="eyebrow">Where I am</p>
+  <h2 id="h-journey"><span id="jTier">Practice Ice</span></h2>
+  <p class="sub">Climb from Locker Room to Legend.</p>
 
   <div class="rinkwrap" id="jRink" style="--x:43%">
     <div class="art" data-art="rink-path.webp"><span>rink-path.webp 1600x700</span></div>
@@ -217,19 +218,21 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
 
 <!-- 6 SEASON SO FAR -->
 <section class="pg seasonfar" aria-labelledby="h-season">
+  <p class="eyebrow">Month by month</p>
   <h2 id="h-season">My Season So Far</h2>
   <ul class="tl" id="jMonths">
     <li><b>Sep</b><p>11 training days. Reached Locker Room. 3 badge stars.</p></li>
     <li><b>Oct</b><p>12 training days so far. Reached Practice Ice. 2 badge stars.</p></li>
-    <li class="future"><b>Nov</b><p>Still ahead.</p></li>
-    <li class="future"><b>Dec</b><p>Still ahead.</p></li>
-    <li class="future"><b>Jan</b><p>Still ahead.</p></li>
-    <li class="future"><b>Feb</b><p>Still ahead.</p></li>
+    <li class="future"><b>Nov</b><p>Keep stacking training days.</p></li>
+    <li class="future"><b>Dec</b><p>Winter break. A great time to train.</p></li>
+    <li class="future"><b>Jan</b><p>New year, keep climbing.</p></li>
+    <li class="future"><b>Feb</b><p>Push before the season ends.</p></li>
   </ul>
 </section>
 
 <!-- 7 FINALE -->
 <section class="pg finale" id="finale" hidden aria-labelledby="h-finale">
+  <p class="eyebrow">You did it</p>
   <h2 id="h-finale">Season Complete</h2>
   <div class="art fill scene" data-art="finale.webp"><span>finale.webp 1600x1000</span></div>
   <div class="sf"><div class="art has"><img src="login/sass-celly.webp" alt="Sass celebrating"></div></div>
@@ -262,6 +265,8 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
   // Real numbers for the signed-in player (GET /api/board?action=journey).
   // Signed out or on any error the sample data stays, still tagged Sample.
   var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  // Subtle "what's ahead" line per upcoming month (calendar-anchored, not a promise).
+  var AHEAD={11:'Keep stacking training days.',12:'Winter break. A great time to train.',1:'New year, keep climbing.',2:'Push before the season ends.'};
   var STOP=[[0,12],[3,34],[6,61],[9,89],[12,89]]; // stepsDone -> % across the rink
   function xFor(n){for(var i=1;i<STOP.length;i++){var a=STOP[i-1],b=STOP[i];if(n<=b[0])return a[1]+(b[1]-a[1])*(n-a[0])/(b[0]-a[0]);}return 89;}
   function txt(id,v){var el=document.getElementById(id);if(el)el.textContent=v;}
@@ -293,7 +298,7 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
       var yy=lm?Number(lm.slice(0,4)):new Date().getFullYear(), mm=lm?Number(lm.slice(5)):9;
       for(var gi=0;gi<7;gi++){ mm++; if(mm>12){mm=1;yy++;}
         var fl=document.createElement('li'); fl.className='future';
-        fl.innerHTML='<b>'+MON[mm-1]+'</b><p>Still ahead.</p>'; ul.appendChild(fl);
+        fl.innerHTML='<b>'+MON[mm-1]+'</b><p>'+(AHEAD[mm]||'Still ahead.')+'</p>'; ul.appendChild(fl);
         if(mm===2) break; }
     }
     txt('jFinDays',b.trainingDays); txt('jFinTier',b.tier);
