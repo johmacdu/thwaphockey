@@ -1493,6 +1493,42 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
     <div class="fv-foot"><button type="button" id="resetForNext" class="fv-reset">Reset goals for next game</button></div>
   </div></div>
 <script>
+/* Server sync rules for Game Day Goals picks, kept pure so
+   test/game-goals-server.test.js can run them without booting this page.
+   decide(o) -> { action:'push'|'apply'|'none', goalIds, backupLocal }
+     o.server   my-game-goals body, or null when signed out / offline
+     o.local    picks saved in this browser (thwapGameGoals)
+     o.dirty    this browser changed picks that the server has not confirmed
+     o.migrated this browser already did its one-time localStorage migration
+   A local pick is never thrown away: when the server's pick wins over a local
+   pick that was never synced, the caller keeps the local one in a backup key. */
+(function(){
+  function clean(list){
+    var out=[]; list=Array.isArray(list)?list:[];
+    for(var i=0;i<list.length;i++){ var id=String(list[i]||''); if(/^g\d+$/.test(id) && out.indexOf(id)<0) out.push(id); }
+    return out;
+  }
+  function decide(o){
+    o=o||{};
+    var local=clean(o.local);
+    var srv=o.server&&o.server.ok?o.server:null;
+    if(!srv||!srv.game) return { action:'none', goalIds:local, backupLocal:false };
+    var max=typeof srv.max==='number'?srv.max:3;
+    var serverIds=clean((srv.goals||[]).map(function(g){ return g&&g.id; }));
+    /* 1. Unsynced edits made in this browser win (offline picks, or a reset). */
+    if(o.dirty) return { action:'push', goalIds:local.slice(0,max), backupLocal:local.length>max };
+    /* 2. One-time migration of a pick saved before the server kept picks. */
+    if(!o.migrated && local.length && !srv.saved) return { action:'push', goalIds:local.slice(0,max), backupLocal:local.length>max };
+    /* 3. The server has a pick for this game (maybe from another device). */
+    if(srv.saved) return { action:'apply', goalIds:serverIds.slice(0,max), backupLocal:!o.migrated && local.length>0 };
+    /* 4. Picks are showing here but were never saved for this game. */
+    if(local.length) return { action:'push', goalIds:local.slice(0,max), backupLocal:local.length>max };
+    return { action:'none', goalIds:local, backupLocal:false };
+  }
+  window.ThwapGoalSync={ decide:decide, clean:clean };
+})();
+</script>
+<script>
 (function(){
   var KEY = 'thwapGameGoals';
   var FKEY = 'thwapGameGoalsFinal';   // remember whether the Game Plan view is open
@@ -1598,12 +1634,39 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
     }
   }
 
+  /* Server copy of the picks (so other devices and the watch see them).
+     localStorage stays the offline copy; DIRTY marks a local change the server
+     has not confirmed yet, MIGRATED marks the one-time upload of an old pick,
+     LEGACY keeps any local pick the server's pick replaced. */
+  var DIRTY = 'thwapGameGoalsDirty';
+  var MIGRATED = 'thwapGameGoalsMigrated';
+  var LEGACY = 'thwapGameGoalsLegacy';
+  function pickedIds(){
+    var picked = [];
+    for(var i=0;i<boxes.length;i++){ if(boxes[i].checked) picked.push(boxes[i].id); }
+    return picked;
+  }
+  var pushTimer = null;
+  function pushPicks(ids){
+    try{
+      return fetch('/api/coach?action=save-game-goals',{method:'POST',credentials:'include',cache:'no-store',
+        headers:{'Content-Type':'application/json'},body:JSON.stringify({gameId:targetGameId, goalIds:ids})})
+        .then(function(r){
+          if(r.ok){ try{ localStorage.removeItem(DIRTY); localStorage.setItem(MIGRATED,'1'); }catch(e){} }
+          return r.ok;
+        }).catch(function(){ return false; });
+    }catch(e){ return Promise.resolve(false); }
+  }
+  function schedulePush(){
+    if(pushTimer) clearTimeout(pushTimer);
+    pushTimer = setTimeout(function(){ pushTimer = null; pushPicks(pickedIds()); }, 400);
+  }
   function save(){
     try{
-      var picked = [];
-      for(var i=0;i<boxes.length;i++){ if(boxes[i].checked) picked.push(boxes[i].id); }
-      localStorage.setItem(KEY, JSON.stringify(picked));
+      localStorage.setItem(KEY, JSON.stringify(pickedIds()));
+      localStorage.setItem(DIRTY, '1');
     }catch(e){}
+    schedulePush();
   }
   function saveFinal(){ try{ localStorage.setItem(FKEY, finalMode && finalMode.checked ? '1':'0'); }catch(e){} }
 
@@ -1760,9 +1823,10 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
     resetBtn.addEventListener('click', function(){
       for(var j=0;j<boxes.length;j++){ boxes[j].checked = false; }
       if(finalMode) finalMode.checked = false;
-      try{ localStorage.removeItem(KEY); localStorage.removeItem(FKEY); }catch(e){}
+      try{ localStorage.removeItem(KEY); localStorage.removeItem(FKEY); localStorage.setItem(DIRTY, '1'); }catch(e){}
       clearGameDone();
       updateUI();
+      schedulePush();
     });
   }
   // Reset goals for next game (Game Plan): clear all and return to the empty grid; position stays.
@@ -1771,14 +1835,42 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
     rfn.addEventListener('click', function(){
       for(var j=0;j<boxes.length;j++){ boxes[j].checked = false; }
       if(finalMode) finalMode.checked = false;
-      try{ localStorage.removeItem(KEY); localStorage.removeItem(FKEY); }catch(e){}
+      try{ localStorage.removeItem(KEY); localStorage.removeItem(FKEY); localStorage.setItem(DIRTY, '1'); }catch(e){}
       clearGameDone();
       updateUI();
+      schedulePush();
     });
   }
 
   restore();
   updateUI();
+
+  /* Reconcile with the server copy once: read this game's saved picks, then
+     either show them (another device saved newer ones) or upload this
+     browser's (offline edits, or the one-time migration of an old pick).
+     Signed out or offline: nothing changes, localStorage keeps working. */
+  (function(){
+    var url = '/api/coach?action=my-game-goals' + (targetGameId ? '&gameId=' + encodeURIComponent(targetGameId) : '');
+    fetch(url,{credentials:'include',cache:'no-store'})
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){
+        if(!j || !j.ok) return;
+        if(j.teamGoal && j.teamGoal.text && !hasTeamGoal){ hasTeamGoal = true; recomputeCap(); }
+        var local = []; try{ local = JSON.parse(localStorage.getItem(KEY) || '[]'); }catch(e){ local = []; }
+        var dirty = false, migrated = false;
+        try{ dirty = localStorage.getItem(DIRTY) === '1'; migrated = localStorage.getItem(MIGRATED) === '1'; }catch(e){}
+        var d = window.ThwapGoalSync.decide({ server:j, local:local, dirty:dirty, migrated:migrated });
+        if(d.backupLocal){ try{ localStorage.setItem(LEGACY, JSON.stringify(local)); }catch(e){} }
+        if(d.action === 'push'){
+          pushPicks(d.goalIds);
+        } else if(d.action === 'apply'){
+          for(var i=0;i<boxes.length;i++){ boxes[i].checked = d.goalIds.indexOf(boxes[i].id) >= 0; }
+          try{ localStorage.setItem(KEY, JSON.stringify(d.goalIds)); localStorage.setItem(MIGRATED,'1'); }catch(e){}
+          if(finalMode && finalMode.checked && checkedCount() < selfCap) finalMode.checked = false;
+        }
+        updateUI();
+      }).catch(function(){});
+  })();
   /* If the plan was already finalized for this game on this device, re-affirm the
      per-game done key (covers a return visit after the picks were restored). */
   if(finalMode && finalMode.checked && checkedCount() >= selfCap){ markGameDone(); }
