@@ -44,10 +44,10 @@ describe('Role-aware bottom tab bar', () => {
     expect(bar.querySelector('.tab-coach')).toBeTruthy();
   });
 
-  it('player tabs are Train / Journey / Team / Standings / Profile, landing on Train', () => {
+  it('player tabs are Train / My Season / Team / Standings / Profile, landing on Train', () => {
     const btns = [...doc.querySelectorAll('#tabbar .tab-player .tabbar-btn')];
     const labels = btns.map((b) => b.querySelector('.tabbar-lab').textContent);
-    expect(labels).toEqual(['Train', 'Journey', 'Team', 'Standings', 'Profile']);
+    expect(labels).toEqual(['Train', 'My Season', 'Team', 'Standings', 'Profile']);
     const hrefs = btns.map((b) => b.getAttribute('href'));
     expect(hrefs).toEqual(['#home', '#stickers', '#roster', '#progress', '#profile']);
   });
