@@ -6771,7 +6771,7 @@ window.thwapStatsRefresh=function(){ if(current && location.hash==='#player') bu
   if(saveBtn){ saveBtn.addEventListener('click',function(){
     var text=String(input.value||'').trim(); if(!curSlug) return;
     saveBtn.textContent='...';
-    fetch('/api/coach?action=set-idp-goal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({playerId:curSlug,text:text,setBy:setBy()})})
+    fetch('/api/coach?action=set-idp-goal',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({playerId:curSlug,text:text,setBy:setBy(),coachToken:coachToken()||undefined})})
       .then(function(r){ return r.json(); })
       .then(function(j){ saveBtn.textContent='Save'; if(j&&j.ok){ showText(j.idpGoal&&j.idpGoal.text||text); } })
       .catch(function(){ saveBtn.textContent='Save'; });

@@ -45,6 +45,17 @@ beforeEach(() => {
   setEnv();
 });
 
+// Attach a thwapSession cookie for `pid` to a request (player self-writes).
+async function asPlayerCookie(pid) {
+  const { mintSession, SESSION_COOKIE } = await import('../lib/session_store.js');
+  return `${SESSION_COOKIE}=${encodeURIComponent(mintSession(pid, `${pid}@example.com`))}`;
+}
+let _cookieCache = {};
+function asPlayer(pid, req) {
+  return { ...req, headers: { ...(req.headers || {}), cookie: _cookieCache[pid] } };
+}
+beforeEach(async () => { _cookieCache = { alder: await asPlayerCookie('alder') }; });
+
 describe('coach-login + seed', () => {
   it('seeds Jr Rangers and logs the coach in with the right password', async () => {
     const res = await loginSeedCoach();
@@ -265,7 +276,7 @@ describe('IDP: monthly goal + game-goal log', () => {
   it('sets and reads a monthly personal goal', async () => {
     await loginSeedCoach();
     const setRes = makeRes();
-    await _handlers.setIdp(post({ playerId: 'alder', text: 'Work on backward skating', setBy: 'player' }), setRes);
+    await _handlers.setIdp(asPlayer('alder', post({ playerId: 'alder', text: 'Work on backward skating', setBy: 'coach' })), setRes);
     expect(setRes.statusCode).toBe(200);
     expect(setRes.body.idpGoal.text).toBe('Work on backward skating');
     expect(setRes.body.idpGoal.setBy).toBe('player');
@@ -278,7 +289,7 @@ describe('IDP: monthly goal + game-goal log', () => {
   it('logs a game-day-goal check-off with an optional note and reads it back', async () => {
     await loginSeedCoach();
     const logRes = makeRes();
-    await _handlers.logGoal(post({ playerId: 'alder', goalId: 'g1', goalTitle: 'Scan Twice', done: true, note: 'Looked up before every pass' }), logRes);
+    await _handlers.logGoal(asPlayer('alder', post({ playerId: 'alder', goalId: 'g1', goalTitle: 'Scan Twice', done: true, note: 'Looked up before every pass' })), logRes);
     expect(logRes.statusCode).toBe(200);
     expect(logRes.body.entry.done).toBe(true);
     expect(logRes.body.entry.note).toBe('Looked up before every pass');
@@ -290,9 +301,9 @@ describe('IDP: monthly goal + game-goal log', () => {
   });
 
   it('the player roll-up returns base-week counts + goal + game-goal log', async () => {
-    await loginSeedCoach();
-    await _handlers.setIdp(post({ playerId: 'alder', text: 'Saucer passes', setBy: 'coach' }), makeRes());
-    await _handlers.logGoal(post({ playerId: 'alder', goalId: 'g2', goalTitle: 'Change Speed', done: true }), makeRes());
+    const coachToken = (await loginSeedCoach()).body.token;
+    await _handlers.setIdp(post({ playerId: 'alder', text: 'Saucer passes', coachToken }), makeRes());
+    await _handlers.logGoal(post({ playerId: 'alder', goalId: 'g2', goalTitle: 'Change Speed', done: true, coachToken }), makeRes());
     const res = makeRes();
     await _handlers.playerRollup(get({ playerId: 'alder' }), res);
     expect(res.statusCode).toBe(200);

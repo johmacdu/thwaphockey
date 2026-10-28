@@ -11,13 +11,16 @@
 //   POST ?action=create-team    { coachToken, name, association, ageGroup } -> { code }
 //   POST ?action=add-player     { code, coachToken, firstName, lastName, number, position, parentEmail }
 //   POST ?action=remove-player  { code, coachToken, playerId }
-//   GET  ?action=roster         { code }                          -> members + this-week participation + idpGoal
-//   GET  ?action=player         { code, playerId }                -> per-player IDP roll-up
-//   POST ?action=join           { code, playerId }                -> kid/parent joins via code
+//   GET  ?action=roster         { code, coachToken? }             -> members + this-week participation + idpGoal
+//                                 (parentEmails only for the team's coach, an admin, or the signed-in player's own)
+//   GET  ?action=player         { code, playerId }                -> per-player IDP roll-up (member without parent emails
+//                                 unless the team's coach, an admin, or the signed-in player)
+//   POST ?action=join           { code, playerId }                -> kid/parent joins via code (no parent emails)
 //   GET  ?action=schedule       { code }                          -> read-only week (placeholder this phase)
-//   POST ?action=set-idp-goal   { playerId, text, setBy }         -> monthly personal goal
+//   POST ?action=set-idp-goal   { playerId, text, coachToken? }   -> monthly personal goal (session player or team coach)
 //   GET  ?action=idp-goal       { playerId }                      -> current monthly goal
-//   POST ?action=log-game-goal  { playerId, goalId, goalTitle, done, note } -> append game-goal check-off
+//   POST ?action=log-game-goal  { playerId, goalId, goalTitle, done, note, coachToken? } -> append game-goal
+//                                 check-off (thwapSession for that player, or a coach of the player's team)
 //   GET  ?action=game-goal-log  { playerId }                      -> recent check-offs
 //
 // Coach auth: a coach session token (reuses lib/session_store's HMAC mint/verify,
@@ -222,6 +225,66 @@ async function playerOnTeam(code, playerId) {
   const pid = String(playerId || '').trim().toLowerCase();
   if (!pid) return false;
   return (await listMembers(code)).map((m) => String(m).toLowerCase()).includes(pid);
+}
+
+// --- read-side access to children's family data -----------------------------
+// Parent emails are a child's family contact details. They go only to a coach
+// who runs the player's team, an admin, or the signed-in player (their own).
+// These helpers never write a response, so a public caller still gets the
+// non-sensitive fields instead of an error.
+const PARENT_EMAIL_FIELDS = ['parentEmail', 'parentEmail2', 'parentEmails'];
+function withoutParentEmails(m) {
+  if (!m || typeof m !== 'object') return m;
+  const out = { ...m };
+  for (const k of PARENT_EMAIL_FIELDS) delete out[k];
+  return out;
+}
+// The coach behind a coachToken (query or body), or null. No response written.
+async function coachFromReq(req) {
+  const { coachToken } = parseBody(req);
+  const tok = coachToken || (req.query && req.query.coachToken) || '';
+  const c = tok ? coachFromToken(tok) : null;
+  return c ? await getCoach(c.email) : null;
+}
+// Is this an admin request (admin session token or the shared admin key)?
+async function isAdminReq(req) {
+  const { adminToken } = parseBody(req);
+  const auth = (req.headers && req.headers.authorization) ? String(req.headers.authorization) : '';
+  const bearer = auth.indexOf('Bearer ') === 0 ? auth.slice(7) : '';
+  const a = adminFromToken(adminToken || (req.query && req.query.adminToken) || bearer || '');
+  if (a && (await getAdmin(a.email))) return true;
+  return adminOk(req);
+}
+// The signed-in player's id from the thwapSession cookie, or ''.
+function sessionPlayerId(req) {
+  const s = verifySession(readSessionCookie(req));
+  return s ? String(s.playerId || '').toLowerCase() : '';
+}
+// May this request read the parent emails of player pid on team code?
+async function canSeeParentEmails(req, code, pid) {
+  if (pid && sessionPlayerId(req) === String(pid).toLowerCase()) return true;
+  const coach = await coachFromReq(req);
+  if (coach && code && (await coachRunsTeam(coach, code))) return true;
+  return isAdminReq(req);
+}
+
+// --- write-side access to a player's own records ----------------------------
+// A write to a player's log/goal needs the signed-in player themselves (the
+// thwapSession cookie, the same gate api/done uses) or a coach who runs the
+// player's team (coachToken). No session and no team coach -> 401; signed in
+// as someone else -> 403. Returns 'player' | 'coach', or null after a response.
+async function authorizePlayerWrite(req, res, pid) {
+  const coach = await coachFromReq(req);
+  if (coach) {
+    const m = await getMember(pid);
+    const code = m && m.teamCode;
+    if (code && (await coachRunsTeam(coach, code))) return 'coach';
+  }
+  const selfId = sessionPlayerId(req);
+  if (selfId && selfId === pid) return 'player';
+  if (!selfId && !coach) { res.status(401).json({ error: 'session required' }); return null; }
+  res.status(403).json({ error: 'not your account' });
+  return null;
 }
 
 // POST ?action=set-letter { coachToken, code, playerId, letter: 'C' | 'A' | '' }
@@ -631,12 +694,12 @@ async function roster(req, res) {
   const team = await getTeam(code);
   if (!team) return res.status(404).json({ error: 'unknown team' });
   // Parent emails are children's-family contact details: only a coach who runs
-  // this team sees them all; a signed-in player sees only their own (the
-  // self-edit sheet). Everyone else gets the roster without them.
+  // this team (or an admin) sees them all; a signed-in player sees only their
+  // own (the self-edit sheet). Everyone else gets the roster without them.
   const tok = (req.query && req.query.coachToken) || '';
   const cTok = tok ? coachFromToken(tok) : null;
   const cRec = cTok ? await getCoach(cTok.email) : null;
-  const seesAllEmails = !!(cRec && (await coachRunsTeam(cRec, code)));
+  const seesAllEmails = !!(cRec && (await coachRunsTeam(cRec, code))) || (await isAdminReq(req));
   const session = verifySession(readSessionCookie(req));
   const selfId = session ? String(session.playerId || '').toLowerCase() : '';
   const ids = await listMembers(code);
@@ -683,10 +746,13 @@ async function playerRollup(req, res) {
   const goal = await getIdpGoal(pid);
   const log = await getGameGoalLog(pid);
   const trend = await monthTrend(pid, 4);
+  // The public game-day page reads member.position/gamePosition here, so the
+  // record stays readable, minus parent emails unless the caller may see them.
+  const member = m ? ((await canSeeParentEmails(req, m.teamCode, pid)) ? m : withoutParentEmails(m)) : null;
   res.setHeader('Cache-Control', 'no-store');
   return res.status(200).json({
     ok: true, playerId: pid,
-    member: m || null,
+    member,
     baseThisWeek: { stick: wk.stick, shoot: wk.shoot, dryland: wk.dryland },
     monthTrend: trend,
     idpGoal: goal || null,
@@ -703,8 +769,10 @@ async function join(req, res) {
   const members = await listMembers(code);
   if (!members.includes(pid)) return res.status(404).json({ error: 'player not on this team' });
   const m = await getMember(pid);
+  // join needs only a team code, so it must not hand back parent emails.
+  const player = (await canSeeParentEmails(req, team.code, pid)) ? m : withoutParentEmails(m);
   res.setHeader('Cache-Control', 'no-store');
-  return res.status(200).json({ ok: true, team: { code: team.code, name: team.name }, player: m });
+  return res.status(200).json({ ok: true, team: { code: team.code, name: team.name }, player });
 }
 
 async function schedule(req, res) {
@@ -956,9 +1024,11 @@ async function removeCoach(req, res) {
 
 async function setIdp(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
-  const { playerId, text, setBy } = parseBody(req);
+  const { playerId, text } = parseBody(req);
   const pid = String(playerId || '').toLowerCase();
   if (!pid) return res.status(400).json({ error: 'playerId required' });
+  // Who set it comes from the credential, not the body, so it cannot be spoofed.
+  const setBy = await authorizePlayerWrite(req, res, pid); if (!setBy) return;
   const rec = await setIdpGoal(pid, { text, setBy });
   return res.status(200).json({ ok: true, idpGoal: rec });
 }
@@ -1002,6 +1072,7 @@ async function logGoal(req, res) {
   const { playerId, goalId, goalTitle, done, note } = parseBody(req);
   const pid = String(playerId || '').toLowerCase();
   if (!pid) return res.status(400).json({ error: 'playerId required' });
+  if (!(await authorizePlayerWrite(req, res, pid))) return;
   const entry = await logGameGoal(pid, { goalId, goalTitle, done, note });
   return res.status(200).json({ ok: true, entry });
 }
