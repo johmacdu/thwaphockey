@@ -793,7 +793,14 @@ async function addEvent(req, res) {
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
   if (!(await coachRunsTeam(coach, code))) return res.status(403).json({ error: 'not your team' });
   if (!event || !event.date) return res.status(400).json({ error: 'event date required' });
-  const sched = await addScheduleEvent(code, event);
+  const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
+  if (!DAY_RE.test(String(event.date))) return res.status(400).json({ error: 'event date must be YYYY-MM-DD' });
+  const kind = event.kind || 'game';
+  if (kind !== 'game' && kind !== 'tournament') return res.status(400).json({ error: 'kind must be game or tournament' });
+  if (kind === 'tournament' && event.endDate != null && event.endDate !== '') {
+    if (!DAY_RE.test(String(event.endDate)) || event.endDate < event.date) return res.status(400).json({ error: 'the last day must be on or after the first day' });
+  }
+  const sched = await addScheduleEvent(code, { ...event, kind });
   return res.status(200).json({ ok: true, schedule: sched, next: nextEvent(sched) });
 }
 
