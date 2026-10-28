@@ -2738,7 +2738,9 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
      day-plan, so this single built-in gate is authoritative for it. */
   if(passRow && wd!==2 && wd!==5){ passRow.style.display='none'; }
   try{ if(window.thwapRefreshHero) window.thwapRefreshHero(); }catch(e){}
-  fetch('/api/coach?action=get-plan').then(function(r){ return r.json(); }).then(function(j){
+  /* No team code: the server picks the signed-in player's OWN team from the
+     session cookie (same plan /api/done?view=today uses), so send credentials. */
+  fetch('/api/coach?action=get-plan',{cache:'no-store',credentials:'include'}).then(function(r){ return r.json(); }).then(function(j){
     try{ if(window.thwapPaywall) window.thwapPaywall(j&&j.billing, null); }catch(e){}
     if(!j||!j.ok||!j.plan){
       /* Fail open: leave the built-in default (and the weekend-optional default
@@ -4861,7 +4863,9 @@ window.thwapCoachDrillNames=function(cat){
   var c=window.__thwapCoachPlan; if(c.loaded||c.fetching) return; c.fetching=true;
   function done(plan){ c.plan=plan||null; c.loaded=true; c.fetching=false; var hs=c.hooks.slice(); c.hooks.length=0; hs.forEach(function(fn){ try{fn();}catch(e){} }); }
   try{
-    fetch('/api/coach?action=get-plan',{cache:'no-store'})
+    /* No team code: the server resolves the signed-in player's own team from the
+       session cookie, matching /api/done?view=today (the watch). */
+    fetch('/api/coach?action=get-plan',{cache:'no-store',credentials:'include'})
       .then(function(r){ return r.json(); })
       .then(function(j){ done(j&&j.ok&&j.plan?j.plan:null); })
       .catch(function(){ done(null); });

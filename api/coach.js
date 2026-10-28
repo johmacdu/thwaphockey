@@ -51,7 +51,7 @@ import {
 } from '../lib/teams_store.js';
 import { ensureSchedule, getSchedule, addEvent as addScheduleEvent, nextEvent, localDateStr } from '../lib/schedule_store.js';
 import { resolveSigninPlayer, RANGERS_TEAM_CODE } from '../lib/signin_players.js';
-import { teamPlayerIds } from '../lib/team_players.js';
+import { teamPlayerIds, resolvePlayer } from '../lib/team_players.js';
 import { GAME_GOAL_TARGET, gameGoalById } from '../lib/game_goals_catalog.js';
 import { getGamePick, setGamePick } from '../lib/game_picks_store.js';
 import { isGated, billingStatus } from '../lib/billing_store.js';
@@ -840,14 +840,33 @@ async function setCoachProfile(req, res) {
 
 // GET the team's weekly plan (which categories are on each weekday). Public read
 // so the kid app can shape today's home; defaults to all-3-every-day when unset.
+//
+// Which team: an explicit ?code= (the coach Plan screen) wins, unchanged. With no
+// code (the player app), the team comes from the signed-in player's SESSION via
+// lib/team_players.js resolvePlayer, the same lookup /api/done?view=today uses,
+// so web and watch build today's drills from the same plan. No session (or a
+// session for a player no longer on any team) keeps the Jr. Rangers 10U default.
 async function getPlan(req, res) {
   if (!methodGuard(req, res, 'GET')) return;
-  const code = (req.query && req.query.code) || SEED_TEAM_CODE;
+  const code = (req.query && req.query.code) || (await sessionTeamCode(req)) || SEED_TEAM_CODE;
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
   res.setHeader('Cache-Control', 'no-store');
   // Billing status rides along so the client can paywall from the call it already
   // makes; `code` here is the same team the plan is for.
   return res.status(200).json({ ok: true, plan: await getTeamPlan(code), billing: await billingStatus(code) });
+}
+
+// The signed-in player's team code, or '' (no/invalid session, unknown player,
+// or a lookup error). Never throws: a plan read must fail open to the default.
+async function sessionTeamCode(req) {
+  try {
+    const claims = verifySession(readSessionCookie(req));
+    if (!claims || !claims.playerId) return '';
+    const me = await resolvePlayer(claims.playerId);
+    return (me && me.teamCode) || '';
+  } catch {
+    return '';
+  }
 }
 
 // POST the team's weekly plan. Coach-only.
