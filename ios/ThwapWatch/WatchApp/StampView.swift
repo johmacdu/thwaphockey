@@ -12,7 +12,8 @@ struct StampView: View {
 
     var body: some View {
         ZStack {
-            ThwapTheme.bg.opacity(0.94).ignoresSafeArea()
+            // Fully solid so the Today list never shows through the stamp.
+            ThwapTheme.bg.ignoresSafeArea()
             VStack(spacing: 6) {
                 outlined("THWAP!")
                     .rotationEffect(.degrees(-8))

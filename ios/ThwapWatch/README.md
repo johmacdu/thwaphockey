@@ -52,4 +52,4 @@ Launch arguments put any screen on glass for screenshots: `-thwapScreen today|ru
 
 ## Swapping in the real client
 
-Implement `ThwapAPI` against the real endpoints and replace `StubThwapAPI(...)` in `WatchApp/ThwapWatchApp.swift`. `CheckOffQueue` is in memory for now. Persist `pending` (it's `Codable`) when the real client lands so an offline check-off survives a relaunch.
+Implement `ThwapAPI` against the real endpoints and replace `StubThwapAPI(...)` in `WatchApp/ThwapWatchApp.swift`. `CheckOffQueue` persists to `checkoff-queue.json` in the App Group container (`group.com.thwaphockey.app`, Application Support as a fallback), so an offline check-off survives the app being killed. It loads on launch, flushes before the first server read, and drops an entry only after `markDone` confirms it.

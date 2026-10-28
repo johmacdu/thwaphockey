@@ -13,7 +13,9 @@ final class AppModel: ObservableObject {
     @Published var loadFailed = false
 
     let api: ThwapAPI
-    let queue = CheckOffQueue()
+    /// Persisted in the App Group container, so offline check-offs survive a
+    /// kill and are retried on the next launch.
+    let queue = CheckOffQueue(fileURL: CheckOffQueue.defaultFileURL())
     private let ringStore = RingStore()
 
     init(api: ThwapAPI) { self.api = api }
@@ -28,6 +30,9 @@ final class AppModel: ObservableObject {
     }
 
     func load() async {
+        // Retry anything left from an earlier run before reading the server,
+        // so today's server read already includes it.
+        await queue.flush(using: api)
         do {
             let p = try await api.todayPlan()
             plan = p
