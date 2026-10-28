@@ -18,8 +18,9 @@
 // store. The sender is NEVER taken from the body: it is the signed-in session, so
 // a kid cannot cheer as someone else.
 
-import { listPlayers, weekBoard, listCheers, sendCheer, listFires, sendFire, isRosterPlayer, getRecentCheerers, getRecentFirers, getTrainingDays, localDateStr } from '../lib/store.js';
+import { listPlayers, weekBoard, listCheers, sendCheer, listFires, sendFire, isRosterPlayer, ROSTER, getRecentCheerers, getRecentFirers, getTrainingDays, localDateStr } from '../lib/store.js';
 import { journeyFor } from '../lib/journey.js';
+import { getMember, getTeam } from '../lib/teams_store.js';
 import { verifySession, readSessionCookie } from '../lib/session_store.js';
 import { handleLooks, handleLookGet, handleLookPost } from '../lib/look_api.js';
 
@@ -86,6 +87,24 @@ async function handleFire(req, res) {
   return res.status(200).json(result);
 }
 
+// The Season Book cover: the signed-in player's first name + last initial,
+// jersey number, position and team. Prefers the coach's roster entry
+// (teamMember:<id>), falls back to the built-in ROSTER (name + number only).
+// Any missing field is null so the page simply leaves it off.
+async function coverPlayer(id) {
+  const m = await getMember(id).catch(() => null);
+  const base = ROSTER.find((p) => p.id === id) || null;
+  const first = (m && m.firstName) || (base && base.name) || (id ? id.charAt(0).toUpperCase() + id.slice(1) : '');
+  const initial = m && m.lastName ? ` ${String(m.lastName).trim().charAt(0).toUpperCase()}.` : '';
+  const number = m && m.number != null ? m.number : (base && base.number != null ? base.number : null);
+  let team = null;
+  if (m && m.teamCode) {
+    const t = await getTeam(m.teamCode).catch(() => null);
+    team = (t && t.name) || null;
+  }
+  return { name: `${first}${initial}`, number, position: (m && m.position) || null, team };
+}
+
 export default async function handler(req, res) {
   // POST is only the cheer action; anything else POSTed is rejected.
   if (req.method === 'POST') {
@@ -121,8 +140,9 @@ export default async function handler(req, res) {
     }
     const me = String(claims.playerId || '').toLowerCase();
     const book = journeyFor(await getTrainingDays(me), localDateStr());
+    const player = await coverPlayer(me);
     res.setHeader('Cache-Control', 'no-store');
-    return res.status(200).json({ id: me, ...book });
+    return res.status(200).json({ id: me, player, ...book });
   }
 
   // GET /api/board?action=cheers-for : the SIGNED-IN player's own recent cheer

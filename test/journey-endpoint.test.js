@@ -85,4 +85,16 @@ describe('GET /api/board?action=journey', () => {
     await get(mintSession('lewie', 'p@e.com'));
     expect(JSON.stringify([...fake.map.entries()])).toBe(before);
   });
+
+  it('cover uses the coach roster entry: first name, last initial, number, position, team', async () => {
+    fake._seed('teamMember:lewie', { teamCode: 'JRR10', firstName: 'Lewie', lastName: 'MacDuffie', number: 81, position: 'forward' });
+    fake._seed('team:JRR10', { code: 'JRR10', name: 'Jr. Rangers 10U' });
+    const res = await get(mintSession('lewie', 'p@e.com'));
+    expect(res.body.player).toEqual({ name: 'Lewie M.', number: 81, position: 'forward', team: 'Jr. Rangers 10U' });
+  });
+
+  it('cover falls back to the built-in roster when there is no coach entry', async () => {
+    const res = await get(mintSession('alder', 'p@e.com'));
+    expect(res.body.player).toEqual({ name: 'Alder', number: 71, position: null, team: null });
+  });
 });
