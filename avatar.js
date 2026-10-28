@@ -28,7 +28,17 @@
     black:{ body:'#151515', stripe:'#C8102E', trim:'#FFFFFF', num:'#FFFFFF' },
     white:{ body:'#F2F2F2', stripe:'#C8102E', trim:'#111111', num:'#C8102E' }
   };
-  var DEFAULT_LOOK={ skin:'s3', hair:'brown', jersey:'red', num:'' };
+  var GLOVES={ black:'#141414', red:'#C8102E', ice:'#BFE6F2' };
+  var STICK={ classic:'#2B2B2B', gold:'#D4A72C' };
+  var DEFAULT_LOOK={ skin:'s3', hair:'brown', jersey:'red', helmet:'team', gloves:'black', stick:'classic', num:'' };
+
+  // Server looks use catalog ids ('jersey-red', 'skin-s3'); the renderer keys
+  // on the part after the slot prefix. Unknown values fall back to defaults.
+  function norm(look){
+    var out={};
+    for(var k in look){ var v=look[k]; out[k]=(typeof v==='string' && v.indexOf(k+'-')===0)?v.slice(k.length+1):v; }
+    return out;
+  }
 
   // --- Box builder ------------------------------------------------------------
   // All sizes are in em, so one font-size scales the whole character.
@@ -58,12 +68,15 @@
   // pants 10-14.6, torso 14.6-24, head 24-32. Minecraft-like 8/12/12 rhythm,
   // with hockey bulk (pants, shoulders, gloves) added on top.
   function html(look){
-    look=look||{};
+    look=norm(look||{});
     var skin=SKIN[look.skin]||SKIN[DEFAULT_LOOK.skin];
     var hair=HAIR[look.hair]||HAIR[DEFAULT_LOOK.hair];
     var J=JERSEY[look.jersey]||JERSEY[DEFAULT_LOOK.jersey];
     var num=esc(look.num);
-    var black='#141414', helmet=look.jersey==='white'?'#F2F2F2':'#141414', steel='#C9CED3';
+    var black='#141414', steel='#C9CED3';
+    var helmet=look.helmet==='chrome'?'#B8C2CC':(look.jersey==='white'?'#F2F2F2':'#141414');
+    var gloveC=GLOVES[look.gloves]||black;
+    var stickC=STICK[look.stick]||'#2B2B2B';
 
     // Jersey front/back with two arm-height stripes; number on the back.
     var torsoBg='linear-gradient(0deg,'+J.stripe+' 0 9%,'+J.trim+' 9% 12%,'+J.body+' 12% 100%)';
@@ -71,8 +84,16 @@
     var sockBg='linear-gradient(0deg,'+J.body+' 0 40%,'+J.stripe+' 40% 55%,'+J.trim+' 55% 62%,'+J.body+' 62% 100%)';
     // Phase 1 pixel textures (style A). Flat tiles -- the code still shades each
     // face (top lighter, sides darker), so these must stay flat (no baked lighting).
-    var jTex="url('avatar-tex/jersey-"+(JERSEY[look.jersey]?look.jersey:DEFAULT_LOOK.jersey)+".png')";
-    var helTex="url('avatar-tex/helmet.png')";
+    var JTEX={red:1,black:1,white:1};
+    var jKey=JERSEY[look.jersey]?look.jersey:DEFAULT_LOOK.jersey;
+    var jTex=JTEX[jKey]?"url('avatar-tex/jersey-"+jKey+".png')":J.body;
+    // helmet.png is the ink (black) shell; white and chrome helmets stay flat color.
+    var helTex=helmet==='#141414'?"url('avatar-tex/helmet.png')":helmet;
+    var helFaces={front:helTex,back:helTex,side:helTex,top:helTex,bottom:helTex};
+    var stripeTop=look.stripe&&look.stripe!=='none'
+      ? 'linear-gradient(90deg,'+helmet+' 0 '+(look.stripe==='twin'?'34%,'+J.body+' 34% 42%,'+helmet+' 42% 58%,'+J.body+' 58% 66%,'+helmet+' 66%':'44%,'+J.body+' 44% 56%,'+helmet+' 56%')+')'
+      : helTex;
+    var helTop={front:helTex,back:helTex,side:helTex,top:stripeTop,bottom:helTex};
     var backNum="<span class='av-num' style='color:"+J.num+"'>"+num+"</span>";
     var chestNum="<span class='av-num av-num-sm' style='color:"+J.num+"'>"+num+"</span>";
 
@@ -98,38 +119,53 @@
       box({w:3.4,h:8.4,d:3.6,x:-6.6,y:19.6,z:1,c:J.body,faces:{front:sleeveBg,back:sleeveBg,side:sleeveBg},rot:'rotateX(18deg)'}),
       box({w:3.4,h:8.4,d:3.6,x:6.6,y:19.6,z:1,c:J.body,faces:{front:sleeveBg,back:sleeveBg,side:sleeveBg},rot:'rotateX(18deg)'}),
       // Gloves
-      box({w:3.8,h:3.6,d:4,x:-6.6,y:14.4,z:2.6,c:black}),
-      box({w:3.8,h:3.6,d:4,x:6.6,y:14.4,z:2.6,c:black}),
+      box({w:3.8,h:3.6,d:4,x:-6.6,y:14.4,z:2.6,c:gloveC}),
+      box({w:3.8,h:3.6,d:4,x:6.6,y:14.4,z:2.6,c:gloveC}),
       // Head
       box({w:7.6,h:7.6,d:7.6,y:28,c:skin,frontInner:faceInner}),
       // Hair flow out the back of the helmet
       box({w:6.8,h:2.4,d:1.4,y:25.3,z:-4.2,c:hair}),
       // Helmet shell (top + back half), leaves the face open for the cage
-      box({w:8.4,h:2.6,d:8.4,y:31.3,c:helmet,faces:{front:helTex,back:helTex,side:helTex,top:helTex,bottom:helTex}}),
-      box({w:8.4,h:4.6,d:2.4,y:28.2,z:-3.2,c:helmet,faces:{front:helTex,back:helTex,side:helTex,top:helTex,bottom:helTex}}),
-      box({w:1,h:4.8,d:5.6,x:-4.2,y:27.9,z:.6,c:helmet,faces:{front:helTex,back:helTex,side:helTex,top:helTex,bottom:helTex}}),
-      box({w:1,h:4.8,d:5.6,x:4.2,y:27.9,z:.6,c:helmet,faces:{front:helTex,back:helTex,side:helTex,top:helTex,bottom:helTex}}),
+      box({w:8.4,h:2.6,d:8.4,y:31.3,c:helmet,faces:helTop}),
+      box({w:8.4,h:4.6,d:2.4,y:28.2,z:-3.2,c:helmet,faces:helFaces}),
+      box({w:1,h:4.8,d:5.6,x:-4.2,y:27.9,z:.6,c:helmet,faces:helFaces}),
+      box({w:1,h:4.8,d:5.6,x:4.2,y:27.9,z:.6,c:helmet,faces:helFaces}),
       // Cage
       "<div class='av-b' style='transform:translate3d(0,-27.4em,4.3em)'>"+face('av-cage',7.8,6.4,'none',cageBg)+"</div>",
       // Stick: shaft from the right glove to the ice, blade forward
-      box({w:.7,h:15.6,d:.7,x:5.4,y:7.6,z:5.2,c:'#2B2B2B',rot:'rotateX(-24deg) rotateZ(-8deg)'}),
-      box({w:4.4,h:1.2,d:.6,x:2.9,y:.6,z:8.2,c:'#2B2B2B'})
+      box({w:.7,h:18.4,d:.7,x:5.6,y:8.4,z:5,c:stickC,rot:'rotateX(-24deg) rotateZ(-8deg)'}),
+      box({w:4.4,h:1.2,d:.6,x:2.9,y:.6,z:8.6,c:stickC})
     ];
     return "<div class='av-wrap' aria-hidden='true'><div class='av-scene'>"+parts.join('')+"</div></div>";
   }
 
-  // Look for a player: own saved look on this device, else the default with
-  // their number. The server-backed look replaces this in the Phase 1 build.
+  // Look for a player. Order: the server roster looks (fetched below, cached on
+  // the device so the next load paints right away), then this device's saved
+  // look, then the default. The number always comes from the roster.
+  var teamLooks=null;
+  try{ teamLooks=JSON.parse(localStorage.getItem('thwapLooksCache')||'null'); }catch(_){}
   function lookFor(p,slug){
     var look={}; for(var k in DEFAULT_LOOK) look[k]=DEFAULT_LOOK[k];
+    var id=String(slug||'').toLowerCase();
+    var src=null;
+    if(teamLooks && teamLooks[id]) src=norm(teamLooks[id]);
+    if(!src){ try{ src=(JSON.parse(localStorage.getItem('thwapLooks')||'{}'))[id]||null; }catch(_){} }
+    if(src) for(var m in src) if(m!=='num') look[m]=src[m];
     look.num=(p&&p.num)||'';
-    try{
-      var all=JSON.parse(localStorage.getItem('thwapLooks')||'{}');
-      var mine=all[String(slug||'').toLowerCase()];
-      if(mine) for(var m in mine) if(m!=='num') look[m]=mine[m];
-    }catch(_){}
     return look;
   }
+  function refreshTeamLooks(){
+    if(!on() || typeof fetch!=='function') return;
+    try{
+      fetch('/api/board?action=looks',{credentials:'same-origin'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){
+        if(!j || !j.looks) return;
+        teamLooks=j.looks;
+        try{ localStorage.setItem('thwapLooksCache',JSON.stringify(j.looks)); }catch(_){}
+        try{ document.dispatchEvent(new CustomEvent('thwap:looks')); }catch(_){}
+      }).catch(function(){});
+    }catch(_){}
+  }
+  refreshTeamLooks();
 
   // --- Styles -----------------------------------------------------------------
   var css=
@@ -154,5 +190,5 @@
   }
   injectCss();
 
-  window.thwapAvatar={ on:on, html:html, lookFor:lookFor, SKIN:SKIN, HAIR:HAIR, JERSEY:JERSEY, DEFAULT_LOOK:DEFAULT_LOOK };
+  window.thwapAvatar={ on:on, html:html, lookFor:lookFor, refreshTeamLooks:refreshTeamLooks, norm:norm, SKIN:SKIN, HAIR:HAIR, JERSEY:JERSEY, DEFAULT_LOOK:DEFAULT_LOOK };
 })();

@@ -19,6 +19,7 @@
 
 import { listPlayers, weekBoard, listCheers, sendCheer, listFires, sendFire, isRosterPlayer, getRecentCheerers, getRecentFirers } from '../lib/store.js';
 import { verifySession, readSessionCookie } from '../lib/session_store.js';
+import { handleLooks, handleLookGet, handleLookPost } from '../lib/look_api.js';
 
 // Parse the request body whether Vercel already parsed it (object) or handed us
 // a raw JSON string. Returns {} on anything unparseable. Mirrors api/done.js.
@@ -93,6 +94,9 @@ export default async function handler(req, res) {
     if (action === 'fire') {
       return handleFire(req, res);
     }
+    if (action === 'look') {
+      return handleLookPost(req, res);
+    }
     return res.status(400).json({ error: 'unknown action' });
   }
 
@@ -100,6 +104,10 @@ export default async function handler(req, res) {
     res.setHeader('Allow', 'GET, POST');
     return res.status(405).json({ error: 'method not allowed' });
   }
+
+  // GET /api/board?action=look (own look + unlocks) / ?action=looks (roster).
+  if (req.query && req.query.action === 'look') return handleLookGet(req, res);
+  if (req.query && req.query.action === 'looks') return handleLooks(req, res);
 
   // GET /api/board?action=cheers-for : the SIGNED-IN player's own recent cheer
   // givers, newest first, for the home-screen "N teammates cheered you" roll-up.
