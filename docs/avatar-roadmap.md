@@ -200,3 +200,10 @@ the hockey year, August to June, and rolls over in August.
   button; tapping a celebration plays it (locked ones as a try-on). Milestone
   moment: the New gear message shows the kid's player doing their celebration
   in the new item. Never on a card tap. Reduced motion shows the final pose.
+- [x] Phase 4 letters: the coach gives a player the C or an A from the
+  edit-player sheet (`?action=set-letter`). Coach must run the team; one C
+  per team (giving it moves it); at most two A's. Drawn high on the chest on
+  every card; the kid gets "Coach gave you the C!" once.
+- [ ] Phase 4 weekly team item and playoff jersey: waiting on decisions (what
+  the item is and whether it stays, and the playoff dates).
+- [ ] Unlock ladder check against December's data (early January).
