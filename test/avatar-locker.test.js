@@ -56,7 +56,7 @@ describe('Locker Room', () => {
     w.document.querySelector('[data-id=stick-gold]').click();
     for (let i = 0; i < 3; i++) await tick();
     expect(posts.length).toBe(0);
-    expect(w.document.querySelector('.lk-note').textContent).toMatch(/Unlocks at 100 training days\. You.re at 2\./);
+    expect(w.document.querySelector('.lk-note').textContent).toMatch(/Golden Stick\. Train 100 days to unlock\. You.re at 2\./);
   });
 
   it('tells a signed-out player to sign in', async () => {
@@ -106,7 +106,7 @@ describe('unlock moment', () => {
     await w.thwapAvatar.checkUnlocks();
     const toast = w.document.querySelector('.lk-toast');
     expect(toast).toBeTruthy();
-    expect(toast.textContent).toMatch(/New gear! Red gloves/);
+    expect(toast.textContent).toMatch(/New gear! Rangers Red gloves/);
     expect(w.document.querySelector('.lk-btn .lk-dot')).toBeTruthy();
     toast.remove();
     await w.thwapAvatar.checkUnlocks();

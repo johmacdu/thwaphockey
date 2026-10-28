@@ -18,7 +18,7 @@ and can't hit an exact palette or a 16px grid -- the opposite of what this needs
 textures are small, flat, palette-exact pixel art; author them that way.
 
 - The proof tiles were drawn with PIL (`scripts/` style), flat, palette-exact, 16x16.
-- The OpenAI pipeline stays for the **marketing/style-test renders and the Locker Room item
+- The OpenAI pipeline stays for the **marketing/style-test renders and the My Player item
   icons** (which DO want shading), not the in-rig textures.
 
 ## How a tile is applied

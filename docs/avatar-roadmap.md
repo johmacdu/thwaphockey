@@ -22,7 +22,7 @@ Design and interaction rules live in `docs/avatar-design.md`.
 - **Art is textures and icons.** In-rig box textures are authored **directly** as
   flat palette-exact pixel tiles (hand pixel art / PIL), because image models bake
   lighting and miss the grid -- and the code already shades the boxes. OpenAI stays
-  for the shaded **Locker Room item icons** and marketing/style renders. Flat (no
+  for the shaded **My Player item icons** and marketing/style renders. Flat (no
   baked lighting), pushed on an `art/*` branch. See `docs/avatar-texture-spec.md`.
 - **Looks and unlocks on the server.** Each player's look syncs across devices.
   Unlocks are computed on the server from recorded completions, never from
@@ -74,12 +74,12 @@ Two currencies, so one big day cannot run the whole ladder:
 | 3 | 25 activities | Wooden stick |
 | 4 | 10 training days | New jersey |
 | 5 | 15 training days | First celebration (fist pump, plays once Phase 3 adds celebrations) |
-| 6 | 20 training days | Twin helmet stripes |
+| 6 | 20 training days | Double Bolt helmet stripe |
 | 7 | 35 training days | New pose |
-| 8 | 50 training days | Chrome gear (rare) |
+| 8 | 50 training days | Glacier helmet (Pro) |
 | 9 | 75 training days | Big celebration |
-| 10 | 100 training days | Gold stick (epic) |
-| 11 | 130 training days | Legendary item |
+| 10 | 100 training days | Golden Stick (All-Star) |
+| 11 | 130 training days | Bigfoot gloves (Legend) |
 | 12 | 160+ training days | Season legend items |
 
 A kid who trains 4 days a week from August to June reaches about 170 days.
@@ -104,7 +104,7 @@ the hockey year, August to June, and rolls over in August.
 
 ### Phase 1, November 2026: base character
 - Skin tone, hair, number, Rangers Red/Black/White jerseys, one standing pose.
-- Locker Room with Gear only. First-run builder (skin, hair, jersey), all
+- My Player screen with gear only. First-run builder (skin, hair, jersey), all
   pre-picked so a kid can tap Done.
 - Unlocks at 5, 10 and 25 activities (gloves, stripe, wooden stick), with
   credit for past training. All three are gear, so every Phase 1 unlock shows
@@ -127,7 +127,7 @@ the hockey year, August to June, and rolls over in August.
 - Discipline track (25 in a discipline unlocks its pose).
 - Celebrations play on milestone days and from a Play button, never on a
   card tap (tap flips, double tap spins). Reduced motion shows the end frame.
-- 100 training days: the gold stick.
+- 100 training days: the Golden Stick.
 - Art: little to none, poses are data.
 - Done when: a kid picks a pose and celebration and it shows everywhere.
 
@@ -142,12 +142,13 @@ the hockey year, August to June, and rolls over in August.
 ### Phase 5, May to June: season finale
 - Season 1 finish items, bigger ones for higher totals.
 - Season card: a keepsake snapshot of the character, totals and best streak.
-- Legendary tiers.
+- Legend tier items.
 - Art: Season 1 items, season card frame.
 - Done when: every kid has a finished Season 1 card in June.
 
 ### Phase 6, July to August: rollover into Season 2
-- Kids keep everything. Season 1 items move to a Collection tab.
+- Kids keep everything. Season 1 items also become stickers in the Sticker
+  Book, so the season lives where kids already collect.
 - A fresh ladder starts in August with new items.
 - Summer dryland track so July is not dead.
 - New-player onboarding for next year's 10U kids, groundwork for more teams.
@@ -166,10 +167,10 @@ the hockey year, August to June, and rolls over in August.
 - [x] Unlock rules (`lib/avatar_items.js`) and look storage
   (`lib/look_api.js`, routed via `api/board.js?action=look|looks` to stay
   inside the Vercel 12-function cap)
-- [x] Locker Room, Gear tabs, tap to wear, try on locked items (preview only)
+- [x] My Player screen, gear tabs, tap to wear, try on locked items (preview only)
 - [x] First-run builder (skin, hair, jersey, Done), opens once for a player
   with no saved look, then the character drops onto the card
 - [x] Unlock moment after a drill (New gear toast, New tags, dot on the
-  Locker Room button)
-- [ ] Launch: character on for everyone, real Locker Room entry point,
+  My Player button)
+- [ ] Launch: character on for everyone, real My Player entry point,
   photo upload removed (stored photos deleted only after Woody confirms)

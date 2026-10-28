@@ -193,12 +193,12 @@
   injectCss();
 
 
-  // --- Locker Room (Phase 1: Gear) ---------------------------------------------
+  // --- My Player (Phase 1: Gear) ---------------------------------------------
   // Opens with #locker or the preview button. Tap an owned item: it goes on the
   // character and saves to the server. Tap a locked item: try it on, with the
   // progress line; nothing is saved. Unlocks come from the server only.
   var GEAR_TABS=[['skin','Skin'],['hair','Hair'],['jersey','Jersey'],['helmet','Helmet'],['stripe','Stripe'],['gloves','Gloves'],['stick','Stick']];
-  var TIER_LABEL={ common:'', rare:'Rare', epic:'Epic', legendary:'Legendary' };
+  var TIER_LABEL={ common:'', rare:'Pro', epic:'All-Star', legendary:'Legend' };
   var L={ data:null, look:null, saved:null, tab:'skin', trying:null, changed:false, me:null };
 
   function swatch(slot,short){
@@ -211,9 +211,9 @@
   }
   function ruleText(it){
     var r=it.rule||{};
-    if(r.type==='activities') return r.n+' activities';
-    if(r.type==='days') return r.n+' training days';
-    if(r.type==='disc') return r.n+' '+({stick:'stickhandling',shoot:'shooting',dryland:'dryland',netplay:'net play',iq:'Hockey IQ',pass:'passing'}[r.disc]||r.disc)+' drills';
+    if(r.type==='activities') return 'Finish '+r.n+' drills';
+    if(r.type==='days') return 'Train '+r.n+' days';
+    if(r.type==='disc') return 'Finish '+r.n+' '+({stick:'Hands',shoot:'Shooting',dryland:'Dryland',netplay:'Net play',iq:'Hockey IQ',pass:'Passing'}[r.disc]||r.disc)+' drills';
     if(r.type==='coach') return 'From your coach';
     return '';
   }
@@ -277,7 +277,7 @@
     var note=document.querySelector('.lk-note');
     if(note){
       if(L.trying){ var it=L.trying.item, h=have(it), n=(it.rule||{}).n||0;
-        note.textContent=it.label+'. Unlocks at '+ruleText(it)+'. You\u2019re at '+Math.min(h,n)+'.'; }
+        note.textContent=it.label+'. '+ruleText(it)+' to unlock. You\u2019re at '+Math.min(h,n)+'.'; }
       else note.textContent=L.status||'';
     }
   }
@@ -304,7 +304,7 @@
       var sub=own?(TIER_LABEL[it.tier]||''):ruleText(it);
       var lbl=it.slot==='skin'?'Tone '+short.slice(1):(it.slot==='hair'?short.charAt(0).toUpperCase()+short.slice(1):it.label);
       return "<button type='button' class='lk-item"+(own?'':' locked')+"' data-id='"+esc(it.id)+"' aria-pressed='"+on+"'"+
-        " aria-label='"+esc(lbl+(own?'':', locked, unlocks at '+ruleText(it)))+"'>"+
+        " aria-label='"+esc(lbl+(own?'':', locked. '+ruleText(it)+' to unlock'))+"'>"+
         (own?'':"<i class='lk-lock' aria-hidden='true'></i>")+(own&&isNew(it.id)?"<i class='lk-new'>New</i>":"")+
         "<span class='lk-sw' style='background:"+swatch(it.slot,short)+"'></span>"+
         "<span class='lk-lbl'>"+esc(lbl)+"</span>"+(sub?"<span class='lk-sub'>"+esc(sub)+"</span>":"")+"</button>";
@@ -382,10 +382,10 @@
     if(document.querySelector('.lk')) return;
     if(!document.getElementById('lk-css')){ var s=document.createElement('style'); s.id='lk-css'; s.textContent=lockerCss(); document.head.appendChild(s); }
     L={ data:null, look:null, tab:opts.tab||'skin', trying:null, changed:false, me:null, spin:-25, status:'', num:'', build:null };
-    var el=document.createElement('div'); el.className='lk'; el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true'); el.setAttribute('aria-label','Locker Room');
-    el.innerHTML="<div class='lk-head'><h2>Locker Room</h2><button type='button' class='lk-x' aria-label='Close'>&#10005;</button></div>"+
+    var el=document.createElement('div'); el.className='lk'; el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true'); el.setAttribute('aria-label','My Player');
+    el.innerHTML="<div class='lk-head'><h2>My Player</h2><button type='button' class='lk-x' aria-label='Close'>&#10005;</button></div>"+
       "<div class='lk-stage' aria-label='Your player. Drag to spin.'></div><div class='lk-note' aria-live='polite'></div>"+
-      "<div class='lk-tabs' role='tablist' data-lk='tabs'></div><div class='lk-grid'><div class='lk-msg'>Opening your locker...</div></div><div class='lk-foot' hidden></div>";
+      "<div class='lk-tabs' role='tablist' data-lk='tabs'></div><div class='lk-grid'><div class='lk-msg'>Getting your player...</div></div><div class='lk-foot' hidden></div>";
     document.body.appendChild(el);
     el.querySelector('.lk-x').addEventListener('click',closeLocker);
     el.addEventListener('click',onTap);
@@ -395,14 +395,14 @@
       L.data=j; L.look=j.look; L.me=j.id;
       try{ var rp=(window.THWAP_ROSTER||{}); var info=rp[j.id]||rp[j.id&&j.id.charAt(0).toUpperCase()+j.id.slice(1)]; if(info&&info.num) L.num=info.num; }catch(_){}
       var nx=(j.next||[])[0];
-      L.status=nx?('Next: '+nx.label+', '+nx.left+' to go.'):'';
+      L.status=nx?('Next up: '+nx.label+'. '+nx.left+' to go.'):'';
       if(!j.saved || opts.builder){ L.build=0; L.tab=BUILD_STEPS[0][0]; L.status=''; }
       if(!readList('thwapUnlockSeen')) writeList('thwapUnlockSeen',j.unlocked||[]);
       paintTabs(); paintGrid(); paintStage();
-      // New tags show once: opening the Locker Room counts as seeing them.
+      // New tags show once: opening the My Player counts as seeing them.
       writeList('thwapUnlockNew',[]); var dot=document.querySelector('.lk-btn .lk-dot'); if(dot) dot.remove();
     }).catch(function(code){
-      var g=el.querySelector('.lk-grid'); if(g) g.innerHTML="<div class='lk-msg'>"+(code===401?'Sign in to build your player.':'Your locker didn\u2019t open. Try again in a minute.')+"</div>";
+      var g=el.querySelector('.lk-grid'); if(g) g.innerHTML="<div class='lk-msg'>"+(code===401?'Sign in to build your player.':'Your player didn\u2019t load. Try again in a minute.')+"</div>";
       L.look={}; paintStage();
     });
   }
@@ -410,7 +410,7 @@
   // --- Unlock moment ---------------------------------------------------------
   // After a drill is marked done, ask the server what is unlocked now. Anything
   // not seen on this device before gets a short "New gear!" moment that never
-  // blocks the next tap, a New tag in the Locker Room, and a dot on its button.
+  // blocks the next tap, a New tag in the My Player, and a dot on its button.
   var toastTimer=null;
   function itemName(j,id){ for(var i=0;i<(j.items||[]).length;i++) if(j.items[i].id===id) return j.items[i]; return null; }
   function showToast(it,count){
@@ -418,7 +418,7 @@
     var short=it.id.slice(it.slot.length+1);
     var b=document.createElement('button'); b.type='button'; b.className='lk-toast'; b.setAttribute('role','status');
     b.innerHTML="<span class='lk-sw' style='background:"+swatch(it.slot,short)+"'></span><span>New gear! "+esc(it.label)+
-      (count>1?' and '+(count-1)+' more':'')+"<small>Tap to see it in the Locker Room</small></span>";
+      (count>1?' and '+(count-1)+' more':'')+"<small>Tap to try it on</small></span>";
     b.addEventListener('click',function(){ b.remove(); openLocker({tab:it.slot}); });
     document.body.appendChild(b);
     try{ if(window.thwapSfx) window.thwapSfx('cardOpen'); }catch(_){}
@@ -470,7 +470,7 @@
     window.addEventListener('hashchange',function(){ if(location.hash==='#locker') openLocker(); });
     if(!document.querySelector('.lk-btn') && document.body){
       if(!document.getElementById('lk-css')){ var s=document.createElement('style'); s.id='lk-css'; s.textContent=lockerCss(); document.head.appendChild(s); }
-      var b=document.createElement('button'); b.type='button'; b.className='lk-btn'; b.textContent='Locker Room';
+      var b=document.createElement('button'); b.type='button'; b.className='lk-btn'; b.textContent='My Player';
       b.addEventListener('click',function(){ openLocker(); }); document.body.appendChild(b);
     }
     if((readList('thwapUnlockNew')||[]).length) markDot();
