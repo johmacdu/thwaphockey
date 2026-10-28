@@ -39,7 +39,7 @@ describe('My Player', () => {
     const { w } = await open();
     expect(w.document.querySelector('.lk[role=dialog]')).toBeTruthy();
     expect(w.document.querySelector('.lk h2').textContent).toBe('My Player');
-    expect(w.document.querySelectorAll('.lk-tab').length).toBe(7);
+    expect(w.document.querySelectorAll('.lk-tab').length).toBe(8);
     expect(w.document.querySelector('.lk-stage .av-wrap')).toBeTruthy();
     expect(w.document.querySelector('.lk-btn')).toBeNull();
   });
@@ -89,14 +89,17 @@ describe('My Player', () => {
 });
 
 describe('first-run builder', () => {
-  it('a player with no saved look gets three steps, and Done saves once', async () => {
+  it('a player with no saved look gets four steps (skin, hair, hair color, jersey), and Done saves once', async () => {
     const { w, posts } = await open({ saved: false });
     const d = w.document;
-    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 1 of 3/);
+    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 1 of 4/);
     d.querySelector('[data-id=skin-s5]').click();
     expect(posts.length).toBe(0); // no save mid-build
     d.querySelector('[data-build=next]').click();
-    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 2 of 3.*hair/i);
+    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 2 of 4.*hockey hair/i);
+    d.querySelector('[data-id=hairstyle-mullet]').click();
+    d.querySelector('[data-build=next]').click();
+    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 3 of 4.*hair color/i);
     d.querySelector('[data-build=next]').click();
     const done = d.querySelector('[data-build=next]');
     expect(done.textContent).toBe('Done');
@@ -104,6 +107,7 @@ describe('first-run builder', () => {
     for (let i = 0; i < 6; i++) await tick();
     expect(posts.length).toBe(1);
     expect(posts[0].look.skin).toBe('skin-s5');
+    expect(posts[0].look.hairstyle).toBe('hairstyle-mullet');
     expect(w.sessionStorage.getItem('thwapReveal')).toBe('1');
   });
   it('Back returns to the previous step', async () => {
@@ -111,7 +115,33 @@ describe('first-run builder', () => {
     const d = w.document;
     d.querySelector('[data-build=next]').click();
     d.querySelector('[data-build=back]').click();
-    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 1 of 3/);
+    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 1 of 4/);
+  });
+});
+
+describe('hair styles', () => {
+  const STYLES = ['buzz', 'short', 'flow', 'lettuce', 'mullet', 'wings', 'curls', 'ponytail', 'braids', 'locs'];
+  it('every style is free from day one, even for a brand-new player', () => {
+    const owned = A.unlockedIds(A.progressFrom(null, 0));
+    for (const s of STYLES) expect(owned).toContain(`hairstyle-${s}`);
+  });
+  it('each style renders its own boxes, and an unknown style falls back to the default', async () => {
+    const { w } = await open();
+    const seen = new Set();
+    for (const s of STYLES) {
+      const h = w.thwapAvatar.html({ hairstyle: s, hair: 'blonde' });
+      expect(h).toContain('#D9B163'); // the hair color is used
+      seen.add(h);
+    }
+    expect(seen.size).toBe(STYLES.length); // no two styles draw the same thing
+    expect(w.thwapAvatar.html({ hairstyle: 'nope' })).toBe(w.thwapAvatar.html({ hairstyle: 'flow' }));
+  });
+  it('hair style tiles show a small back view of the player', async () => {
+    const { w } = await open();
+    w.document.querySelector('[data-tab=hairstyle]').click();
+    const tiles = w.document.querySelectorAll('.lk-item');
+    expect(tiles.length).toBe(STYLES.length);
+    expect(tiles[0].querySelector('.lk-mini .av-wrap')).toBeTruthy();
   });
 });
 
