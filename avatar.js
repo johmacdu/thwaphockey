@@ -31,7 +31,8 @@
   // hand: 'right' (righty, left hand on top) | 'left' (lefty, right hand on top).
   // facing: 'left' (3/4, default) | 'right' (3/4 the other way) | 'center' (head-on).
   // hairStyle: 'flow' (default) | 'short' | 'long'.
-  var DEFAULT_LOOK={ skin:'s3', hair:'brown', jersey:'red', num:'', hand:'right', facing:'left', hairStyle:'flow' };
+  // pose: 'oneHand' (one hand on the knob -- the clean card default) | 'twoHand' (ready grip).
+  var DEFAULT_LOOK={ skin:'s3', hair:'brown', jersey:'red', num:'', hand:'right', facing:'left', hairStyle:'flow', pose:'oneHand' };
 
   // --- Box builder ------------------------------------------------------------
   // All sizes are in em, so one font-size scales the whole character.
@@ -97,12 +98,21 @@
     var lefty=(look.hand==='left');
     function M(p){ return lefty?[-p[0],p[1],p[2]]:p; }
     var shTop=M([-4.6,22.4,1]), shBot=M([4.6,22.4,1]);       // shoulders
-    var elTop=M([-3.5,16.5,3.6]), elBot=M([4,14.6,4.2]);     // elbows (out to the side)
-    // hands out in FRONT of the body, lower: top hand on the knob, bottom hand a
-    // forearm's length down the shaft (betterhockey.com grip), blade flat on the ice.
-    var handTop=M([0.4,12.5,6]), handBot=M([1.2,9,7]);
-    var knob=M([0.1,13.7,5.7]), ice=M([3.2,0.7,9.6]);        // stick ends (knob -> ice)
-    var bladeToe=M([3.2,0.8,12.8]);                          // blade points forward along the ice
+    // Arm + stick points per pose. elTop/elBot are elbows (= Phase-3 elbow joints).
+    var elTop,elBot,handTop,handBot,knob,ice,bladeToe;
+    if(look.pose==='twoHand'){
+      // Two-handed ready grip: both hands in front, top hand on the knob, bottom a
+      // forearm down the shaft (betterhockey.com), blade flat on the ice.
+      elTop=M([-3.5,16.5,3.6]); elBot=M([4,14.6,4.2]);
+      handTop=M([0.4,12.5,6]); handBot=M([1.2,9,7]);
+      knob=M([0.1,13.7,5.7]); ice=M([3.2,0.7,9.6]); bladeToe=M([3.2,0.8,12.8]);
+    } else {
+      // One-handed knob hold (card default): top hand on the knob, stick angled down
+      // to the ice in front; the other arm hangs relaxed at the side.
+      elTop=M([-4.8,18,3.6]); handTop=M([-2.3,13.8,5.4]);
+      knob=M([-2.6,14.6,5.1]); ice=M([0.6,0.7,9.5]); bladeToe=M([0.6,0.8,12.7]);
+      elBot=M([5.3,17.4,1.4]); handBot=M([4.8,12.8,1.8]);   // right arm hangs at the side
+    }
     var backNum="<span class='av-num' style='color:"+J.num+"'>"+num+"</span>";
     var chestNum="<span class='av-num av-num-sm' style='color:"+J.num+"'>"+num+"</span>";
 
