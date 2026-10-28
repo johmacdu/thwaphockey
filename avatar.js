@@ -113,6 +113,12 @@
       knob=M([-2.6,14.6,5.1]); ice=M([0.6,0.7,9.5]); bladeToe=M([0.6,0.8,12.7]);
       elBot=M([5.3,17.4,1.4]); handBot=M([4.8,12.8,1.8]);   // right arm hangs at the side
     }
+    // Legs: hip -> knee -> ankle, knee pushed forward for an athletic bend.
+    // kneeBend is the forward (+z) offset; 0 = straight, bigger = deeper crouch.
+    // These are symmetric (not handedness-mirrored). The knee = Phase-3 knee joint.
+    var kneeBend=1.2;
+    var hipL=[-2.1,10,0], kneeL=[-2.1,6,kneeBend], ankL=[-2.1,2.4,.6];
+    var hipR=[2.1,10,0], kneeR=[2.1,6,kneeBend], ankR=[2.1,2.4,.6];
     var backNum="<span class='av-num' style='color:"+J.num+"'>"+num+"</span>";
     var chestNum="<span class='av-num av-num-sm' style='color:"+J.num+"'>"+num+"</span>";
 
@@ -127,9 +133,12 @@
       box({w:.5,h:.6,d:5.4,x:2.1,y:.3,z:.6,c:steel}),
       box({w:3,h:1.6,d:5,x:-2.1,y:1.4,z:.6,c:black,faces:{front:skateTex,back:skateTex,side:skateTex,top:skateTex,bottom:skateTex}}),
       box({w:3,h:1.6,d:5,x:2.1,y:1.4,z:.6,c:black,faces:{front:skateTex,back:skateTex,side:skateTex,top:skateTex,bottom:skateTex}}),
-      // Legs (socks over shin guards)
-      box({w:3.4,h:7.8,d:3.6,x:-2.1,y:6.1,c:J.body,faces:{front:sockTex,back:sockTex,side:sockTex,top:sockTex}}),
-      box({w:3.4,h:7.8,d:3.6,x:2.1,y:6.1,c:J.body,faces:{front:sockTex,back:sockTex,side:sockTex,top:sockTex}}),
+      // Legs (socks over shin guards): thigh (hip->knee) + shin (knee->ankle) so the
+      // knee bends into an athletic stance. Bend lives in the knee point above.
+      limb(hipL,kneeL,3.5,J.body,{front:sockTex,back:sockTex,side:sockTex,top:sockTex}),
+      limb(kneeL,ankL,3.4,J.body,{front:sockTex,back:sockTex,side:sockTex,top:sockTex}),
+      limb(hipR,kneeR,3.5,J.body,{front:sockTex,back:sockTex,side:sockTex,top:sockTex}),
+      limb(kneeR,ankR,3.4,J.body,{front:sockTex,back:sockTex,side:sockTex,top:sockTex}),
       // Pants
       box({w:8.6,h:4.6,d:4.8,y:12.3,c:black,faces:{front:pantsTex,back:pantsTex,side:pantsTex,top:pantsTex,bottom:pantsTex}}),
       // Torso (jersey over shoulder pads)
