@@ -6757,8 +6757,10 @@ function build(){
   var slug=first.toLowerCase().replace(/[^a-z]/g,'');
   var photo=document.getElementById('plPhoto');
   if(photo){
+    var avOn=false; try{ avOn=!!(window.thwapAvatar && window.thwapAvatar.on()); }catch(_){}
     var consent=null; try{ consent=localStorage.getItem('thwapCardPhoto:'+slug); }catch(e){}
-    if(consent){ photo.src=consent; photo.alt=esc(first)+' photo'; photo.style.display=''; }
+    if(avOn){ photo.removeAttribute('src'); photo.alt=''; photo.style.display='none'; }  /* character on: no player photos anywhere */
+    else if(consent){ photo.src=consent; photo.alt=esc(first)+' photo'; photo.style.display=''; }
     else if(slug==='lewie'){ photo.src='cards/lewie_photo.png'; photo.alt='Lewie photo'; photo.style.display=''; }
     else { photo.removeAttribute('src'); photo.alt=''; photo.style.display='none'; }  /* parents add their player's photo via the card flow */
   }
@@ -9146,6 +9148,8 @@ function parentGate(playerId, slug){
 
 /* PUBLIC: called by the card photo button. playerId = lowercase first name. */
 window.thwapPhotoEdit=function(playerId, hasPhoto, onDone){
+  /* Character on: photo upload is gone. Any old entry point opens Edit player. */
+  try{ if(window.thwapAvatar && window.thwapAvatar.on()){ window.thwapAvatar.openLocker({onClose:onDone}); return; } }catch(_){}
   var slug=slugOf(playerId);
   function afterPick(dataUrl){
     if(!dataUrl) return;
@@ -9181,6 +9185,8 @@ window.thwapPhotoRemove=function(playerId, onDone){
 /* PUBLIC: resolve the best photo URL for a player. Prefers the server photo,
    falls back to a locally-stored data URL. Calls cb(url|null). */
 window.thwapPhotoResolve=function(playerId, cb){
+  /* Character on: no player photos are fetched or shown (the character is the card). */
+  try{ if(window.thwapAvatar && window.thwapAvatar.on()){ cb(null); return; } }catch(_){}
   var slug=slugOf(playerId);
   var local=null; try{ local=localStorage.getItem(localKey(slug)); }catch(e){}
   fetch('/api/photo/get?playerId='+encodeURIComponent(playerId),{cache:'no-store'})
