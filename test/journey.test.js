@@ -20,7 +20,7 @@ describe('pacing', () => {
     [19, 3, 'Practice Ice', 1, 8],
     [23, 3, 'Practice Ice', 1, 4],
     [43, 6, 'Game Ready', 1, 8],
-    [90, 11, 'Tier 4', 3, 1],
+    [90, 11, 'Legend', 3, 1],
   ])('%i days -> %i steps, %s step %i, %i to go', (days, stepsDone, tier, step, toGo) => {
     const p = progressFor(days);
     expect(p).toMatchObject({ stepsDone, tier, step, daysToNextStep: toGo, complete: false });
@@ -28,7 +28,7 @@ describe('pacing', () => {
 
   it('caps at the top step and never overflows', () => {
     for (const days of [91, 96, 200]) {
-      expect(progressFor(days)).toMatchObject({ stepsDone: 12, complete: true, tier: 'Tier 4', step: 3, daysToNextStep: 0 });
+      expect(progressFor(days)).toMatchObject({ stepsDone: 12, complete: true, tier: 'Legend', step: 3, daysToNextStep: 0 });
     }
   });
 

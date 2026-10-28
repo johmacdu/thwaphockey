@@ -15,14 +15,14 @@ if(/[?&]embed=1\b/.test(location.search))document.documentElement.classList.add(
   --bg:#F3F7F4;--page:#FBFDFB;--card:#FFFFFF;--card2:#E7EEE8;--text:#15221B;--muted:#5F6F64;
   --line:#DCE5DE;--line2:#C9D5CC;--acc:#2F6B41;--lime:#B9F06B;--onlime:#15221B;
   --stick:#2F6B41;--shoot:#2E7BD6;--dry:#D9661A;--sample:#C25A12;--ph:#E2E8E3;--phtext:#7C8C82;
-  --shadow:rgba(20,40,25,.12);--paper:url(journey/art/paper.webp);
+  --shadow:rgba(20,40,25,.12);
   --fs-eyebrow:11px;--fs-support:14px;--fs-body:clamp(15px,4vw,17px);
   --fs-section:clamp(24px,6vw,30px);--fs-title:clamp(34px,9vw,52px);
 }
 html[data-theme='dark']{
   --bg:#0B130E;--page:#101A14;--card:#182420;--card2:#1E2B24;--text:#F3F7F4;--muted:#9DACA2;
   --line:#2A3831;--line2:#3A4A40;--acc:#B9F06B;--stick:#8fd65e;--shoot:#75B8FF;--dry:#FF9D4D;
-  --sample:#FF9D4D;--ph:#1A2620;--phtext:#6E7E74;--shadow:rgba(0,0,0,.4);--paper:url(journey/art/paper-dark.webp);
+  --sample:#FF9D4D;--ph:#1A2620;--phtext:#6E7E74;--shadow:rgba(0,0,0,.4);
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:'Nunito Sans',system-ui,sans-serif;font-size:var(--fs-body);line-height:1.4}
@@ -36,7 +36,7 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .note{font-size:12px;color:var(--muted);border-left:3px solid var(--sample);padding:4px 0 4px 10px;margin:0}
 
 /* A book page. The page itself is not interactive, it is the paper. */
-.pg{position:relative;background:var(--page) var(--paper);background-size:512px;border-radius:6px 18px 18px 6px;box-shadow:0 10px 30px var(--shadow),inset 6px 0 0 var(--line);padding:26px 22px 40px 28px;overflow:hidden}
+.pg{position:relative;background:var(--page);border-radius:6px 18px 18px 6px;box-shadow:0 10px 30px var(--shadow),inset 6px 0 0 var(--line);padding:26px 22px 40px 28px;overflow:hidden}
 .pg .folio{position:absolute;bottom:12px;right:20px;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.12em;color:var(--muted)}
 .pg h2{margin-bottom:4px}
 .rule{border:0;border-top:1px solid var(--line);margin:18px 0}
@@ -114,29 +114,15 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 /* BADGES: tappable tiles */
 .badgehead{display:grid;grid-template-columns:1fr 30%;align-items:end;gap:8px}
 .badgehead .art{--ar:1}
-.badges{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
-.badge{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 4px;text-align:center;min-height:48px;cursor:pointer;color:var(--text);font:inherit}
-.badge:focus-visible,.stamp:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.badges{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:14px}
+.badge{min-width:0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 4px;text-align:center;min-height:48px;cursor:pointer;color:var(--text);font:inherit}
+.badge:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
 .badge .art{--ar:1;border-radius:50%}
 .badge b{display:block;font-family:'Oswald',sans-serif;font-weight:600;font-size:11px;letter-spacing:.04em;text-transform:uppercase;margin-top:5px}
 .stars{color:var(--acc);font-size:12px;letter-spacing:1px}
 .stars .off{color:var(--line2)}
 .badge.locked .art{filter:grayscale(1);opacity:.4}
 
-/* STAMP BOOK */
-.month{margin-top:16px}
-.month h3{font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding-bottom:6px;border-bottom:1px solid var(--line)}
-.stamps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
-.stamp{background:none;border:0;padding:2px;cursor:pointer;color:var(--text);font:inherit;text-align:center;min-height:48px}
-.seal{position:relative;width:86%;aspect-ratio:1;margin:0 auto;transform:rotate(var(--r,-7deg))}
-.seal .ink{position:absolute;inset:0;border:3px solid var(--c,var(--acc));border-radius:50%;opacity:.9}
-html.has-stamp .seal .ink{border:0;background:var(--c,var(--acc));-webkit-mask:var(--m,url(journey/art/stamp.webp)) center/contain no-repeat;mask:var(--m,url(journey/art/stamp.webp)) center/contain no-repeat}
-.seal .d{position:absolute;inset:0;display:grid;place-items:center;font-family:'Archivo Black',sans-serif;font-size:12px;color:var(--c,var(--acc));text-align:center;line-height:1.05}
-html.has-stamp .seal .d{align-items:end;padding-bottom:16%;font-size:10px}
-.stamp .st{font-size:11px;color:var(--acc);letter-spacing:1px;margin-top:4px}
-.stamp .st .off{color:var(--line2)}
-.stamp.next .ink{border:2px dashed var(--line2)!important;background:none!important;-webkit-mask:none!important;mask:none!important}
-.stamp.next .d{color:var(--muted)}
 .specials{display:flex;gap:10px;margin-top:10px}
 .specials .art{--ar:1;width:72px;border-radius:50%}
 
@@ -207,7 +193,7 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     <div class="on" role="listitem"><div class="ic"><div class="art" data-art="tier-1.webp"><span>tier-1</span></div></div><b>Locker Room</b>Done</div>
     <div class="on" role="listitem"><div class="ic"><div class="art" data-art="tier-2.webp"><span>tier-2</span></div></div><b>Practice Ice</b>You are here</div>
     <div class="off" role="listitem"><div class="ic"><div class="art" data-art="tier-3.webp"><span>tier-3</span></div></div><b>Game Ready</b>Next stop</div>
-    <div class="off" role="listitem"><div class="ic"><div class="art" data-art="tier-4.webp"><span>tier-4</span></div></div><b>Tier 4</b>Name TBD</div>
+    <div class="off" role="listitem"><div class="ic"><div class="art" data-art="tier-4.webp"><span>tier-4</span></div></div><b>Legend</b>Later</div>
   </div>
   <div class="pips" id="jPips" role="progressbar" aria-valuemin="0" aria-valuemax="12" aria-valuenow="4" aria-label="Step 4 of 12 this season">
     <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="now"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
@@ -258,7 +244,7 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
   <div class="sf"><div class="art has"><img src="login/sass-celly.webp" alt="Sass celebrating"></div></div>
   <div class="sumgrid">
     <div><b id="jFinDays">96</b><span>Training days</span></div>
-    <div><b id="jFinTier">Tier 4</b><span>Highest tier</span></div>
+    <div><b id="jFinTier">Legend</b><span>Highest tier</span></div>
     <div data-sample><b>19</b><span>Badge stars</span></div>
     <div data-sample><b>24</b><span>Weeks of hockey</span></div>
   </div>
@@ -336,7 +322,6 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     img.onload=function(){ slot.insertBefore(img,slot.firstChild); slot.classList.add('has'); };
     img.src='journey/art/'+slot.getAttribute('data-art');
   });
-  var s=new Image(); s.onload=function(){document.documentElement.classList.add('has-stamp');}; s.src='journey/art/stamp.webp';
 })();
 // Embedded: tell the Journey page our height so it scrolls as one page.
 (function(){
