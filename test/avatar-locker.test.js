@@ -194,3 +194,23 @@ describe('card entry point (index.html)', () => {
     expect(INDEX).toContain('window.thwapOpenMyPlayer=function(opts){');
   });
 });
+
+describe('launch switch', () => {
+  const INDEX = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  it('ships OFF: LIVE is false, so only ?avatar=1 devices see the character', async () => {
+    expect(SRC).toMatch(/\n  var LIVE=false;\n/);
+    const { w } = await open();
+    expect(w.thwapAvatar.live).toBe(false);
+  });
+  it('LIVE=true turns the character on with no preview flag', () => {
+    const dom = new JSDOM('<!doctype html><html><head></head><body></body></html>', { url: 'https://thwaphockey.com/', runScripts: 'outside-only' });
+    dom.window.fetch = () => Promise.resolve({ ok: false, status: 401, json: () => Promise.resolve({}) });
+    dom.window.eval(SRC.replace('var LIVE=false;', 'var LIVE=true;'));
+    expect(dom.window.thwapAvatar.on()).toBe(true);
+  });
+  it('character on: no player photo is fetched, photo upload opens Edit player, stats photo hides', () => {
+    expect(INDEX).toMatch(/window\.thwapPhotoResolve=function\(playerId, cb\)\{\n  \/\*[^\n]*\*\/\n  try\{ if\(window\.thwapAvatar && window\.thwapAvatar\.on\(\)\)\{ cb\(null\); return; \} \}catch\(_\)\{\}/);
+    expect(INDEX).toMatch(/window\.thwapPhotoEdit=function\(playerId, hasPhoto, onDone\)\{\n  \/\*[^\n]*\*\/\n  try\{ if\(window\.thwapAvatar && window\.thwapAvatar\.on\(\)\)\{ window\.thwapAvatar\.openLocker\(\{onClose:onDone\}\); return; \} \}catch\(_\)\{\}/);
+    expect(INDEX).toContain("if(avOn){ photo.removeAttribute('src'); photo.alt=''; photo.style.display='none'; }");
+  });
+});
