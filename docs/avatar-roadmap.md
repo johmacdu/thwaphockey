@@ -19,8 +19,11 @@ Design and interaction rules live in `docs/avatar-design.md`.
 
 - **Character in code.** The body is CSS 3D boxes (`avatar.js`). A pose or
   celebration is a set of joint angles, so every item works in every pose.
-- **Art is textures and icons.** Generated with OpenAI on Woody's laptop, flat
-  (no baked lighting, the code shades the boxes), pushed on an `art/*` branch.
+- **Art is textures and icons.** In-rig box textures are authored **directly** as
+  flat palette-exact pixel tiles (hand pixel art / PIL), because image models bake
+  lighting and miss the grid -- and the code already shades the boxes. OpenAI stays
+  for the shaded **Locker Room item icons** and marketing/style renders. Flat (no
+  baked lighting), pushed on an `art/*` branch. See `docs/avatar-texture-spec.md`.
 - **Looks and unlocks on the server.** Each player's look syncs across devices.
   Unlocks are computed on the server from recorded completions, never from
   localStorage.
@@ -152,7 +155,10 @@ the hockey year, August to June, and rolls over in August.
 
 - [x] Plain-box character prototype (`avatar.js`, preview with `?avatar=1`,
   lab page `avatar-lab.html`)
-- [ ] Style test (Woody, other laptop)
-- [ ] Phase 1 texture spec, written to the chosen style
+- [x] Style test -> **A (pixel voxel) chosen** (`docs/avatar-style-test/`)
+- [x] Phase 1 texture spec, written to style A (`docs/avatar-texture-spec.md`)
+- [x] Flat-texture pipeline proof (jersey + helmet tiles render crisp + shade
+  cleanly in the rig; `avatar-tex/`)
+- [ ] Remaining Phase 1 texture kit (sleeves, socks, pants, gloves, skate, skin, hair)
 - [ ] Server look storage and unlock rules
 - [ ] Locker Room
