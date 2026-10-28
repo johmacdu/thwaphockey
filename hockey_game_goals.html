@@ -1854,12 +1854,12 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
       var pid=playerId(); if(!pid){ return; }
       var posts=doneCards().map(function(card){
         var h=card.querySelector('h2');
-        return fetch('/api/coach?action=log-game-goal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({playerId:pid,goalId:cardGoalId(card),goalTitle:h?h.textContent.trim():'',done:true,note:''})});
+        return fetch('/api/coach?action=log-game-goal',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({playerId:pid,goalId:cardGoalId(card),goalTitle:h?h.textContent.trim():'',done:true,note:''})});
       });
-      if(teachDone()){ var ta=document.getElementById('pgTeach'); posts.push(fetch('/api/coach?action=log-game-goal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({playerId:pid,goalId:'teach',goalTitle:'Taught Dad and Mom',done:true,note:ta?ta.value:''})})); }
+      if(teachDone()){ var ta=document.getElementById('pgTeach'); posts.push(fetch('/api/coach?action=log-game-goal',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({playerId:pid,goalId:'teach',goalTitle:'Taught Dad and Mom',done:true,note:ta?ta.value:''})})); }
       puckRain();
       pgSave.textContent='Logging...';
-      Promise.all(posts).then(function(){ pgSave.textContent='Log my goals'; var d=document.getElementById('pgLogDone'); if(d) d.hidden=false; }).catch(function(){ pgSave.textContent='Log my goals'; });
+      Promise.all(posts).then(function(rs){ if(rs.some(function(r){ return !r.ok; })){ pgSave.textContent='Sign in to log your goals'; return; } pgSave.textContent='Log my goals'; var d=document.getElementById('pgLogDone'); if(d) d.hidden=false; }).catch(function(){ pgSave.textContent='Log my goals'; });
     });
   }
   if(finalMode){ finalMode.addEventListener('change',function(){ if(finalMode.checked) syncLogBtn(); }); if(finalMode.checked) syncLogBtn(); }
