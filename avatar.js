@@ -116,7 +116,7 @@
     // Legs: hip -> knee -> ankle, knee pushed forward for an athletic bend.
     // kneeBend is the forward (+z) offset; 0 = straight, bigger = deeper crouch.
     // These are symmetric (not handedness-mirrored). The knee = Phase-3 knee joint.
-    var kneeBend=1.2;
+    var kneeBend=2;
     var hipL=[-2.1,10,0], kneeL=[-2.1,6,kneeBend], ankL=[-2.1,2.4,.6];
     var hipR=[2.1,10,0], kneeR=[2.1,6,kneeBend], ankR=[2.1,2.4,.6];
     var backNum="<span class='av-num' style='color:"+J.num+"'>"+num+"</span>";
@@ -139,6 +139,10 @@
       limb(kneeL,ankL,3.4,J.body,{front:sockTex,back:sockTex,side:sockTex,top:sockTex}),
       limb(hipR,kneeR,3.5,J.body,{front:sockTex,back:sockTex,side:sockTex,top:sockTex}),
       limb(kneeR,ankR,3.4,J.body,{front:sockTex,back:sockTex,side:sockTex,top:sockTex}),
+      // Knee caps (shin-guard kneepads): fill the joint gap at a deep bend and bulge
+      // the pad forward, so a hard knee bend reads clean instead of as a stair-step.
+      box({w:3.7,h:3,d:3.8,x:kneeL[0],y:kneeL[1],z:kneeL[2]+.3,c:J.body,faces:{front:sockTex,back:sockTex,side:sockTex,top:sockTex,bottom:sockTex}}),
+      box({w:3.7,h:3,d:3.8,x:kneeR[0],y:kneeR[1],z:kneeR[2]+.3,c:J.body,faces:{front:sockTex,back:sockTex,side:sockTex,top:sockTex,bottom:sockTex}}),
       // Pants
       box({w:8.6,h:4.6,d:4.8,y:12.3,c:black,faces:{front:pantsTex,back:pantsTex,side:pantsTex,top:pantsTex,bottom:pantsTex}}),
       // Torso (jersey over shoulder pads)
