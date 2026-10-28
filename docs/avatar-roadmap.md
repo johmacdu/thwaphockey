@@ -160,5 +160,15 @@ the hockey year, August to June, and rolls over in August.
 - [x] Flat-texture pipeline proof (jersey + helmet tiles render crisp + shade
   cleanly in the rig; `avatar-tex/`)
 - [x] Full Phase 1 texture kit (every part style-A pixel, 3 jersey colorways)
+- [x] Endpoint rig (`limb()`): two-handed ready grip, handedness mirror, `facing`
+  (left/right/center), `hairStyle` (flow/short/long)
+- [ ] One-handed hold pose + finer grip polish (quick, via the endpoint rig)
+- [ ] First-run builder (skin, hair+style, jersey+number, hand, facing)
 - [ ] Server look storage and unlock rules
 - [ ] Locker Room
+
+## Keep it fresh: spread items across the whole season
+
+Don't cluster a kind of item in one phase. Mix new items in throughout the season -- a new jersey here, a stick there, a pose, a celebration -- so there's always something new soon, not one big drop then nothing. The two-currency ladder sets the cadence; the item TYPES should be interleaved across it, not phase-siloed. (Poses especially: seed a couple early, not all in Phase 3.)
+
+Goalie: add a goalie gear kit (pads, blocker, catch glove, mask, goalie stick) when a served team has goalies. Pose is data; gear is art.

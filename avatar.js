@@ -28,7 +28,10 @@
     black:{ body:'#151515', stripe:'#C8102E', trim:'#FFFFFF', num:'#FFFFFF' },
     white:{ body:'#F2F2F2', stripe:'#C8102E', trim:'#111111', num:'#C8102E' }
   };
-  var DEFAULT_LOOK={ skin:'s3', hair:'brown', jersey:'red', num:'' };
+  // hand: 'right' (righty, left hand on top) | 'left' (lefty, right hand on top).
+  // facing: 'left' (3/4, default) | 'right' (3/4 the other way) | 'center' (head-on).
+  // hairStyle: 'flow' (default) | 'short' | 'long'.
+  var DEFAULT_LOOK={ skin:'s3', hair:'brown', jersey:'red', num:'', hand:'right', facing:'left', hairStyle:'flow' };
 
   // --- Box builder ------------------------------------------------------------
   // All sizes are in em, so one font-size scales the whole character.
@@ -51,6 +54,18 @@
     "</div>";
   }
 
+  // Connect two points p1->p2 (each [x,y,z], y up) with a box whose long axis is
+  // the line between them. Rotation is computed, so we pose by ENDPOINTS (shoulder
+  // to hand, knob to ice) instead of guessing angles -- exact, and a mirror for
+  // handedness is just negating x. (box() translates with -y, so CSS dir = [dx,-dY,dz].)
+  function limb(p1,p2,thick,c,faces){
+    var dx=p2[0]-p1[0], dY=p2[1]-p1[1], dz=p2[2]-p1[2];
+    var L=Math.sqrt(dx*dx+dY*dY+dz*dz)||0.001;
+    var ang=Math.acos(Math.max(-1,Math.min(1,dY/L)))*180/Math.PI;
+    var rot='rotate3d('+(-dz).toFixed(3)+',0,'+dx.toFixed(3)+','+ang.toFixed(2)+'deg)';
+    return box({w:thick,h:L,d:thick,x:(p1[0]+p2[0])/2,y:(p1[1]+p2[1])/2,z:(p1[2]+p2[2])/2,c:c,faces:faces,rot:rot});
+  }
+
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(ch){ return '&#'+ch.charCodeAt(0)+';'; }); }
 
   // --- Character ---------------------------------------------------------------
@@ -63,7 +78,7 @@
     var hair=HAIR[look.hair]||HAIR[DEFAULT_LOOK.hair];
     var J=JERSEY[look.jersey]||JERSEY[DEFAULT_LOOK.jersey];
     var num=esc(look.num);
-    var black='#141414', helmet=look.jersey==='white'?'#F2F2F2':'#141414', steel='#C9CED3';
+    var black='#141414', helmet=look.jersey==='white'?'#F2F2F2':'#141414', steel='#C9CED3', stickWood='#C5863C';
 
     // Jersey stripes + fabric grain now live in the flat pixel tiles (avatar-tex/).
     // Phase 1 pixel textures (style A). Flat tiles -- the code still shades each
@@ -76,6 +91,18 @@
     var pantsTex="url(avatar-tex/pants.png)";
     var gloveTex="url(avatar-tex/glove.png)";
     var skateTex="url(avatar-tex/skate.png)";
+
+    // Two-handed ready grip, posed by endpoints. Base layout is a RIGHTY shooter
+    // (left hand on top); lefty mirrors x (-> right hand on top, blade flips side).
+    var lefty=(look.hand==='left');
+    function M(p){ return lefty?[-p[0],p[1],p[2]]:p; }
+    var shTop=M([-4.6,22.4,1]), shBot=M([4.6,22.4,1]);       // shoulders
+    var elTop=M([-3.5,16.5,3.6]), elBot=M([4,14.6,4.2]);     // elbows (out to the side)
+    // hands out in FRONT of the body, lower: top hand on the knob, bottom hand a
+    // forearm's length down the shaft (betterhockey.com grip), blade flat on the ice.
+    var handTop=M([0.4,12.5,6]), handBot=M([1.2,9,7]);
+    var knob=M([0.1,13.7,5.7]), ice=M([3.2,0.7,9.6]);        // stick ends (knob -> ice)
+    var bladeToe=M([3.2,0.8,12.8]);                          // blade points forward along the ice
     var backNum="<span class='av-num' style='color:"+J.num+"'>"+num+"</span>";
     var chestNum="<span class='av-num av-num-sm' style='color:"+J.num+"'>"+num+"</span>";
 
@@ -97,16 +124,23 @@
       box({w:8.6,h:4.6,d:4.8,y:12.3,c:black,faces:{front:pantsTex,back:pantsTex,side:pantsTex,top:pantsTex,bottom:pantsTex}}),
       // Torso (jersey over shoulder pads)
       box({w:9.6,h:9.4,d:5.4,y:19.3,c:J.body,faces:{front:jTex,back:jTex,side:jTex,top:jTex},frontInner:chestNum,backInner:backNum}),
-      // Arms, slightly forward in a ready stance
-      box({w:3.4,h:8.4,d:3.6,x:-6.6,y:19.6,z:1,c:J.body,faces:{front:slvTex,back:slvTex,side:slvTex,top:slvTex},rot:'rotateX(18deg)'}),
-      box({w:3.4,h:8.4,d:3.6,x:6.6,y:19.6,z:1,c:J.body,faces:{front:slvTex,back:slvTex,side:slvTex,top:slvTex},rot:'rotateX(18deg)'}),
-      // Gloves
-      box({w:3.8,h:3.6,d:4,x:-6.6,y:14.4,z:2.6,c:black,faces:{front:gloveTex,back:gloveTex,side:gloveTex,top:gloveTex,bottom:gloveTex}}),
-      box({w:3.8,h:3.6,d:4,x:6.6,y:14.4,z:2.6,c:black,faces:{front:gloveTex,back:gloveTex,side:gloveTex,top:gloveTex,bottom:gloveTex}}),
+      // Arms: upper arm (shoulder->elbow) + forearm (elbow->hand) so they bend to
+      // the stick naturally. Both hands land on the shaft (ready grip).
+      limb(shTop,elTop,3.4,J.body,{front:slvTex,back:slvTex,side:slvTex,top:slvTex}),
+      limb(elTop,handTop,3.2,J.body,{front:slvTex,back:slvTex,side:slvTex,top:slvTex}),
+      limb(shBot,elBot,3.4,J.body,{front:slvTex,back:slvTex,side:slvTex,top:slvTex}),
+      limb(elBot,handBot,3.2,J.body,{front:slvTex,back:slvTex,side:slvTex,top:slvTex}),
+      // Gloves at the two grip points
+      box({w:3.8,h:3.4,d:3.8,x:handTop[0],y:handTop[1],z:handTop[2],c:black,faces:{front:gloveTex,back:gloveTex,side:gloveTex,top:gloveTex,bottom:gloveTex}}),
+      box({w:3.8,h:3.4,d:3.8,x:handBot[0],y:handBot[1],z:handBot[2],c:black,faces:{front:gloveTex,back:gloveTex,side:gloveTex,top:gloveTex,bottom:gloveTex}}),
       // Head
       box({w:7.6,h:7.6,d:7.6,y:28,c:skin,frontInner:faceInner}),
-      // Hair flow out the back of the helmet
-      box({w:6.8,h:2.4,d:1.4,y:25.3,z:-4.2,c:hair}),
+      // Hair style: what flows out the back of the helmet (flow / short / long)
+      (look.hairStyle==='short'
+        ? box({w:6.9,h:1.1,d:1,y:24.5,z:-4,c:hair})
+        : look.hairStyle==='long'
+        ? box({w:7,h:4.6,d:1.7,y:23.4,z:-4.4,c:hair})
+        : box({w:6.8,h:2.4,d:1.4,y:25.3,z:-4.2,c:hair})),
       // Helmet shell (top + back half), leaves the face open for the cage
       box({w:8.4,h:2.6,d:8.4,y:31.3,c:helmet,faces:{front:helTex,back:helTex,side:helTex,top:helTex,bottom:helTex}}),
       box({w:8.4,h:4.6,d:2.4,y:28.2,z:-3.2,c:helmet,faces:{front:helTex,back:helTex,side:helTex,top:helTex,bottom:helTex}}),
@@ -114,11 +148,15 @@
       box({w:1,h:4.8,d:5.6,x:4.2,y:27.9,z:.6,c:helmet,faces:{front:helTex,back:helTex,side:helTex,top:helTex,bottom:helTex}}),
       // Cage
       "<div class='av-b' style='transform:translate3d(0,-27.4em,4.3em)'>"+face('av-cage',7.8,6.4,'none',cageBg)+"</div>",
-      // Stick: shaft from the right glove to the ice, blade forward
-      box({w:.7,h:15.6,d:.7,x:5.4,y:7.6,z:5.2,c:'#2B2B2B',rot:'rotateX(-24deg) rotateZ(-8deg)'}),
-      box({w:4.4,h:1.2,d:.6,x:2.9,y:.6,z:8.2,c:'#2B2B2B'})
+      // Stick (knob -> ice shaft, white tape at the heel, blade along the ice to the
+      // toe). BASE stick; unlocked sticks (chrome/gold/etc.) recolor these same boxes.
+      limb(knob,ice,1.3,stickWood),
+      box({w:1.5,h:1.6,d:1.6,x:ice[0],y:2.2,z:ice[2]-0.4,c:'#E8E8E8'}),
+      box({w:1.4,h:2.2,d:(bladeToe[2]-ice[2]),x:ice[0],y:1.3,z:(ice[2]+bladeToe[2])/2,c:'#232323'})
     ];
-    return "<div class='av-wrap' aria-hidden='true'><div class='av-scene'>"+parts.join('')+"</div></div>";
+    // Facing: rotate the whole scene. Left is the default 3/4 view.
+    var faceY=(look.facing==='right')?25:((look.facing==='center')?0:-25);
+    return "<div class='av-wrap' aria-hidden='true'><div class='av-scene' style='transform:rotateX(-10deg) rotateY("+faceY+"deg)'>"+parts.join('')+"</div></div>";
   }
 
   // Look for a player: own saved look on this device, else the default with

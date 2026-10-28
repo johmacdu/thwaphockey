@@ -113,3 +113,25 @@ Push the winner, or all three, on `art/avatar-style-test`.
 - In the app: add `?avatar=1` to any URL. This device then shows characters in
   every card's photo slot. `?avatar=0` turns it off. Players never see it
   unless they add the flag.
+
+## Customization + grip (decided Oct 2026)
+
+Style chosen: **A, pixel voxel** (works 10U-14U; see `avatar-style-test/`).
+
+**Customization axes** (all are `look` fields; the builder sets them, syncs server-side later):
+- `skin` (6 tones), `hair` color (6), `jersey` (red/black/white) + `num` -- already live.
+- `hairStyle`: flow (default) / short / long. Hair reads mostly where it shows out the back of the helmet.
+- `hand`: righty (left hand on top) / lefty (right hand on top). Flips the whole grip + stick side (a clean x-mirror in code).
+- `facing`: left (default 3/4) / right (3/4 the other way) / center (head-on). Just rotates the scene.
+- `pose` (Phase 3): ready grip (default), plus discipline poses (shooting, passing, Hockey IQ, dryland, stickhandling; goalie). A pose is joint angles, so every item works in every pose.
+
+**How a stick is held** (from betterhockey.com, used to pose the rig):
+- Two-handed ready grip (default): **top hand on the knob** (very end of the shaft), **bottom hand ~a forearm's length down** (roughly shoulder-width apart), **both hands out in front of the body**, **blade flat on the ice in front**.
+- One-handed (a pose option): just the **top hand on the knob**, bottom hand off -- a reach, for pulling a puck at arm's length.
+- Handedness: **lefty = right hand on top, righty = left hand on top**, and the **blade flips to the matching side**.
+
+**Rig note:** arms and stick are posed by ENDPOINTS (shoulder->elbow->hand, knob->ice) via a `limb()` helper that computes the rotation. So a pose is just a set of points, handedness is a mirror, and the elbow point is the Phase-3 elbow joint.
+
+## Goalie (future)
+
+A goalie needs its own gear set -- leg pads, blocker, catch glove, goalie mask, goalie stick -- which is a separate art kit (not the skater kit). The pose (goalie stance) is on the Phase-3 list; the gear kit is the art add. Worth doing if the teams served have goalies ("net play for goalies" is already a discipline).
