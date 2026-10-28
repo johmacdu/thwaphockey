@@ -521,7 +521,7 @@ describe('coach roster: head + assistants', () => {
   it('seeds the head from the team coachEmail on first read', async () => {
     await loginSeedCoach();
     const res = makeRes();
-    await _handlers.teamCoaches(get({ code: _seed.SEED_TEAM_CODE }), res);
+    await _handlers.teamCoaches(get({ code: _seed.SEED_TEAM_CODE, coachToken: (await loginSeedCoach()).body.token }), res);
     expect(res.statusCode).toBe(200);
     const head = res.body.coaches.find((c) => c.role === 'head');
     expect(head.email).toBe(_seed.SEED_COACH_EMAIL);
@@ -560,6 +560,78 @@ describe('coach roster: head + assistants', () => {
     const res = makeRes();
     await _handlers.inviteCoach(post({ code: _seed.SEED_TEAM_CODE, email: 'x@x.com' }), res);
     expect(res.statusCode).toBe(401);
+  });
+});
+
+describe('team-coaches: coach emails only for that team\'s coaches', () => {
+  async function strangerToken() {
+    const r = makeRes();
+    await _handlers.coachRegister(post({ email: 'stranger@example.com', password: 'secret123', name: 'Stranger' }), r);
+    return r.body.token;
+  }
+
+  it('a caller with only the team code gets names and roles, no emails', async () => {
+    await loginSeedCoach();
+    const res = makeRes();
+    await _handlers.teamCoaches(get({ code: _seed.SEED_TEAM_CODE }), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.coaches.length).toBeGreaterThan(0);
+    for (const c of res.body.coaches) {
+      expect(c).not.toHaveProperty('email');
+      expect(c.role).toBeTruthy();
+    }
+    expect(JSON.stringify(res.body)).not.toContain(_seed.SEED_COACH_EMAIL);
+  });
+
+  it('a signed-in player gets no emails either', async () => {
+    await loginSeedCoach();
+    const res = makeRes();
+    await _handlers.teamCoaches(asPlayer('alder', get({ code: _seed.SEED_TEAM_CODE })), res);
+    expect(JSON.stringify(res.body)).not.toContain(_seed.SEED_COACH_EMAIL);
+  });
+
+  it('a coach of a different team gets no emails', async () => {
+    await loginSeedCoach();
+    const token = await strangerToken();
+    const res = makeRes();
+    await _handlers.teamCoaches(get({ code: _seed.SEED_TEAM_CODE, coachToken: token }), res);
+    expect(res.statusCode).toBe(200);
+    expect(JSON.stringify(res.body)).not.toContain(_seed.SEED_COACH_EMAIL);
+  });
+
+  it('set-coach-profile from a coach who does not run the team returns no emails', async () => {
+    await loginSeedCoach();
+    const token = await strangerToken();
+    const res = makeRes();
+    await _handlers.setCoachProfile(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, name: 'Stranger' }), res);
+    expect(res.statusCode).toBe(200);
+    expect(JSON.stringify(res.body)).not.toContain(_seed.SEED_COACH_EMAIL);
+  });
+
+  it('an admin gets the emails', async () => {
+    await loginSeedCoach();
+    const res = makeRes();
+    await _handlers.teamCoaches({ ...get({ code: _seed.SEED_TEAM_CODE }), headers: { authorization: 'Bearer admin-test-token' } }, res);
+    expect(res.body.coaches.find((c) => c.role === 'head').email).toBe(_seed.SEED_COACH_EMAIL);
+  });
+
+  it('the coach view sends its coachToken when it loads the coaches strip', async () => {
+    const { readFileSync } = await import('node:fs');
+    const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+    expect(html).toMatch(/action=team-coaches&code='\+encodeURIComponent\(code\)\+'&coachToken='\+encodeURIComponent\(coach\.token\)/);
+  });
+
+  it('the head coach still sees emails, so remove-coach keeps working', async () => {
+    const token = (await loginSeedCoach()).body.token;
+    await _handlers.inviteCoach(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, email: 'asst@x.com' }), makeRes());
+    const list = makeRes();
+    await _handlers.teamCoaches(get({ code: _seed.SEED_TEAM_CODE, coachToken: token }), list);
+    const asst = list.body.coaches.find((c) => c.role === 'assistant');
+    expect(asst.email).toBe('asst@x.com');
+    const rm = makeRes();
+    await _handlers.removeCoach(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, email: asst.email }), rm);
+    expect(rm.statusCode).toBe(200);
+    expect(rm.body.coaches.some((c) => c.email === 'asst@x.com')).toBe(false);
   });
 });
 

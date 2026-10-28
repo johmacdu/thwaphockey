@@ -814,6 +814,9 @@ async function setCoachProfile(req, res) {
     const team = await getTeam(body.code);
     if (team.coachEmail) await ensureHeadCoach(body.code, team.coachEmail);
     coaches = await enrichCoaches(body.code);
+    // Any registered coach can name any team code here, so emails only go back
+    // to a coach who runs that team.
+    if (!(await coachRunsTeam(coach, body.code))) coaches = withoutCoachEmails(coaches);
   }
   return res.status(200).json({ ok: true, coaches });
 }
@@ -968,14 +971,32 @@ async function enrichCoaches(code) {
   return out;
 }
 
+// Coach emails are contact details. A team code is shared with every family, so
+// it is not enough to read them: only a coach who runs this team (or an admin)
+// gets emails. Everyone else gets name, role and photo, which is all the player
+// and parent banner shows.
+function withoutCoachEmails(list) {
+  return (list || []).map(({ email, ...rest }) => rest);
+}
+async function canSeeCoachEmails(req, code) {
+  const coach = await coachFromReq(req);
+  if (coach && (await coachRunsTeam(coach, code))) return true;
+  return isAdminReq(req);
+}
+
 async function teamCoaches(req, res) {
   if (!methodGuard(req, res, 'GET')) return;
   const code = (req.query && req.query.code) || SEED_TEAM_CODE;
   const team = await getTeam(code);
   if (!team) return res.status(404).json({ error: 'unknown team' });
   if (team.coachEmail) await ensureHeadCoach(code, team.coachEmail);
+  const coaches = await enrichCoaches(code);
   res.setHeader('Cache-Control', 'no-store');
-  return res.status(200).json({ ok: true, coaches: await enrichCoaches(code), maxAssistants: MAX_ASSISTANTS });
+  return res.status(200).json({
+    ok: true,
+    coaches: (await canSeeCoachEmails(req, code)) ? coaches : withoutCoachEmails(coaches),
+    maxAssistants: MAX_ASSISTANTS,
+  });
 }
 
 // POST invite an assistant coach (head only, capped at MAX_ASSISTANTS). Adds them
@@ -1116,14 +1137,21 @@ async function beta(req, res) {
   return res.status(200).json({ ok: true, betaUntil: await getBetaUntil(code) });
 }
 
-// Register a device push token (from the Capacitor native shell). Keyed to the
-// signed-in player when known so a later server-side push can target their
-// devices. No auth gate: a token alone is not sensitive and the native shell
-// only ever posts its own device's token.
+// Register a device push token (from the Capacitor native shell). Linking a
+// device to a player decides who receives that player's pushes, so it needs the
+// signed-in player (thwapSession cookie) or a coach who runs the player's team,
+// via the same authorizePlayerWrite gate as the other player writes. The token is
+// stored only under the authorized player: a body `player` naming someone else
+// is refused, never written. The current shell registers through
+// /api/push?action=register; this route stays for older builds.
 async function pushRegister(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
   const { token, platform, player } = parseBody(req);
-  const result = await savePushToken({ token, platform, player });
+  if (!String(token || '').trim()) return res.status(400).json({ error: 'token required' });
+  const pid = String(player || sessionPlayerId(req) || '').trim().toLowerCase();
+  if (!pid) return res.status(401).json({ error: 'session required' });
+  if (!(await authorizePlayerWrite(req, res, pid))) return;
+  const result = await savePushToken({ token, platform, player: pid });
   if (!result.ok) return res.status(400).json({ error: result.error || 'token required' });
   return res.status(200).json({ ok: true });
 }
