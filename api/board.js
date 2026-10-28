@@ -18,7 +18,7 @@
 // store. The sender is NEVER taken from the body: it is the signed-in session, so
 // a kid cannot cheer as someone else.
 
-import { listPlayers, weekBoard, listCheers, sendCheer, listFires, sendFire, isRosterPlayer, ROSTER, getRecentCheerers, getRecentFirers, getTrainingDays, getDrillEvents, getCheersSent, GOALIE_IDS, localDateStr } from '../lib/store.js';
+import { listPlayers, weekBoard, currentTeamGoal, listCheers, sendCheer, listFires, sendFire, isRosterPlayer, ROSTER, getRecentCheerers, getRecentFirers, getTrainingDays, getDrillEvents, getCheersSent, GOALIE_IDS, localDateStr } from '../lib/store.js';
 import { journeyFor, badgesFor } from '../lib/journey.js';
 import { getMember, getTeam } from '../lib/teams_store.js';
 import { verifySession, readSessionCookie } from '../lib/session_store.js';
@@ -184,10 +184,11 @@ export default async function handler(req, res) {
   // Read the roster for the requested timeframe AND the cheer + fire counts
   // together, then merge both onto each player by id. listCheers / listFires each
   // mirror the mget pattern so this is two extra round trips, not one per player.
-  const [players, cheers, fires] = await Promise.all([
+  const [players, cheers, fires, teamGoal] = await Promise.all([
     tf === 'week' ? weekBoard() : listPlayers(),
     listCheers(),
     listFires(),
+    tf === 'week' ? currentTeamGoal() : null,
   ]);
   const cheerById = {};
   for (const c of cheers) cheerById[c.id] = c.cheers;
@@ -200,5 +201,8 @@ export default async function handler(req, res) {
   }));
 
   res.setHeader('Cache-Control', 'no-store');
+  // This week's adaptive team goal rides along with the weekly board (the bar
+  // reads it). History stays server-side.
+  if (teamGoal) return res.status(200).json({ players: withCheers, teamGoal: { goal: teamGoal.goal, weekStart: teamGoal.weekStart } });
   return res.status(200).json({ players: withCheers });
 }
