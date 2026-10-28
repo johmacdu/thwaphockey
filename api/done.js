@@ -43,7 +43,6 @@
 // Other    -> 405
 
 import {
-  ROSTER,
   DISCIPLINES,
   disciplinesFor,
   bumpPlayer,
@@ -58,6 +57,7 @@ import {
 import { verifySession, readSessionCookie } from '../lib/session_store.js';
 import { getMember } from '../lib/teams_store.js';
 import { isGated } from '../lib/billing_store.js';
+import { resolvePlayer } from '../lib/team_players.js';
 
 // Build a name-stable drill id '<disc>#<slug>' from a discipline key and a drill
 // NAME. This is the key the stat week-detail matches against, because the
@@ -74,10 +74,11 @@ function nameSlugId(disc, name) {
   return `${disc}#${slug}`;
 }
 
-// Look up a roster entry by player id (lowercase first name).
-function findPlayer(id) {
-  const wanted = String(id || '').toLowerCase();
-  return ROSTER.find((p) => p.id === wanted) || null;
+// Look up a player by id on ANY team (lib/team_players.js). The 16 original
+// Jr. Rangers 10U players always resolve, even with no member record; any other
+// player must be on a team's members list. Unknown -> null.
+async function findPlayer(id) {
+  return resolvePlayer(id);
 }
 
 // Seasonal-billing gate for the acting player (server enforcement). A gated
@@ -140,7 +141,7 @@ async function handleGet(req, res) {
   }
   // The session player is the ONLY id trusted here (no client-sent id), so one
   // player can never read or spoof another's completion state.
-  const entry = findPlayer(claims.playerId);
+  const entry = await findPlayer(claims.playerId);
   if (!entry) {
     return res.status(400).json({ error: 'unknown player' });
   }
@@ -194,8 +195,8 @@ export default async function handler(req, res) {
   const undo = body.undo === true || body.undo === 'true';
   const backfill = body.backfill === true || body.backfill === 'true';
 
-  // Validate player exists on the roster (needed for both bump and drill paths).
-  const entry = findPlayer(player);
+  // Validate the player exists on a team (needed for both bump and drill paths).
+  const entry = await findPlayer(player);
   if (!entry) {
     return res.status(400).json({ error: 'unknown player' });
   }

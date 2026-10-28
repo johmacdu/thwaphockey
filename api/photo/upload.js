@@ -26,7 +26,7 @@ export default async function handler(req, res) {
   if (!uploadConfigured()) return res.status(503).json({ error: 'photo service not configured' });
 
   const { playerId, imageData } = parseBody(req);
-  if (!isRosterPlayer(playerId)) return res.status(400).json({ error: 'unknown player' });
+  if (!(await isRosterPlayer(playerId))) return res.status(400).json({ error: 'unknown player' });
 
   const tokenPlayer = verifyToken(bearer(req));
   if (!tokenPlayer || tokenPlayer !== String(playerId).toLowerCase()) {

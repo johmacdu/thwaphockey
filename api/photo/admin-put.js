@@ -28,7 +28,7 @@ export default async function handler(req, res) {
   if (!uploadConfigured()) return res.status(503).json({ error: 'photo service not configured' });
 
   const { playerId, imageData, consent } = parseBody(req);
-  if (!isRosterPlayer(playerId)) return res.status(400).json({ error: 'unknown player' });
+  if (!(await isRosterPlayer(playerId))) return res.status(400).json({ error: 'unknown player' });
 
   // Consent is mandatory and must name a real out-of-band method + who granted it.
   const c = consent && typeof consent === 'object' ? consent : {};

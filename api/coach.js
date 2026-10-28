@@ -22,6 +22,10 @@
 //   POST ?action=log-game-goal  { playerId, goalId, goalTitle, done, note, coachToken? } -> append game-goal
 //                                 check-off (thwapSession for that player, or a coach of the player's team)
 //   GET  ?action=game-goal-log  { playerId }                      -> recent check-offs
+//   POST ?action=save-game-goals { gameId?, goalIds }             -> save the signed-in player's own
+//                                 Game Day Goals picks for a game (thwapSession only; no gameId = next game)
+//   GET  ?action=my-game-goals  { gameId?, playerId?, coachToken? } -> { gameDay, game, goals, teamGoal }
+//                                 for the signed-in player, or a player on a team the coach runs
 //
 // Coach auth: a coach session token (reuses lib/session_store's HMAC mint/verify,
 // with playerId = 'coach:<email>'). Password is checked against an HMAC hash so no
@@ -45,7 +49,10 @@ import {
   backfillSeedBeta, getBetaUntil,
   savePushToken,
 } from '../lib/teams_store.js';
-import { ensureSchedule, getSchedule, addEvent as addScheduleEvent, nextEvent } from '../lib/schedule_store.js';
+import { ensureSchedule, getSchedule, addEvent as addScheduleEvent, nextEvent, localDateStr } from '../lib/schedule_store.js';
+import { resolveSigninPlayer, RANGERS_TEAM_CODE } from '../lib/signin_players.js';
+import { GAME_GOAL_TARGET, gameGoalById } from '../lib/game_goals_catalog.js';
+import { getGamePick, setGamePick } from '../lib/game_picks_store.js';
 import { isGated, billingStatus } from '../lib/billing_store.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -1106,6 +1113,133 @@ async function gameGoalLogRead(req, res) {
   return res.status(200).json({ ok: true, log: (await getGameGoalLog(pid)).slice(-30).reverse() });
 }
 
+// --- Game Day Goals picks (server copy, for other devices and the watch) ----
+// Game day follows the web app's "next game" card: an event with kind 'game' on
+// today's Vancouver date (lib/schedule_store localDateStr). With no gameId the
+// target is the player's next game: the soonest kind 'game' event dated today or
+// later. A gameId names one event on the player's team schedule.
+
+// The player's team schedule. The Rangers seed team seeds its schedule on first
+// read (same as ?action=schedule); other teams read what their coach entered.
+async function teamScheduleFor(code) {
+  return code === RANGERS_TEAM_CODE ? ensureSchedule(code) : getSchedule(code);
+}
+function nextGameOf(sched, today) {
+  const games = (sched.events || [])
+    .filter((e) => e && e.kind === 'game' && e.date && e.date >= today)
+    .sort((a, b) => (a.date + (a.time || '99:99')).localeCompare(b.date + (b.time || '99:99')));
+  return games[0] || null;
+}
+// { game } or { error, status }. today is the Vancouver date.
+function resolvePickGame(sched, gameId, today) {
+  const gid = String(gameId || '').trim();
+  if (gid) {
+    const ev = (sched.events || []).find((e) => e && e.id === gid);
+    return ev ? { game: ev } : { status: 400, error: 'unknown game' };
+  }
+  const g = nextGameOf(sched, today);
+  return g ? { game: g } : { status: 409, error: 'no upcoming game' };
+}
+function isGameDay(game, today) {
+  if (!game || !game.date) return false;
+  return today >= game.date && today <= (game.endDate || game.date);
+}
+function publicGame(g) {
+  if (!g) return null;
+  return {
+    id: g.id, date: g.date, time: g.time || null, opponent: g.opponent || '',
+    home: !!g.home, place: g.place || '',
+  };
+}
+// How many goals a player may pick: the full plan minus the coach's team goal
+// slot, the same rule as selfCap in hockey_game_goals.html.
+function pickCap(teamGoalRec) {
+  return GAME_GOAL_TARGET - (teamGoalRec && String(teamGoalRec.text || '').trim() ? 1 : 0);
+}
+
+// POST ?action=save-game-goals { gameId?, goalIds }  -> save the SIGNED-IN
+// player's own picks. Only the thwapSession player may write; a body playerId
+// naming someone else is refused (403), never written. Coaches cannot write a
+// kid's picks.
+async function saveGameGoals(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  const selfId = sessionPlayerId(req);
+  if (!selfId) return res.status(401).json({ error: 'session required' });
+  const { gameId, goalIds, playerId } = parseBody(req);
+  if (playerId != null && String(playerId).trim() && String(playerId).trim().toLowerCase() !== selfId) {
+    return res.status(403).json({ error: 'not your account' });
+  }
+  if (!Array.isArray(goalIds)) return res.status(400).json({ error: 'goalIds must be a list' });
+  const ids = [];
+  for (const raw of goalIds) {
+    const id = String(raw || '').trim();
+    if (!gameGoalById(id)) return res.status(400).json({ error: 'unknown goal', goalId: id });
+    if (!ids.includes(id)) ids.push(id);
+  }
+  const player = await resolveSigninPlayer(selfId);
+  if (!player) return res.status(404).json({ error: 'unknown player' });
+  const today = localDateStr();
+  const sched = await teamScheduleFor(player.teamCode);
+  const r = resolvePickGame(sched, gameId, today);
+  if (!r.game) return res.status(r.status).json({ error: r.error });
+  const tg = await getTeamGoal(player.teamCode);
+  const max = pickCap(tg);
+  if (ids.length > max) return res.status(400).json({ error: 'too many goals', max });
+  const rec = await setGamePick(selfId, r.game.id, ids);
+  res.setHeader('Cache-Control', 'no-store');
+  return res.status(200).json({ ok: true, gameId: rec.gameId, goalIds: rec.goalIds, savedAt: rec.savedAt, max });
+}
+
+// GET ?action=my-game-goals [&gameId=] [&playerId=&coachToken=]
+//   -> { ok, playerId, gameDay, game, goals:[{id,title,emoji,cue}], teamGoal,
+//        savedAt, max }
+// The signed-in player reads their own. A coach who runs the player's team may
+// read a player by playerId. gameDay is true only on the game's Vancouver date.
+async function myGameGoals(req, res) {
+  if (!methodGuard(req, res, 'GET')) return;
+  const q = req.query || {};
+  const selfId = sessionPlayerId(req);
+  const asked = String(q.playerId || '').trim().toLowerCase();
+  let pid = '';
+  if (selfId && (!asked || asked === selfId)) {
+    pid = selfId;
+  } else {
+    const coach = await coachFromReq(req);
+    if (!coach && !selfId) return res.status(401).json({ error: 'session required' });
+    if (!asked) return res.status(400).json({ error: 'playerId required' });
+    const m = await resolveSigninPlayer(asked);
+    if (!coach || !m || !(await coachRunsTeam(coach, m.teamCode))) {
+      return res.status(403).json({ error: 'not your account' });
+    }
+    pid = asked;
+  }
+  const player = await resolveSigninPlayer(pid);
+  if (!player) return res.status(404).json({ error: 'unknown player' });
+  const today = localDateStr();
+  const sched = await teamScheduleFor(player.teamCode);
+  const teamGoalRec = await getTeamGoal(player.teamCode);
+  res.setHeader('Cache-Control', 'no-store');
+  const r = resolvePickGame(sched, q.gameId, today);
+  if (!r.game && r.status === 400) return res.status(400).json({ error: r.error });
+  const game = r.game || null;
+  const pick = game ? await getGamePick(pid, game.id) : null;
+  const goals = (pick ? pick.goalIds : [])
+    .map((id) => gameGoalById(id))
+    .filter(Boolean)
+    .map((g) => ({ id: g.id, title: g.title, emoji: g.emoji, cue: g.cue }));
+  return res.status(200).json({
+    ok: true,
+    playerId: pid,
+    gameDay: isGameDay(game, today),
+    game: publicGame(game),
+    goals,
+    saved: !!pick,
+    savedAt: pick ? pick.savedAt : null,
+    teamGoal: teamGoalRec || null,
+    max: pickCap(teamGoalRec),
+  });
+}
+
 // GET ?action=history&playerId=<pid>  -> the player's own review history:
 // their game-day goal + teach check-offs AND the full coach/player goal history.
 // Read-only and non-sensitive (a player's own goals), so no code is required to
@@ -1199,6 +1333,8 @@ export default async function handler(req, res) {
     case 'idp-goal': return idpGoal(req, res);
     case 'log-game-goal': return logGoal(req, res);
     case 'game-goal-log': return gameGoalLogRead(req, res);
+    case 'save-game-goals': return saveGameGoals(req, res);
+    case 'my-game-goals': return myGameGoals(req, res);
     case 'history': return historyRead(req, res);
     case 'push-register': return pushRegister(req, res);
     case 'beta': return beta(req, res);
@@ -1213,6 +1349,7 @@ export const _handlers = {
   adminRoster, adminUpdatePlayer,
   adminLogin, adminSetPassword, adminStatus,
   join, schedule, setIdp, idpGoal, logGoal, gameGoalLogRead, historyRead, setGamePosition,
+  saveGameGoals, myGameGoals,
   getPlan, setPlan, beta,
   teamGoal, setTeamGoal: setTeamGoalHandler,
   suggestDrill, drillSuggestions,
