@@ -3,7 +3,7 @@
 // POST /api/reset?player=<id>   (header: x-seed-key: <SEED_KEY>)
 //   or POST /api/reset  body: { player: "<id>" }
 //
-// Resets ONE player's live data on the Vancouver Jr Rangers store back to zero:
+// Resets ONE player's live data (any team) back to zero:
 // clears their counts (player:<id>), day history (days:<id>) and event log
 // (events:<id>). The player is kept on the board (rewritten to zeroed counts),
 // not deleted, so they still appear rather than vanishing.
@@ -19,12 +19,12 @@
 // Bad key   -> 403 { error: ... }
 // Non-POST  -> 405
 
-import { ROSTER, resetPlayer, getPlayer } from '../lib/store.js';
+import { resetPlayer, getPlayer } from '../lib/store.js';
+import { resolvePlayer } from '../lib/team_players.js';
 
-// Find a roster entry by id (lowercase first name).
-function findPlayer(id) {
-  const wanted = String(id || '').toLowerCase();
-  return ROSTER.find((p) => p.id === wanted) || null;
+// Find a player by id on ANY team (the 16 Jr. Rangers 10U players always resolve).
+async function findPlayer(id) {
+  return resolvePlayer(id);
 }
 
 // Parse the body whether Vercel parsed it (object) or handed us a raw string.
@@ -65,7 +65,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'missing player' });
   }
 
-  const entry = findPlayer(wanted);
+  const entry = await findPlayer(wanted);
   if (!entry) {
     return res.status(400).json({ error: 'unknown player' });
   }

@@ -15,7 +15,7 @@ export default async function handler(req, res) {
 
   const { email, playerId, code } = parseBody(req);
   const cleanEmail = String(email || '').trim().toLowerCase();
-  if (!cleanEmail || !isRosterPlayer(playerId) || !/^\d{6}$/.test(String(code || ''))) {
+  if (!cleanEmail || !(await isRosterPlayer(playerId)) || !/^\d{6}$/.test(String(code || ''))) {
     return res.status(400).json({ error: 'bad input' });
   }
 

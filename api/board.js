@@ -18,11 +18,12 @@
 // store. The sender is NEVER taken from the body: it is the signed-in session, so
 // a kid cannot cheer as someone else.
 
-import { listPlayers, weekBoard, currentTeamGoal, listCheers, sendCheer, listFires, sendFire, isRosterPlayer, ROSTER, getRecentCheerers, getRecentFirers, getTrainingDays, getDrillEvents, getCheersSent, GOALIE_IDS, localDateStr } from '../lib/store.js';
+import { listPlayers, weekBoard, currentTeamGoal, listCheers, sendCheer, listFires, sendFire, ROSTER, getRecentCheerers, getRecentFirers, getTrainingDays, getDrillEvents, getCheersSent, GOALIE_IDS, localDateStr } from '../lib/store.js';
 import { journeyFor, badgesFor } from '../lib/journey.js';
 import { getMember, getTeam } from '../lib/teams_store.js';
 import { verifySession, readSessionCookie } from '../lib/session_store.js';
 import { handleLooks, handleLookGet, handleLookPost } from '../lib/look_api.js';
+import { sameTeam, teamForRequest as boardTeam } from '../lib/team_players.js';
 
 // Parse the request body whether Vercel already parsed it (object) or handed us
 // a raw JSON string. Returns {} on anything unparseable. Mirrors api/done.js.
@@ -51,11 +52,12 @@ async function handleCheer(req, res) {
 
   const { to } = parseBody(req);
   const target = String(to || '').toLowerCase();
-  if (!target || !isRosterPlayer(target) || target === from) {
+  // Both players must be real and on the SAME team: no cross-team reactions.
+  if (!target || target === from || !(await sameTeam(from, target))) {
     return res.status(400).json({ error: 'bad target' });
   }
 
-  const result = await sendCheer(from, target);
+  const result = await sendCheer(from, target, { validated: true });
   if (!result.ok) {
     // Store-level rejection (self / off-roster) maps to a 400; the checks above
     // already cover these, so this is a belt-and-suspenders guard.
@@ -76,11 +78,12 @@ async function handleFire(req, res) {
 
   const { to } = parseBody(req);
   const target = String(to || '').toLowerCase();
-  if (!target || !isRosterPlayer(target) || target === from) {
+  // Both players must be real and on the SAME team: no cross-team reactions.
+  if (!target || target === from || !(await sameTeam(from, target))) {
     return res.status(400).json({ error: 'bad target' });
   }
 
-  const result = await sendFire(from, target);
+  const result = await sendFire(from, target, { validated: true });
   if (!result.ok) {
     return res.status(400).json({ error: result.error || 'rejected' });
   }
@@ -160,7 +163,8 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'session required' });
     }
     const me = String(claims.playerId || '').toLowerCase();
-    const givers = await getRecentCheerers(me);
+    const { ids } = await boardTeam(req);
+    const givers = await getRecentCheerers(me, ids);
     res.setHeader('Cache-Control', 'no-store');
     return res.status(200).json({ id: me, givers });
   }
@@ -174,21 +178,24 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'session required' });
     }
     const me = String(claims.playerId || '').toLowerCase();
-    const givers = await getRecentFirers(me);
+    const { ids } = await boardTeam(req);
+    const givers = await getRecentFirers(me, ids);
     res.setHeader('Cache-Control', 'no-store');
     return res.status(200).json({ id: me, givers });
   }
 
   const tf = req.query && req.query.tf;
+  // Scope every list to one team (the session player's, else Jr. Rangers 10U).
+  const { teamCode, ids } = await boardTeam(req);
 
   // Read the roster for the requested timeframe AND the cheer + fire counts
   // together, then merge both onto each player by id. listCheers / listFires each
   // mirror the mget pattern so this is two extra round trips, not one per player.
   const [players, cheers, fires, teamGoal] = await Promise.all([
-    tf === 'week' ? weekBoard() : listPlayers(),
-    listCheers(),
-    listFires(),
-    tf === 'week' ? currentTeamGoal() : null,
+    tf === 'week' ? weekBoard(ids) : listPlayers(ids),
+    listCheers(ids),
+    listFires(ids),
+    tf === 'week' ? currentTeamGoal({ teamCode, teamIds: ids }) : null,
   ]);
   const cheerById = {};
   for (const c of cheers) cheerById[c.id] = c.cheers;
