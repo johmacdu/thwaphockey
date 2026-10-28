@@ -3131,7 +3131,7 @@ window.thwapActiveTeam=function(coach){
       var assistants=coaches.filter(function(c){ return c.role==='assistant'; }).length;
       if(addAsstBtn) addAsstBtn.hidden=!(amHead && assistants<3);
     }
-    function load(){ fetch('/api/coach?action=team-coaches&code='+encodeURIComponent(code)).then(function(r){ return r.json(); }).then(function(j){ if(j&&j.ok) render(j.coaches||[]); }).catch(function(){}); }
+    function load(){ fetch('/api/coach?action=team-coaches&code='+encodeURIComponent(code)+'&coachToken='+encodeURIComponent(coach.token)).then(function(r){ return r.json(); }).then(function(j){ if(j&&j.ok) render(j.coaches||[]); }).catch(function(){}); }
     window.thwapReloadCoaches=function(coaches){ if(coaches){ render(coaches); } else { load(); } };
     load();
     /* Add assistant: opens a sheet (image, first, last, email, password). */

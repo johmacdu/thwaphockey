@@ -27,7 +27,8 @@ function setEnv() {
 }
 setEnv();
 
-const { _handlers } = await import('../api/coach.js');
+const await_seed = await import('../api/coach.js');
+const { _handlers } = await_seed;
 const store = await import('../lib/teams_store.js');
 
 function makeRes() {
@@ -82,6 +83,23 @@ describe('lib/teams_store.savePushToken', () => {
 });
 
 describe('api/coach.js ?action=push-register', () => {
+  const { _seed } = await_seed;
+  async function cookieFor(pid) {
+    const { mintSession, SESSION_COOKIE } = await import('../lib/session_store.js');
+    return `${SESSION_COOKIE}=${encodeURIComponent(mintSession(pid, `${pid}@example.com`))}`;
+  }
+  const withCookie = (req, cookie) => ({ ...req, headers: { ...(req.headers || {}), cookie } });
+  async function seedCoachToken() {
+    const r = makeRes();
+    await _handlers.coachLogin(post({ email: _seed.SEED_COACH_EMAIL, password: _seed.SEED_COACH_PASSWORD }), r);
+    return r.body.token;
+  }
+  async function strangerCoachToken() {
+    const r = makeRes();
+    await _handlers.coachRegister(post({ email: 'stranger@example.com', password: 'secret123', name: 'Stranger' }), r);
+    return r.body.token;
+  }
+
   it('is POST-only', async () => {
     const res = makeRes();
     await _handlers.pushRegister({ method: 'GET', query: {}, headers: {} }, res);
@@ -90,16 +108,58 @@ describe('api/coach.js ?action=push-register', () => {
 
   it('400s without a token', async () => {
     const res = makeRes();
-    await _handlers.pushRegister(post({ platform: 'ios' }), res);
+    await _handlers.pushRegister(withCookie(post({ platform: 'ios' }), await cookieFor('lewie')), res);
     expect(res.statusCode).toBe(400);
   });
 
-  it('registers a token and returns ok', async () => {
+  it('401s without a session and writes nothing', async () => {
     const res = makeRes();
     await _handlers.pushRegister(post({ token: 'xyz', platform: 'ios', player: 'lewie' }), res);
+    expect(res.statusCode).toBe(401);
+    expect(await fake.get('pushToken:xyz')).toBeFalsy();
+    expect(await fake.get('playerPush:lewie')).toBeFalsy();
+  });
+
+  it('403s when signed in as one player but linking another, and writes nothing', async () => {
+    const res = makeRes();
+    await _handlers.pushRegister(withCookie(post({ token: 'xyz', platform: 'ios', player: 'lewie' }), await cookieFor('alder')), res);
+    expect(res.statusCode).toBe(403);
+    expect(await fake.get('pushToken:xyz')).toBeFalsy();
+    expect(await fake.get('playerPush:lewie')).toBeFalsy();
+    expect(await fake.get('playerPush:alder')).toBeFalsy();
+  });
+
+  it('registers for the signed-in player (player taken from the session when the body omits it)', async () => {
+    const res = makeRes();
+    await _handlers.pushRegister(withCookie(post({ token: 'xyz', platform: 'ios' }), await cookieFor('lewie')), res);
     expect(res.statusCode).toBe(200);
     expect(res.body.ok).toBe(true);
-    expect(await fake.get('pushToken:xyz')).toBeTruthy();
+    expect((await fake.get('pushToken:xyz')).player).toBe('lewie');
+    expect(await fake.get('playerPush:lewie')).toEqual(['xyz']);
+  });
+
+  it('registers when the body player matches the session (the native bridge shape)', async () => {
+    const res = makeRes();
+    await _handlers.pushRegister(withCookie(post({ token: 'abc', platform: 'android', player: 'Lewie' }), await cookieFor('lewie')), res);
+    expect(res.statusCode).toBe(200);
+    expect(await fake.get('playerPush:lewie')).toEqual(['abc']);
+  });
+
+  it('lets a coach who runs the team register for a player on it', async () => {
+    const coachToken = await seedCoachToken();
+    const res = makeRes();
+    await _handlers.pushRegister(post({ token: 'ctok', platform: 'ios', player: _seed.SEED_CHILD_PLAYER_ID, coachToken }), res);
+    expect(res.statusCode).toBe(200);
+    expect(await fake.get(`playerPush:${_seed.SEED_CHILD_PLAYER_ID}`)).toEqual(['ctok']);
+  });
+
+  it('403s a coach who does not run the player\'s team, and writes nothing', async () => {
+    await seedCoachToken();
+    const coachToken = await strangerCoachToken();
+    const res = makeRes();
+    await _handlers.pushRegister(post({ token: 'stok', platform: 'ios', player: _seed.SEED_CHILD_PLAYER_ID, coachToken }), res);
+    expect(res.statusCode).toBe(403);
+    expect(await fake.get('pushToken:stok')).toBeFalsy();
   });
 });
 
