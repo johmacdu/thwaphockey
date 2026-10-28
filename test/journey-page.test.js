@@ -127,6 +127,12 @@ describe('signed in: cover', () => {
 });
 
 describe('signed in: tier path', () => {
+  it('page 1 is headed Where I Am, under a plain Page 1 eyebrow', async () => {
+    const w = await boot({ api: 401 });
+    expect($(w, 'h-journey').textContent).toBe('Where I Am');
+    expect($(w, 'h-journey').previousElementSibling.textContent.trim()).toBe('Page 1');
+  });
+
   it('a new player is on step 1 of Locker Room, 3 days from the next step', async () => {
     const w = await boot({ api: book() });
     expect($(w, 'jTier').textContent).toBe('Locker Room');
@@ -251,6 +257,8 @@ describe('Season Complete', () => {
     expect($(w, 'finale').hidden).toBe(false);
     expect($(w, 'jFinDays').textContent).toBe('45'); // 45 days: 6 steps, Game Ready starts at 43
     expect($(w, 'jFinTier').textContent).toBe('Game Ready');
+    // 45 consecutive days from Tue Sep 1 touch 7 Mon-Sun weeks.
+    expect($(w, 'jFinWeeks').textContent).toBe('7');
   });
 
   it('appears between seasons when signed out too', async () => {
