@@ -32,6 +32,36 @@
 //                                         every device. Keyed off the SESSION player,
 //                                         never a client-sent id, to prevent spoofing.
 //
+// GET  /api/done?view=today (session)  : the signed-in player's drill list for
+//                                         today, built by lib/drills.js (the SAME
+//                                         library, rotation, coach dryland picks and
+//                                         timer scripts index.html renders), with
+//                                         each drill's done flag:
+//   { ok, date, restDay, goalie, drills:[{ id, discipline, name, dose, cue,
+//     steps, timer:{type,sets,workSeconds,restSeconds,totalSeconds,script}|null,
+//     done }] }
+//   ids are the web's positional ids ('stick:0', 'shoot:1', 'dryland:2'); a
+//   goalie's Net play rows keep the 'shoot:' prefix with discipline 'netplay'.
+//   dose is the line the web shows under the name (dryland reps, stickhandling
+//   group, shooting theme). Saturday/Sunday: restDay true, drills [] (the web's
+//   optional weekend bonus reps are not part of this list).
+//
+// GET  /api/done?view=rings (session)  : this week's rings for the watch
+//                                         complication:
+//   { ok, week:{start,end}, goalie, rings:{ stick:{done,goal},
+//     shoot|netplay:{done,goal}, dryland:{done,goal} } }
+//   done = this Monday-based week's count (lib/store weekBoard, raw, can pass
+//   the goal); goal = the player view's per-discipline weekly goal (distinct
+//   activities in that discipline, lib/drills.js weekGoals). Goalies get
+//   netplay in place of shoot.
+//
+// Both views: 401 without a session, 403 when ?player= names someone else,
+// 400 for a session player no longer on any team. Any team (lib/team_players).
+//
+// Goalie: the member store's roster position decides, with the old fixed
+// GOALIE_IDS list as fallback (lib/positions.js). It drives the POST position
+// gate, both views, and the `goalie` flag on the plain GET.
+//
 // Day boundary: the server is authoritative. The per-day key uses the Vancouver
 // local date (lib/store localDateStr), the same "today" the streak/week math uses.
 // A client-sent day is NOT trusted for keying, so two devices in different raw
@@ -43,9 +73,7 @@
 // Other    -> 405
 
 import {
-  ROSTER,
   DISCIPLINES,
-  disciplinesFor,
   bumpPlayer,
   getPlayer,
   addDrillDone,
@@ -54,10 +82,15 @@ import {
   localDateStr,
   validBackdate,
   weekDates,
+  weekBoard,
 } from '../lib/store.js';
 import { verifySession, readSessionCookie } from '../lib/session_store.js';
 import { getMember } from '../lib/teams_store.js';
 import { isGated } from '../lib/billing_store.js';
+import { resolvePlayer } from '../lib/team_players.js';
+import { getTeamPlan } from '../lib/teams_store.js';
+import { isGoalie, disciplinesForPlayer } from '../lib/positions.js';
+import { todayList, weekGoals, dayIndexForDate, thirdDiscipline } from '../lib/drills.js';
 
 // Build a name-stable drill id '<disc>#<slug>' from a discipline key and a drill
 // NAME. This is the key the stat week-detail matches against, because the
@@ -74,10 +107,11 @@ function nameSlugId(disc, name) {
   return `${disc}#${slug}`;
 }
 
-// Look up a roster entry by player id (lowercase first name).
-function findPlayer(id) {
-  const wanted = String(id || '').toLowerCase();
-  return ROSTER.find((p) => p.id === wanted) || null;
+// Look up a player by id on ANY team (lib/team_players.js). The 16 original
+// Jr. Rangers 10U players always resolve, even with no member record; any other
+// player must be on a team's members list. Unknown -> null.
+async function findPlayer(id) {
+  return resolvePlayer(id);
 }
 
 // Seasonal-billing gate for the acting player (server enforcement). A gated
@@ -140,9 +174,23 @@ async function handleGet(req, res) {
   }
   // The session player is the ONLY id trusted here (no client-sent id), so one
   // player can never read or spoof another's completion state.
-  const entry = findPlayer(claims.playerId);
+  const entry = await findPlayer(claims.playerId);
   if (!entry) {
     return res.status(400).json({ error: 'unknown player' });
+  }
+  const goalie = await isGoalie(entry.id);
+  const view = String((req.query && req.query.view) || '');
+  if (view === 'today' || view === 'rings') {
+    // Self only: a ?player= naming anyone but the session player is refused.
+    const asked = String((req.query && req.query.player) || '').trim().toLowerCase();
+    if (asked && asked !== entry.id) {
+      return res.status(403).json({ error: 'not your account' });
+    }
+    res.setHeader('Cache-Control', 'no-store');
+    return view === 'today' ? viewToday(res, entry, goalie) : viewRings(res, entry, goalie);
+  }
+  if (view) {
+    return res.status(400).json({ error: 'unknown view' });
   }
   // ?week=1 : union the signed-in player's completed drill ids across the current
   // Monday-based week (self-only by construction, since the player is taken from
@@ -163,6 +211,7 @@ async function handleGet(req, res) {
       ok: true,
       player: entry.id,
       week: { start: days[0], end: days[days.length - 1] },
+      goalie,
       drills,
       disciplines: doneDisciplines(drills),
     });
@@ -174,8 +223,46 @@ async function handleGet(req, res) {
     ok: true,
     player: entry.id,
     date,
+    goalie,
     drills,
     disciplines: doneDisciplines(drills),
+  });
+}
+
+// GET ?view=today: today's list from the shared drill library, with done flags.
+async function viewToday(res, entry, goalie) {
+  const date = localDateStr();
+  let coachPlan = null;
+  try {
+    coachPlan = entry.teamCode ? await getTeamPlan(entry.teamCode) : null;
+  } catch {
+    coachPlan = null; // no plan -> built-in rotation, same as the web fallback
+  }
+  const list = todayList(dayIndexForDate(date), { goalie, coachPlan });
+  const done = new Set(await getDrillDone(entry.id, date));
+  return res.status(200).json({
+    ok: true,
+    date,
+    restDay: list.restDay,
+    goalie,
+    drills: list.drills.map((d) => ({ ...d, done: done.has(d.id) })),
+  });
+}
+
+// GET ?view=rings: this week's count toward each discipline's weekly goal.
+async function viewRings(res, entry, goalie) {
+  const days = weekDates();
+  const [row] = await weekBoard([entry.id]);
+  const goals = weekGoals(goalie);
+  const rings = {};
+  for (const disc of ['stick', thirdDiscipline(goalie), 'dryland']) {
+    rings[disc] = { done: (row && row[disc]) || 0, goal: goals[disc] };
+  }
+  return res.status(200).json({
+    ok: true,
+    week: { start: days[0], end: days[days.length - 1] },
+    goalie,
+    rings,
   });
 }
 
@@ -194,8 +281,8 @@ export default async function handler(req, res) {
   const undo = body.undo === true || body.undo === 'true';
   const backfill = body.backfill === true || body.backfill === 'true';
 
-  // Validate player exists on the roster (needed for both bump and drill paths).
-  const entry = findPlayer(player);
+  // Validate the player exists on a team (needed for both bump and drill paths).
+  const entry = await findPlayer(player);
   if (!entry) {
     return res.status(400).json({ error: 'unknown player' });
   }
@@ -261,13 +348,14 @@ export default async function handler(req, res) {
   }
 
   // Position gate: a player may only log a POSITION discipline that applies to
-  // their position. disciplinesFor() is the single source of truth (goalie ->
-  // netplay, skater -> shoot), so a mismatched write can never misfile work.
+  // their position. disciplinesForPlayer() (lib/positions.js: the member
+  // store's position, GOALIE_IDS fallback) decides goalie -> netplay, skater ->
+  // shoot, so a mismatched write can never misfile work.
   // `iq` (Hockey IQ) and `pass` (Passing) are UNIVERSAL disciplines every position
   // does, so they are exempt from the position gate -- they are intentionally NOT in
   // disciplinesFor (which stays the radar/participation triad), so they would fail
   // this check.
-  if (discipline !== 'iq' && discipline !== 'pass' && !disciplinesFor(entry.id).includes(discipline)) {
+  if (discipline !== 'iq' && discipline !== 'pass' && !(await disciplinesForPlayer(entry.id)).includes(discipline)) {
     return res.status(400).json({ error: 'discipline not for this position' });
   }
 

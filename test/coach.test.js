@@ -45,6 +45,17 @@ beforeEach(() => {
   setEnv();
 });
 
+// Attach a thwapSession cookie for `pid` to a request (player self-writes).
+async function asPlayerCookie(pid) {
+  const { mintSession, SESSION_COOKIE } = await import('../lib/session_store.js');
+  return `${SESSION_COOKIE}=${encodeURIComponent(mintSession(pid, `${pid}@example.com`))}`;
+}
+let _cookieCache = {};
+function asPlayer(pid, req) {
+  return { ...req, headers: { ...(req.headers || {}), cookie: _cookieCache[pid] } };
+}
+beforeEach(async () => { _cookieCache = { alder: await asPlayerCookie('alder') }; });
+
 describe('coach-login + seed', () => {
   it('seeds Jr Rangers and logs the coach in with the right password', async () => {
     const res = await loginSeedCoach();
@@ -193,7 +204,7 @@ describe('roster + participation + kid-owned identity', () => {
     await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, firstName: 'Twomail', number: 52, parentEmails: ['dad@example.com', 'mum@example.com'] }), makeRes());
 
     const list = makeRes();
-    await _handlers.roster(get({ code: _seed.SEED_TEAM_CODE }), list);
+    await _handlers.roster(get({ code: _seed.SEED_TEAM_CODE, coachToken: token }), list);
 
     const one = list.body.members.find((m) => m.playerId === 'emailkid');
     expect(one).toBeTruthy();
@@ -205,6 +216,12 @@ describe('roster + participation + kid-owned identity', () => {
 
     // every member carries the array (never undefined), even those with no email
     expect(list.body.members.every((m) => Array.isArray(m.parentEmails))).toBe(true);
+
+    // Without a coach who runs the team, nobody's parent emails come back.
+    const anon = makeRes();
+    await _handlers.roster(get({ code: _seed.SEED_TEAM_CODE }), anon);
+    expect(anon.body.members.length).toBe(list.body.members.length);
+    expect(anon.body.members.every((m) => m.parentEmails.length === 0)).toBe(true);
   });
 
   it('a second player with the same first name does NOT overwrite the first', async () => {
@@ -259,7 +276,7 @@ describe('IDP: monthly goal + game-goal log', () => {
   it('sets and reads a monthly personal goal', async () => {
     await loginSeedCoach();
     const setRes = makeRes();
-    await _handlers.setIdp(post({ playerId: 'alder', text: 'Work on backward skating', setBy: 'player' }), setRes);
+    await _handlers.setIdp(asPlayer('alder', post({ playerId: 'alder', text: 'Work on backward skating', setBy: 'coach' })), setRes);
     expect(setRes.statusCode).toBe(200);
     expect(setRes.body.idpGoal.text).toBe('Work on backward skating');
     expect(setRes.body.idpGoal.setBy).toBe('player');
@@ -272,7 +289,7 @@ describe('IDP: monthly goal + game-goal log', () => {
   it('logs a game-day-goal check-off with an optional note and reads it back', async () => {
     await loginSeedCoach();
     const logRes = makeRes();
-    await _handlers.logGoal(post({ playerId: 'alder', goalId: 'g1', goalTitle: 'Scan Twice', done: true, note: 'Looked up before every pass' }), logRes);
+    await _handlers.logGoal(asPlayer('alder', post({ playerId: 'alder', goalId: 'g1', goalTitle: 'Scan Twice', done: true, note: 'Looked up before every pass' })), logRes);
     expect(logRes.statusCode).toBe(200);
     expect(logRes.body.entry.done).toBe(true);
     expect(logRes.body.entry.note).toBe('Looked up before every pass');
@@ -284,9 +301,9 @@ describe('IDP: monthly goal + game-goal log', () => {
   });
 
   it('the player roll-up returns base-week counts + goal + game-goal log', async () => {
-    await loginSeedCoach();
-    await _handlers.setIdp(post({ playerId: 'alder', text: 'Saucer passes', setBy: 'coach' }), makeRes());
-    await _handlers.logGoal(post({ playerId: 'alder', goalId: 'g2', goalTitle: 'Change Speed', done: true }), makeRes());
+    const coachToken = (await loginSeedCoach()).body.token;
+    await _handlers.setIdp(post({ playerId: 'alder', text: 'Saucer passes', coachToken }), makeRes());
+    await _handlers.logGoal(post({ playerId: 'alder', goalId: 'g2', goalTitle: 'Change Speed', done: true, coachToken }), makeRes());
     const res = makeRes();
     await _handlers.playerRollup(get({ playerId: 'alder' }), res);
     expect(res.statusCode).toBe(200);
@@ -504,7 +521,7 @@ describe('coach roster: head + assistants', () => {
   it('seeds the head from the team coachEmail on first read', async () => {
     await loginSeedCoach();
     const res = makeRes();
-    await _handlers.teamCoaches(get({ code: _seed.SEED_TEAM_CODE }), res);
+    await _handlers.teamCoaches(get({ code: _seed.SEED_TEAM_CODE, coachToken: (await loginSeedCoach()).body.token }), res);
     expect(res.statusCode).toBe(200);
     const head = res.body.coaches.find((c) => c.role === 'head');
     expect(head.email).toBe(_seed.SEED_COACH_EMAIL);
@@ -543,6 +560,78 @@ describe('coach roster: head + assistants', () => {
     const res = makeRes();
     await _handlers.inviteCoach(post({ code: _seed.SEED_TEAM_CODE, email: 'x@x.com' }), res);
     expect(res.statusCode).toBe(401);
+  });
+});
+
+describe('team-coaches: coach emails only for that team\'s coaches', () => {
+  async function strangerToken() {
+    const r = makeRes();
+    await _handlers.coachRegister(post({ email: 'stranger@example.com', password: 'secret123', name: 'Stranger' }), r);
+    return r.body.token;
+  }
+
+  it('a caller with only the team code gets names and roles, no emails', async () => {
+    await loginSeedCoach();
+    const res = makeRes();
+    await _handlers.teamCoaches(get({ code: _seed.SEED_TEAM_CODE }), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.coaches.length).toBeGreaterThan(0);
+    for (const c of res.body.coaches) {
+      expect(c).not.toHaveProperty('email');
+      expect(c.role).toBeTruthy();
+    }
+    expect(JSON.stringify(res.body)).not.toContain(_seed.SEED_COACH_EMAIL);
+  });
+
+  it('a signed-in player gets no emails either', async () => {
+    await loginSeedCoach();
+    const res = makeRes();
+    await _handlers.teamCoaches(asPlayer('alder', get({ code: _seed.SEED_TEAM_CODE })), res);
+    expect(JSON.stringify(res.body)).not.toContain(_seed.SEED_COACH_EMAIL);
+  });
+
+  it('a coach of a different team gets no emails', async () => {
+    await loginSeedCoach();
+    const token = await strangerToken();
+    const res = makeRes();
+    await _handlers.teamCoaches(get({ code: _seed.SEED_TEAM_CODE, coachToken: token }), res);
+    expect(res.statusCode).toBe(200);
+    expect(JSON.stringify(res.body)).not.toContain(_seed.SEED_COACH_EMAIL);
+  });
+
+  it('set-coach-profile from a coach who does not run the team returns no emails', async () => {
+    await loginSeedCoach();
+    const token = await strangerToken();
+    const res = makeRes();
+    await _handlers.setCoachProfile(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, name: 'Stranger' }), res);
+    expect(res.statusCode).toBe(200);
+    expect(JSON.stringify(res.body)).not.toContain(_seed.SEED_COACH_EMAIL);
+  });
+
+  it('an admin gets the emails', async () => {
+    await loginSeedCoach();
+    const res = makeRes();
+    await _handlers.teamCoaches({ ...get({ code: _seed.SEED_TEAM_CODE }), headers: { authorization: 'Bearer admin-test-token' } }, res);
+    expect(res.body.coaches.find((c) => c.role === 'head').email).toBe(_seed.SEED_COACH_EMAIL);
+  });
+
+  it('the coach view sends its coachToken when it loads the coaches strip', async () => {
+    const { readFileSync } = await import('node:fs');
+    const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+    expect(html).toMatch(/action=team-coaches&code='\+encodeURIComponent\(code\)\+'&coachToken='\+encodeURIComponent\(coach\.token\)/);
+  });
+
+  it('the head coach still sees emails, so remove-coach keeps working', async () => {
+    const token = (await loginSeedCoach()).body.token;
+    await _handlers.inviteCoach(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, email: 'asst@x.com' }), makeRes());
+    const list = makeRes();
+    await _handlers.teamCoaches(get({ code: _seed.SEED_TEAM_CODE, coachToken: token }), list);
+    const asst = list.body.coaches.find((c) => c.role === 'assistant');
+    expect(asst.email).toBe('asst@x.com');
+    const rm = makeRes();
+    await _handlers.removeCoach(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, email: asst.email }), rm);
+    expect(rm.statusCode).toBe(200);
+    expect(rm.body.coaches.some((c) => c.email === 'asst@x.com')).toBe(false);
   });
 });
 
@@ -654,6 +743,7 @@ describe('edit player, coach password, and email requests', () => {
 
   it('rejects update with an empty first name, and unknown player', async () => {
     const login = await loginSeedCoach();
+    await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: login.body.token, firstName: 'Editme', number: 5, parentEmail: 'p@x.com' }), makeRes());
     const r1 = makeRes();
     await _handlers.updatePlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: login.body.token, playerId: 'editme', firstName: '  ' }), r1);
     expect(r1.statusCode).toBe(400);

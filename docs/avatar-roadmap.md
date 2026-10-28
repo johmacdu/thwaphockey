@@ -132,11 +132,34 @@ the hockey year, August to June, and rolls over in August.
 - Done when: a kid picks a pose and celebration and it shows everywhere.
 
 ### Phase 4, March to April: the team layer
-- Weekly team goal hit (the ramp in `TEAM_GOAL_SCHEDULE`) gives everyone a
-  shared item that week.
-- Coach grants the C and A. Coach home shows the roster's characters.
-- Playoff or tournament jersey, only during that window.
-- Art: team items, playoff jersey.
+- **Team set (decided Oct 28 2026).** Each week the team hits the weekly goal
+  (adaptive, see below) unlocks the NEXT item in a fixed,
+  visible order, for everyone on the roster, kept forever. No random drops.
+  Team items are Rangers-themed, so they read as "we did it" next to the
+  personal ladder's "I trained". Starting order (names are placeholders to
+  check against the brand doc):
+  1. Rangers tape (red and black tape on the stick blade)
+  2. Rangers decal (an R on the helmet side)
+  3. Team socks (a Rangers sock pattern)
+  4. Rangers gloves (team-colored cuffs)
+  5. Warm-up jersey (the team practice jersey)
+  6. Team celly (a group celebration)
+  7. Bigger items later in the season
+  Everyone gets it, including kids who did not train that week: the message
+  ("The Rangers did it! New team item: Rangers tape") is how quiet kids come
+  back. The message also says how many drills each kid added.
+- **Weekly goal (changed Oct 28 2026).** In October one week had 16 team
+  activities against a goal of 125, so the fixed date ramp was replaced: the
+  goal starts at 75 (week of Oct 26) and goes up by 10 each week the team
+  hits it, to 145. A missed week keeps the goal; it never goes down. Finished
+  weeks are recorded once on the server (`currentTeamGoal` in `lib/store.js`,
+  key `teamgoal:ladder`) and the bar reads the goal from `/api/board?tf=week`.
+- Coach grants the C and A (done, #457). Coach home shows the roster's characters.
+- **Tournament jersey (decided Oct 28 2026).** The coach marks an event on the
+  team schedule as a tournament; the jersey opens that week. Earned, not
+  handed out: train 2 days during tournament week, then it is kept forever
+  (like the Frozen Pond winter jersey). No dates in code.
+- Art: optional, team items can be drawn in team colors in code.
 - Done when: a team goal shows on every card and the coach can grant letters.
 
 ### Phase 5, May to June: season finale
@@ -195,5 +218,18 @@ the hockey year, August to June, and rolls over in August.
   every card.
 - [x] Moves tab in My Player: pick a stance, try on locked ones. Moves held
   back by the #447 rule now announce as "New move!".
-- [ ] Celebrations (THWAP!, Knee slide): Play button and milestone days, never
-  a card tap; reduced motion shows the final pose. Still held back until then.
+- [x] Celebrations (THWAP!, Knee slide) as stance keyframes the rig blends
+  between (`CELLYS` in `avatar.js`). Cellys tab in My Player with a Play
+  button; tapping a celebration plays it (locked ones as a try-on). Milestone
+  moment: the New gear message shows the kid's player doing their celebration
+  in the new item. Never on a card tap. Reduced motion shows the final pose.
+- [x] Phase 4 letters: the coach gives a player the C or an A from the
+  edit-player sheet (`?action=set-letter`). Coach must run the team; one C
+  per team (giving it moves it); at most two A's. Drawn high on the chest on
+  every card; the kid gets "Coach gave you the C!" once.
+- [ ] Phase 4 team set and tournament jersey: decided (see Phase 4 above).
+  The weekly goal is now adaptive (75, +10 per hit, to 145). Team set built:
+  Rangers tape, Rangers decal, Team socks, Rangers gloves, Warm-up jersey and
+  the Stick tap celly unlock at 1 to 6 team goal weeks (`team` rule), for
+  everyone, with "The Rangers did it!". Next: the tournament jersey.
+- [ ] Unlock ladder check against December's data (early January).

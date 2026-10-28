@@ -42,16 +42,22 @@
     white:{ body:'#F2F2F2', stripe:'#C8102E', trim:'#111111', num:'#C8102E' },
     forest:{ body:'#1F5A3A', stripe:'#F2F2F2', trim:'#111111', num:'#FFFFFF' },
     legend:{ body:'#D4A72C', stripe:'#111111', trim:'#FFFFFF', num:'#111111' },
-    pond:{ body:'#8CC8EA', stripe:'#F2F2F2', trim:'#16365C', num:'#16365C' }
+    pond:{ body:'#8CC8EA', stripe:'#F2F2F2', trim:'#16365C', num:'#16365C' },
+    warmup:{ body:'#5B6670', stripe:'#C8102E', trim:'#111111', num:'#FFFFFF' },
+    tournament:{ body:'#C8102E', stripe:'#D4A72C', trim:'#111111', num:'#D4A72C' } // red with gold trim
   };
-  var GLOVES={ black:'#141414', red:'#C8102E', white:'#EDEDED', ice:'#BFE6F2' };
+  var GLOVES={ black:'#141414', red:'#C8102E', white:'#EDEDED', ice:'#BFE6F2',
+    rangers:'linear-gradient(0deg,#C8102E 0 34%,#141414 34% 100%)' }; // team set: red cuffs
+  // Team set (Phase 4): stick tape, helmet decal and socks.
+  var TAPE={ white:'#E8E8E8', rangers:'repeating-linear-gradient(90deg,#C8102E 0 .35em,#111111 .35em .7em)' };
+  var SOCKS_RANGERS='repeating-linear-gradient(0deg,#111111 0 18%,#F2F2F2 18% 22%,#C8102E 22% 40%,#F2F2F2 40% 44%)'; // bold hoops
   var STICK={ classic:'#2B2B2B', wood:'#B07A45', red:'#C8102E', gold:'#D4A72C' };
   var HELMET={ chrome:'#B8C2CC', red:'#C8102E' };
   var CAGE={ steel:'#C9CED3', black:'#1A1A1A' };
   // hand/facing are free preference slots (server catalog: hand-*, facing-*).
   // grip is how the stick is held (oneHand/twoHand) -- a render default, not a
   // catalog slot, kept separate from the server's unlockable 'pose' (stances).
-  var DEFAULT_LOOK={ skin:'s3', hair:'brown', hairstyle:'flow', jersey:'red', helmet:'team', cage:'steel', gloves:'black', stick:'classic', num:'', hand:'right', facing:'left', grip:'oneHand' };
+  var DEFAULT_LOOK={ tape:'white', decal:'none', socks:'match', skin:'s3', hair:'brown', hairstyle:'flow', jersey:'red', helmet:'team', cage:'steel', gloves:'black', stick:'classic', num:'', hand:'right', facing:'left', grip:'oneHand' };
 
   // Server looks use catalog ids ('jersey-red', 'skin-s3'); the renderer keys
   // on the part after the slot prefix. Unknown values fall back to defaults.
@@ -207,6 +213,97 @@
   };
   function lerp(a,b,t){ return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t]; }
 
+  // --- Celebrations (Phase 3) ------------------------------------------------------
+  // A celebration is a few stance keyframes the rig blends between: no art, and
+  // every gear item works in it. READY is the card's standing grip as joint data,
+  // so a celebration can start from it. Keys are [time 0..1, joints].
+  var READY={ lean:0, drop:0, head:0, roll:0,
+    elTop:[-4.8,18,3.6], handTop:[-2.3,13.8,5.4], elBot:[5.3,17.4,1.4], handBot:[4.8,12.8,1.8],
+    knob:[-2.6,14.6,5.1], heel:[0.6,0.7,9.5], toe:[0.6,0.8,12.7],
+    kneeL:[-2.1,6.2,1.5], ankL:[-2.1,2.4,.6], kneeR:[2.1,6.2,1.5], ankR:[2.1,2.4,.6], skL:0, skR:0 };
+  function frame(over){ var f={}; for(var k in READY) f[k]=READY[k]; for(var m in over) f[m]=over[m]; return f; }
+  var SLIDE_POSE={ lean:-8, drop:4.2, head:-10,
+    elTop:[-6,14.2,3.4], handTop:[-5.6,11,6], knob:[-5.8,11.8,5.8], heel:[-2,0.7,9], toe:[-2,0.8,12],
+    elBot:[6.4,18.6,1.4], handBot:[6.6,23.6,2.4],
+    kneeL:[-2.4,5.4,4.6], ankL:[-2.4,2.4,4.4], kneeR:[2.4,1.3,-.4], ankR:[2.4,1.1,-4.6] };
+  // Knee slide finish: both arms up, the stick raised high in the top hand.
+  function ARMS_UP(p){
+    p.elBot=[6.6,21,1.6]; p.handBot=[6.8,27,2.4];
+    p.elTop=[-6.4,20.6,1.6]; p.handTop=[-7,26,2.4];
+    p.knob=[-7.2,26.8,2.4]; p.heel=[-14.6,30,3]; p.toe=[-16,28.6,4.6];
+  }
+  var STICK_UP={ lean:-4, head:-8, elTop:[-4.6,19.4,4.4], handTop:[-2.6,20.6,6.4], elBot:[4.4,19,4.6], handBot:[0.6,22.4,7.2],
+    knob:[-3,21,6], heel:[3.4,27.2,8.4], toe:[5.4,28,9] };
+  var STICK_TAP={ lean:10, drop:.6, elTop:[-4,16,4.6], handTop:[-1.4,12.8,6], elBot:[4,14.6,4.2], handBot:[0.6,9.4,7.2],
+    knob:[-1.6,13.4,5.6], heel:[2.8,0.7,10], toe:[2.8,0.8,13] };
+  var CELLYS={
+    // THWAP!: a quick crouch, then a big fist pump with the knee up; the word pops.
+    fistpump:{ ms:900, word:'THWAP!', wordAt:.5, keys:[
+      [0, READY],
+      [.32, frame({ lean:18, drop:1.6, elBot:[5.6,14.4,3.4], handBot:[4.6,15.8,6],
+        kneeL:[-2.4,5.4,2.6], kneeR:[2.4,5.4,2.6] })],
+      [.55, frame({ lean:-6, head:-14, elBot:[6.6,25.2,1.6], handBot:[6.2,31,2.6],
+        kneeR:[2.4,9.4,4.6], ankR:[2.4,5.6,3] })],
+      [1, frame({ lean:-4, head:-12, elBot:[6.6,24.8,1.6], handBot:[6.2,30.4,2.6],
+        kneeR:[2.4,9,4.4], ankR:[2.4,5.4,2.8] })] ]},
+    // Knee slide: skate in, drop to one knee and slide across, fist up.
+    // Stick tap (team set): raise the stick, then tap it on the ice twice.
+    sticktap:{ ms:1200, keys:[
+      [0, READY],
+      [.28, frame(STICK_UP)],
+      [.45, frame(STICK_TAP)],
+      [.62, frame(STICK_UP)],
+      [.8, frame(STICK_TAP)],
+      [1, frame(STICK_TAP)] ]},
+    kneeslide:{ ms:1300, slide:[-10,2.5], keys:[
+      [0, READY],
+      [.28, frame(SLIDE_POSE)],
+      [.7, frame((function(){ var p={}; for(var k in SLIDE_POSE) p[k]=SLIDE_POSE[k];
+        p.lean=-14; p.head=-14; ARMS_UP(p); return p; })())],
+      [1, frame((function(){ var p={}; for(var k in SLIDE_POSE) p[k]=SLIDE_POSE[k];
+        p.lean=-14; p.head=-14; ARMS_UP(p); return p; })())] ]}
+  };
+  function ease(t){ return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2; }
+  function mix(a,b,t){ var o={}; for(var k in a){ var x=a[k], y=b[k];
+    o[k]=Array.isArray(x)?lerp(x,y,t):(typeof x==='number'?x+((y||0)-x)*t:x); } return o; }
+  function cellyAt(c,t){
+    var ks=c.keys;
+    for(var i=1;i<ks.length;i++) if(t<=ks[i][0]){ var a=ks[i-1], b=ks[i]; return mix(a[1],b[1],ease((t-a[0])/((b[0]-a[0])||1))); }
+    return ks[ks.length-1][1];
+  }
+  function cellyKey(id){ return String(id||'').replace(/^celebration-/,''); }
+  function reducedMotion(){ try{ return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }catch(_){ return false; } }
+  // Play a celebration. draw(markup, slideEm) writes one frame wherever it plays
+  // (the My Player stage, the New gear message). Reduced motion draws only the
+  // final pose. done() runs after the end pose has held for a moment. Returns stop().
+  function playCelly(id,look,draw,done){
+    var c=CELLYS[cellyKey(id)];
+    if(!c){ if(done) done(); return function(){}; }
+    function paint(t){
+      var l={}; for(var k in look) l[k]=look[k]; l.poseData=cellyAt(c,t);
+      var sx=c.slide?c.slide[0]+(c.slide[1]-c.slide[0])*(1-Math.pow(1-t,3)):0;
+      // The word pops in over the first 15% after it appears (scaled in the frame,
+      // since every frame is a fresh draw), with a small overshoot.
+      var w='';
+      if(c.word && t>=c.wordAt){ var wt=Math.min(1,(t-c.wordAt)/.15), sc=wt<1?(.4+.85*wt):1;
+        w="<span class='av-word' aria-hidden='true' style='transform:scale("+sc.toFixed(3)+")'>"+c.word+"</span>"; }
+      draw(html(l)+w, sx);
+    }
+    var stopped=false, timer=null;
+    function stop(){ stopped=true; clearTimeout(timer); }
+    if(reducedMotion()){ paint(1); timer=setTimeout(function(){ if(!stopped && done) done(); },1200); return stop; }
+    var raf=window.requestAnimationFrame||function(f){ return setTimeout(function(){ f(Date.now()); },16); };
+    var t0=null;
+    function step(now){
+      if(stopped) return;
+      if(t0==null) t0=now;
+      var t=Math.min(1,(now-t0)/c.ms); paint(t);
+      if(t<1) raf(step); else timer=setTimeout(function(){ if(!stopped && done) done(); },700);
+    }
+    raf(step);
+    return stop;
+  }
+
   // --- Character ---------------------------------------------------------------
   // Heights (em, from the ice up): blade 0-0.6, boot 0.6-2.2, legs 2.2-10,
   // pants 10-14.6, torso 14.6-24, head 24-32. Minecraft-like 8/12/12 rhythm,
@@ -225,7 +322,9 @@
     // Jersey front/back with two arm-height stripes; number on the back.
     var torsoBg='linear-gradient(0deg,'+J.stripe+' 0 9%,'+J.trim+' 9% 12%,'+J.body+' 12% 100%)';
     var sleeveBg='linear-gradient(0deg,'+J.body+' 0 38%,'+J.trim+' 38% 44%,'+J.stripe+' 44% 58%,'+J.trim+' 58% 64%,'+J.body+' 64% 100%)';
-    var sockBg='linear-gradient(0deg,'+J.body+' 0 40%,'+J.stripe+' 40% 55%,'+J.trim+' 55% 62%,'+J.body+' 62% 100%)';
+    var sockBg=look.socks==='rangers'?SOCKS_RANGERS:'linear-gradient(0deg,'+J.body+' 0 40%,'+J.stripe+' 40% 55%,'+J.trim+' 55% 62%,'+J.body+' 62% 100%)';
+    var tapeC=TAPE[look.tape]||TAPE.white;
+    var decal=look.decal==='rangers';
     // Pixel weave: a transparent 2x2-checker tile over every fill, so sleeves, socks,
     // pants, gloves and skates read as the same style-A fabric as the jersey (whose
     // tile bakes the weave in). It rides on top of the colorway gradients and solids,
@@ -249,6 +348,12 @@
     var helTop={front:helTex,back:helTex,side:helTex,top:stripeTop,bottom:helTex};
     var backNum="<span class='av-num' style='color:"+J.num+"'>"+num+"</span>";
     var chestNum="<span class='av-num av-num-sm' style='color:"+J.num+"'>"+num+"</span>";
+    // The coach-granted C or A, high on the chest above the number (Phase 4).
+    var L8=String(look.letter||'').toUpperCase();
+    // Outlined like a stitched letter; the outline uses the stripe color unless it
+    // matches the letter (white jersey: red on red), then the trim color.
+    var lo=(J.stripe===J.num)?J.trim:J.stripe;
+    if(L8==='C'||L8==='A') chestNum="<span class='av-letter' style='color:"+J.num+";text-shadow:.08em .08em 0 "+lo+",-.08em -.08em 0 "+lo+",.08em -.08em 0 "+lo+",-.08em .08em 0 "+lo+"'>"+L8+"</span>"+chestNum;
 
     // Face: simple blocky eyes and brows, focused, not cute.
     var faceInner="<i class='av-brow l'></i><i class='av-brow r'></i><i class='av-eye l'></i><i class='av-eye r'></i><i class='av-mouth'></i>";
@@ -260,8 +365,9 @@
     var lefty=(look.hand==='left');
     function M(p){ return lefty?[-p[0],p[1],p[2]]:p; }
 
-    // Stance: Ready (no entry) keeps the standing grip below, unchanged.
-    var P=POSES[look.pose]||null;
+    // A celebration frame passes its blended joints as poseData; otherwise the
+    // named stance. Ready (no entry) keeps the standing grip below, unchanged.
+    var P=(look.poseData && typeof look.poseData==='object')?look.poseData:(POSES[look.pose]||null);
     var lean=P?(P.lean||0):0, drop=P?(P.drop||0):0, headTilt=P?(P.head||0):0;
     // roll: sideways lean at the waist (degrees, positive tips toward +x), mirrored for lefties.
     var roll=P?((P.roll||0)*(look.hand==='left'?-1:1)):0;
@@ -321,13 +427,16 @@
     // Stick: a flat blade along the ice keeps the original boxes (Ready). Any other
     // blade (raised, angled, closed) is a limb from heel to toe, tape at the heel.
     var flatBlade=(ice[0]===bladeToe[0] && ice[1]<1);
+    // Team-set tape also wraps the top of the shaft (grip tape), where the card
+    // camera can see it; blade tape alone sits at the card's bottom edge.
+    var grip=(look.tape==='rangers')?limb(lerp(knob,ice,.1),lerp(knob,ice,.36),1.45,tapeC):'';
     var stickParts=flatBlade?[
       limb(knob,ice,1.3,stickC),
-      box({w:1.5,h:1.6,d:1.6,x:ice[0],y:2.2,z:ice[2]-0.4,c:'#E8E8E8'}),
+      box({w:1.5,h:1.6,d:1.6,x:ice[0],y:2.2,z:ice[2]-0.4,c:tapeC}),
       box({w:1.4,h:2.2,d:(bladeToe[2]-ice[2]),x:ice[0],y:1.3,z:(ice[2]+bladeToe[2])/2,c:stickC})
     ]:[
       limb(knob,ice,1.3,stickC),
-      limb(lerp(knob,ice,.9),ice,1.5,'#E8E8E8'),
+      limb(lerp(knob,ice,.9),ice,1.5,tapeC),
       limb(ice,bladeToe,1.6,stickC)
     ];
     var puck=(P&&P.puck)?(function(p){ p=M(p); return box({w:3,h:1,d:3,x:p[0],y:p[1],z:p[2],c:'#111111'}); })(P.puck):'';
@@ -361,7 +470,9 @@
       hairBoxes(look.hairstyle||DEFAULT_LOOK.hairstyle, hair),
       // Helmet shell (top + back half), leaves the face open for the cage
       box({w:8.4,h:2.6,d:8.4,y:31.3,c:helmet,faces:helTop}),
-      box({w:8.4,h:4.6,d:2.4,y:28.2,z:-3.2,c:helmet,faces:helFaces}),
+      box({w:8.4,h:4.6,d:2.4,y:28.2,z:-3.2,c:helmet,faces:helFaces,backInner:decal?"<span class='av-decal'>R</span>":''}),
+      // Team-set decal: a Rangers R badge on each side of the helmet too.
+      decal?box({w:.14,h:2.1,d:2.1,x:-4.78,y:28.4,z:.2,c:'#C8102E'})+box({w:.14,h:2.1,d:2.1,x:4.78,y:28.4,z:.2,c:'#C8102E'}):'',
       box({w:1,h:4.8,d:5.6,x:-4.2,y:27.9,z:.6,c:helmet,faces:helFaces}),
       box({w:1,h:4.8,d:5.6,x:4.2,y:27.9,z:.6,c:helmet,faces:helFaces}),
       // Cage
@@ -378,7 +489,7 @@
       box({w:3.8,h:3.4,d:3.8,x:handBot[0],y:handBot[1],z:handBot[2],c:gloveC,faces:gloveFaces}),
       // Stick (shaft, white tape at the heel, blade). Recolored by the unlocked
       // stick (stickC: classic / wood / gold).
-      stickParts.join(''),
+      stickParts.join('')+grip,
       puck
     ];
     // Facing: left 3/4 is the default; right mirrors it, center faces head-on. Set
@@ -390,8 +501,10 @@
   // Look for a player. Order: the server roster looks (fetched below, cached on
   // the device so the next load paints right away), then this device's saved
   // look, then the default. The number always comes from the roster.
-  var teamLooks=null;
+  var teamLooks=null, teamLetters={};
   try{ teamLooks=JSON.parse(localStorage.getItem('thwapLooksCache')||'null'); }catch(_){}
+  try{ teamLetters=JSON.parse(localStorage.getItem('thwapLettersCache')||'{}')||{}; }catch(_){}
+  function letterOf(id){ return teamLetters[String(id||'').toLowerCase()]||null; }
   // A player who has never built a character still gets one on their card: a
   // starter look picked from their name, so the roster is not a row of twins.
   // Hair style, hair color and the three free Rangers jerseys vary (all free;
@@ -413,8 +526,9 @@
     if(teamLooks && teamLooks[id]) src=norm(teamLooks[id]);
     if(!src){ try{ src=(JSON.parse(localStorage.getItem('thwapLooks')||'{}'))[id]||null; }catch(_){} }
     if(!src) src=starterLook(id);
-    for(var m in src) if(m!=='num') look[m]=src[m];
+    for(var m in src) if(m!=='num' && m!=='letter') look[m]=src[m];
     look.num=(p&&p.num)||'';
+    look.letter=letterOf(id); // the coach decides the letter, never the saved look
     return look;
   }
   function refreshTeamLooks(){
@@ -422,9 +536,10 @@
     try{
       fetch('/api/board?action=looks',{credentials:'same-origin'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){
         if(!j || !j.looks) return;
-        var changed=JSON.stringify(j.looks)!==JSON.stringify(teamLooks||null);
-        teamLooks=j.looks;
-        try{ localStorage.setItem('thwapLooksCache',JSON.stringify(j.looks)); }catch(_){}
+        var letters=j.letters||{};
+        var changed=JSON.stringify(j.looks)!==JSON.stringify(teamLooks||null) || JSON.stringify(letters)!==JSON.stringify(teamLetters);
+        teamLooks=j.looks; teamLetters=letters;
+        try{ localStorage.setItem('thwapLooksCache',JSON.stringify(j.looks)); localStorage.setItem('thwapLettersCache',JSON.stringify(letters)); }catch(_){}
         try{ document.dispatchEvent(new CustomEvent('thwap:looks')); }catch(_){}
         // A teammate built or changed their player since the cache: redraw the roster.
         if(changed){ try{ if(window.thwapRepaintRoster) window.thwapRepaintRoster(); }catch(_){} }
@@ -459,10 +574,14 @@
     ".av-cage{box-shadow:none;backface-visibility:visible;opacity:.95}"+
     ".av-num{position:absolute;left:0;right:0;top:36%;text-align:center;font:900 3.6em/1 system-ui,-apple-system,sans-serif;letter-spacing:-.02em}"+
     ".av-num-sm{font-size:2em;top:30%;left:auto;right:12%;text-align:right}"+
+    ".av-letter{position:absolute;right:14%;top:3%;font:900 2.4em/1 system-ui,-apple-system,sans-serif}"+
     ".av-eye,.av-brow,.av-mouth{position:absolute;background:#141414;display:block}"+
     ".av-eye{width:1.2em;height:1.2em;top:3.4em}.av-eye.l{left:1.4em}.av-eye.r{right:1.4em}"+
     ".av-brow{width:1.9em;height:.45em;top:2.5em}.av-brow.l{left:1.1em;transform:rotate(8deg)}.av-brow.r{right:1.1em;transform:rotate(-8deg)}"+
-    ".av-mouth{width:2.4em;height:.4em;left:2.6em;top:5.6em}";
+    ".av-mouth{width:2.4em;height:.4em;left:2.6em;top:5.6em}"+
+    ".av-decal{position:absolute;left:50%;top:18%;transform:translateX(-50%);width:1.5em;height:1.5em;box-sizing:border-box;border:.12em solid #fff;border-radius:.25em;background:#C8102E;color:#fff;font:900 1.6em/1.25 system-ui,-apple-system,sans-serif;text-align:center}"+
+    // The celebration word (THWAP!) over the player, sized by its container.
+    ".av-word{position:absolute;left:0;right:0;top:3%;z-index:3;text-align:center;font:900 2.8em/1 system-ui,-apple-system,sans-serif;letter-spacing:-.02em;color:var(--lime,#B9F06B);text-shadow:0 .06em 0 #15221B,0 0 .2em rgba(0,0,0,.35);pointer-events:none}";
   function injectCss(){
     if(document.getElementById('av-css')) return;
     var s=document.createElement('style'); s.id='av-css'; s.textContent=css;
@@ -475,8 +594,12 @@
   // Opens from the My Player button on the player's own card. Tap an owned item: it goes on the
   // character and saves to the server. Tap a locked item: try it on, with the
   // progress line; nothing is saved. Unlocks come from the server only.
-  var GEAR_TABS=[['skin','Skin'],['hairstyle','Hair'],['hair','Hair color'],['jersey','Jersey'],['helmet','Helmet'],['cage','Cage'],['stripe','Stripe'],['gloves','Gloves'],['stick','Stick'],['pose','Moves'],['hand','Shot'],['facing','View']];
-  var TIER_LABEL={ common:'', rare:'Pro', epic:'All-Star', legendary:'Legend' };
+  var GEAR_TABS=[['skin','Skin'],['hairstyle','Hair'],['hair','Hair color'],['jersey','Jersey',['jersey','socks']],['helmet','Helmet',['helmet','decal']],['cage','Cage'],['stripe','Stripe'],['gloves','Gloves'],['stick','Stick',['stick','tape']],['pose','Moves'],['celebration','Cellys'],['hand','Shot'],['facing','View']];
+  var TIER_LABEL={ common:'', rare:'Pro', epic:'All-Star', legendary:'Legend', team:'Team' };
+  // A tab can hold more than one slot (Stick holds the tape, Helmet the decal,
+  // Jersey the socks), so the team-set slots need no tabs of their own.
+  function slotsOf(tab){ for(var i=0;i<GEAR_TABS.length;i++) if(GEAR_TABS[i][0]===tab) return GEAR_TABS[i][2]||[tab]; return [tab]; }
+  function tabFor(slot){ for(var i=0;i<GEAR_TABS.length;i++) if(slotsOf(GEAR_TABS[i][0]).indexOf(slot)>=0) return GEAR_TABS[i][0]; return slot; }
   var L={ data:null, look:null, saved:null, tab:'skin', trying:null, changed:false, me:null };
 
   function swatch(slot,short){
@@ -485,6 +608,8 @@
     else if(slot==='jersey') c=(JERSEY[short]||{}).body; else if(slot==='gloves') c=GLOVES[short];
     else if(slot==='stick') c=STICK[short]; else if(slot==='helmet') c=HELMET[short]||'#141414'; else if(slot==='cage') c=CAGE[short];
     else if(slot==='stripe') c=short==='none'?'transparent':'#C8102E';
+    else if(slot==='tape') c=TAPE[short]; else if(slot==='decal') c=short==='rangers'?'#C8102E':'transparent';
+    else if(slot==='socks') c=short==='rangers'?SOCKS_RANGERS:((JERSEY[norm(L.look||{}).jersey]||JERSEY.red).body);
     return c||'#888';
   }
   function ruleText(it){
@@ -494,6 +619,8 @@
     if(r.type==='disc') return 'Finish '+r.n+' '+({stick:'Hands',shoot:'Shooting',dryland:'Dryland',netplay:'Net play',iq:'Hockey IQ',pass:'Passing'}[r.disc]||r.disc)+' drills';
     if(r.type==='window') return 'Train '+r.n+' days over winter break';
     if(r.type==='coach') return 'From your coach';
+    if(r.type==='team') return r.n===1?'1 team goal week':r.n+' team goal weeks';
+    if(r.type==='tournament') return 'Train '+r.n+' days in a tournament week';
     return '';
   }
   function have(it){
@@ -502,6 +629,8 @@
     if(r.type==='days') return p.trainingDays;
     if(r.type==='disc') return (p.disciplines||{})[r.disc]||0;
     if(r.type==='window') return (p.windows||{})[it.id]||0;
+    if(r.type==='team') return p.teamHits||0;
+    if(r.type==='tournament') return p.tournament||0;
     return 0;
   }
   function owned(id){ return !!(L.data && L.data.unlocked.indexOf(id)>=0); }
@@ -525,10 +654,18 @@
   }
   // The tile/toast picture for any item: hair from behind, hand/facing from the
   // front, stances full body, everything else a color swatch.
+  // Celebration tiles show the player's end pose (THWAP! fist up, the slide);
+  // 'None yet' shows the player in their own stance.
+  function miniCelly(key){
+    var look=norm(L.look||{}); look.num='';
+    var c=CELLYS[key]; if(c) look.poseData=cellyAt(c,1);
+    return "<span class='lk-mini pose' aria-hidden='true'>"+html(look)+"</span>";
+  }
   function itemPic(slot,short){
     if(slot==='hairstyle') return miniHead(short);
     if(slot==='hand'||slot==='facing') return miniOpt(slot,short);
     if(slot==='pose') return miniPose(short);
+    if(slot==='celebration') return miniCelly(short);
     return "<span class='lk-sw' style='background:"+swatch(slot,short)+"'></span>";
   }
 
@@ -548,7 +685,10 @@
       ".lk-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 8px}"+
       ".lk-head h2{margin:0;font-size:22px;font-weight:900}"+
       ".lk-x{width:48px;height:48px;border-radius:50%;border:1px solid var(--line,#DCE5DE);background:var(--card,#fff);color:var(--text,#15221B);font-size:20px;cursor:pointer}"+
-      ".lk-stage{position:relative;height:min(46vh,380px);margin:0 16px;border-radius:16px;background:var(--soft,#E7EEE8);overflow:hidden;touch-action:none}"+
+      ".lk-stagewrap{position:relative;margin:0 16px}"+
+      ".lk-play{position:absolute;right:12px;bottom:12px;min-height:48px;padding:0 18px;border-radius:24px;border:0;background:var(--text,#15221B);color:var(--bg,#F3F7F4);font:inherit;font-weight:900;font-size:16px;cursor:pointer}.lk-play[hidden]{display:none}"+
+      ".lk-toast .av-word{display:none}"+
+      ".lk-stage{position:relative;height:min(46vh,380px);margin:0;border-radius:16px;background:var(--soft,#E7EEE8);overflow:hidden;touch-action:none}"+
       ".lk-stage .av-wrap{font-size:min(9px,2.2vw,1.1vh)}"+
       ".lk-note{min-height:22px;margin:8px 16px 0;font-size:14px;color:var(--muted,#5F6F64);text-align:center}"+
       ".lk-tabs{display:flex;gap:8px;overflow-x:auto;padding:12px 16px 4px;scrollbar-width:none}"+
@@ -580,22 +720,47 @@
       ".lk-new{position:absolute;top:6px;left:6px;font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:8px;background:var(--lime,#B9F06B);color:#15221B}"+
       ".lk-dot{display:inline-block;vertical-align:middle;width:10px;height:10px;border-radius:50%;background:var(--lime,#B9F06B);margin-left:8px;box-shadow:0 0 0 2px var(--card,#fff)}"+
       ".lk-toast{position:fixed;left:50%;bottom:24px;z-index:10000;transform:translateX(-50%);min-height:56px;max-width:min(92vw,420px);display:flex;align-items:center;gap:12px;padding:8px 18px 8px 10px;border-radius:28px;border:2px solid var(--lime,#B9F06B);background:var(--card,#fff);color:var(--text,#15221B);font:inherit;font-weight:900;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.25)}"+
-      ".lk-toast .lk-sw{flex:none}.lk-toast small{display:block;font-weight:700;font-size:12px;color:var(--muted,#5F6F64)}"+
+      ".lk-toast .lk-sw{flex:none}.lk-letter-sw{display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;background:#C8102E;color:#fff}.lk-toast small{display:block;font-weight:700;font-size:12px;color:var(--muted,#5F6F64)}"+
       "@media (prefers-reduced-motion:no-preference){.lk-stage .av-scene{transition:transform .25s ease}"+
         ".lk-toast{animation:lkUp .3s ease-out}@keyframes lkUp{from{transform:translate(-50%,24px);opacity:0}to{transform:translate(-50%,0);opacity:1}}"+
         ".av-reveal .av-scene{animation:avDrop .35s cubic-bezier(.2,.9,.3,1.2)}@keyframes avDrop{from{translate:0 -6em;opacity:0}to{translate:0 0;opacity:1}}}";
   }
 
+  // The celebration showing on the stage: the one being tried on, else the worn one.
+  function stageCelly(){
+    var look=L.trying?L.trying.look:(L.look||{});
+    var id=look.celebration; return (id && CELLYS[cellyKey(id)])?id:null;
+  }
+  function playOnStage(id){
+    var st=document.querySelector('.lk-stage'); if(!st||!id) return;
+    if(L.playing){ L.playing(); L.playing=null; }
+    var r=norm(L.trying?L.trying.look:L.look); r.num=L.num||'';
+    L.playing=playCelly(id,r,function(m,sx){
+      st.innerHTML=m;
+      var sc=st.querySelector('.av-scene');
+      if(sc){ sc.style.transform='rotateX(-10deg) rotateY('+L.spin+'deg)'; sc.style.translate=sx?(sx+'em 0'):''; }
+    },function(){ L.playing=null; paintStage(); });
+  }
+  function ensureLockerCss(){
+    if(!document.getElementById('lk-css')){ var s=document.createElement('style'); s.id='lk-css'; s.textContent=lockerCss(); document.head.appendChild(s); }
+  }
   function paintStage(){
     var st=document.querySelector('.lk-stage'); if(!st) return;
-    var look=L.trying?L.trying.look:L.look;
-    var r=norm(look); r.num=L.num||'';
-    st.innerHTML=html(r);
-    var sc=st.querySelector('.av-scene'); if(sc) sc.style.transform='rotateX(-10deg) rotateY('+L.spin+'deg)';
+    var play=document.querySelector('.lk-play');
+    if(play) play.hidden=!(L.build==null && L.tab==='celebration' && stageCelly());
+    // A celebration is playing: let it finish (it repaints when done); only the note updates.
+    if(!L.playing){
+      var look=L.trying?L.trying.look:L.look;
+      var r=norm(look); r.num=L.num||''; r.letter=(L.data&&L.data.letter)||null;
+      st.innerHTML=html(r);
+      var sc=st.querySelector('.av-scene'); if(sc) sc.style.transform='rotateX(-10deg) rotateY('+L.spin+'deg)';
+    }
     var note=document.querySelector('.lk-note');
     if(note){
       if(L.trying){ var it=L.trying.item, h=have(it), n=(it.rule||{}).n||0;
-        note.textContent=it.label+'. '+ruleText(it)+' to unlock. You\u2019re at '+Math.min(h,n)+'.'; }
+        note.textContent=(it.rule&&it.rule.type==='team')
+          ? it.label+'. Unlocks when the Rangers hit the weekly team goal'+(n>1?' '+n+' times':'')+'. So far: '+Math.min(h,n)+'.'
+          : it.label+'. '+ruleText(it)+' to unlock. You\u2019re at '+Math.min(h,n)+'.'; }
       else note.textContent=L.status||'';
     }
   }
@@ -620,7 +785,8 @@
   }
   function paintGrid(){
     var g=document.querySelector('.lk-grid'); if(!g||!L.data) return;
-    var items=L.data.items.filter(function(it){ return it.slot===L.tab; });
+    var tabSlots=slotsOf(L.tab);
+    var items=L.data.items.filter(function(it){ return tabSlots.indexOf(it.slot)>=0; });
     g.innerHTML=items.map(function(it){
       var short=it.id.slice(it.slot.length+1), own=owned(it.id), on=L.look[it.slot]===it.id;
       var sub=own?(TIER_LABEL[it.tier]||''):ruleText(it);
@@ -655,17 +821,23 @@
       L.tab=BUILD_STEPS[L.build][0]; L.trying=null; L.spin=spinFor(L.tab); paintTabs(); paintGrid(); paintStage(); return;
     }
     var tab=e.target.closest('.lk-tab');
-    if(tab){ L.tab=tab.getAttribute('data-tab'); L.trying=null; L.spin=spinFor(L.tab); paintTabs(); paintGrid(); paintStage(); return; }
+    if(tab){ if(L.playing){ L.playing(); L.playing=null; } L.tab=tab.getAttribute('data-tab'); L.trying=null; L.spin=spinFor(L.tab); paintTabs(); paintGrid(); paintStage(); return; }
+    if(e.target.closest('.lk-play')){ playOnStage(stageCelly()); return; }
     var b=e.target.closest('.lk-item'); if(!b||!L.data) return;
     var id=b.getAttribute('data-id'), it=null;
     for(var i=0;i<L.data.items.length;i++) if(L.data.items[i].id===id) it=L.data.items[i];
     if(!it) return;
+    // Tapping a celebration plays it (even a locked one, as a try-on), so the
+    // kid sees exactly what they are wearing or working toward.
+    var celly=(it.slot==='celebration' && CELLYS[cellyKey(id)])?id:null;
     if(!owned(id)){
       var tryLook={}; for(var k in L.look) tryLook[k]=L.look[k]; tryLook[it.slot]=id;
-      L.trying={item:it,look:tryLook}; paintStage(); return;
+      L.trying={item:it,look:tryLook}; if(L.playing){ L.playing(); L.playing=null; } paintStage(); if(celly) playOnStage(celly); return;
     }
+    if(L.trying && L.playing){ L.playing(); L.playing=null; }
     L.trying=null;
-    if(L.look[it.slot]===id){ paintStage(); return; }
+    if(L.look[it.slot]===id){ paintStage(); if(celly) playOnStage(celly); return; }
+    if(celly){ setTimeout(function(){ playOnStage(celly); },0); }
     var prev={}; for(var k2 in L.look) prev[k2]=L.look[k2];
     L.look[it.slot]=id; paintGrid();
     if(it.slot==='facing') L.spin=faceSpin(id.slice(it.slot.length+1)); // turn the stage to the picked view
@@ -693,6 +865,7 @@
   }
 
   function closeLocker(){
+    if(L.playing){ L.playing(); L.playing=null; }
     var el=document.querySelector('.lk'); if(el) el.remove();
     document.removeEventListener('keydown',onKey);
     if(location.hash==='#myplayer'){ try{ history.replaceState(null,'',location.pathname+location.search); }catch(_){} }
@@ -709,11 +882,11 @@
   function openLocker(opts){
     opts=opts||{};
     if(document.querySelector('.lk')) return;
-    if(!document.getElementById('lk-css')){ var s=document.createElement('style'); s.id='lk-css'; s.textContent=lockerCss(); document.head.appendChild(s); }
+    ensureLockerCss();
     L={ onClose:opts.onClose||null, data:null, look:null, tab:opts.tab||'skin', trying:null, changed:false, me:null, spin:-25, status:'', num:'', build:null };
     var el=document.createElement('div'); el.className='lk'; el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true'); el.setAttribute('aria-label','My Player');
     el.innerHTML="<div class='lk-head'><h2>My Player</h2><button type='button' class='lk-x' aria-label='Close'>&#10005;</button></div>"+
-      "<div class='lk-stage' aria-label='Your player. Drag to spin.'></div><div class='lk-note' aria-live='polite'></div>"+
+      "<div class='lk-stagewrap'><div class='lk-stage' aria-label='Your player. Drag to spin.'></div><button type='button' class='lk-play' hidden>&#9654; Play</button></div><div class='lk-note' aria-live='polite'></div>"+
       "<div class='lk-tabs' role='tablist' data-lk='tabs'></div><div class='lk-grid'><div class='lk-msg'>Getting your player...</div></div><div class='lk-foot' hidden></div>";
     document.body.appendChild(el);
     el.querySelector('.lk-x').addEventListener('click',closeLocker);
@@ -743,16 +916,44 @@
   // blocks the next tap, a New tag in the My Player, and a dot on its button.
   var toastTimer=null;
   function itemName(j,id){ for(var i=0;i<(j.items||[]).length;i++) if(j.items[i].id===id) return j.items[i]; return null; }
-  function showToast(it,count){
+  // Milestone moment: when the kid has a celebration (or just earned one), the
+  // message shows their own player doing it, wearing the new item. It never
+  // blocks a tap; reduced motion shows the end pose.
+  function showToast(it,count,look,teamWeek){
     var old=document.querySelector('.lk-toast'); if(old) old.remove();
     var short=it.id.slice(it.slot.length+1);
+    var my=norm(look||{}); my[it.slot]=it.id; my.num='';
+    var celly=it.slot==='celebration'?it.id:my.celebration;
+    if(!CELLYS[cellyKey(celly)]) celly=null;
+    var kind=it.slot==='pose'?'move':(it.slot==='celebration'?'celly':'gear');
     var b=document.createElement('button'); b.type='button'; b.className='lk-toast'; b.setAttribute('role','status');
-    b.innerHTML=itemPic(it.slot,short)+"<span>New "+(it.slot==='pose'?'move':'gear')+"! "+esc(it.label)+
-      (count>1?' and '+(count-1)+' more':'')+"<small>Tap to try it on</small></span>";
-    b.addEventListener('click',function(){ b.remove(); if(window.thwapOpenMyPlayer) window.thwapOpenMyPlayer({tab:it.slot}); else openLocker({tab:it.slot}); });
+    var pic0=celly?"<span class='lk-mini pose lk-tcelly' aria-hidden='true'></span>":itemPic(it.slot,short);
+    if(it.rule && it.rule.type==='team'){
+      // The team did it: everyone gets it, so say who earned it and what this kid added.
+      var mine=teamWeek&&typeof teamWeek.mine==='number'?teamWeek.mine:null;
+      var add=mine>0?('You added '+mine+' drill'+(mine===1?'':'s')+'.'):'Train this week to help the team get the next one.';
+      b.innerHTML=pic0+"<span>The Rangers did it!<small>New team item: "+esc(it.label)+(count>1?' and '+(count-1)+' more':'')+". "+add+"</small></span>";
+    } else {
+      b.innerHTML=pic0+"<span>New "+kind+"! "+esc(it.label)+
+        (count>1?' and '+(count-1)+' more':'')+"<small>Tap to try it on</small></span>";
+    }
+    if(celly){ var pic=b.querySelector('.lk-tcelly');
+      playCelly(celly,my,function(m,sx){ pic.innerHTML=m; var sc=pic.querySelector('.av-scene'); if(sc) sc.style.translate=sx?(sx+'em 0'):''; }); }
+    b.addEventListener('click',function(){ b.remove(); var tb=tabFor(it.slot); if(window.thwapOpenMyPlayer) window.thwapOpenMyPlayer({tab:tb}); else openLocker({tab:tb}); });
     document.body.appendChild(b);
     try{ if(window.thwapSfx) window.thwapSfx('unlock'); }catch(_){}
     try{ if(window.thwapHaptic) window.thwapHaptic('done'); }catch(_){}
+    clearTimeout(toastTimer); toastTimer=setTimeout(function(){ if(b.parentNode) b.remove(); },5000);
+  }
+  // The coach gave this player the C or an A: a one-time message on this device.
+  function showLetterToast(letter){
+    var old=document.querySelector('.lk-toast'); if(old) old.remove();
+    var b=document.createElement('button'); b.type='button'; b.className='lk-toast'; b.setAttribute('role','status');
+    b.innerHTML="<span class='lk-sw lk-letter-sw' aria-hidden='true'>"+letter+"</span><span>Coach gave you the "+letter+"!"+
+      "<small>"+(letter==='C'?'You\u2019re the captain.':'You\u2019re an assistant captain.')+" It\u2019s on your jersey now.</small></span>";
+    b.addEventListener('click',function(){ b.remove(); });
+    document.body.appendChild(b);
+    try{ if(window.thwapSfx) window.thwapSfx('unlock'); }catch(_){}
     clearTimeout(toastTimer); toastTimer=setTimeout(function(){ if(b.parentNode) b.remove(); },5000);
   }
   // Dot on the card's Edit player button while new gear is waiting.
@@ -767,11 +968,17 @@
     if(!on() || typeof fetch!=='function') return Promise.resolve(null);
     return fetch('/api/board?action=look',{credentials:'same-origin'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){
       if(!j) return null;
+      var prevLetter=null; try{ prevLetter=localStorage.getItem('thwapLetterSeen'); }catch(_){}
+      var curLetter=j.letter||'';
+      if(curLetter!==(prevLetter||'')){
+        try{ localStorage.setItem('thwapLetterSeen',curLetter); }catch(_){}
+        if(curLetter && !document.querySelector('.lk')){ ensureLockerCss(); showLetterToast(curLetter); return j; }
+      }
       // Only announce items a kid can actually see and wear: slots with a tab
       // in My Player. Celebrations have no tab until they can play, so they
       // stay unseen (not announced, not recorded) and announce when it ships.
       // Stances got the Moves tab, so moves held back earlier announce now.
-      var shown={}; GEAR_TABS.forEach(function(t){ shown[t[0]]=1; });
+      var shown={}; GEAR_TABS.forEach(function(t){ slotsOf(t[0]).forEach(function(sl){ shown[sl]=1; }); });
       var ready=(j.unlocked||[]).filter(function(id){ var it=itemName(j,id); return !it || shown[it.slot]; });
       var seen=readList('thwapUnlockSeen');
       if(!seen){ writeList('thwapUnlockSeen',ready); return j; } // first look: past training is the builder's job
@@ -782,7 +989,7 @@
       if(fresh.length){
         writeList('thwapUnlockNew',(readList('thwapUnlockNew')||[]).concat(fresh));
         var first=itemName(j,fresh[0]);
-        if(first && !document.querySelector('.lk')) showToast(first,fresh.length);
+        if(first && !document.querySelector('.lk')) showToast(first,fresh.length,j.look,j.teamWeek);
       }
       if((readList('thwapUnlockNew')||[]).length) markDot();
       return j;
@@ -811,7 +1018,7 @@
     window.addEventListener('hashchange',function(){ if(location.hash==='#myplayer') openLocker(); });
     // The entry point is the player's own card (My Player button), not a
     // floating button. Styles are needed up front for the dot and the toast.
-    if(!document.getElementById('lk-css')){ var s=document.createElement('style'); s.id='lk-css'; s.textContent=lockerCss(); document.head.appendChild(s); }
+    ensureLockerCss();
     if((readList('thwapUnlockNew')||[]).length) markDot();
     window.addEventListener('load',function(){ if((readList('thwapUnlockNew')||[]).length) markDot(); });
     hookMarkDone(); window.addEventListener('load',hookMarkDone);
@@ -822,5 +1029,5 @@
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bootLocker); else bootLocker();
 
-  window.thwapAvatar={ on:on, live:LIVE, html:html, lookFor:lookFor, refreshTeamLooks:refreshTeamLooks, openLocker:openLocker, checkUnlocks:checkUnlocks, norm:norm, SKIN:SKIN, HAIR:HAIR, JERSEY:JERSEY, DEFAULT_LOOK:DEFAULT_LOOK, POSES:['ready'].concat(Object.keys(POSES)) };
+  window.thwapAvatar={ on:on, live:LIVE, html:html, lookFor:lookFor, refreshTeamLooks:refreshTeamLooks, openLocker:openLocker, checkUnlocks:checkUnlocks, norm:norm, SKIN:SKIN, HAIR:HAIR, JERSEY:JERSEY, DEFAULT_LOOK:DEFAULT_LOOK, POSES:['ready'].concat(Object.keys(POSES)), CELLYS:Object.keys(CELLYS), playCelly:playCelly, letterOf:letterOf };
 })();

@@ -152,7 +152,10 @@ describe('accessibility', () => {
 describe('Team page: scaled roster card keeps the Jr Rangers / Vancouver WA block inside', () => {
   it('the association/location fix is scoped to #roster only', () => {
     expect(html).toMatch(/#roster \.pcard \.cf2-foot\{padding-right:22px\}/);
-    expect(html).toMatch(/#roster \.pcard \.cf2-team\{letter-spacing:\.04em\}/);
+    // 12px floor: letter-spacing dropped to 0 and the name block may shrink, so
+    // 'Vancouver WA' stays inside the card's right padding.
+    expect(html).toMatch(/#roster \.pcard \.cf2-team\{letter-spacing:0\}/);
+    expect(html).toMatch(/#roster \.pcard \.cf2-foot>div:first-child\{min-width:0;flex:1 1 auto\}/);
   });
   it('the base card foot rule is unchanged, so other surfaces render as before', () => {
     expect(html).toMatch(/\.cf2-foot\{position:absolute;left:0;right:0;bottom:0;z-index:4;padding:12px 16px 16px/);

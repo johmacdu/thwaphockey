@@ -11,14 +11,21 @@
 //   POST ?action=create-team    { coachToken, name, association, ageGroup } -> { code }
 //   POST ?action=add-player     { code, coachToken, firstName, lastName, number, position, parentEmail }
 //   POST ?action=remove-player  { code, coachToken, playerId }
-//   GET  ?action=roster         { code }                          -> members + this-week participation + idpGoal
-//   GET  ?action=player         { code, playerId }                -> per-player IDP roll-up
-//   POST ?action=join           { code, playerId }                -> kid/parent joins via code
+//   GET  ?action=roster         { code, coachToken? }             -> members + this-week participation + idpGoal
+//                                 (parentEmails only for the team's coach, an admin, or the signed-in player's own)
+//   GET  ?action=player         { code, playerId }                -> per-player IDP roll-up (member without parent emails
+//                                 unless the team's coach, an admin, or the signed-in player)
+//   POST ?action=join           { code, playerId }                -> kid/parent joins via code (no parent emails)
 //   GET  ?action=schedule       { code }                          -> read-only week (placeholder this phase)
-//   POST ?action=set-idp-goal   { playerId, text, setBy }         -> monthly personal goal
+//   POST ?action=set-idp-goal   { playerId, text, coachToken? }   -> monthly personal goal (session player or team coach)
 //   GET  ?action=idp-goal       { playerId }                      -> current monthly goal
-//   POST ?action=log-game-goal  { playerId, goalId, goalTitle, done, note } -> append game-goal check-off
+//   POST ?action=log-game-goal  { playerId, goalId, goalTitle, done, note, coachToken? } -> append game-goal
+//                                 check-off (thwapSession for that player, or a coach of the player's team)
 //   GET  ?action=game-goal-log  { playerId }                      -> recent check-offs
+//   POST ?action=save-game-goals { gameId?, goalIds }             -> save the signed-in player's own
+//                                 Game Day Goals picks for a game (thwapSession only; no gameId = next game)
+//   GET  ?action=my-game-goals  { gameId?, playerId?, coachToken? } -> { gameDay, game, goals, teamGoal }
+//                                 for the signed-in player, or a player on a team the coach runs
 //
 // Coach auth: a coach session token (reuses lib/session_store's HMAC mint/verify,
 // with playerId = 'coach:<email>'). Password is checked against an HMAC hash so no
@@ -27,8 +34,9 @@
 
 import crypto from 'crypto';
 import { parseBody } from '../lib/photo_common.js';
-import { mintSession, verifySession } from '../lib/session_store.js';
-import { ROSTER, weekBoard, monthTrend, adjustPlayer } from '../lib/store.js';
+import { mintSession, verifySession, readSessionCookie } from '../lib/session_store.js';
+import { ROSTER, weekBoard, monthTrend, adjustPlayer, getGrants, setGrants } from '../lib/store.js';
+import { LETTERS, MAX_A, letterFromGrants, withLetter } from '../lib/avatar_items.js';
 import {
   getTeam, setTeam, listMembers, addMember, getMember, removeMember,
   getCoach, setCoach, getIdpGoal, setIdpGoal, getGameGoalLog, logGameGoal, getIdpGoalLog,
@@ -41,7 +49,11 @@ import {
   backfillSeedBeta, getBetaUntil,
   savePushToken,
 } from '../lib/teams_store.js';
-import { ensureSchedule, getSchedule, addEvent as addScheduleEvent, nextEvent } from '../lib/schedule_store.js';
+import { ensureSchedule, getSchedule, addEvent as addScheduleEvent, nextEvent, localDateStr } from '../lib/schedule_store.js';
+import { resolveSigninPlayer, RANGERS_TEAM_CODE } from '../lib/signin_players.js';
+import { teamPlayerIds } from '../lib/team_players.js';
+import { GAME_GOAL_TARGET, gameGoalById } from '../lib/game_goals_catalog.js';
+import { getGamePick, setGamePick } from '../lib/game_picks_store.js';
 import { isGated, billingStatus } from '../lib/billing_store.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -202,6 +214,120 @@ async function requireCoach(req, res) {
   return rec;
 }
 
+// Does this coach run this team? Head or assistant on the team's coach list, the
+// team's own coachEmail, or the team in the coach's own record. Being *a* coach
+// is not enough: anyone can register as one.
+async function coachRunsTeam(coach, code) {
+  const c = String(code || '').trim().toUpperCase();
+  const email = String(coach && coach.email || '').toLowerCase();
+  if (!c || !email) return false;
+  const team = await getTeam(c);
+  if (!team) return false;
+  if (String(team.coachEmail || '').toLowerCase() === email) return true;
+  if ((coach.teams || []).map((t) => String(t).toUpperCase()).includes(c)) return true;
+  const coaches = await listTeamCoaches(c);
+  return coaches.some((x) => String(x.email || '').toLowerCase() === email);
+}
+
+async function playerOnTeam(code, playerId) {
+  const pid = String(playerId || '').trim().toLowerCase();
+  if (!pid) return false;
+  return (await listMembers(code)).map((m) => String(m).toLowerCase()).includes(pid);
+}
+
+// --- read-side access to children's family data -----------------------------
+// Parent emails are a child's family contact details. They go only to a coach
+// who runs the player's team, an admin, or the signed-in player (their own).
+// These helpers never write a response, so a public caller still gets the
+// non-sensitive fields instead of an error.
+const PARENT_EMAIL_FIELDS = ['parentEmail', 'parentEmail2', 'parentEmails'];
+function withoutParentEmails(m) {
+  if (!m || typeof m !== 'object') return m;
+  const out = { ...m };
+  for (const k of PARENT_EMAIL_FIELDS) delete out[k];
+  return out;
+}
+// The coach behind a coachToken (query or body), or null. No response written.
+async function coachFromReq(req) {
+  const { coachToken } = parseBody(req);
+  const tok = coachToken || (req.query && req.query.coachToken) || '';
+  const c = tok ? coachFromToken(tok) : null;
+  return c ? await getCoach(c.email) : null;
+}
+// Is this an admin request (admin session token or the shared admin key)?
+async function isAdminReq(req) {
+  const { adminToken } = parseBody(req);
+  const auth = (req.headers && req.headers.authorization) ? String(req.headers.authorization) : '';
+  const bearer = auth.indexOf('Bearer ') === 0 ? auth.slice(7) : '';
+  const a = adminFromToken(adminToken || (req.query && req.query.adminToken) || bearer || '');
+  if (a && (await getAdmin(a.email))) return true;
+  return adminOk(req);
+}
+// The signed-in player's id from the thwapSession cookie, or ''.
+function sessionPlayerId(req) {
+  const s = verifySession(readSessionCookie(req));
+  return s ? String(s.playerId || '').toLowerCase() : '';
+}
+// May this request read the parent emails of player pid on team code?
+async function canSeeParentEmails(req, code, pid) {
+  if (pid && sessionPlayerId(req) === String(pid).toLowerCase()) return true;
+  const coach = await coachFromReq(req);
+  if (coach && code && (await coachRunsTeam(coach, code))) return true;
+  return isAdminReq(req);
+}
+
+// --- write-side access to a player's own records ----------------------------
+// A write to a player's log/goal needs the signed-in player themselves (the
+// thwapSession cookie, the same gate api/done uses) or a coach who runs the
+// player's team (coachToken). No session and no team coach -> 401; signed in
+// as someone else -> 403. Returns 'player' | 'coach', or null after a response.
+async function authorizePlayerWrite(req, res, pid) {
+  const coach = await coachFromReq(req);
+  if (coach) {
+    const m = await getMember(pid);
+    const code = m && m.teamCode;
+    if (code && (await coachRunsTeam(coach, code))) return 'coach';
+  }
+  const selfId = sessionPlayerId(req);
+  if (selfId && selfId === pid) return 'player';
+  if (!selfId && !coach) { res.status(401).json({ error: 'session required' }); return null; }
+  res.status(403).json({ error: 'not your account' });
+  return null;
+}
+
+// POST ?action=set-letter { coachToken, code, playerId, letter: 'C' | 'A' | '' }
+//   -> the coach gives a player the C or an A, or takes it off (''). The coach
+//   must run the team and the player must be on it. One C per team: giving the
+//   C to someone takes it off whoever had it. At most two A's: a third is
+//   refused so the coach decides who comes off. Stored in the player's coach
+//   grants; every card picks it up from ?action=looks.
+async function setLetter(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  const coach = await requireCoach(req, res); if (!coach) return;
+  const { code, playerId, letter } = parseBody(req);
+  const want = String(letter || '').toUpperCase();
+  if (want && !LETTERS[want]) return res.status(400).json({ error: 'letter must be C, A or empty' });
+  if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  if (!(await coachRunsTeam(coach, code))) return res.status(403).json({ error: 'not your team' });
+  const pid = String(playerId || '').toLowerCase();
+  const members = (await listMembers(code)).map((m) => String(m).toLowerCase());
+  if (!pid || !members.includes(pid)) return res.status(404).json({ error: 'player is not on this team' });
+  const others = members.filter((m) => m !== pid);
+  const otherGrants = await Promise.all(others.map((m) => getGrants(m)));
+  let moved = null;
+  if (want === 'A') {
+    const aCount = otherGrants.filter((g) => letterFromGrants(g) === 'A').length;
+    if (aCount >= MAX_A) return res.status(409).json({ error: 'Two players already have an A. Take one off first.' });
+  }
+  if (want === 'C') {
+    for (let i = 0; i < others.length; i++) {
+      if (letterFromGrants(otherGrants[i]) === 'C') { await setGrants(others[i], withLetter(otherGrants[i], '')); moved = others[i]; }
+    }
+  }
+  const grants = await setGrants(pid, withLetter(await getGrants(pid), want));
+  return res.status(200).json({ ok: true, playerId: pid, letter: letterFromGrants(grants), movedFrom: moved });
+}
+
 // --- admin session token (email + password) --------------------------------
 // Same HMAC session mint as coaches, namespaced admin: so an admin token can
 // never be confused with a coach token. The email is hex-encoded inside the pid.
@@ -320,6 +446,7 @@ async function addPlayer(req, res) {
   const coach = await requireCoach(req, res); if (!coach) return;
   const { code, firstName, lastName, number, position, parentEmail, parentEmail2, parentEmails, photo } = parseBody(req);
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  if (!(await coachRunsTeam(coach, code))) return res.status(403).json({ error: 'not your team' });
   if (!String(firstName || '').trim()) return res.status(400).json({ error: 'first name required' });
   // Accept the flexible list; fall back to the legacy two fields.
   const pe = normalizeParentEmails(parentEmails !== undefined ? parentEmails : [parentEmail, parentEmail2]);
@@ -336,6 +463,8 @@ async function removePlayer(req, res) {
   const coach = await requireCoach(req, res); if (!coach) return;
   const { code, playerId } = parseBody(req);
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  if (!(await coachRunsTeam(coach, code))) return res.status(403).json({ error: 'not your team' });
+  if (!(await playerOnTeam(code, playerId))) return res.status(404).json({ error: 'player is not on this team' });
   const out = await removeMember(code, playerId);
   return res.status(200).json({ ok: true, ...out });
 }
@@ -346,6 +475,8 @@ async function updatePlayer(req, res) {
   const coach = await requireCoach(req, res); if (!coach) return;
   const { code, playerId, firstName, lastName, number, position, photo, parentEmail, parentEmail2, parentEmails } = parseBody(req);
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  if (!(await coachRunsTeam(coach, code))) return res.status(403).json({ error: 'not your team' });
+  if (!(await playerOnTeam(code, playerId))) return res.status(404).json({ error: 'player is not on this team' });
   if (firstName !== undefined && !String(firstName || '').trim()) {
     return res.status(400).json({ error: 'first name cannot be empty' });
   }
@@ -570,8 +701,19 @@ async function roster(req, res) {
   const code = (req.query && req.query.code) || SEED_TEAM_CODE;
   const team = await getTeam(code);
   if (!team) return res.status(404).json({ error: 'unknown team' });
+  // Parent emails are children's-family contact details: only a coach who runs
+  // this team (or an admin) sees them all; a signed-in player sees only their
+  // own (the self-edit sheet). Everyone else gets the roster without them.
+  const tok = (req.query && req.query.coachToken) || '';
+  const cTok = tok ? coachFromToken(tok) : null;
+  const cRec = cTok ? await getCoach(cTok.email) : null;
+  const seesAllEmails = !!(cRec && (await coachRunsTeam(cRec, code))) || (await isAdminReq(req));
+  const session = verifySession(readSessionCookie(req));
+  const selfId = session ? String(session.playerId || '').toLowerCase() : '';
   const ids = await listMembers(code);
-  const board = await weekBoard(); // [{id, stick, shoot, dryland}]
+  // This team's week only. weekBoard() with no ids reads the Jr. Rangers 10U
+  // roster, which left every other team's coach looking at zeros.
+  const board = await weekBoard(await teamPlayerIds(team.code)); // [{id, stick, shoot, dryland}]
   const byId = Object.fromEntries(board.map((b) => [b.id, b]));
   const members = [];
   for (const pid of ids) {
@@ -584,7 +726,7 @@ async function roster(req, res) {
       firstName: (m && m.firstName) || '', lastName: (m && m.lastName) || '',
       number: m ? m.number : null, position: (m && m.position) || '',
       status: (m && m.status) || 'active',
-      parentEmails: parentEmailList(m),
+      parentEmails: (seesAllEmails || pid === selfId) ? parentEmailList(m) : [],
       // Full weekly split so the coach dashboard can break participation down by
       // skill (stick/shoot/dryland are the required triad; iq + pass are bonus).
       week: {
@@ -609,15 +751,18 @@ async function playerRollup(req, res) {
   const pid = String((req.query && req.query.playerId) || '').toLowerCase();
   if (!pid) return res.status(400).json({ error: 'playerId required' });
   const m = await getMember(pid);
-  const board = await weekBoard();
+  const board = await weekBoard([pid]); // this player's week, on any team
   const wk = board.find((b) => b.id === pid) || { stick: 0, shoot: 0, dryland: 0 };
   const goal = await getIdpGoal(pid);
   const log = await getGameGoalLog(pid);
   const trend = await monthTrend(pid, 4);
+  // The public game-day page reads member.position/gamePosition here, so the
+  // record stays readable, minus parent emails unless the caller may see them.
+  const member = m ? ((await canSeeParentEmails(req, m.teamCode, pid)) ? m : withoutParentEmails(m)) : null;
   res.setHeader('Cache-Control', 'no-store');
   return res.status(200).json({
     ok: true, playerId: pid,
-    member: m || null,
+    member,
     baseThisWeek: { stick: wk.stick, shoot: wk.shoot, dryland: wk.dryland },
     monthTrend: trend,
     idpGoal: goal || null,
@@ -634,8 +779,10 @@ async function join(req, res) {
   const members = await listMembers(code);
   if (!members.includes(pid)) return res.status(404).json({ error: 'player not on this team' });
   const m = await getMember(pid);
+  // join needs only a team code, so it must not hand back parent emails.
+  const player = (await canSeeParentEmails(req, team.code, pid)) ? m : withoutParentEmails(m);
   res.setHeader('Cache-Control', 'no-store');
-  return res.status(200).json({ ok: true, team: { code: team.code, name: team.name }, player: m });
+  return res.status(200).json({ ok: true, team: { code: team.code, name: team.name }, player });
 }
 
 async function schedule(req, res) {
@@ -654,8 +801,16 @@ async function addEvent(req, res) {
   const coach = await requireCoach(req, res); if (!coach) return;
   const { code, event } = parseBody(req);
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  if (!(await coachRunsTeam(coach, code))) return res.status(403).json({ error: 'not your team' });
   if (!event || !event.date) return res.status(400).json({ error: 'event date required' });
-  const sched = await addScheduleEvent(code, event);
+  const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
+  if (!DAY_RE.test(String(event.date))) return res.status(400).json({ error: 'event date must be YYYY-MM-DD' });
+  const kind = event.kind || 'game';
+  if (kind !== 'game' && kind !== 'tournament') return res.status(400).json({ error: 'kind must be game or tournament' });
+  if (kind === 'tournament' && event.endDate != null && event.endDate !== '') {
+    if (!DAY_RE.test(String(event.endDate)) || event.endDate < event.date) return res.status(400).json({ error: 'the last day must be on or after the first day' });
+  }
+  const sched = await addScheduleEvent(code, { ...event, kind });
   return res.status(200).json({ ok: true, schedule: sched, next: nextEvent(sched) });
 }
 
@@ -676,6 +831,9 @@ async function setCoachProfile(req, res) {
     const team = await getTeam(body.code);
     if (team.coachEmail) await ensureHeadCoach(body.code, team.coachEmail);
     coaches = await enrichCoaches(body.code);
+    // Any registered coach can name any team code here, so emails only go back
+    // to a coach who runs that team.
+    if (!(await coachRunsTeam(coach, body.code))) coaches = withoutCoachEmails(coaches);
   }
   return res.status(200).json({ ok: true, coaches });
 }
@@ -698,6 +856,7 @@ async function setPlan(req, res) {
   const coach = await requireCoach(req, res); if (!coach) return;
   const { code, plan } = parseBody(req);
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  if (!(await coachRunsTeam(coach, code))) return res.status(403).json({ error: 'not your team' });
   // Paywall: no editing the weekly plan when the team's season is unpaid. No-op
   // until BILLING_ENFORCED=1, and fails open if billing can't be read.
   if (await isGated(code)) return res.status(402).json({ error: 'season not active', gated: true });
@@ -720,6 +879,7 @@ async function setTeamGoalHandler(req, res) {
   const coach = await requireCoach(req, res); if (!coach) return;
   const { code, text } = parseBody(req);
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  if (!(await coachRunsTeam(coach, code))) return res.status(403).json({ error: 'not your team' });
   const rec = await setTeamGoal(code, { text });
   return res.status(200).json({ ok: true, teamGoal: rec });
 }
@@ -730,6 +890,7 @@ async function suggestDrill(req, res) {
   const coach = await requireCoach(req, res); if (!coach) return;
   const { code, category, text } = parseBody(req);
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  if (!(await coachRunsTeam(coach, code))) return res.status(403).json({ error: 'not your team' });
   const rec = await addDrillSuggestion(code, { category, text, byCoach: coach.email });
   if (!rec) return res.status(400).json({ error: 'a drill description is required' });
   return res.status(200).json({ ok: true, suggestion: rec });
@@ -741,6 +902,7 @@ async function drillSuggestions(req, res) {
   const coach = await requireCoach(req, res); if (!coach) return;
   const code = (req.query && req.query.code) || SEED_TEAM_CODE;
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
+  if (!(await coachRunsTeam(coach, code))) return res.status(403).json({ error: 'not your team' });
   res.setHeader('Cache-Control', 'no-store');
   return res.status(200).json({ ok: true, suggestions: await listDrillSuggestions(code) });
 }
@@ -826,14 +988,32 @@ async function enrichCoaches(code) {
   return out;
 }
 
+// Coach emails are contact details. A team code is shared with every family, so
+// it is not enough to read them: only a coach who runs this team (or an admin)
+// gets emails. Everyone else gets name, role and photo, which is all the player
+// and parent banner shows.
+function withoutCoachEmails(list) {
+  return (list || []).map(({ email, ...rest }) => rest);
+}
+async function canSeeCoachEmails(req, code) {
+  const coach = await coachFromReq(req);
+  if (coach && (await coachRunsTeam(coach, code))) return true;
+  return isAdminReq(req);
+}
+
 async function teamCoaches(req, res) {
   if (!methodGuard(req, res, 'GET')) return;
   const code = (req.query && req.query.code) || SEED_TEAM_CODE;
   const team = await getTeam(code);
   if (!team) return res.status(404).json({ error: 'unknown team' });
   if (team.coachEmail) await ensureHeadCoach(code, team.coachEmail);
+  const coaches = await enrichCoaches(code);
   res.setHeader('Cache-Control', 'no-store');
-  return res.status(200).json({ ok: true, coaches: await enrichCoaches(code), maxAssistants: MAX_ASSISTANTS });
+  return res.status(200).json({
+    ok: true,
+    coaches: (await canSeeCoachEmails(req, code)) ? coaches : withoutCoachEmails(coaches),
+    maxAssistants: MAX_ASSISTANTS,
+  });
 }
 
 // POST invite an assistant coach (head only, capped at MAX_ASSISTANTS). Adds them
@@ -882,9 +1062,11 @@ async function removeCoach(req, res) {
 
 async function setIdp(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
-  const { playerId, text, setBy } = parseBody(req);
+  const { playerId, text } = parseBody(req);
   const pid = String(playerId || '').toLowerCase();
   if (!pid) return res.status(400).json({ error: 'playerId required' });
+  // Who set it comes from the credential, not the body, so it cannot be spoofed.
+  const setBy = await authorizePlayerWrite(req, res, pid); if (!setBy) return;
   const rec = await setIdpGoal(pid, { text, setBy });
   return res.status(200).json({ ok: true, idpGoal: rec });
 }
@@ -928,6 +1110,7 @@ async function logGoal(req, res) {
   const { playerId, goalId, goalTitle, done, note } = parseBody(req);
   const pid = String(playerId || '').toLowerCase();
   if (!pid) return res.status(400).json({ error: 'playerId required' });
+  if (!(await authorizePlayerWrite(req, res, pid))) return;
   const entry = await logGameGoal(pid, { goalId, goalTitle, done, note });
   return res.status(200).json({ ok: true, entry });
 }
@@ -938,6 +1121,134 @@ async function gameGoalLogRead(req, res) {
   if (!pid) return res.status(400).json({ error: 'playerId required' });
   res.setHeader('Cache-Control', 'no-store');
   return res.status(200).json({ ok: true, log: (await getGameGoalLog(pid)).slice(-30).reverse() });
+}
+
+// --- Game Day Goals picks (server copy, for other devices and the watch) ----
+// Game day follows the web app's "next game" card and hockey_game_goals.html's
+// header, which both read next.nextGame from lib/schedule_store nextEvent(): the
+// soonest scheduled event, a game OR a tournament, that has not ended yet
+// (endDate, else date, on or after today's Vancouver date). A tournament counts
+// as game day on every date from its start through its endDate. With no gameId
+// the target is that next event; a gameId names one event on the team schedule.
+
+// The player's team schedule. The Rangers seed team seeds its schedule on first
+// read (same as ?action=schedule); other teams read what their coach entered.
+async function teamScheduleFor(code) {
+  return code === RANGERS_TEAM_CODE ? ensureSchedule(code) : getSchedule(code);
+}
+const GAME_DAY_KINDS = ['game', 'tournament'];
+function nextGameOf(sched, today) {
+  const events = (sched.events || []).filter((e) => e && e.date && GAME_DAY_KINDS.includes(e.kind || 'game'));
+  return nextEvent({ ...sched, events }, today).nextGame;
+}
+// { game } or { error, status }. today is the Vancouver date.
+function resolvePickGame(sched, gameId, today) {
+  const gid = String(gameId || '').trim();
+  if (gid) {
+    const ev = (sched.events || []).find((e) => e && e.id === gid);
+    return ev ? { game: ev } : { status: 400, error: 'unknown game' };
+  }
+  const g = nextGameOf(sched, today);
+  return g ? { game: g } : { status: 409, error: 'no upcoming game' };
+}
+function isGameDay(game, today) {
+  if (!game || !game.date) return false;
+  return today >= game.date && today <= (game.endDate || game.date);
+}
+function publicGame(g) {
+  if (!g) return null;
+  return {
+    id: g.id, kind: g.kind || 'game', date: g.date, endDate: g.endDate || null,
+    time: g.time || null, opponent: g.opponent || '', home: !!g.home, place: g.place || '',
+  };
+}
+// How many goals a player may pick: the full plan minus the coach's team goal
+// slot, the same rule as selfCap in hockey_game_goals.html.
+function pickCap(teamGoalRec) {
+  return GAME_GOAL_TARGET - (teamGoalRec && String(teamGoalRec.text || '').trim() ? 1 : 0);
+}
+
+// POST ?action=save-game-goals { gameId?, goalIds }  -> save the SIGNED-IN
+// player's own picks. Only the thwapSession player may write; a body playerId
+// naming someone else is refused (403), never written. Coaches cannot write a
+// kid's picks.
+async function saveGameGoals(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  const selfId = sessionPlayerId(req);
+  if (!selfId) return res.status(401).json({ error: 'session required' });
+  const { gameId, goalIds, playerId } = parseBody(req);
+  if (playerId != null && String(playerId).trim() && String(playerId).trim().toLowerCase() !== selfId) {
+    return res.status(403).json({ error: 'not your account' });
+  }
+  if (!Array.isArray(goalIds)) return res.status(400).json({ error: 'goalIds must be a list' });
+  const ids = [];
+  for (const raw of goalIds) {
+    const id = String(raw || '').trim();
+    if (!gameGoalById(id)) return res.status(400).json({ error: 'unknown goal', goalId: id });
+    if (!ids.includes(id)) ids.push(id);
+  }
+  const player = await resolveSigninPlayer(selfId);
+  if (!player) return res.status(404).json({ error: 'unknown player' });
+  const today = localDateStr();
+  const sched = await teamScheduleFor(player.teamCode);
+  const r = resolvePickGame(sched, gameId, today);
+  if (!r.game) return res.status(r.status).json({ error: r.error });
+  const tg = await getTeamGoal(player.teamCode);
+  const max = pickCap(tg);
+  if (ids.length > max) return res.status(400).json({ error: 'too many goals', max });
+  const rec = await setGamePick(selfId, r.game.id, ids);
+  res.setHeader('Cache-Control', 'no-store');
+  return res.status(200).json({ ok: true, gameId: rec.gameId, goalIds: rec.goalIds, savedAt: rec.savedAt, max });
+}
+
+// GET ?action=my-game-goals [&gameId=] [&playerId=&coachToken=]
+//   -> { ok, playerId, gameDay, game, goals:[{id,title,emoji,cue}], teamGoal,
+//        savedAt, max }
+// The signed-in player reads their own. A coach who runs the player's team may
+// read a player by playerId. gameDay is true only on the game's Vancouver date.
+async function myGameGoals(req, res) {
+  if (!methodGuard(req, res, 'GET')) return;
+  const q = req.query || {};
+  const selfId = sessionPlayerId(req);
+  const asked = String(q.playerId || '').trim().toLowerCase();
+  let pid = '';
+  if (selfId && (!asked || asked === selfId)) {
+    pid = selfId;
+  } else {
+    const coach = await coachFromReq(req);
+    if (!coach && !selfId) return res.status(401).json({ error: 'session required' });
+    if (!asked) return res.status(400).json({ error: 'playerId required' });
+    const m = await resolveSigninPlayer(asked);
+    if (!coach || !m || !(await coachRunsTeam(coach, m.teamCode))) {
+      return res.status(403).json({ error: 'not your account' });
+    }
+    pid = asked;
+  }
+  const player = await resolveSigninPlayer(pid);
+  if (!player) return res.status(404).json({ error: 'unknown player' });
+  const today = localDateStr();
+  const sched = await teamScheduleFor(player.teamCode);
+  const teamGoalRec = await getTeamGoal(player.teamCode);
+  res.setHeader('Cache-Control', 'no-store');
+  const r = resolvePickGame(sched, q.gameId, today);
+  if (!r.game && r.status === 400) return res.status(400).json({ error: r.error });
+  const game = r.game || null;
+  const pick = game ? await getGamePick(pid, game.id) : null;
+  const goals = (pick ? pick.goalIds : [])
+    .map((id) => gameGoalById(id))
+    .filter(Boolean)
+    .map((g) => ({ id: g.id, title: g.title, emoji: g.emoji, cue: g.cue }));
+  return res.status(200).json({
+    ok: true,
+    playerId: pid,
+    gameDay: isGameDay(game, today),
+    game: publicGame(game),
+    goals,
+    saved: !!pick,
+    savedAt: pick ? pick.savedAt : null,
+    teamGoal: teamGoalRec || null,
+    max: pickCap(teamGoalRec),
+  });
 }
 
 // GET ?action=history&playerId=<pid>  -> the player's own review history:
@@ -971,14 +1282,21 @@ async function beta(req, res) {
   return res.status(200).json({ ok: true, betaUntil: await getBetaUntil(code) });
 }
 
-// Register a device push token (from the Capacitor native shell). Keyed to the
-// signed-in player when known so a later server-side push can target their
-// devices. No auth gate: a token alone is not sensitive and the native shell
-// only ever posts its own device's token.
+// Register a device push token (from the Capacitor native shell). Linking a
+// device to a player decides who receives that player's pushes, so it needs the
+// signed-in player (thwapSession cookie) or a coach who runs the player's team,
+// via the same authorizePlayerWrite gate as the other player writes. The token is
+// stored only under the authorized player: a body `player` naming someone else
+// is refused, never written. The current shell registers through
+// /api/push?action=register; this route stays for older builds.
 async function pushRegister(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
   const { token, platform, player } = parseBody(req);
-  const result = await savePushToken({ token, platform, player });
+  if (!String(token || '').trim()) return res.status(400).json({ error: 'token required' });
+  const pid = String(player || sessionPlayerId(req) || '').trim().toLowerCase();
+  if (!pid) return res.status(401).json({ error: 'session required' });
+  if (!(await authorizePlayerWrite(req, res, pid))) return;
+  const result = await savePushToken({ token, platform, player: pid });
   if (!result.ok) return res.status(400).json({ error: result.error || 'token required' });
   return res.status(200).json({ ok: true });
 }
@@ -992,6 +1310,7 @@ export default async function handler(req, res) {
     case 'add-player': return addPlayer(req, res);
     case 'remove-player': return removePlayer(req, res);
     case 'update-player': return updatePlayer(req, res);
+    case 'set-letter': return setLetter(req, res);
     case 'self-update-player': return selfUpdatePlayer(req, res);
     case 'admin-roster': return adminRoster(req, res);
     case 'admin-update-player': return adminUpdatePlayer(req, res);
@@ -1025,6 +1344,8 @@ export default async function handler(req, res) {
     case 'idp-goal': return idpGoal(req, res);
     case 'log-game-goal': return logGoal(req, res);
     case 'game-goal-log': return gameGoalLogRead(req, res);
+    case 'save-game-goals': return saveGameGoals(req, res);
+    case 'my-game-goals': return myGameGoals(req, res);
     case 'history': return historyRead(req, res);
     case 'push-register': return pushRegister(req, res);
     case 'beta': return beta(req, res);
@@ -1035,10 +1356,11 @@ export default async function handler(req, res) {
 // Exported for unit tests (call sub-handlers directly with a query.action-free req).
 export const _handlers = {
   coachLogin, coachRegister, createTeam, addPlayer, removePlayer, roster, playerRollup,
-  updatePlayer, setPassword, requestPassword, resetPassword, requestCode,
+  updatePlayer, setLetter, setPassword, requestPassword, resetPassword, requestCode,
   adminRoster, adminUpdatePlayer,
   adminLogin, adminSetPassword, adminStatus,
   join, schedule, setIdp, idpGoal, logGoal, gameGoalLogRead, historyRead, setGamePosition,
+  saveGameGoals, myGameGoals,
   getPlan, setPlan, beta,
   teamGoal, setTeamGoal: setTeamGoalHandler,
   suggestDrill, drillSuggestions,
