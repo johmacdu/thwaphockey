@@ -82,11 +82,11 @@ describe('celebration player', () => {
 });
 
 describe('Cellys tab in My Player', () => {
-  it('shows None yet, THWAP! and Knee slide; Play is hidden while none is worn', async () => {
+  it('shows None yet, THWAP!, Knee slide and the team Stick tap; Play is hidden while none is worn', async () => {
     const w = boot();
     await openLocker(w, { progress: A.progressFrom({}, 2) });
     expect(w.document.querySelector('[data-tab=celebration]').textContent).toBe('Cellys');
-    expect(w.document.querySelectorAll('.lk-item').length).toBe(3);
+    expect(w.document.querySelectorAll('.lk-item').length).toBe(4);
     expect(w.document.querySelector('[data-id=celebration-fistpump] .lk-sub').textContent).toBe('Train 15 days');
     expect(w.document.querySelector('.lk-play').hidden).toBe(true);
   });

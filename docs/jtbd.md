@@ -37,6 +37,9 @@ nav, kebab on mobile), each an X-close page returning to Home. Mirrors the playe
 - The Home has ONE core job and a hard cap on supporting blocks (player: today's
   work; coach: 3 blocks). A new idea displaces an existing block or goes on a
   page. Never a fourth coach block.
+- Coach home shows the roster's characters INSIDE the Participation block: each
+  "Top this week" row has the kid's own character in a small circle before the
+  name (Phase 4, Oct 28 2026). Not a new block.
 
 ## Design system
 All pages are built from the code-level design system in `design-system.md`

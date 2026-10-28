@@ -228,5 +228,8 @@ the hockey year, August to June, and rolls over in August.
   per team (giving it moves it); at most two A's. Drawn high on the chest on
   every card; the kid gets "Coach gave you the C!" once.
 - [ ] Phase 4 team set and tournament jersey: decided (see Phase 4 above).
-  The weekly goal is now adaptive (75, +10 per hit, to 145); next is the team set.
+  The weekly goal is now adaptive (75, +10 per hit, to 145). Team set built:
+  Rangers tape, Rangers decal, Team socks, Rangers gloves, Warm-up jersey and
+  the Stick tap celly unlock at 1 to 6 team goal weeks (`team` rule), for
+  everyone, with "The Rangers did it!". Next: the tournament jersey.
 - [ ] Unlock ladder check against December's data (early January).
