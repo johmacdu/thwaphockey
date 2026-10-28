@@ -43,7 +43,7 @@ describe('unlock ladder', () => {
   it('activities unlock the early tiers, training days the big ones', () => {
     const grinder = A.progressFrom({ stick: 200 }, 3); // one huge weekend
     const owned = A.unlockedIds(grinder);
-    expect(owned).toContain('celebration-fistpump'); // 25 activities
+    expect(owned).toContain('stick-wood'); // 25 activities
     expect(owned).not.toContain('jersey-forest');    // needs 10 training days
     expect(owned).not.toContain('stick-gold');
     const steady = A.progressFrom({ stick: 60, shoot: 60 }, 100);

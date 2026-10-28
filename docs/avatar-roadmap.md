@@ -68,15 +68,16 @@ Two currencies, so one big day cannot run the whole ladder:
 |---|---|---|
 | 1 | 5 activities | First new item in week one |
 | 2 | 10 activities | Second item right after |
-| 3 | 25 activities | First celebration |
+| 3 | 25 activities | Wooden stick |
 | 4 | 10 training days | New jersey |
-| 5 | 20 training days | Helmet stripe |
-| 6 | 35 training days | New pose |
-| 7 | 50 training days | Chrome gear (rare) |
-| 8 | 75 training days | Big celebration |
-| 9 | 100 training days | Gold stick (epic) |
-| 10 | 130 training days | Legendary item |
-| 11 | 160+ training days | Season legend items |
+| 5 | 15 training days | First celebration (fist pump, plays once Phase 3 adds celebrations) |
+| 6 | 20 training days | Twin helmet stripes |
+| 7 | 35 training days | New pose |
+| 8 | 50 training days | Chrome gear (rare) |
+| 9 | 75 training days | Big celebration |
+| 10 | 100 training days | Gold stick (epic) |
+| 11 | 130 training days | Legendary item |
+| 12 | 160+ training days | Season legend items |
 
 A kid who trains 4 days a week from August to June reaches about 170 days.
 A kid who trains 2 days a week reaches about 85. Both have something to
@@ -102,7 +103,9 @@ the hockey year, August to June, and rolls over in August.
 - Skin tone, hair, number, Rangers Red/Black/White jerseys, one standing pose.
 - Locker Room with Gear only. First-run builder (skin, hair, jersey), all
   pre-picked so a kid can tap Done.
-- Unlocks at 5, 10 and 25 activities, with credit for past training.
+- Unlocks at 5, 10 and 25 activities (gloves, stripe, wooden stick), with
+  credit for past training. All three are gear, so every Phase 1 unlock shows
+  on the card right away.
 - Photos stop showing on cards. Photo upload is removed. Stored photos are
   deleted only after Woody confirms, a week or two after launch.
 - Art: style test, then skin, hair, three jerseys, base gear.
@@ -154,5 +157,9 @@ the hockey year, August to June, and rolls over in August.
   lab page `avatar-lab.html`)
 - [ ] Style test (Woody, other laptop)
 - [ ] Phase 1 texture spec, written to the chosen style
-- [ ] Server look storage and unlock rules
-- [ ] Locker Room
+- [x] Unlock rules (`lib/avatar_items.js`) and look storage
+  (`lib/look_api.js`, routed via `api/board.js?action=look|looks` to stay
+  inside the Vercel 12-function cap)
+- [x] Locker Room, Gear tabs, tap to wear, try on locked items (preview only)
+- [ ] First-run builder (skin, hair, jersey, Done)
+- [ ] Unlock moment after a drill
