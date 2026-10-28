@@ -847,6 +847,7 @@ body.roster-selfediting #roster-grid .pcard.pcard-you-card::after{content:'\270E
 .sheet-scrim{position:absolute;inset:0;background:rgba(0,0,0,.35)}
 .sheet-panel{position:absolute;top:0;right:0;bottom:0;width:min(420px,90vw);background:var(--bg);border-left:1px solid var(--line);box-shadow:-12px 0 32px rgba(0,0,0,.28);padding:calc(env(safe-area-inset-top,0px) + 24px) 20px 24px;overflow-y:auto;display:flex;flex-direction:column;gap:12px}
 .sheet-lab{display:flex;flex-direction:column;gap:5px;font-size:var(--fs-support);font-weight:800;color:var(--muted)}
+.sheet-lab[hidden]{display:none}
 .sheet-lab .pgate-in{margin:0}
 /* Flexible guardian-email list inside the coach + player-self edit sheets: any
    number of emails, each one on file receives the player's sign-in code. */
@@ -2265,9 +2266,16 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
     </div>
     <form class='sched-addform' id='schedAddForm' novalidate hidden>
       <button type='button' class='backlink' id='schedBack'>&#8249; Back to schedule</button>
-      <h2 class='pgate-h'>Add a game</h2>
-      <label class='sheet-lab'>Date<input class='pgate-in' id='sgDate' type='date' required></label>
-      <label class='sheet-lab'>Opponent<input class='pgate-in' id='sgOpp' type='text' autocomplete='off' placeholder='Team name' required></label>
+      <h2 class='pgate-h'>Add a game or tournament</h2>
+      <div class='sheet-lab'>What is it?
+        <div class='sched-ha'>
+          <label><input type='radio' name='sgKind' id='sgKindGame' checked><span>Game</span></label>
+          <label><input type='radio' name='sgKind' id='sgKindTour'><span>Tournament</span></label>
+        </div>
+      </div>
+      <label class='sheet-lab'><span id='sgDateLab'>Date</span><input class='pgate-in' id='sgDate' type='date' required></label>
+      <label class='sheet-lab' id='sgEndRow' hidden>Last day<input class='pgate-in' id='sgEnd' type='date'></label>
+      <label class='sheet-lab'><span id='sgOppLab'>Opponent</span><input class='pgate-in' id='sgOpp' type='text' autocomplete='off' placeholder='Team name' required></label>
       <div class='sheet-lab'>Home or away?
         <div class='sched-ha'>
           <label><input type='radio' name='sgHA' id='sgHome' checked><span>Home</span></label>
@@ -2276,7 +2284,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
       </div>
       <label class='sheet-lab'>Time<input class='pgate-in' id='sgTime' type='time'></label>
       <label class='sheet-lab'>Place<input class='pgate-in' id='sgPlace' type='text' autocomplete='off' placeholder='Rink or city'></label>
-      <button type='submit' class='pgate-go' id='sgSave'>Save game</button>
+      <button type='submit' class='pgate-go' id='sgSave'>Save</button>
       <p class='pgate-msg' id='sgMsg' aria-live='polite'></p>
     </form>
   </div>
@@ -2987,17 +2995,34 @@ window.thwapActiveTeam=function(coach){
     var showAddBtn=document.getElementById('schedShowAdd'); if(showAddBtn) showAddBtn.addEventListener('click',showAdd);
     var backBtn=document.getElementById('schedBack'); if(backBtn) backBtn.addEventListener('click',showList);
     var addForm=document.getElementById('schedAddForm');
+    /* Game or tournament: a tournament has a last day and a name, not home/away.
+       Tournament weeks open the tournament jersey for players (avatar.js). */
+    function isTour(){ var t=document.getElementById('sgKindTour'); return !!(t&&t.checked); }
+    function paintKind(){
+      var tour=isTour();
+      var endRow=document.getElementById('sgEndRow'); if(endRow) endRow.hidden=!tour;
+      var ha=addForm&&addForm.querySelector('.sched-ha input[name=sgHA]'); if(ha){ var haRow=ha.closest('.sheet-lab'); if(haRow) haRow.hidden=tour; }
+      var dl=document.getElementById('sgDateLab'); if(dl) dl.textContent=tour?'First day':'Date';
+      var ol=document.getElementById('sgOppLab'); if(ol) ol.textContent=tour?'Tournament name':'Opponent';
+      var opp=document.getElementById('sgOpp'); if(opp) opp.placeholder=tour?'Tournament name':'Team name';
+    }
+    ['sgKindGame','sgKindTour'].forEach(function(id){ var el=document.getElementById(id); if(el) el.addEventListener('change',paintKind); });
+    if(addForm) addForm.addEventListener('reset',function(){ setTimeout(paintKind,0); });
     if(addForm) addForm.addEventListener('submit',function(e){
       e.preventDefault();
       var msg=document.getElementById('sgMsg');
       var date=(document.getElementById('sgDate')||{}).value||'';
       var opp=String((document.getElementById('sgOpp')||{}).value||'').trim();
       if(!date){ if(msg) msg.textContent='Pick a date.'; return; }
-      if(!opp){ if(msg) msg.textContent='Enter an opponent.'; return; }
-      var ev={ kind:'game', date:date, opponent:opp,
-        home:!!(document.getElementById('sgHome')||{}).checked,
+      var tour=isTour();
+      if(!opp){ if(msg) msg.textContent=tour?'Enter the tournament name.':'Enter an opponent.'; return; }
+      var endDate=tour?((document.getElementById('sgEnd')||{}).value||date):'';
+      if(tour && endDate<date){ if(msg) msg.textContent='The last day can\u2019t be before the first day.'; return; }
+      var ev={ kind:tour?'tournament':'game', date:date, opponent:opp,
+        home:tour?false:!!(document.getElementById('sgHome')||{}).checked,
         time:(document.getElementById('sgTime')||{}).value||'',
         place:String((document.getElementById('sgPlace')||{}).value||'').trim() };
+      if(tour) ev.endDate=endDate;
       if(msg) msg.textContent='Saving...';
       fetch('/api/coach?action=add-event',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code,coachToken:coach.token,event:ev})})
         .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })

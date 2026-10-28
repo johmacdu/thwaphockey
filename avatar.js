@@ -43,7 +43,8 @@
     forest:{ body:'#1F5A3A', stripe:'#F2F2F2', trim:'#111111', num:'#FFFFFF' },
     legend:{ body:'#D4A72C', stripe:'#111111', trim:'#FFFFFF', num:'#111111' },
     pond:{ body:'#8CC8EA', stripe:'#F2F2F2', trim:'#16365C', num:'#16365C' },
-    warmup:{ body:'#5B6670', stripe:'#C8102E', trim:'#111111', num:'#FFFFFF' }
+    warmup:{ body:'#5B6670', stripe:'#C8102E', trim:'#111111', num:'#FFFFFF' },
+    tournament:{ body:'#C8102E', stripe:'#D4A72C', trim:'#111111', num:'#D4A72C' } // red with gold trim
   };
   var GLOVES={ black:'#141414', red:'#C8102E', white:'#EDEDED', ice:'#BFE6F2',
     rangers:'linear-gradient(0deg,#C8102E 0 34%,#141414 34% 100%)' }; // team set: red cuffs
@@ -619,6 +620,7 @@
     if(r.type==='window') return 'Train '+r.n+' days over winter break';
     if(r.type==='coach') return 'From your coach';
     if(r.type==='team') return r.n===1?'1 team goal week':r.n+' team goal weeks';
+    if(r.type==='tournament') return 'Train '+r.n+' days in a tournament week';
     return '';
   }
   function have(it){
@@ -628,6 +630,7 @@
     if(r.type==='disc') return (p.disciplines||{})[r.disc]||0;
     if(r.type==='window') return (p.windows||{})[it.id]||0;
     if(r.type==='team') return p.teamHits||0;
+    if(r.type==='tournament') return p.tournament||0;
     return 0;
   }
   function owned(id){ return !!(L.data && L.data.unlocked.indexOf(id)>=0); }

@@ -33,7 +33,7 @@ A.POSES.concat(['shooting:left']).forEach(function(k){
 var h5=document.createElement('h1'); h5.textContent='Team set (in unlock order)'; document.body.appendChild(h5);
 var r5=document.createElement('div'); r5.className='row'; document.body.appendChild(r5);
 [['Rangers tape',{tape:'tape-rangers',facing:'center'}],['Rangers decal',{decal:'decal-rangers',facing:'right'}],['Team socks',{socks:'socks-rangers'}],
- ['Rangers gloves',{gloves:'gloves-rangers'}],['Warm-up jersey',{jersey:'jersey-warmup'}],
+ ['Rangers gloves',{gloves:'gloves-rangers'}],['Warm-up jersey',{jersey:'jersey-warmup'}],['Tournament jersey',{jersey:'jersey-tournament'}],
  ['All together',{tape:'tape-rangers',decal:'decal-rangers',socks:'socks-rangers',gloves:'gloves-rangers',jersey:'jersey-warmup',facing:'right'}]].forEach(function(c){
   var d=document.createElement('div'), look=c[1]; look.num='72';
   d.innerHTML="<div class='slot'><img src='cards/plate_front_red.svg' alt=''>"+A.html(look)+"</div><div class='cap'>"+c[0]+"</div>";
