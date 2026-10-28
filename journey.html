@@ -4,7 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Thwap Hockey: My Season Journey</title>
-<script>try{if(localStorage.getItem('thwapTheme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+<script>try{if(localStorage.getItem('thwapTheme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}
+/* ?embed=1: shown inside the app's Journey page (index.html #stickers). */
+if(/[?&]embed=1\b/.test(location.search))document.documentElement.classList.add('embed');</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Oswald:wght@500;600&family=Nunito+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -165,6 +167,7 @@ html.has-stamp .seal .d{align-items:end;padding-bottom:16%;font-size:10px}
 .spine{width:58px;height:150px;border-radius:4px 8px 8px 4px;background:var(--acc);color:var(--page);display:flex;align-items:flex-end;justify-content:center;padding-bottom:10px;font-family:'Oswald',sans-serif;font-weight:600;font-size:12px;letter-spacing:.08em;writing-mode:vertical-rl;transform:rotate(180deg);box-shadow:inset -6px 0 0 rgba(0,0,0,.18)}
 .spine.next{background:none;border:2px dashed var(--line2);color:var(--muted);box-shadow:none}
 
+html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed body{background:transparent}
 .glassclose{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);right:max(16px, calc(50vw - 250px));z-index:50;display:inline-grid;place-items:center;width:48px;height:48px;border-radius:50%;font-size:20px;font-weight:700;color:var(--text);text-decoration:none;background:var(--card);border:1px solid var(--line);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);box-shadow:0 6px 20px var(--shadow)}
 @media (prefers-reduced-motion:reduce){.rinkwrap .sassp{animation:none}}
 </style>
@@ -173,8 +176,6 @@ html.has-stamp .seal .d{align-items:end;padding-bottom:16%;font-size:10px}
 <a class="glassclose" href="index.html" aria-label="Close" onclick="if(history.length>1){history.back();return false;}">✕</a>
 
 <main class="book">
-
-<p class="note">Preview. Gray boxes are art slots, named as in <code>docs/journey-art-spec.md</code>. Season Complete shows after the season ends (add <code>?finale</code> to preview it). Tags marked <span class="sample" style="margin:0">Sample</span> are placeholder data.</p>
 
 <!-- COVER -->
 <section class="pg cover" aria-label="Season book cover">
@@ -336,6 +337,13 @@ html.has-stamp .seal .d{align-items:end;padding-bottom:16%;font-size:10px}
     img.src='journey/art/'+slot.getAttribute('data-art');
   });
   var s=new Image(); s.onload=function(){document.documentElement.classList.add('has-stamp');}; s.src='journey/art/stamp.webp';
+})();
+// Embedded: tell the Journey page our height so it scrolls as one page.
+(function(){
+  if(!document.documentElement.classList.contains('embed')||window.parent===window) return;
+  function send(){ try{ window.parent.postMessage({thwapJourneyHeight:document.documentElement.scrollHeight},location.origin); }catch(_){} }
+  window.addEventListener('load',send); window.addEventListener('resize',send);
+  if(window.ResizeObserver) new ResizeObserver(send).observe(document.body); setTimeout(send,300); send();
 })();
 </script>
 </body>

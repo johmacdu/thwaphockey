@@ -680,13 +680,10 @@
     if((readList('thwapUnlockNew')||[]).length) markDot();
     window.addEventListener('load',function(){ if((readList('thwapUnlockNew')||[]).length) markDot(); });
     hookMarkDone(); window.addEventListener('load',hookMarkDone);
-    // First visit: open the builder once if this player has never saved a look.
-    if(location.hash!=='#myplayer'){
-      checkUnlocks().then(function(j){
-        var offered=false; try{ offered=!!localStorage.getItem('thwapBuilderOffered'); }catch(_){}
-        if(j && !j.saved && !offered){ try{ localStorage.setItem('thwapBuilderOffered','1'); }catch(_){} if(window.thwapOpenMyPlayer) window.thwapOpenMyPlayer({builder:true}); else openLocker({builder:true}); }
-      });
-    }
+    // Never open My Player on its own: the app always lands on home. A kid who
+    // has never saved a look gets the builder when they tap Edit player (see
+    // openLocker). This check only records which unlocks are already seen.
+    if(location.hash!=='#myplayer') checkUnlocks();
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bootLocker); else bootLocker();
 
