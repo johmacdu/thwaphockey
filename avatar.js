@@ -198,13 +198,17 @@
   // look, then the default. The number always comes from the roster.
   var teamLooks=null;
   try{ teamLooks=JSON.parse(localStorage.getItem('thwapLooksCache')||'null'); }catch(_){}
+  // Returns null when this player has never built a character: their card then
+  // shows the Big Number card (Thwap's designed no-picture card), never a copy
+  // of the default character, so the roster is not a row of twins.
   function lookFor(p,slug){
     var look={}; for(var k in DEFAULT_LOOK) look[k]=DEFAULT_LOOK[k];
     var id=String(slug||'').toLowerCase();
     var src=null;
     if(teamLooks && teamLooks[id]) src=norm(teamLooks[id]);
     if(!src){ try{ src=(JSON.parse(localStorage.getItem('thwapLooks')||'{}'))[id]||null; }catch(_){} }
-    if(src) for(var m in src) if(m!=='num') look[m]=src[m];
+    if(!src) return null;
+    for(var m in src) if(m!=='num') look[m]=src[m];
     look.num=(p&&p.num)||'';
     return look;
   }
@@ -213,13 +217,26 @@
     try{
       fetch('/api/board?action=looks',{credentials:'same-origin'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){
         if(!j || !j.looks) return;
+        var changed=JSON.stringify(j.looks)!==JSON.stringify(teamLooks||null);
         teamLooks=j.looks;
         try{ localStorage.setItem('thwapLooksCache',JSON.stringify(j.looks)); }catch(_){}
         try{ document.dispatchEvent(new CustomEvent('thwap:looks')); }catch(_){}
+        // A teammate built or changed their player since the cache: redraw the roster.
+        if(changed){ try{ if(window.thwapRepaintRoster) window.thwapRepaintRoster(); }catch(_){} }
       }).catch(function(){});
     }catch(_){}
   }
   refreshTeamLooks();
+
+  // Live: player photos are retired, so drop the copies kept on this device.
+  // (Server copies are deleted separately, from the admin page, on Woody's go-ahead.)
+  if(LIVE){
+    try{
+      var drop=[];
+      for(var i=0;i<localStorage.length;i++){ var k=localStorage.key(i); if(k && k.indexOf('thwapCardPhoto:')===0) drop.push(k); }
+      drop.forEach(function(k){ localStorage.removeItem(k); });
+    }catch(_){}
+  }
 
   // --- Styles -----------------------------------------------------------------
   var css=

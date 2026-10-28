@@ -48,18 +48,19 @@ describe('avatar html', () => {
 describe('buildFront wiring', () => {
   it('loads avatar.js and only swaps the photo when the flag is on', () => {
     expect(INDEX).toContain("<script src='avatar.js'></script>");
-    expect(INDEX).toMatch(/var photo = avOn\s*\n\s*\? window\.thwapAvatar\.html/);
+    expect(INDEX).toMatch(/var avLook=avOn\?window\.thwapAvatar\.lookFor\(p,slug\):null;\n\s*var photo = avOn\s*\n\s*\? \(avLook\?window\.thwapAvatar\.html\(avLook\):""\)/);
   });
 });
 
 describe('buildFront in the real page', () => {
-  async function page(flag) {
+  async function page(flag, looks) {
     const html = INDEX.replace("<script src='avatar.js'></script>", '<script>' + SRC + '</script>');
     const dom = new JSDOM(html, {
       url: 'https://thwaphockey.com/' + (flag ? '?avatar=1' : ''),
       runScripts: 'dangerously',
       pretendToBeVisual: true,
       beforeParse(window) {
+        if (looks) window.localStorage.setItem('thwapLooksCache', JSON.stringify(looks));
         window.fetch = () => Promise.resolve({ ok: true, json: () => Promise.resolve({ ok: false }) });
         window.scrollTo = () => {};
       },
@@ -73,12 +74,19 @@ describe('buildFront in the real page', () => {
     expect(out).toContain('cf2-photo');
     expect(out).not.toContain('av-wrap');
   });
-  it('shows the character (with the roster number) when the flag is on', async () => {
-    const w = await page(true);
+  it('shows the character (with the roster number) for a player who built one', async () => {
+    const w = await page(true, { lewie: { jersey: 'jersey-black', hairstyle: 'hairstyle-mullet' } });
     const out = w.buildFront({ first: 'Lewie', num: '72', pos: 'FD' }, 'lewie', 'cards/x.png');
     expect(out).toContain('av-wrap');
     expect(out).not.toContain('cf2-photo');
     expect(out).toContain('>72<');
+  });
+  it('a player who has not built one gets the Big Number card: no character, no photo', async () => {
+    const w = await page(true, { lewie: { jersey: 'jersey-black' } });
+    const out = w.buildFront({ first: 'Alder', num: '71', pos: 'F' }, 'alder', 'cards/alder.png');
+    expect(out).not.toContain('av-wrap');
+    expect(out).not.toContain('cf2-photo');
+    expect(out).toContain("<div class='cf2-num'>71</div>");
   });
 });
 

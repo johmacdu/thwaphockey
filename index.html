@@ -5674,8 +5674,11 @@ function buildFront(p,slug,photoUrl,themeOverride){
   if(!photoUrl && slug==='lewie'){ photoUrl='cards/lewie_photo.png'; }  /* Lewie's photo ships; show it everywhere his card renders */
   /* Character preview (avatar.js, ?avatar=1): the blocky player replaces the photo slot on this device only. */
   var avOn=false; try{ avOn=!!(window.thwapAvatar && window.thwapAvatar.on()); }catch(_){}
+  /* Character on: the player's built character, or the Big Number card (no picture)
+     if they have not built one yet. Never a player photo. */
+  var avLook=avOn?window.thwapAvatar.lookFor(p,slug):null;
   var photo = avOn
-    ? window.thwapAvatar.html(window.thwapAvatar.lookFor(p,slug))
+    ? (avLook?window.thwapAvatar.html(avLook):"")
     : photoUrl
     ? "<img class='cf2-photo"+(slug==='liam'?' cf2-photo-lg':'')+" cf2-photo-"+slug+"' src='"+photoUrl+"' alt='"+p.first+" photo'><div class='cf2-photo-mask'></div>"
     : "";
