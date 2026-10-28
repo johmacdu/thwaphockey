@@ -1,5 +1,11 @@
 # Avatar style test (blocky hockey player)
 
+> **Decision: A (pixel voxel) chosen.** It's the only style that reads "cool, not cute"
+> across the full range the character has to serve -- 10U, 12U and 14U. Minecraft/voxel
+> has real cred with older kids, where B skews "app mascot" and C (soft/rounded) reads too
+> young. A is also the easiest to build and the best fit for the flat-texture + code-shading
+> rule. This feeds Phase 1 of `docs/avatar-roadmap.md`.
+
 The three style candidates from the style test in [`docs/avatar-design.md`](../avatar-design.md)
 (the player-character work in PR #428). Same prompt each time; only the style line changed.
 
