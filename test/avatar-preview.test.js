@@ -14,17 +14,14 @@ function load(url) {
   return dom.window;
 }
 
-describe('avatar preview flag', () => {
-  it('is off by default', () => {
+describe('avatar is live for everyone', () => {
+  it('is on with no preview flag', () => {
     const w = load('https://thwaphockey.com/');
-    expect(w.thwapAvatar.on()).toBe(false);
-  });
-  it('turns on with ?avatar=1 and off with ?avatar=0', () => {
-    const w = load('https://thwaphockey.com/?avatar=1');
     expect(w.thwapAvatar.on()).toBe(true);
-    w.history.replaceState(null, '', '/?avatar=0');
-    w.eval(SRC);
-    expect(w.thwapAvatar.on()).toBe(false);
+  });
+  it('stays on even with ?avatar=0', () => {
+    const w = load('https://thwaphockey.com/?avatar=0');
+    expect(w.thwapAvatar.on()).toBe(true);
   });
 });
 
@@ -68,11 +65,15 @@ describe('buildFront in the real page', () => {
     await new Promise((r) => setTimeout(r, 50));
     return dom.window;
   }
-  it('shows the photo when the flag is off', async () => {
+  it('never shows a player photo, even when a photo url is passed', async () => {
     const w = await page(false);
-    const out = w.buildFront({ first: 'Lewie', num: '72', pos: 'FD' }, 'lewie', null);
-    expect(out).toContain('cf2-photo');
-    expect(out).not.toContain('av-wrap');
+    const out = w.buildFront({ first: 'Lewie', num: '72', pos: 'FD' }, 'lewie', 'cards/x.png');
+    expect(out).not.toContain('cf2-photo');
+    expect(out).toContain('av-wrap');
+  });
+  it('Lewie has no built-in photo anymore', () => {
+    expect(INDEX).not.toContain('lewie_photo');
+    expect(fs.existsSync(path.join(__dirname, '..', 'cards', 'lewie_photo.png'))).toBe(false);
   });
   it('shows the character (with the roster number) for a player who built one', async () => {
     const w = await page(true, { lewie: { jersey: 'jersey-black', hairstyle: 'hairstyle-mullet' } });
@@ -81,12 +82,21 @@ describe('buildFront in the real page', () => {
     expect(out).not.toContain('cf2-photo');
     expect(out).toContain('>72<');
   });
-  it('a player who has not built one gets the Big Number card: no character, no photo', async () => {
+  it('a player who has not built one gets a starter character from their name, never a photo', async () => {
     const w = await page(true, { lewie: { jersey: 'jersey-black' } });
     const out = w.buildFront({ first: 'Alder', num: '71', pos: 'F' }, 'alder', 'cards/alder.png');
-    expect(out).not.toContain('av-wrap');
+    expect(out).toContain('av-wrap');
     expect(out).not.toContain('cf2-photo');
-    expect(out).toContain("<div class='cf2-num'>71</div>");
+    expect(out).toContain('>71<');
+  });
+  it('starter looks vary hair by name, keep the default skin, and are stable', () => {
+    const w = load('https://thwaphockey.com/');
+    const names = ['alder', 'brooklyn', 'dawson', 'dominic', 'eugene', 'evan', 'greyson', 'issac', 'johnny', 'joziah', 'liam', 'maddux', 'oliver', 'teddy', 'william'];
+    const looks = names.map((n) => w.thwapAvatar.lookFor({ num: '1' }, n));
+    looks.forEach((l) => expect(l.skin).toBe(w.thwapAvatar.DEFAULT_LOOK.skin));
+    const combos = new Set(looks.map((l) => l.hairstyle + '/' + l.hair));
+    expect(combos.size).toBeGreaterThan(8);
+    expect(w.thwapAvatar.lookFor({}, 'alder').hairstyle).toBe(looks[0].hairstyle);
   });
 });
 

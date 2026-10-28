@@ -201,10 +201,10 @@ describe('card entry point (index.html)', () => {
 
 describe('launch switch', () => {
   const INDEX = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-  it('ships OFF: LIVE is false, so only ?avatar=1 devices see the character', async () => {
-    expect(SRC).toMatch(/\n  var LIVE=false;\n/);
+  it('is ON: LIVE is true, every player sees the character', async () => {
+    expect(SRC).toMatch(/\n  var LIVE=true;\n/);
     const { w } = await open();
-    expect(w.thwapAvatar.live).toBe(false);
+    expect(w.thwapAvatar.live).toBe(true);
   });
   it('LIVE=true turns the character on with no preview flag', () => {
     const dom = new JSDOM('<!doctype html><html><head></head><body></body></html>', { url: 'https://thwaphockey.com/', runScripts: 'outside-only' });
