@@ -69,6 +69,10 @@
     var torsoBg='linear-gradient(0deg,'+J.stripe+' 0 9%,'+J.trim+' 9% 12%,'+J.body+' 12% 100%)';
     var sleeveBg='linear-gradient(0deg,'+J.body+' 0 38%,'+J.trim+' 38% 44%,'+J.stripe+' 44% 58%,'+J.trim+' 58% 64%,'+J.body+' 64% 100%)';
     var sockBg='linear-gradient(0deg,'+J.body+' 0 40%,'+J.stripe+' 40% 55%,'+J.trim+' 55% 62%,'+J.body+' 62% 100%)';
+    // Phase 1 pixel textures (style A). Flat tiles -- the code still shades each
+    // face (top lighter, sides darker), so these must stay flat (no baked lighting).
+    var jTex="url('avatar-tex/jersey-"+(JERSEY[look.jersey]?look.jersey:DEFAULT_LOOK.jersey)+".png')";
+    var helTex="url('avatar-tex/helmet.png')";
     var backNum="<span class='av-num' style='color:"+J.num+"'>"+num+"</span>";
     var chestNum="<span class='av-num av-num-sm' style='color:"+J.num+"'>"+num+"</span>";
 
@@ -89,7 +93,7 @@
       // Pants
       box({w:8.6,h:4.6,d:4.8,y:12.3,c:black}),
       // Torso (jersey over shoulder pads)
-      box({w:9.6,h:9.4,d:5.4,y:19.3,c:J.body,faces:{front:torsoBg,back:torsoBg,side:torsoBg,top:J.body},frontInner:chestNum,backInner:backNum}),
+      box({w:9.6,h:9.4,d:5.4,y:19.3,c:J.body,faces:{front:jTex,back:jTex,side:jTex,top:jTex},frontInner:chestNum,backInner:backNum}),
       // Arms, slightly forward in a ready stance
       box({w:3.4,h:8.4,d:3.6,x:-6.6,y:19.6,z:1,c:J.body,faces:{front:sleeveBg,back:sleeveBg,side:sleeveBg},rot:'rotateX(18deg)'}),
       box({w:3.4,h:8.4,d:3.6,x:6.6,y:19.6,z:1,c:J.body,faces:{front:sleeveBg,back:sleeveBg,side:sleeveBg},rot:'rotateX(18deg)'}),
@@ -101,10 +105,10 @@
       // Hair flow out the back of the helmet
       box({w:6.8,h:2.4,d:1.4,y:25.3,z:-4.2,c:hair}),
       // Helmet shell (top + back half), leaves the face open for the cage
-      box({w:8.4,h:2.6,d:8.4,y:31.3,c:helmet}),
-      box({w:8.4,h:4.6,d:2.4,y:28.2,z:-3.2,c:helmet}),
-      box({w:1,h:4.8,d:5.6,x:-4.2,y:27.9,z:.6,c:helmet}),
-      box({w:1,h:4.8,d:5.6,x:4.2,y:27.9,z:.6,c:helmet}),
+      box({w:8.4,h:2.6,d:8.4,y:31.3,c:helmet,faces:{front:helTex,back:helTex,side:helTex,top:helTex,bottom:helTex}}),
+      box({w:8.4,h:4.6,d:2.4,y:28.2,z:-3.2,c:helmet,faces:{front:helTex,back:helTex,side:helTex,top:helTex,bottom:helTex}}),
+      box({w:1,h:4.8,d:5.6,x:-4.2,y:27.9,z:.6,c:helmet,faces:{front:helTex,back:helTex,side:helTex,top:helTex,bottom:helTex}}),
+      box({w:1,h:4.8,d:5.6,x:4.2,y:27.9,z:.6,c:helmet,faces:{front:helTex,back:helTex,side:helTex,top:helTex,bottom:helTex}}),
       // Cage
       "<div class='av-b' style='transform:translate3d(0,-27.4em,4.3em)'>"+face('av-cage',7.8,6.4,'none',cageBg)+"</div>",
       // Stick: shaft from the right glove to the ice, blade forward
@@ -134,7 +138,7 @@
     ".av-scene{position:absolute;left:50%;bottom:9%;width:0;height:0;transform-style:preserve-3d;"+
       "transform:rotateX(-10deg) rotateY(-25deg)}"+
     ".av-b{position:absolute;left:0;top:0;width:0;height:0;transform-style:preserve-3d}"+
-    ".av-f{position:absolute;left:0;top:0;backface-visibility:hidden;box-shadow:inset 0 0 0 .06em rgba(0,0,0,.35)}"+
+    ".av-f{position:absolute;left:0;top:0;backface-visibility:hidden;box-shadow:inset 0 0 0 .06em rgba(0,0,0,.35);background-size:100% 100%;image-rendering:pixelated}"+
     ".av-top{filter:brightness(1.18)}.av-right,.av-left{filter:brightness(.78)}.av-back{filter:brightness(.88)}.av-bottom{filter:brightness(.6)}"+
     ".av-cage{box-shadow:none;backface-visibility:visible;opacity:.95}"+
     ".av-num{position:absolute;left:0;right:0;top:22%;text-align:center;font:900 3.6em/1 system-ui,-apple-system,sans-serif;letter-spacing:-.02em}"+
