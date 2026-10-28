@@ -20,4 +20,13 @@ var A=window.thwapAvatar, r=document.getElementById('r');
   d.innerHTML="<div class='slot"+(c[4]?'':' light')+"'>"+(c[4]?"<img src='cards/"+c[4]+"' alt=''>":"")+A.html({jersey:c[0],skin:c[1],hair:c[2],num:c[3]})+"</div><div class='cap'>"+c[0]+" jersey</div>";
   r.appendChild(d);
 });
+// Stances (Phase 3): every pose on the red plate, plus a lefty and a back view.
+var NAMES={ready:'Ready',stickhandling:'Dangle',dangle:'Toe drag',shooting:'Snipe',passing:'Tape to tape',reading:'Head up',power:'Power',butterfly:'Big save'};
+var h2=document.createElement('h1'); h2.textContent='Stances'; document.body.appendChild(h2);
+var r2=document.createElement('div'); r2.className='row'; document.body.appendChild(r2);
+A.POSES.concat(['shooting:left']).forEach(function(k){
+  var p=k.split(':'), d=document.createElement('div');
+  d.innerHTML="<div class='slot'><img src='cards/plate_front_red.svg' alt=''>"+A.html({pose:p[0],hand:p[1]||'right',jersey:'red',hairstyle:'mullet',num:'72'})+"</div><div class='cap'>"+NAMES[p[0]]+(p[1]?' (shoots left)':'')+"</div>";
+  r2.appendChild(d);
+});
 </script></body></html>
