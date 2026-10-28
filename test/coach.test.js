@@ -193,7 +193,7 @@ describe('roster + participation + kid-owned identity', () => {
     await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, firstName: 'Twomail', number: 52, parentEmails: ['dad@example.com', 'mum@example.com'] }), makeRes());
 
     const list = makeRes();
-    await _handlers.roster(get({ code: _seed.SEED_TEAM_CODE }), list);
+    await _handlers.roster(get({ code: _seed.SEED_TEAM_CODE, coachToken: token }), list);
 
     const one = list.body.members.find((m) => m.playerId === 'emailkid');
     expect(one).toBeTruthy();
@@ -205,6 +205,12 @@ describe('roster + participation + kid-owned identity', () => {
 
     // every member carries the array (never undefined), even those with no email
     expect(list.body.members.every((m) => Array.isArray(m.parentEmails))).toBe(true);
+
+    // Without a coach who runs the team, nobody's parent emails come back.
+    const anon = makeRes();
+    await _handlers.roster(get({ code: _seed.SEED_TEAM_CODE }), anon);
+    expect(anon.body.members.length).toBe(list.body.members.length);
+    expect(anon.body.members.every((m) => m.parentEmails.length === 0)).toBe(true);
   });
 
   it('a second player with the same first name does NOT overwrite the first', async () => {
@@ -654,6 +660,7 @@ describe('edit player, coach password, and email requests', () => {
 
   it('rejects update with an empty first name, and unknown player', async () => {
     const login = await loginSeedCoach();
+    await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: login.body.token, firstName: 'Editme', number: 5, parentEmail: 'p@x.com' }), makeRes());
     const r1 = makeRes();
     await _handlers.updatePlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: login.body.token, playerId: 'editme', firstName: '  ' }), r1);
     expect(r1.statusCode).toBe(400);
