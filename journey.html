@@ -164,7 +164,9 @@ html.has-stamp .seal .d{align-items:end;padding-bottom:16%;font-size:10px}
 .spine.next{background:none;border:2px dashed var(--line2);color:var(--muted);box-shadow:none}
 
 html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed body{background:transparent}
-.glassclose{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);right:max(16px, calc(50vw - 250px));z-index:50;display:inline-grid;place-items:center;width:48px;height:48px;border-radius:50%;font-size:20px;font-weight:700;color:var(--text);text-decoration:none;background:var(--card);border:1px solid var(--line);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);box-shadow:0 6px 20px var(--shadow)}
+.glassclose{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);right:max(16px, calc(50vw - 534px));z-index:50;display:inline-grid;place-items:center;width:48px;height:48px;border-radius:50%;font-size:20px;font-weight:700;color:var(--text);cursor:pointer;text-decoration:none;background:color-mix(in srgb,var(--card) 62%,transparent);border:1px solid color-mix(in srgb,var(--text) 12%,transparent);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);box-shadow:0 6px 20px var(--shadow)}
+.glassclose:hover{background:color-mix(in srgb,var(--card) 80%,transparent)}
+.glassclose:active{transform:scale(.94)}
 @media (prefers-reduced-motion:reduce){.rinkwrap .sassp{animation:none}}
 </style>
 </head>
