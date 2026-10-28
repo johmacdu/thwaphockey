@@ -153,6 +153,8 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 .png-cta-soon{color:var(--muted);font-weight:600}
 .png-cta-done::before{content:'\2713';display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--green);color:var(--onaccent);font-size:12px;font-weight:900;margin-right:2px}
 a.nav{border:1px solid var(--line);border-radius:20px;background:linear-gradient(180deg,var(--panel2),var(--panel));padding:18px;min-height:94px;box-shadow:0 6px 18px var(--shadow)}.ico{width:50px;height:50px;border-radius:16px;background:var(--soft);display:grid;place-items:center;font-size:25px}.nav h2{margin:0;font-size:19px;font-weight:800;letter-spacing:.005em}.nav p{margin:5px 0 0;font-size:16px;color:var(--muted)}.chev{font-size:44px;color:var(--chev)}
+.nav-journey{--dc:#B9F06B}
+body:not(.is-authed) .nav-journey,body.is-coach .nav-journey{display:none}
 .nav.soon{cursor:default;opacity:.72}.nav.soon:hover{border-color:var(--line);transform:none}
 /* Bolder, consistent discipline color: green stick, blue shoot, orange dryland.
    Tints the icon tile and adds a colored left edge so the three read as a set. */
@@ -2756,6 +2758,7 @@ window.thwapTrainingToday=function(){
 <a class='nav nav-shoot' href='#shoot'><div class='ico'><img class='nav-ico' src='login/icon-net.webp' alt=''></div><div><h2>Shooting</h2><p>Accuracy + release, about 15 min</p></div><div class='chev'>›</div></a>
 <a class='nav nav-dryland' href='#dryland'><div class='ico'><img class='nav-ico' src='login/icon-bolt.webp' alt=''></div><div><h2>Dryland</h2><p>Speed + power + balance, about 15 min</p></div><div class='chev'>›</div></a>
 <a class='nav nav-pass' href='#pass'><div class='ico'><img class='nav-ico' src='login/icon-pass.webp' alt=''></div><div><h2>Passing</h2><p>Sweep, saucer and backhand passes, about 10 min</p></div><div class='chev'>›</div></a>
+<a class='nav nav-journey' href='journey.html'><div class='ico'><img class='nav-ico' src='login/sass-stride-m.webp' alt=''></div><div><h2>My Season Journey</h2><p>See how far you've come this season</p></div><div class='chev'>›</div></a>
 </div>
 </section>
 </main>

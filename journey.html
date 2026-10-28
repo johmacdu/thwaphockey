@@ -30,7 +30,7 @@ h1,h2,h3{font-family:'Archivo Black',system-ui,sans-serif;font-weight:400;margin
 h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .sub{color:var(--muted);font-size:var(--fs-support);margin:6px 0 0}
 .sample{display:inline-block;font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--sample);border:1px solid var(--sample);border-radius:4px;padding:1px 5px;margin-left:6px;vertical-align:middle;white-space:nowrap}
-.sample[hidden]{display:none}
+[data-sample][hidden]{display:none}
 .note{font-size:12px;color:var(--muted);border-left:3px solid var(--sample);padding:4px 0 4px 10px;margin:0}
 
 /* A book page. The page itself is not interactive, it is the paper. */
@@ -181,7 +181,7 @@ html.has-stamp .seal .d{align-items:end;padding-bottom:16%;font-size:10px}
   <div class="art fill" data-art="cover.webp"><span>cover.webp 1200x1600</span></div>
   <div class="over">
     <div><div class="t1" id="jSeason">Season 2026-27</div><h1>My Season Journey</h1></div>
-    <div><div class="who">Lewie M. <b>#81</b></div><div class="t1" style="margin-top:6px;color:#F3F7F4">Forward &nbsp; Jr. Rangers 10U</div></div>
+    <div><div class="who"><span id="jName">Lewie M.</span> <b id="jNum">#81</b></div><div class="t1" id="jMeta" style="margin-top:6px;color:#F3F7F4">Forward &nbsp; Jr. Rangers 10U</div></div>
   </div>
 </section>
 
@@ -258,8 +258,8 @@ html.has-stamp .seal .d{align-items:end;padding-bottom:16%;font-size:10px}
   <div class="sumgrid">
     <div><b id="jFinDays">96</b><span>Training days</span></div>
     <div><b id="jFinTier">Tier 4</b><span>Highest tier</span></div>
-    <div><b>19</b><span>Badge stars</span></div>
-    <div><b>24</b><span>Weeks of hockey</span></div>
+    <div data-sample><b>19</b><span>Badge stars</span></div>
+    <div data-sample><b>24</b><span>Weeks of hockey</span></div>
   </div>
   <p class="why">Next season starts a fresh book. <span class="sample" data-sample>Sample</span></p>
   <span class="folio">4</span>
@@ -289,6 +289,14 @@ html.has-stamp .seal .d{align-items:end;padding-bottom:16%;font-size:10px}
   function txt(id,v){var el=document.getElementById(id);if(el)el.textContent=v;}
   function render(b){
     txt('jSeason','Season '+b.season.label);
+    if(b.player&&b.player.name){
+      txt('jName',b.player.name);
+      var num=document.getElementById('jNum'); if(b.player.number!=null){num.textContent='#'+b.player.number;num.hidden=false;}else{num.hidden=true;}
+      var pos=b.player.position?String(b.player.position):'';
+      pos=pos?pos.charAt(0).toUpperCase()+pos.slice(1):'';
+      var meta=[pos,b.player.team||''].filter(Boolean);
+      var m=document.getElementById('jMeta'); m.textContent=meta.join('\u00a0\u00a0 '); m.hidden=!meta.length;
+    }
     txt('jTier',b.tier);
     txt('jStep',b.complete?'Top of the book':'Step '+b.step+' of 3');
     document.getElementById('jRink').style.setProperty('--x',xFor(b.stepsDone)+'%');
