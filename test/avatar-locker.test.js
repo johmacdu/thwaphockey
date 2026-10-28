@@ -165,6 +165,19 @@ describe('unlock moment', () => {
     expect(w.document.querySelector('.lk-toast')).toBeNull(); // only once
     expect(data).toBeTruthy();
   });
+  it('holds back poses and celebrations (no tab yet): no toast, not marked seen', async () => {
+    // 15 training days unlocks THWAP! (celebration); 25 Shooting unlocks Snipe (pose).
+    const prog = A.progressFrom({ shoot: 25 }, 15);
+    const { w } = await open({ progress: prog });
+    w.document.querySelector('.lk-x').click();
+    const gearOnly = A.unlockedIds(prog).filter((id) => !/^(pose|celebration)-/.test(id));
+    w.localStorage.setItem('thwapUnlockSeen', JSON.stringify(gearOnly));
+    await w.thwapAvatar.checkUnlocks();
+    expect(w.document.querySelector('.lk-toast')).toBeNull();
+    const seen = JSON.parse(w.localStorage.getItem('thwapUnlockSeen'));
+    expect(seen).not.toContain('celebration-fistpump');
+    expect(seen).not.toContain('pose-shooting');
+  });
   it('the first check seeds silently (past training is the builder\'s job)', async () => {
     const { w } = await open();
     w.document.querySelector('.lk-x').click();

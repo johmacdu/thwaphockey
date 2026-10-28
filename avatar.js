@@ -638,9 +638,14 @@
     if(!on() || typeof fetch!=='function') return Promise.resolve(null);
     return fetch('/api/board?action=look',{credentials:'same-origin'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){
       if(!j) return null;
+      // Only announce items a kid can actually see and wear: slots with a tab
+      // in My Player. Poses and celebrations have no tab until Phase 3, so they
+      // stay unseen (not announced, not recorded) and announce when it ships.
+      var shown={}; GEAR_TABS.forEach(function(t){ shown[t[0]]=1; });
+      var ready=(j.unlocked||[]).filter(function(id){ var it=itemName(j,id); return !it || shown[it.slot]; });
       var seen=readList('thwapUnlockSeen');
-      if(!seen){ writeList('thwapUnlockSeen',j.unlocked||[]); return j; } // first look: past training is the builder's job
-      var unseen=(j.unlocked||[]).filter(function(id){ return seen.indexOf(id)<0; });
+      if(!seen){ writeList('thwapUnlockSeen',ready); return j; } // first look: past training is the builder's job
+      var unseen=ready.filter(function(id){ return seen.indexOf(id)<0; });
       // Free starting items are never "earned", so they join silently.
       var fresh=unseen.filter(function(id){ var it=itemName(j,id); return it && it.rule && it.rule.type!=='start'; });
       if(unseen.length) writeList('thwapUnlockSeen',seen.concat(unseen));
