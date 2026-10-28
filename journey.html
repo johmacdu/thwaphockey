@@ -43,7 +43,7 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 
 /* A content section: flat on the page, separated by spacing only (no dividers). */
 .pg{position:relative;padding:26px 4px}
-.pg:first-of-type{padding-top:10px}
+.pg:first-of-type{padding-top:34px}
 .pg.seasonfar{padding-top:52px}
 .pg h2{margin-bottom:4px}
 .rule{border:0;border-top:1px solid var(--line);margin:18px 0}
@@ -71,7 +71,7 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .rinkwrap{position:relative;margin:22px -6px 6px}
 .rinkwrap .art{--ar:1600/700}
 .rinkwrap svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-.rinkwrap .sassp{position:absolute;width:17%;left:var(--x);bottom:58%;transform:translateX(-50%);filter:drop-shadow(0 4px 7px rgba(20,40,25,.35));animation:skate 400ms ease-out both}
+.rinkwrap .sassp{position:absolute;width:20%;left:var(--x);bottom:57%;transform:translateX(-50%);filter:drop-shadow(0 4px 7px rgba(20,40,25,.35));animation:skate 400ms ease-out both}
 .rinkwrap .sassp .art{--ar:1}
 @keyframes skate{from{left:6%}to{left:var(--x)}}
 .tiers{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;text-align:center;margin-top:6px}
@@ -144,11 +144,25 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .promise .sc .art{--ar:1}
 
 /* MY BOOKS (seasons shelf) */
-.shelf{display:flex;gap:10px;margin-top:14px;align-items:flex-end}
-.spine{width:58px;height:150px;border-radius:4px 8px 8px 4px;background:var(--acc);color:var(--page);display:flex;align-items:flex-end;justify-content:center;padding-bottom:10px;font-family:'Oswald',sans-serif;font-weight:600;font-size:12px;letter-spacing:.08em;writing-mode:vertical-rl;transform:rotate(180deg);box-shadow:inset -6px 0 0 rgba(0,0,0,.18)}
-.spine.next{background:none;border:2px dashed var(--line2);color:var(--muted);box-shadow:none}
-/* The current season is still being written -- outlined, not a finished (solid) book, not openable. */
-.spine.current{background:none;border:2px solid var(--acc);color:var(--acc);box-shadow:none}
+/* Skeuomorphic hardcover books standing on a shelf. */
+.shelf{display:flex;gap:16px;align-items:flex-end;margin-top:18px;padding:0 2px 12px;position:relative}
+.shelf::after{content:"";position:absolute;left:-2px;right:-2px;bottom:0;height:8px;border-radius:2px;background:linear-gradient(180deg,var(--line2),transparent)}
+.spine{position:relative;width:68px;height:180px;border-radius:2px 7px 7px 2px;background:var(--acc);
+  box-shadow:inset -6px 0 8px rgba(0,0,0,.32),inset 7px 0 7px rgba(255,255,255,.16),0 10px 12px -7px rgba(20,40,25,.55)}
+.spine>span{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:center;padding-bottom:16px;
+  writing-mode:vertical-rl;transform:rotate(180deg);font-family:'Oswald',sans-serif;font-weight:600;font-size:12px;letter-spacing:.12em;color:var(--page)}
+/* raised hardcover bands near the top and bottom of the spine */
+.spine::before,.spine::after{content:"";position:absolute;left:6px;right:11px;height:5px;background:rgba(0,0,0,.22);border-radius:1px}
+.spine::before{top:14px}.spine::after{bottom:14px}
+/* current season: a fresh, unfinished book (not finished-green) with a bookmark */
+.spine.current{background:var(--card);box-shadow:inset -6px 0 8px rgba(0,0,0,.07),inset 7px 0 7px rgba(255,255,255,.6),0 10px 12px -7px rgba(20,40,25,.28),inset 0 0 0 1px var(--line)}
+.spine.current>span{color:var(--text)}
+.spine.current::before,.spine.current::after{background:rgba(47,107,65,.22)}
+.spine.current .ribbon{position:absolute;top:-10px;right:16px;width:9px;height:28px;background:var(--acc);border-radius:1px 1px 0 0;box-shadow:0 2px 3px rgba(0,0,0,.2)}
+/* future season: not a book yet, a faint empty slot */
+.spine.next{background:none;border:2px dashed var(--line2);border-radius:2px 7px 7px 2px;box-shadow:none}
+.spine.next>span{color:var(--muted)}
+.spine.next::before,.spine.next::after{display:none}
 
 html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed body{background:transparent}
 .glassclose{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);right:max(16px, calc(50vw - 534px));z-index:50;display:inline-grid;place-items:center;width:48px;height:48px;border-radius:50%;font-size:20px;font-weight:700;color:var(--text);cursor:pointer;text-decoration:none;background:color-mix(in srgb,var(--card) 62%,transparent);border:1px solid color-mix(in srgb,var(--text) 12%,transparent);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);box-shadow:0 6px 20px var(--shadow)}
@@ -250,8 +264,8 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
   <p class="eyebrow">My books</p>
   <h2 id="h-books" style="font-size:22px">Every season, a new book</h2>
   <div class="shelf">
-    <div class="spine current">2026-27</div>
-    <div class="spine next">2027-28</div>
+    <div class="spine current"><span>2026-27</span><i class="ribbon"></i></div>
+    <div class="spine next"><span>2027-28</span></div>
   </div>
   <p class="why" style="margin-top:12px">This season's book opens when the season ends in the spring.</p>
 </section>
