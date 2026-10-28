@@ -195,5 +195,8 @@ the hockey year, August to June, and rolls over in August.
   every card.
 - [x] Moves tab in My Player: pick a stance, try on locked ones. Moves held
   back by the #447 rule now announce as "New move!".
-- [ ] Celebrations (THWAP!, Knee slide): Play button and milestone days, never
-  a card tap; reduced motion shows the final pose. Still held back until then.
+- [x] Celebrations (THWAP!, Knee slide) as stance keyframes the rig blends
+  between (`CELLYS` in `avatar.js`). Cellys tab in My Player with a Play
+  button; tapping a celebration plays it (locked ones as a try-on). Milestone
+  moment: the New gear message shows the kid's player doing their celebration
+  in the new item. Never on a card tap. Reduced motion shows the final pose.

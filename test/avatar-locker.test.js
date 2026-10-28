@@ -39,7 +39,7 @@ describe('My Player', () => {
     const { w } = await open();
     expect(w.document.querySelector('.lk[role=dialog]')).toBeTruthy();
     expect(w.document.querySelector('.lk h2').textContent).toBe('My Player');
-    expect(w.document.querySelectorAll('.lk-tab').length).toBe(12);
+    expect(w.document.querySelectorAll('.lk-tab').length).toBe(13);
     expect(w.document.querySelector('.lk-stage .av-wrap')).toBeTruthy();
     expect(w.document.querySelector('.lk-btn')).toBeNull();
   });
@@ -191,9 +191,9 @@ describe('unlock moment', () => {
     expect(w.document.querySelector('.lk-toast')).toBeNull(); // only once
     expect(data).toBeTruthy();
   });
-  it('releases moves held back before the Moves tab, but still holds celebrations', async () => {
+  it('releases moves and celebrations held back before their tabs existed', async () => {
     // 15 training days unlocks THWAP! (celebration); 25 Shooting unlocks Snipe (pose).
-    // A device that saw only gear (the #447 hold) now gets "New move! Snipe".
+    // A device that saw only gear (the #447 hold) now announces both.
     const prog = A.progressFrom({ shoot: 25 }, 15);
     const { w } = await open({ progress: prog });
     w.document.querySelector('.lk-x').click();
@@ -202,12 +202,13 @@ describe('unlock moment', () => {
     await w.thwapAvatar.checkUnlocks();
     const toast = w.document.querySelector('.lk-toast');
     expect(toast).toBeTruthy();
-    expect(toast.textContent).toMatch(/New move! Snipe/);
-    expect(toast.querySelector('.lk-mini.pose .av-wrap')).toBeTruthy();
+    expect(toast.textContent).toMatch(/New (celly! THWAP!|move! Snipe) and 1 more/);
     const seen = JSON.parse(w.localStorage.getItem('thwapUnlockSeen'));
     expect(seen).toContain('pose-shooting');
-    expect(seen).not.toContain('celebration-fistpump');
-    expect(JSON.parse(w.localStorage.getItem('thwapUnlockNew'))).toContain('pose-shooting');
+    expect(seen).toContain('celebration-fistpump');
+    const fresh = JSON.parse(w.localStorage.getItem('thwapUnlockNew'));
+    expect(fresh).toContain('pose-shooting');
+    expect(fresh).toContain('celebration-fistpump');
   });
   it('the first check seeds silently (past training is the builder\'s job)', async () => {
     const { w } = await open();

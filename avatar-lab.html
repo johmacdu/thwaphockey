@@ -29,4 +29,19 @@ A.POSES.concat(['shooting:left']).forEach(function(k){
   d.innerHTML="<div class='slot'><img src='cards/plate_front_red.svg' alt=''>"+A.html({pose:p[0],hand:p[1]||'right',jersey:'red',hairstyle:'mullet',num:'72'})+"</div><div class='cap'>"+NAMES[p[0]]+(p[1]?' (shoots left)':'')+"</div>";
   r2.appendChild(d);
 });
+// Celebrations (Phase 3): record every frame, then lay out five across the
+// motion so the whole celebration shows in one picture.
+var h3=document.createElement('h1'); h3.textContent='Celebrations (frames across the motion)'; document.body.appendChild(h3);
+A.CELLYS.forEach(function(id){
+  var row=document.createElement('div'); row.className='row'; document.body.appendChild(row);
+  var got=[];
+  A.playCelly(id,{jersey:'red',hairstyle:'mullet',num:'72'},function(m,sx){ got.push([m,sx]); },function(){
+    [0,.25,.5,.75,1].forEach(function(f){
+      var g=got[Math.min(got.length-1,Math.round(f*(got.length-1)))], d=document.createElement('div');
+      d.innerHTML="<div class='slot'><img src='cards/plate_front_red.svg' alt=''>"+g[0]+"</div><div class='cap'>"+id+" "+Math.round(f*100)+"%</div>";
+      var sc=d.querySelector('.av-scene'); if(sc&&g[1]) sc.style.translate=g[1]+'em 0';
+      row.appendChild(d);
+    });
+  });
+});
 </script></body></html>

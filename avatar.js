@@ -207,6 +207,85 @@
   };
   function lerp(a,b,t){ return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t]; }
 
+  // --- Celebrations (Phase 3) ------------------------------------------------------
+  // A celebration is a few stance keyframes the rig blends between: no art, and
+  // every gear item works in it. READY is the card's standing grip as joint data,
+  // so a celebration can start from it. Keys are [time 0..1, joints].
+  var READY={ lean:0, drop:0, head:0, roll:0,
+    elTop:[-4.8,18,3.6], handTop:[-2.3,13.8,5.4], elBot:[5.3,17.4,1.4], handBot:[4.8,12.8,1.8],
+    knob:[-2.6,14.6,5.1], heel:[0.6,0.7,9.5], toe:[0.6,0.8,12.7],
+    kneeL:[-2.1,6.2,1.5], ankL:[-2.1,2.4,.6], kneeR:[2.1,6.2,1.5], ankR:[2.1,2.4,.6], skL:0, skR:0 };
+  function frame(over){ var f={}; for(var k in READY) f[k]=READY[k]; for(var m in over) f[m]=over[m]; return f; }
+  var SLIDE_POSE={ lean:-8, drop:4.2, head:-10,
+    elTop:[-6,14.2,3.4], handTop:[-5.6,11,6], knob:[-5.8,11.8,5.8], heel:[-2,0.7,9], toe:[-2,0.8,12],
+    elBot:[6.4,18.6,1.4], handBot:[6.6,23.6,2.4],
+    kneeL:[-2.4,5.4,4.6], ankL:[-2.4,2.4,4.4], kneeR:[2.4,1.3,-.4], ankR:[2.4,1.1,-4.6] };
+  // Knee slide finish: both arms up, the stick raised high in the top hand.
+  function ARMS_UP(p){
+    p.elBot=[6.6,21,1.6]; p.handBot=[6.8,27,2.4];
+    p.elTop=[-6.4,20.6,1.6]; p.handTop=[-7,26,2.4];
+    p.knob=[-7.2,26.8,2.4]; p.heel=[-14.6,30,3]; p.toe=[-16,28.6,4.6];
+  }
+  var CELLYS={
+    // THWAP!: a quick crouch, then a big fist pump with the knee up; the word pops.
+    fistpump:{ ms:900, word:'THWAP!', wordAt:.5, keys:[
+      [0, READY],
+      [.32, frame({ lean:18, drop:1.6, elBot:[5.6,14.4,3.4], handBot:[4.6,15.8,6],
+        kneeL:[-2.4,5.4,2.6], kneeR:[2.4,5.4,2.6] })],
+      [.55, frame({ lean:-6, head:-14, elBot:[6.6,25.2,1.6], handBot:[6.2,31,2.6],
+        kneeR:[2.4,9.4,4.6], ankR:[2.4,5.6,3] })],
+      [1, frame({ lean:-4, head:-12, elBot:[6.6,24.8,1.6], handBot:[6.2,30.4,2.6],
+        kneeR:[2.4,9,4.4], ankR:[2.4,5.4,2.8] })] ]},
+    // Knee slide: skate in, drop to one knee and slide across, fist up.
+    kneeslide:{ ms:1300, slide:[-10,2.5], keys:[
+      [0, READY],
+      [.28, frame(SLIDE_POSE)],
+      [.7, frame((function(){ var p={}; for(var k in SLIDE_POSE) p[k]=SLIDE_POSE[k];
+        p.lean=-14; p.head=-14; ARMS_UP(p); return p; })())],
+      [1, frame((function(){ var p={}; for(var k in SLIDE_POSE) p[k]=SLIDE_POSE[k];
+        p.lean=-14; p.head=-14; ARMS_UP(p); return p; })())] ]}
+  };
+  function ease(t){ return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2; }
+  function mix(a,b,t){ var o={}; for(var k in a){ var x=a[k], y=b[k];
+    o[k]=Array.isArray(x)?lerp(x,y,t):(typeof x==='number'?x+((y||0)-x)*t:x); } return o; }
+  function cellyAt(c,t){
+    var ks=c.keys;
+    for(var i=1;i<ks.length;i++) if(t<=ks[i][0]){ var a=ks[i-1], b=ks[i]; return mix(a[1],b[1],ease((t-a[0])/((b[0]-a[0])||1))); }
+    return ks[ks.length-1][1];
+  }
+  function cellyKey(id){ return String(id||'').replace(/^celebration-/,''); }
+  function reducedMotion(){ try{ return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }catch(_){ return false; } }
+  // Play a celebration. draw(markup, slideEm) writes one frame wherever it plays
+  // (the My Player stage, the New gear message). Reduced motion draws only the
+  // final pose. done() runs after the end pose has held for a moment. Returns stop().
+  function playCelly(id,look,draw,done){
+    var c=CELLYS[cellyKey(id)];
+    if(!c){ if(done) done(); return function(){}; }
+    function paint(t){
+      var l={}; for(var k in look) l[k]=look[k]; l.poseData=cellyAt(c,t);
+      var sx=c.slide?c.slide[0]+(c.slide[1]-c.slide[0])*(1-Math.pow(1-t,3)):0;
+      // The word pops in over the first 15% after it appears (scaled in the frame,
+      // since every frame is a fresh draw), with a small overshoot.
+      var w='';
+      if(c.word && t>=c.wordAt){ var wt=Math.min(1,(t-c.wordAt)/.15), sc=wt<1?(.4+.85*wt):1;
+        w="<span class='av-word' aria-hidden='true' style='transform:scale("+sc.toFixed(3)+")'>"+c.word+"</span>"; }
+      draw(html(l)+w, sx);
+    }
+    var stopped=false, timer=null;
+    function stop(){ stopped=true; clearTimeout(timer); }
+    if(reducedMotion()){ paint(1); timer=setTimeout(function(){ if(!stopped && done) done(); },1200); return stop; }
+    var raf=window.requestAnimationFrame||function(f){ return setTimeout(function(){ f(Date.now()); },16); };
+    var t0=null;
+    function step(now){
+      if(stopped) return;
+      if(t0==null) t0=now;
+      var t=Math.min(1,(now-t0)/c.ms); paint(t);
+      if(t<1) raf(step); else timer=setTimeout(function(){ if(!stopped && done) done(); },700);
+    }
+    raf(step);
+    return stop;
+  }
+
   // --- Character ---------------------------------------------------------------
   // Heights (em, from the ice up): blade 0-0.6, boot 0.6-2.2, legs 2.2-10,
   // pants 10-14.6, torso 14.6-24, head 24-32. Minecraft-like 8/12/12 rhythm,
@@ -260,8 +339,9 @@
     var lefty=(look.hand==='left');
     function M(p){ return lefty?[-p[0],p[1],p[2]]:p; }
 
-    // Stance: Ready (no entry) keeps the standing grip below, unchanged.
-    var P=POSES[look.pose]||null;
+    // A celebration frame passes its blended joints as poseData; otherwise the
+    // named stance. Ready (no entry) keeps the standing grip below, unchanged.
+    var P=(look.poseData && typeof look.poseData==='object')?look.poseData:(POSES[look.pose]||null);
     var lean=P?(P.lean||0):0, drop=P?(P.drop||0):0, headTilt=P?(P.head||0):0;
     // roll: sideways lean at the waist (degrees, positive tips toward +x), mirrored for lefties.
     var roll=P?((P.roll||0)*(look.hand==='left'?-1:1)):0;
@@ -462,7 +542,9 @@
     ".av-eye,.av-brow,.av-mouth{position:absolute;background:#141414;display:block}"+
     ".av-eye{width:1.2em;height:1.2em;top:3.4em}.av-eye.l{left:1.4em}.av-eye.r{right:1.4em}"+
     ".av-brow{width:1.9em;height:.45em;top:2.5em}.av-brow.l{left:1.1em;transform:rotate(8deg)}.av-brow.r{right:1.1em;transform:rotate(-8deg)}"+
-    ".av-mouth{width:2.4em;height:.4em;left:2.6em;top:5.6em}";
+    ".av-mouth{width:2.4em;height:.4em;left:2.6em;top:5.6em}"+
+    // The celebration word (THWAP!) over the player, sized by its container.
+    ".av-word{position:absolute;left:0;right:0;top:3%;z-index:3;text-align:center;font:900 2.8em/1 system-ui,-apple-system,sans-serif;letter-spacing:-.02em;color:var(--lime,#B9F06B);text-shadow:0 .06em 0 #15221B,0 0 .2em rgba(0,0,0,.35);pointer-events:none}";
   function injectCss(){
     if(document.getElementById('av-css')) return;
     var s=document.createElement('style'); s.id='av-css'; s.textContent=css;
@@ -475,7 +557,7 @@
   // Opens from the My Player button on the player's own card. Tap an owned item: it goes on the
   // character and saves to the server. Tap a locked item: try it on, with the
   // progress line; nothing is saved. Unlocks come from the server only.
-  var GEAR_TABS=[['skin','Skin'],['hairstyle','Hair'],['hair','Hair color'],['jersey','Jersey'],['helmet','Helmet'],['cage','Cage'],['stripe','Stripe'],['gloves','Gloves'],['stick','Stick'],['pose','Moves'],['hand','Shot'],['facing','View']];
+  var GEAR_TABS=[['skin','Skin'],['hairstyle','Hair'],['hair','Hair color'],['jersey','Jersey'],['helmet','Helmet'],['cage','Cage'],['stripe','Stripe'],['gloves','Gloves'],['stick','Stick'],['pose','Moves'],['celebration','Cellys'],['hand','Shot'],['facing','View']];
   var TIER_LABEL={ common:'', rare:'Pro', epic:'All-Star', legendary:'Legend' };
   var L={ data:null, look:null, saved:null, tab:'skin', trying:null, changed:false, me:null };
 
@@ -525,10 +607,18 @@
   }
   // The tile/toast picture for any item: hair from behind, hand/facing from the
   // front, stances full body, everything else a color swatch.
+  // Celebration tiles show the player's end pose (THWAP! fist up, the slide);
+  // 'None yet' shows the player in their own stance.
+  function miniCelly(key){
+    var look=norm(L.look||{}); look.num='';
+    var c=CELLYS[key]; if(c) look.poseData=cellyAt(c,1);
+    return "<span class='lk-mini pose' aria-hidden='true'>"+html(look)+"</span>";
+  }
   function itemPic(slot,short){
     if(slot==='hairstyle') return miniHead(short);
     if(slot==='hand'||slot==='facing') return miniOpt(slot,short);
     if(slot==='pose') return miniPose(short);
+    if(slot==='celebration') return miniCelly(short);
     return "<span class='lk-sw' style='background:"+swatch(slot,short)+"'></span>";
   }
 
@@ -548,7 +638,10 @@
       ".lk-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 8px}"+
       ".lk-head h2{margin:0;font-size:22px;font-weight:900}"+
       ".lk-x{width:48px;height:48px;border-radius:50%;border:1px solid var(--line,#DCE5DE);background:var(--card,#fff);color:var(--text,#15221B);font-size:20px;cursor:pointer}"+
-      ".lk-stage{position:relative;height:min(46vh,380px);margin:0 16px;border-radius:16px;background:var(--soft,#E7EEE8);overflow:hidden;touch-action:none}"+
+      ".lk-stagewrap{position:relative;margin:0 16px}"+
+      ".lk-play{position:absolute;right:12px;bottom:12px;min-height:48px;padding:0 18px;border-radius:24px;border:0;background:var(--text,#15221B);color:var(--bg,#F3F7F4);font:inherit;font-weight:900;font-size:16px;cursor:pointer}.lk-play[hidden]{display:none}"+
+      ".lk-toast .av-word{display:none}"+
+      ".lk-stage{position:relative;height:min(46vh,380px);margin:0;border-radius:16px;background:var(--soft,#E7EEE8);overflow:hidden;touch-action:none}"+
       ".lk-stage .av-wrap{font-size:min(9px,2.2vw,1.1vh)}"+
       ".lk-note{min-height:22px;margin:8px 16px 0;font-size:14px;color:var(--muted,#5F6F64);text-align:center}"+
       ".lk-tabs{display:flex;gap:8px;overflow-x:auto;padding:12px 16px 4px;scrollbar-width:none}"+
@@ -586,12 +679,32 @@
         ".av-reveal .av-scene{animation:avDrop .35s cubic-bezier(.2,.9,.3,1.2)}@keyframes avDrop{from{translate:0 -6em;opacity:0}to{translate:0 0;opacity:1}}}";
   }
 
+  // The celebration showing on the stage: the one being tried on, else the worn one.
+  function stageCelly(){
+    var look=L.trying?L.trying.look:(L.look||{});
+    var id=look.celebration; return (id && CELLYS[cellyKey(id)])?id:null;
+  }
+  function playOnStage(id){
+    var st=document.querySelector('.lk-stage'); if(!st||!id) return;
+    if(L.playing){ L.playing(); L.playing=null; }
+    var r=norm(L.trying?L.trying.look:L.look); r.num=L.num||'';
+    L.playing=playCelly(id,r,function(m,sx){
+      st.innerHTML=m;
+      var sc=st.querySelector('.av-scene');
+      if(sc){ sc.style.transform='rotateX(-10deg) rotateY('+L.spin+'deg)'; sc.style.translate=sx?(sx+'em 0'):''; }
+    },function(){ L.playing=null; paintStage(); });
+  }
   function paintStage(){
     var st=document.querySelector('.lk-stage'); if(!st) return;
-    var look=L.trying?L.trying.look:L.look;
-    var r=norm(look); r.num=L.num||'';
-    st.innerHTML=html(r);
-    var sc=st.querySelector('.av-scene'); if(sc) sc.style.transform='rotateX(-10deg) rotateY('+L.spin+'deg)';
+    var play=document.querySelector('.lk-play');
+    if(play) play.hidden=!(L.build==null && L.tab==='celebration' && stageCelly());
+    // A celebration is playing: let it finish (it repaints when done); only the note updates.
+    if(!L.playing){
+      var look=L.trying?L.trying.look:L.look;
+      var r=norm(look); r.num=L.num||'';
+      st.innerHTML=html(r);
+      var sc=st.querySelector('.av-scene'); if(sc) sc.style.transform='rotateX(-10deg) rotateY('+L.spin+'deg)';
+    }
     var note=document.querySelector('.lk-note');
     if(note){
       if(L.trying){ var it=L.trying.item, h=have(it), n=(it.rule||{}).n||0;
@@ -655,17 +768,23 @@
       L.tab=BUILD_STEPS[L.build][0]; L.trying=null; L.spin=spinFor(L.tab); paintTabs(); paintGrid(); paintStage(); return;
     }
     var tab=e.target.closest('.lk-tab');
-    if(tab){ L.tab=tab.getAttribute('data-tab'); L.trying=null; L.spin=spinFor(L.tab); paintTabs(); paintGrid(); paintStage(); return; }
+    if(tab){ if(L.playing){ L.playing(); L.playing=null; } L.tab=tab.getAttribute('data-tab'); L.trying=null; L.spin=spinFor(L.tab); paintTabs(); paintGrid(); paintStage(); return; }
+    if(e.target.closest('.lk-play')){ playOnStage(stageCelly()); return; }
     var b=e.target.closest('.lk-item'); if(!b||!L.data) return;
     var id=b.getAttribute('data-id'), it=null;
     for(var i=0;i<L.data.items.length;i++) if(L.data.items[i].id===id) it=L.data.items[i];
     if(!it) return;
+    // Tapping a celebration plays it (even a locked one, as a try-on), so the
+    // kid sees exactly what they are wearing or working toward.
+    var celly=(it.slot==='celebration' && CELLYS[cellyKey(id)])?id:null;
     if(!owned(id)){
       var tryLook={}; for(var k in L.look) tryLook[k]=L.look[k]; tryLook[it.slot]=id;
-      L.trying={item:it,look:tryLook}; paintStage(); return;
+      L.trying={item:it,look:tryLook}; if(L.playing){ L.playing(); L.playing=null; } paintStage(); if(celly) playOnStage(celly); return;
     }
+    if(L.trying && L.playing){ L.playing(); L.playing=null; }
     L.trying=null;
-    if(L.look[it.slot]===id){ paintStage(); return; }
+    if(L.look[it.slot]===id){ paintStage(); if(celly) playOnStage(celly); return; }
+    if(celly){ setTimeout(function(){ playOnStage(celly); },0); }
     var prev={}; for(var k2 in L.look) prev[k2]=L.look[k2];
     L.look[it.slot]=id; paintGrid();
     if(it.slot==='facing') L.spin=faceSpin(id.slice(it.slot.length+1)); // turn the stage to the picked view
@@ -693,6 +812,7 @@
   }
 
   function closeLocker(){
+    if(L.playing){ L.playing(); L.playing=null; }
     var el=document.querySelector('.lk'); if(el) el.remove();
     document.removeEventListener('keydown',onKey);
     if(location.hash==='#myplayer'){ try{ history.replaceState(null,'',location.pathname+location.search); }catch(_){} }
@@ -713,7 +833,7 @@
     L={ onClose:opts.onClose||null, data:null, look:null, tab:opts.tab||'skin', trying:null, changed:false, me:null, spin:-25, status:'', num:'', build:null };
     var el=document.createElement('div'); el.className='lk'; el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true'); el.setAttribute('aria-label','My Player');
     el.innerHTML="<div class='lk-head'><h2>My Player</h2><button type='button' class='lk-x' aria-label='Close'>&#10005;</button></div>"+
-      "<div class='lk-stage' aria-label='Your player. Drag to spin.'></div><div class='lk-note' aria-live='polite'></div>"+
+      "<div class='lk-stagewrap'><div class='lk-stage' aria-label='Your player. Drag to spin.'></div><button type='button' class='lk-play' hidden>&#9654; Play</button></div><div class='lk-note' aria-live='polite'></div>"+
       "<div class='lk-tabs' role='tablist' data-lk='tabs'></div><div class='lk-grid'><div class='lk-msg'>Getting your player...</div></div><div class='lk-foot' hidden></div>";
     document.body.appendChild(el);
     el.querySelector('.lk-x').addEventListener('click',closeLocker);
@@ -743,12 +863,21 @@
   // blocks the next tap, a New tag in the My Player, and a dot on its button.
   var toastTimer=null;
   function itemName(j,id){ for(var i=0;i<(j.items||[]).length;i++) if(j.items[i].id===id) return j.items[i]; return null; }
-  function showToast(it,count){
+  // Milestone moment: when the kid has a celebration (or just earned one), the
+  // message shows their own player doing it, wearing the new item. It never
+  // blocks a tap; reduced motion shows the end pose.
+  function showToast(it,count,look){
     var old=document.querySelector('.lk-toast'); if(old) old.remove();
     var short=it.id.slice(it.slot.length+1);
+    var my=norm(look||{}); my[it.slot]=it.id; my.num='';
+    var celly=it.slot==='celebration'?it.id:my.celebration;
+    if(!CELLYS[cellyKey(celly)]) celly=null;
+    var kind=it.slot==='pose'?'move':(it.slot==='celebration'?'celly':'gear');
     var b=document.createElement('button'); b.type='button'; b.className='lk-toast'; b.setAttribute('role','status');
-    b.innerHTML=itemPic(it.slot,short)+"<span>New "+(it.slot==='pose'?'move':'gear')+"! "+esc(it.label)+
+    b.innerHTML=(celly?"<span class='lk-mini pose lk-tcelly' aria-hidden='true'></span>":itemPic(it.slot,short))+"<span>New "+kind+"! "+esc(it.label)+
       (count>1?' and '+(count-1)+' more':'')+"<small>Tap to try it on</small></span>";
+    if(celly){ var pic=b.querySelector('.lk-tcelly');
+      playCelly(celly,my,function(m,sx){ pic.innerHTML=m; var sc=pic.querySelector('.av-scene'); if(sc) sc.style.translate=sx?(sx+'em 0'):''; }); }
     b.addEventListener('click',function(){ b.remove(); if(window.thwapOpenMyPlayer) window.thwapOpenMyPlayer({tab:it.slot}); else openLocker({tab:it.slot}); });
     document.body.appendChild(b);
     try{ if(window.thwapSfx) window.thwapSfx('unlock'); }catch(_){}
@@ -782,7 +911,7 @@
       if(fresh.length){
         writeList('thwapUnlockNew',(readList('thwapUnlockNew')||[]).concat(fresh));
         var first=itemName(j,fresh[0]);
-        if(first && !document.querySelector('.lk')) showToast(first,fresh.length);
+        if(first && !document.querySelector('.lk')) showToast(first,fresh.length,j.look);
       }
       if((readList('thwapUnlockNew')||[]).length) markDot();
       return j;
@@ -822,5 +951,5 @@
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bootLocker); else bootLocker();
 
-  window.thwapAvatar={ on:on, live:LIVE, html:html, lookFor:lookFor, refreshTeamLooks:refreshTeamLooks, openLocker:openLocker, checkUnlocks:checkUnlocks, norm:norm, SKIN:SKIN, HAIR:HAIR, JERSEY:JERSEY, DEFAULT_LOOK:DEFAULT_LOOK, POSES:['ready'].concat(Object.keys(POSES)) };
+  window.thwapAvatar={ on:on, live:LIVE, html:html, lookFor:lookFor, refreshTeamLooks:refreshTeamLooks, openLocker:openLocker, checkUnlocks:checkUnlocks, norm:norm, SKIN:SKIN, HAIR:HAIR, JERSEY:JERSEY, DEFAULT_LOOK:DEFAULT_LOOK, POSES:['ready'].concat(Object.keys(POSES)), CELLYS:Object.keys(CELLYS), playCelly:playCelly };
 })();
