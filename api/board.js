@@ -4,7 +4,7 @@
 // GET  /api/board?tf=week       -> { players: [ { id, stick, shoot, dryland, netplay, iq, pass, cheers }, ... ] }  (current week counts)
 // POST /api/board?action=cheer  body: { to }  -> { ok, count } | { ok, already } | 4xx
 // POST /api/board?action=fire   body: { to }  -> { ok, count } | { ok, already } | 4xx
-// GET  /api/board?action=journey -> the signed-in player's Season Book | 401
+// GET  /api/board?action=journey -> the signed-in player's Season Book (tier + badges) | 401
 //
 // The GET half is the read-only leaderboard: it always returns the full roster
 // (zeroed for players not yet in the store) and now folds in each player's
@@ -18,8 +18,8 @@
 // store. The sender is NEVER taken from the body: it is the signed-in session, so
 // a kid cannot cheer as someone else.
 
-import { listPlayers, weekBoard, listCheers, sendCheer, listFires, sendFire, isRosterPlayer, ROSTER, getRecentCheerers, getRecentFirers, getTrainingDays, localDateStr } from '../lib/store.js';
-import { journeyFor } from '../lib/journey.js';
+import { listPlayers, weekBoard, listCheers, sendCheer, listFires, sendFire, isRosterPlayer, ROSTER, getRecentCheerers, getRecentFirers, getTrainingDays, getDrillEvents, getCheersSent, GOALIE_IDS, localDateStr } from '../lib/store.js';
+import { journeyFor, badgesFor } from '../lib/journey.js';
 import { getMember, getTeam } from '../lib/teams_store.js';
 import { verifySession, readSessionCookie } from '../lib/session_store.js';
 import { handleLooks, handleLookGet, handleLookPost } from '../lib/look_api.js';
@@ -139,10 +139,14 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'session required' });
     }
     const me = String(claims.playerId || '').toLowerCase();
-    const book = journeyFor(await getTrainingDays(me), localDateStr());
-    const player = await coverPlayer(me);
+    const today = localDateStr();
+    const [days, events, cheersSent, player] = await Promise.all([
+      getTrainingDays(me), getDrillEvents(me), getCheersSent(me), coverPlayer(me),
+    ]);
+    const book = journeyFor(days, today);
+    const badges = badgesFor({ events, days, cheersSent, goalie: GOALIE_IDS.includes(me) }, today);
     res.setHeader('Cache-Control', 'no-store');
-    return res.status(200).json({ id: me, player, ...book });
+    return res.status(200).json({ id: me, player, ...book, ...badges });
   }
 
   // GET /api/board?action=cheers-for : the SIGNED-IN player's own recent cheer

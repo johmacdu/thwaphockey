@@ -98,3 +98,27 @@ describe('GET /api/board?action=journey', () => {
     expect(res.body.player).toEqual({ name: 'Alder', number: 71, position: null, team: null });
   });
 });
+
+describe('GET /api/board?action=journey badges', () => {
+  it('returns the 8 badges and the star total from events, days and cheers sent', async () => {
+    fake._seed('events:lewie', [
+      ...Array.from({ length: 10 }, () => ({ date: '2026-10-01', disc: 'stick' })),
+      { date: '2026-08-01', disc: 'stick' },
+    ]);
+    fake._seed('days:lewie', ['2026-10-01', '2026-10-02', '2026-10-03']);
+    fake._seed('cheersent:fw-2026:lewie', 5);
+    const res = await get(mintSession('lewie', 'p@e.com'));
+    expect(res.statusCode).toBe(200);
+    expect(res.body.badges).toHaveLength(8);
+    const b = Object.fromEntries(res.body.badges.map((x) => [x.id, x]));
+    expect(b.dangler).toMatchObject({ count: 10, stars: 1 });
+    expect(b.onaheater).toMatchObject({ count: 3, stars: 1 });
+    expect(b.hypesquad).toMatchObject({ count: 5, stars: 1 });
+    expect(res.body.badgeStars).toBe(3);
+  });
+
+  it('the goalie sees Net Boss', async () => {
+    const res = await get(mintSession('johnny', 'p@e.com'));
+    expect(res.body.badges[1].id).toBe('netboss');
+  });
+});
