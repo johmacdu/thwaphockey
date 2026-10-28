@@ -80,7 +80,29 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .rinkwrap svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .rinkwrap .sassp{position:absolute;width:24%;left:var(--x);bottom:58%;transform:translateX(-50%);animation:skate 400ms ease-out both}
 .rinkwrap .sassp .art{--ar:1}
-@keyframes skate{from{left:6%}to{left:var(--x)}}
+@keyframes skate{from{left:var(--from,6%)}to{left:var(--x)}}
+/* Celebrations (played once per new star / tier, remembered per device).
+   Star stamp: the new star stamps onto its badge, a lime ring pulses once,
+   and a New chip stays until the kid taps the badge. */
+.badge{position:relative}
+.newchip{display:inline-block;margin-top:4px;font:800 12px 'Nunito Sans',system-ui,sans-serif;background:var(--lime);color:var(--onlime);border-radius:999px;padding:1px 8px}
+.badge.stamp .stars .new{display:inline-block;animation:stamp 380ms cubic-bezier(.2,1.6,.4,1) both}
+.badge.stamp::after{content:'';position:absolute;inset:-2px;border-radius:15px;border:3px solid var(--lime);opacity:0;pointer-events:none;animation:ring 400ms ease-out 300ms both}
+.badge.stamp .newchip{animation:chipin 240ms ease-out 450ms both}
+@keyframes stamp{0%{transform:scale(2.4) rotate(-20deg);opacity:0}100%{transform:none;opacity:1}}
+@keyframes ring{0%{opacity:1;transform:scale(.92)}100%{opacity:0;transform:scale(1.12)}}
+@keyframes chipin{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+/* Tier-up: Sass skates from the old tier to the new one, the new tier icon
+   pops, a THWAP burst lands, and the tier name fades in. */
+.jburst{position:absolute;left:var(--x);top:-6%;z-index:2;transform:translate(-50%,0) scale(.4);font-family:'Archivo Black',sans-serif;font-size:28px;color:var(--onlime);background:var(--lime);padding:2px 12px;border-radius:10px;opacity:0;pointer-events:none;rotate:-6deg}
+.rinkwrap.tierup .sassp{animation:skate 800ms cubic-bezier(.5,0,.3,1) both}
+.rinkwrap.tierup .jburst{animation:burst 1500ms ease-out 800ms both}
+@keyframes burst{0%{opacity:0;transform:translate(-50%,0) scale(.4)}20%{opacity:1;transform:translate(-50%,0) scale(1.08)}30%{transform:translate(-50%,0) scale(1)}85%{opacity:1}100%{opacity:0}}
+.tiers .pop .ic{animation:tierpop 380ms cubic-bezier(.2,1.6,.4,1) 800ms both}
+@keyframes tierpop{0%{transform:scale(1)}50%{transform:scale(1.35)}100%{transform:scale(1)}}
+.tiers .pop .ic .art{box-shadow:0 0 0 3px var(--lime)}
+#jTier.swap{animation:chipin 260ms ease-out 900ms both}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .tiers{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;text-align:center;margin-top:6px}
 .tiers div{font-size:12px;color:var(--muted)}
 .tiers .ic{width:46px;margin:0 auto 4px}
@@ -160,7 +182,7 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 
 html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed body{background:transparent}
 .glassclose{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);right:max(16px, calc(50vw - 250px));z-index:50;display:inline-grid;place-items:center;width:48px;height:48px;border-radius:50%;font-size:20px;font-weight:700;color:var(--text);text-decoration:none;background:var(--card);border:1px solid var(--line);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);box-shadow:0 6px 20px var(--shadow)}
-@media (prefers-reduced-motion:reduce){.rinkwrap .sassp{animation:none}}
+@media (prefers-reduced-motion:reduce){.rinkwrap .sassp,.rinkwrap.tierup .sassp,.badge.stamp .stars .new,.badge.stamp::after,.badge.stamp .newchip,.tiers .pop .ic,#jTier.swap{animation:none}.jburst{display:none}}
 </style>
 </head>
 <body>
@@ -193,7 +215,9 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
       <circle cx="356" cy="92" r="10" fill="var(--card2)" stroke="var(--muted)" stroke-width="3"/>
     </svg>
     <div class="sassp"><div class="art has"><img src="login/sass-stride-m.webp" alt=""></div></div>
+    <div class="jburst" aria-hidden="true">THWAP!</div>
   </div>
+  <p class="vh" id="jCheer" role="status" aria-live="polite"></p>
   <div class="tiers" id="jTiers" role="list" aria-label="Four tiers">
     <div class="on" role="listitem"><div class="ic"><div class="art" data-art="tier-1.webp"><span>tier-1</span></div></div><b>Locker Room</b>Done</div>
     <div class="on" role="listitem"><div class="ic"><div class="art" data-art="tier-2.webp"><span>tier-2</span></div></div><b>Practice Ice</b>You are here</div>
@@ -324,6 +348,59 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     if(Array.isArray(b.badges)){BADGES=b.badges;renderBadges();txt('jFinStars',b.badgeStars);}
     document.getElementById('finale').hidden=!(PREVIEW_FINALE||b.seasonOver);
     document.querySelectorAll('[data-sample]').forEach(function(el){el.hidden=true;});
+    celebrate(b);
+  }
+  // Celebrations: compare the book against what this device last saw. The first
+  // visit (or a new season) only records, so a kid never gets a pile of stamps.
+  var SEEN_KEY='thwapBookSeen';
+  function readSeen(){try{return JSON.parse(localStorage.getItem(SEEN_KEY)||'null');}catch(e){return null;}}
+  function writeSeen(v){try{localStorage.setItem(SEEN_KEY,JSON.stringify(v));}catch(e){}}
+  function celebrate(b){
+    if(!Array.isArray(b.badges)) return;
+    var key=b.season&&b.season.key, seen=readSeen();
+    var stars={}; b.badges.forEach(function(g){stars[g.id]=g.stars;});
+    if(!seen||seen.season!==key){writeSeen({season:key,tierIndex:b.tierIndex,stepsDone:b.stepsDone,stars:stars,pending:[]});return;}
+    var fresh=b.badges.filter(function(g){return g.stars>((seen.stars||{})[g.id]||0);}).map(function(g){return g.id;});
+    var pending=(seen.pending||[]).filter(function(id){return stars[id]>0;});
+    fresh.forEach(function(id){if(pending.indexOf(id)<0)pending.push(id);});
+    var tierUp=b.tierIndex>(seen.tierIndex||0);
+    var msgs=[];
+    if(tierUp){tierUpFrom(seen.stepsDone||0,b.tierIndex);msgs.push('New tier: '+b.tier+'.');}
+    showNew(pending,fresh);
+    fresh.forEach(function(id){var g=b.badges.filter(function(x){return x.id===id;})[0];if(g)msgs.push('New star: '+g.name+', '+g.stars+' of 3.');});
+    if(msgs.length)txt('jCheer',msgs.join(' '));
+    writeSeen({season:key,tierIndex:Math.max(b.tierIndex,seen.tierIndex||0),stepsDone:b.stepsDone,stars:stars,pending:pending});
+  }
+  function tierUpFrom(prevSteps,tierIndex){
+    var rink=document.getElementById('jRink');
+    rink.style.setProperty('--from',xFor(prevSteps)+'%');
+    rink.classList.remove('tierup'); void rink.offsetWidth; rink.classList.add('tierup');
+    var t=document.getElementById('jTiers').children[tierIndex]; if(t)t.classList.add('pop');
+    var name=document.getElementById('jTier'); name.classList.remove('swap'); void name.offsetWidth; name.classList.add('swap');
+  }
+  function showNew(pending,fresh){
+    var btns=document.querySelectorAll('#jBadges .badge');
+    BADGES.forEach(function(g,i){
+      var el=btns[i]; if(!el)return;
+      var chip=el.querySelector('.newchip');
+      if(pending.indexOf(g.id)>=0){
+        if(!chip){chip=document.createElement('span');chip.className='newchip';chip.textContent='New';el.appendChild(chip);}
+        if(fresh.indexOf(g.id)>=0){var st=el.querySelector('.stars');
+          // Wrap the newest earned star so it can stamp in.
+          st.innerHTML='\u2605'.repeat(g.stars-1)+'<span class="new">\u2605</span>'+(g.stars<3?'<span class="off">'+'\u2606'.repeat(3-g.stars)+'</span>':'');
+          stampWhenVisible(el);}
+      }else if(chip){chip.remove();}
+    });
+  }
+  function stampWhenVisible(el){
+    if(!('IntersectionObserver' in window)){el.classList.add('stamp');return;}
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){el.classList.add('stamp');io.disconnect();}});},{threshold:.6});
+    io.observe(el);
+  }
+  function ackBadge(el){
+    var chip=el.querySelector('.newchip'); if(!chip)return;
+    chip.remove(); var g=BADGES&&BADGES[Number(el.getAttribute('data-i'))]; var seen=readSeen();
+    if(g&&seen){seen.pending=(seen.pending||[]).filter(function(id){return id!==g.id;});writeSeen(seen);}
   }
   // Badges: sample until the API answers. Tapping one says what it counts.
   var BADGES=null;
@@ -345,6 +422,7 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
   }
   document.getElementById('jBadges').addEventListener('click',function(e){
     var el=e.target.closest('.badge'); if(!el)return;
+    ackBadge(el);
     document.querySelectorAll('#jBadges .badge').forEach(function(x){x.setAttribute('aria-pressed',x===el?'true':'false');});
     var g=BADGES&&BADGES[Number(el.getAttribute('data-i'))];
     txt('jBadgeNote',g?noteFor(g):el.querySelector('b').textContent+': sign in to see your count.');
