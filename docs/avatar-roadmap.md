@@ -133,7 +133,7 @@ the hockey year, August to June, and rolls over in August.
 
 ### Phase 4, March to April: the team layer
 - **Team set (decided Oct 28 2026).** Each week the team hits the weekly goal
-  (the ramp in `TEAM_GOAL_SCHEDULE`) unlocks the NEXT item in a fixed,
+  (adaptive, see below) unlocks the NEXT item in a fixed,
   visible order, for everyone on the roster, kept forever. No random drops.
   Team items are Rangers-themed, so they read as "we did it" next to the
   personal ladder's "I trained". Starting order (names are placeholders to
@@ -148,10 +148,12 @@ the hockey year, August to June, and rolls over in August.
   Everyone gets it, including kids who did not train that week: the message
   ("The Rangers did it! New team item: Rangers tape") is how quiet kids come
   back. The message also says how many drills each kid added.
-- **Before building:** check how many weeks since launch the team actually hit
-  the goal. In October one week had 16 team activities against a goal of 125.
-  If the team almost never hits it, lower the goal or unlock team items on
-  the way to it, so the team goal is not something kids always miss.
+- **Weekly goal (changed Oct 28 2026).** In October one week had 16 team
+  activities against a goal of 125, so the fixed date ramp was replaced: the
+  goal starts at 75 (week of Oct 26) and goes up by 10 each week the team
+  hits it, to 145. A missed week keeps the goal; it never goes down. Finished
+  weeks are recorded once on the server (`currentTeamGoal` in `lib/store.js`,
+  key `teamgoal:ladder`) and the bar reads the goal from `/api/board?tf=week`.
 - Coach grants the C and A (done, #457). Coach home shows the roster's characters.
 - **Tournament jersey (decided Oct 28 2026).** The coach marks an event on the
   team schedule as a tournament; the jersey opens that week. Earned, not
@@ -226,5 +228,5 @@ the hockey year, August to June, and rolls over in August.
   per team (giving it moves it); at most two A's. Drawn high on the chest on
   every card; the kid gets "Coach gave you the C!" once.
 - [ ] Phase 4 team set and tournament jersey: decided (see Phase 4 above).
-  First step is checking how often the team has hit the weekly goal.
+  The weekly goal is now adaptive (75, +10 per hit, to 145); next is the team set.
 - [ ] Unlock ladder check against December's data (early January).

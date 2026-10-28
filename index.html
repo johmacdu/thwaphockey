@@ -5034,6 +5034,7 @@ window.thwapEnsureAllBoard=function(){
   function pull(url, which){
     try{
       fetch(url,{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(j){
+        if(j&&j.teamGoal&&j.teamGoal.goal){ window.THWAP_TEAM_GOAL=j.teamGoal.goal; }
         if(j&&j.players&&j.players.length){
           stashBoard(which, j.players);
           if(window.thwapRebuildCard) window.thwapRebuildCard();
@@ -5057,6 +5058,7 @@ function fetchBoard(){
   var which=tf;
   try{
     fetch(url,{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(j){
+      if(j&&j.teamGoal&&j.teamGoal.goal){ window.THWAP_TEAM_GOAL=j.teamGoal.goal; }
       if(j&&j.players&&j.players.length){
         LIVE[which]=mapPlayers(j.players);
         stashBoard(which, j.players);
@@ -5078,28 +5080,11 @@ function scoreOf(p){
   if(disc==='shoot') return thirdOf(p);
   return p[disc]||0;
 }
-/* Weekly team goal rises through the season, then eases off late winter.
-   Each entry is the first day its goal takes effect; the live goal is the last
-   entry whose date is on or before today. Edit this list to retune, not the
-   render below. Dates are the Monday the week starts (local time). */
-window.TEAM_GOAL_SCHEDULE=[
-  {from:'2026-01-01', goal:110},  /* season start / default */
-  {from:'2026-10-05', goal:120},
-  {from:'2026-10-19', goal:125},
-  {from:'2026-11-02', goal:130},
-  {from:'2026-12-01', goal:135},  /* all of December */
-  {from:'2027-01-01', goal:140},  /* all of January */
-  {from:'2027-02-01', goal:130},  /* February eases off */
-  {from:'2027-03-01', goal:125}   /* March */
-];
-function teamGoalFor(d){
-  d=d||new Date();
-  /* local YYYY-MM-DD so the switch happens at local midnight, not UTC */
-  var key=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
-  var sched=window.TEAM_GOAL_SCHEDULE, goal=sched[0].goal;
-  for(var i=0;i<sched.length;i++){ if(sched[i].from<=key) goal=sched[i].goal; }
-  return goal;
-}
+/* Weekly team goal (decided Oct 28 2026): starts at 75 and goes up by 10 each
+   week the team hits it, to 145; a missed week keeps the goal. The server works
+   it out from finished weeks (lib/store.js currentTeamGoal) and sends it with
+   /api/board?tf=week. 75 is only the fallback until that answer arrives. */
+function teamGoalFor(){ return window.THWAP_TEAM_GOAL||75; }
 function render(){
   var rows=rowsFor().map(function(p){ return {n:p.n, s:scoreOf(p)}; });
   rows.sort(function(a,b){ return b.s-a.s || a.n.localeCompare(b.n); });

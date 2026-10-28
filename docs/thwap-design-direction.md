@@ -88,7 +88,7 @@ Two hard rules:
 
 Team goal first, individual status second.
 
-- Lead with the team: "Rangers vs 150, progress bar, 32 to go."
+- Lead with the team: "Rangers vs 75, progress bar, 32 to go." (The weekly goal starts at 75 and rises 10 each week the team hits it, to 145.)
 - We-not-me psychology. The kid is contributing to something shared.
 - Individual accomplishments show up as collectible status badges, not constant ordinal ranking.
   - Examples: Hands Machine, Top Shelf, Speed Week, Hockey Brain, Shutdown D.
