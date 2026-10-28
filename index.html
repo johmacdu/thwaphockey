@@ -55,7 +55,7 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 .deck-wrap{margin:4px 0 18px;text-align:center}
 .stickerbook-card{text-align:left}
 .hero-sticker{text-align:left;margin-bottom:14px}
-.stickerbook-head{display:flex;align-items:center;gap:24px;justify-content:flex-start;padding-bottom:32px}
+.stickerbook-head{display:flex;align-items:center;gap:24px;justify-content:center;padding-bottom:24px}.jy-embed{margin:0 -14px 8px}.jy-embed iframe{display:block;width:100%;height:1400px;border:0;background:transparent}.jy-h{font-size:22px;margin:18px 0 10px}.stickerbook-headtext{margin-bottom:14px}
 .stickerbook-headtext{display:flex;flex-direction:column;gap:8px}
 .stickerbook-lead{margin:0;color:var(--text);font-weight:800;font-size:16px;line-height:1.3}
 .stickerbook-head .stickcount{margin:0}
@@ -1049,7 +1049,7 @@ button.row:active{background:var(--soft)}
 .glassback{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:max(16px, calc(50vw - 534px));z-index:50;display:inline-grid;grid-auto-flow:column;gap:2px;place-items:center;height:44px;padding:0 16px;border-radius:999px;font-size:16px;line-height:1;font-weight:800;color:var(--text);cursor:pointer;text-decoration:none;background:var(--panel);border:1px solid var(--line);box-shadow:0 6px 20px var(--shadow)}
 .glassback:hover{background:var(--soft)}.glassback:active{transform:scale(.97)}
 .pl-head{display:flex;align-items:center;gap:14px;padding-top:56px;margin-bottom:6px}
-.pl-photo{width:64px;height:88px;object-fit:cover;border-radius:12px;background:var(--card2);flex:0 0 auto}
+.pl-photo{width:64px;height:88px;object-fit:cover;border-radius:12px;background:var(--card2);flex:0 0 auto}.pl-av{position:relative;width:64px;height:88px;border-radius:12px;background:#1d2a21;overflow:hidden;flex:0 0 auto}.pl-av .av-wrap{font-size:3px}
 .pl-name{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;line-height:1.05}
 .pl-pos{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
 .pl-streak{font-family:'Archivo Black',system-ui,sans-serif;font-size:18px;color:var(--text);margin:40px 0 24px}
@@ -2389,14 +2389,10 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 
 <section id='stickers' class='page'>
 <a class='glassclose' href='.' aria-label='Close'>✕</a>
-<div class='hero hero-sticker'><h1>Sticker Book</h1></div>
+<div class='hero hero-sticker'><h1>Journey</h1></div>
 <div class='stickerbook' id='stickerBook'>
 <div class='stickerbook-card'>
 <div class='stickerbook-head' id='stickerHead'>
-<div class='stickerbook-headtext'>
-<p class='stickerbook-lead'>Finish drills to<br>unlock stickers.</p>
-<div class='stickcount' id='stickCount'></div>
-</div>
 <button type='button' class='cardthumb' id='cardThumb' aria-label='Open your player card'>
   <div class='cardthumb-mini'><div class='cardthumb-scale' id='cardThumbMini'></div></div>
 </button>
@@ -2407,13 +2403,20 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 <p class='deck-tip'>Spin your card, drag a sticker onto it.</p>
 </div>
 </div>
+<div class='jy-embed' id='jyEmbed'><iframe id='jyFrame' title='My Season Journey' loading='lazy' scrolling='no' src='journey.html?embed=1'></iframe></div>
+<h2 class='jy-h'>Sticker Book</h2>
+<script>window.addEventListener('message',function(e){ if(e.origin!==location.origin||!e.data||typeof e.data.thwapJourneyHeight!=='number') return; var f=document.getElementById('jyFrame'); if(f) f.style.height=Math.max(200,Math.min(8000,e.data.thwapJourneyHeight))+'px'; });</script>
+<div class='stickerbook-headtext'>
+<p class='stickerbook-lead'>Finish drills to unlock stickers.</p>
+<div class='stickcount' id='stickCount'></div>
+</div>
 <div class='stickgrid' id='stickGrid'></div>
 </div>
 </section>
 
 <section id='player' class='page'>
 <button type='button' class='glassback' id='plBack' aria-label='Back'>Back</button>
-<div class='pl-head'><img class='pl-photo' id='plPhoto' src='' alt=''><div><div class='pl-name' id='plName'>Player</div><div class='pl-pos' id='plPos'></div></div></div>
+<div class='pl-head'><img class='pl-photo' id='plPhoto' src='' alt=''><div class='pl-av' id='plAv' hidden></div><div><div class='pl-name' id='plName'>Player</div><div class='pl-pos' id='plPos'></div></div></div>
 <div class='idp' id='idpBlock' hidden>
   <div class='idp-head'>Your focus this month</div>
   <button type='button' class='idp-view' id='idpView'>
@@ -2632,7 +2635,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 <section id='home'>
 <div class='wipnote' id='wipNote'>👋 Welcome to the Thwap beta. We're adding new training videos and features every week.</div>
 <script>(function(){try{fetch('/api/coach?action=beta',{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){if(d&&d.betaUntil){var until=Date.parse(d.betaUntil);if(!isNaN(until)&&Date.now()>until){var n=document.getElementById('wipNote');if(n)n.hidden=true;}}}).catch(function(){});}catch(e){}})();</script>
-<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.webp' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks' aria-label='Quick links'><span class='nav-authed'><a class='link' href='#stickers'>Stickers</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a></span><span class='nav-guest'><a class='link' href='/about' id='navAbout'>About Thwap</a><span class='topsep'>|</span><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Explore pages' aria-expanded='false'>Explore</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#stickers'>Stickers</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a></span><span class='nav-guest'><a href='/about' id='navAboutK'>About Thwap</a><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
+<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.webp' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks' aria-label='Quick links'><span class='nav-authed'><a class='link' href='#stickers'>Journey</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a></span><span class='nav-guest'><a class='link' href='/about' id='navAbout'>About Thwap</a><span class='topsep'>|</span><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Explore pages' aria-expanded='false'>Explore</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#stickers'>Journey</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a></span><span class='nav-guest'><a href='/about' id='navAboutK'>About Thwap</a><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
 <div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>there</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><script>(function(){try{var authed=/(?:^|; )thwapAuth=/.test(document.cookie);var p=localStorage.getItem('bfPlayer');var b=document.getElementById('homePlayer');if(b){if(p&&authed){b.textContent=p.trim().split(/\s+/)[0];}else{b.classList.add('needpick');}}}catch(e){}
 /* Team plan: hide the category rows the coach turned OFF for today. On any failure
    or unset plan, stick + shoot stay shown (the built-in rotation), and dryland
@@ -2758,7 +2761,6 @@ window.thwapTrainingToday=function(){
 <a class='nav nav-shoot' href='#shoot'><div class='ico'><img class='nav-ico' src='login/icon-net.webp' alt=''></div><div><h2>Shooting</h2><p>Accuracy + release, about 15 min</p></div><div class='chev'>›</div></a>
 <a class='nav nav-dryland' href='#dryland'><div class='ico'><img class='nav-ico' src='login/icon-bolt.webp' alt=''></div><div><h2>Dryland</h2><p>Speed + power + balance, about 15 min</p></div><div class='chev'>›</div></a>
 <a class='nav nav-pass' href='#pass'><div class='ico'><img class='nav-ico' src='login/icon-pass.webp' alt=''></div><div><h2>Passing</h2><p>Sweep, saucer and backhand passes, about 10 min</p></div><div class='chev'>›</div></a>
-<a class='nav nav-journey' href='journey.html'><div class='ico'><img class='nav-ico' src='login/sass-stride-m.webp' alt=''></div><div><h2>My Season Journey</h2><p>See how far you've come this season</p></div><div class='chev'>›</div></a>
 </div>
 </section>
 </main>
@@ -2767,7 +2769,7 @@ window.thwapTrainingToday=function(){
 <nav class='tabbar' id='tabbar' aria-label='Main'>
   <span class='tab-player'>
     <a class='tabbar-btn' href='#home' data-tab='home'><span class='tabbar-ico' aria-hidden='true'>🏒</span><span class='tabbar-lab'>Train</span></a>
-    <a class='tabbar-btn' href='#stickers' data-tab='stickers'><span class='tabbar-ico' aria-hidden='true'>🎯</span><span class='tabbar-lab'>Stickers</span></a>
+    <a class='tabbar-btn' href='#stickers' data-tab='stickers'><span class='tabbar-ico' aria-hidden='true'>📖</span><span class='tabbar-lab'>Journey</span></a>
     <a class='tabbar-btn' href='#roster' data-tab='roster'><span class='tabbar-ico' aria-hidden='true'>👥</span><span class='tabbar-lab'>Team</span></a>
     <a class='tabbar-btn' href='#progress' data-tab='progress'><span class='tabbar-ico' aria-hidden='true'>🏆</span><span class='tabbar-lab'>Standings</span></a>
     <a class='tabbar-btn' href='#profile' data-tab='profile'><span class='tabbar-ico' aria-hidden='true'>👤</span><span class='tabbar-lab'>Profile</span></a>
@@ -6762,6 +6764,8 @@ function build(){
     var avOn=false; try{ avOn=!!(window.thwapAvatar && window.thwapAvatar.on()); }catch(_){}
     var consent=null; try{ consent=localStorage.getItem('thwapCardPhoto:'+slug); }catch(e){}
     if(avOn){ photo.removeAttribute('src'); photo.alt=''; photo.style.display='none'; }  /* character on: no player photos anywhere */
+    var plAv=document.getElementById('plAv');
+    if(plAv){ if(avOn){ var lk=window.thwapAvatar.lookFor({num:info.num},slug); plAv.innerHTML=lk?window.thwapAvatar.html(lk):''; plAv.hidden=false; } else { plAv.innerHTML=''; plAv.hidden=true; } }
     else if(consent){ photo.src=consent; photo.alt=esc(first)+' photo'; photo.style.display=''; }
     else { photo.removeAttribute('src'); photo.alt=''; photo.style.display='none'; }  /* parents add their player's photo via the card flow */
   }
