@@ -159,6 +159,6 @@ the hockey year, August to June, and rolls over in August.
 - [x] Phase 1 texture spec, written to style A (`docs/avatar-texture-spec.md`)
 - [x] Flat-texture pipeline proof (jersey + helmet tiles render crisp + shade
   cleanly in the rig; `avatar-tex/`)
-- [ ] Remaining Phase 1 texture kit (sleeves, socks, pants, gloves, skate, skin, hair)
+- [x] Full Phase 1 texture kit (every part style-A pixel, 3 jersey colorways)
 - [ ] Server look storage and unlock rules
 - [ ] Locker Room

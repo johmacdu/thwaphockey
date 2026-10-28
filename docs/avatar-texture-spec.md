@@ -56,19 +56,27 @@ Box parts `avatar.js` renders (see `html()`), and the tile each needs for the ba
 
 | part | tile | status |
 |------|------|--------|
-| torso (jersey) | `jersey-{red,black,white}.png` (body + hem stripe) | **done** |
-| helmet shell | `helmet.png` | **done** |
-| arms (sleeves) | `sleeve-{red,black,white}.png` (two-stripe) | todo |
-| legs (socks) | `sock-{red,black,white}.png` | todo |
-| pants | `pants.png` (black, flat) | todo |
-| gloves | `glove.png` (black, knuckle segments) | todo |
-| skate boot | `skate.png` (black) | todo |
-| head (skin) | `skin-s{1..6}.png` (flat; or keep flat color) | todo |
-| hair flow | `hair-{color}.png` (flat; or keep flat color) | todo |
+| torso (jersey) | `jersey-{red,black,white}.png` (grain + hem stripe) | **done** |
+| helmet shell | `helmet.png` (grain + seam) | **done** |
+| arms (sleeves) | `sleeve-{red,black,white}.png` (grain + mid stripe) | **done** |
+| legs (socks) | `sock-{red,black,white}.png` (grain + shin stripe) | **done** |
+| pants | `pants.png` (black grain) | **done** |
+| gloves | `glove.png` (black + knuckle line) | **done** |
+| skate boot | `skate.png` (black grain) | **done** |
+| head (skin) | flat `SKIN` color (voxel skin reads fine flat) | flat, kept |
+| hair flow | flat `HAIR` color | flat, kept |
 | cage / blade / stick | keep flat (steel / dark), they read fine | n/a |
 
 Numbers (chest/back) stay as the `.av-num` text layer over the jersey tile, not baked into it,
 so any number works.
+
+## Two lessons from wiring it
+
+- **Texture = subtle grain, not a regular pattern.** A 2x2 checker "weave" stretched over a face
+  reads as heavy pinstripes and fights the real jersey stripes. ~14% of body pixels nudged a touch
+  darker (random, flat) reads as pixel *fabric*. Keep per-face patterns to the designed stripe bands.
+- **URL quoting.** A face's `background` is written into a single-quoted `style` attribute, so the
+  tile url must be `url(avatar-tex/x.png)` with **no inner quotes** (an inner `'` ends the attribute).
 
 ## What "done" means for Phase 1 textures
 

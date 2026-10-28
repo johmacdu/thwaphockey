@@ -65,14 +65,17 @@
     var num=esc(look.num);
     var black='#141414', helmet=look.jersey==='white'?'#F2F2F2':'#141414', steel='#C9CED3';
 
-    // Jersey front/back with two arm-height stripes; number on the back.
-    var torsoBg='linear-gradient(0deg,'+J.stripe+' 0 9%,'+J.trim+' 9% 12%,'+J.body+' 12% 100%)';
-    var sleeveBg='linear-gradient(0deg,'+J.body+' 0 38%,'+J.trim+' 38% 44%,'+J.stripe+' 44% 58%,'+J.trim+' 58% 64%,'+J.body+' 64% 100%)';
-    var sockBg='linear-gradient(0deg,'+J.body+' 0 40%,'+J.stripe+' 40% 55%,'+J.trim+' 55% 62%,'+J.body+' 62% 100%)';
+    // Jersey stripes + fabric grain now live in the flat pixel tiles (avatar-tex/).
     // Phase 1 pixel textures (style A). Flat tiles -- the code still shades each
     // face (top lighter, sides darker), so these must stay flat (no baked lighting).
-    var jTex="url('avatar-tex/jersey-"+(JERSEY[look.jersey]?look.jersey:DEFAULT_LOOK.jersey)+".png')";
-    var helTex="url('avatar-tex/helmet.png')";
+    var jkey=(JERSEY[look.jersey]?look.jersey:DEFAULT_LOOK.jersey);
+    var jTex="url(avatar-tex/jersey-"+jkey+".png)";
+    var slvTex="url(avatar-tex/sleeve-"+jkey+".png)";
+    var sockTex="url(avatar-tex/sock-"+jkey+".png)";
+    var helTex="url(avatar-tex/helmet.png)";
+    var pantsTex="url(avatar-tex/pants.png)";
+    var gloveTex="url(avatar-tex/glove.png)";
+    var skateTex="url(avatar-tex/skate.png)";
     var backNum="<span class='av-num' style='color:"+J.num+"'>"+num+"</span>";
     var chestNum="<span class='av-num av-num-sm' style='color:"+J.num+"'>"+num+"</span>";
 
@@ -85,21 +88,21 @@
       // Skates: blade + boot
       box({w:.5,h:.6,d:5.4,x:-2.1,y:.3,z:.6,c:steel}),
       box({w:.5,h:.6,d:5.4,x:2.1,y:.3,z:.6,c:steel}),
-      box({w:3,h:1.6,d:5,x:-2.1,y:1.4,z:.6,c:black}),
-      box({w:3,h:1.6,d:5,x:2.1,y:1.4,z:.6,c:black}),
+      box({w:3,h:1.6,d:5,x:-2.1,y:1.4,z:.6,c:black,faces:{front:skateTex,back:skateTex,side:skateTex,top:skateTex,bottom:skateTex}}),
+      box({w:3,h:1.6,d:5,x:2.1,y:1.4,z:.6,c:black,faces:{front:skateTex,back:skateTex,side:skateTex,top:skateTex,bottom:skateTex}}),
       // Legs (socks over shin guards)
-      box({w:3.4,h:7.8,d:3.6,x:-2.1,y:6.1,c:J.body,faces:{front:sockBg,back:sockBg,side:sockBg}}),
-      box({w:3.4,h:7.8,d:3.6,x:2.1,y:6.1,c:J.body,faces:{front:sockBg,back:sockBg,side:sockBg}}),
+      box({w:3.4,h:7.8,d:3.6,x:-2.1,y:6.1,c:J.body,faces:{front:sockTex,back:sockTex,side:sockTex,top:sockTex}}),
+      box({w:3.4,h:7.8,d:3.6,x:2.1,y:6.1,c:J.body,faces:{front:sockTex,back:sockTex,side:sockTex,top:sockTex}}),
       // Pants
-      box({w:8.6,h:4.6,d:4.8,y:12.3,c:black}),
+      box({w:8.6,h:4.6,d:4.8,y:12.3,c:black,faces:{front:pantsTex,back:pantsTex,side:pantsTex,top:pantsTex,bottom:pantsTex}}),
       // Torso (jersey over shoulder pads)
       box({w:9.6,h:9.4,d:5.4,y:19.3,c:J.body,faces:{front:jTex,back:jTex,side:jTex,top:jTex},frontInner:chestNum,backInner:backNum}),
       // Arms, slightly forward in a ready stance
-      box({w:3.4,h:8.4,d:3.6,x:-6.6,y:19.6,z:1,c:J.body,faces:{front:sleeveBg,back:sleeveBg,side:sleeveBg},rot:'rotateX(18deg)'}),
-      box({w:3.4,h:8.4,d:3.6,x:6.6,y:19.6,z:1,c:J.body,faces:{front:sleeveBg,back:sleeveBg,side:sleeveBg},rot:'rotateX(18deg)'}),
+      box({w:3.4,h:8.4,d:3.6,x:-6.6,y:19.6,z:1,c:J.body,faces:{front:slvTex,back:slvTex,side:slvTex,top:slvTex},rot:'rotateX(18deg)'}),
+      box({w:3.4,h:8.4,d:3.6,x:6.6,y:19.6,z:1,c:J.body,faces:{front:slvTex,back:slvTex,side:slvTex,top:slvTex},rot:'rotateX(18deg)'}),
       // Gloves
-      box({w:3.8,h:3.6,d:4,x:-6.6,y:14.4,z:2.6,c:black}),
-      box({w:3.8,h:3.6,d:4,x:6.6,y:14.4,z:2.6,c:black}),
+      box({w:3.8,h:3.6,d:4,x:-6.6,y:14.4,z:2.6,c:black,faces:{front:gloveTex,back:gloveTex,side:gloveTex,top:gloveTex,bottom:gloveTex}}),
+      box({w:3.8,h:3.6,d:4,x:6.6,y:14.4,z:2.6,c:black,faces:{front:gloveTex,back:gloveTex,side:gloveTex,top:gloveTex,bottom:gloveTex}}),
       // Head
       box({w:7.6,h:7.6,d:7.6,y:28,c:skin,frontInner:faceInner}),
       // Hair flow out the back of the helmet
