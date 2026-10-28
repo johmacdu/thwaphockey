@@ -196,8 +196,10 @@ describe('signed in: badges', () => {
     expect(label(1)).toBe('Not started');
     expect(btns[0].classList.contains('locked')).toBe(false);
     expect(btns[1].classList.contains('locked')).toBe(true);
-    expect(btns[0].querySelector('.stars').textContent).toBe('\u2605\u2605\u2605');
-    expect(btns[0].querySelectorAll('.stars .off')).toHaveLength(1);
+    // Earned stars are filled, empty ones hollow: never color alone.
+    expect(btns[0].querySelector('.stars').textContent).toBe('\u2605\u2605\u2606');
+    expect(btns[0].querySelector('.stars .off').textContent).toBe('\u2606');
+    expect(btns[1].querySelector('.stars').textContent).toBe('\u2606\u2606\u2606');
   });
 
   it('tapping a badge says the count and what the next star needs', async () => {
