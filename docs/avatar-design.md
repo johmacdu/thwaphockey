@@ -113,3 +113,5 @@ Push the winner, or all three, on `art/avatar-style-test`.
 - In the app: add `?avatar=1` to any URL. This device then shows characters in
   every card's photo slot. `?avatar=0` turns it off. Players never see it
   unless they add the flag.
+- Locker Room: with the flag on, tap the Locker Room button or open `#locker`.
+  It needs a signed-in player. Saved looks show on every card after closing.
