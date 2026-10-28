@@ -187,10 +187,11 @@
       elTop:[-2.6,18.4,6.4], elBot:[2.4,17.2,8],
       knob:[0.6,16.8,8.4], heel:[-6.2,7,8.4], toe:[-9,7.6,8.8], puck:[-9.4,.5,1.8],
       kneeL:[-2.2,6.4,2.4], ankL:[-2.2,2.4,1.4], kneeR:[2.4,6.4,.4], ankR:[2.6,2.4,-1] },
-    // Head up: skating stride, one hand pushing the puck ahead, the free hand
-    // pointing up the ice at the play, chin up.
-    reading:{ lean:8, drop:.4, head:-18, bot:.36,
-      elTop:[-4.6,17,4.4], elBot:[7,20.4,3.6], handBot:[8.4,22.4,8.4],
+    // Head up: skating stride, one hand pushing the puck ahead, the free arm
+    // pointing out and up the ice at the play (across the card, not at the
+    // viewer, so it reads at roster size), chin well up.
+    reading:{ lean:6, drop:.4, head:-26, bot:.36,
+      elTop:[-4.6,17,4.4], elBot:[8,21.4,1.8], handBot:[11.4,24.6,2.8],
       knob:[-2.4,13.6,5.6], heel:[-1.6,0.7,3.4], toe:[-4.2,0.8,4], puck:[-3.4,.5,2.2],
       kneeL:[-2.2,6,2.6], ankL:[-2.2,2.4,1.2], kneeR:[2.4,6.8,-2.4], ankR:[2.8,7.4,-6.4], skR:-30 },
     // Power (dryland): deep squat, stick held level across the body, arms out front.
@@ -474,7 +475,7 @@
   // Opens from the My Player button on the player's own card. Tap an owned item: it goes on the
   // character and saves to the server. Tap a locked item: try it on, with the
   // progress line; nothing is saved. Unlocks come from the server only.
-  var GEAR_TABS=[['skin','Skin'],['hairstyle','Hair'],['hair','Hair color'],['jersey','Jersey'],['helmet','Helmet'],['cage','Cage'],['stripe','Stripe'],['gloves','Gloves'],['stick','Stick'],['hand','Shot'],['facing','View']];
+  var GEAR_TABS=[['skin','Skin'],['hairstyle','Hair'],['hair','Hair color'],['jersey','Jersey'],['helmet','Helmet'],['cage','Cage'],['stripe','Stripe'],['gloves','Gloves'],['stick','Stick'],['pose','Moves'],['hand','Shot'],['facing','View']];
   var TIER_LABEL={ common:'', rare:'Pro', epic:'All-Star', legendary:'Legend' };
   var L={ data:null, look:null, saved:null, tab:'skin', trying:null, changed:false, me:null };
 
@@ -516,6 +517,20 @@
     var look=norm(L.look||{}); look[slot]=val; look.num='';
     return "<span class='lk-mini face' aria-hidden='true'>"+html(look)+"</span>";
   }
+  // Moves tiles show the player's own whole body in that stance, so the kid
+  // sees the move on their player before they wear (or try on) it.
+  function miniPose(pose){
+    var look=norm(L.look||{}); look.pose=pose; look.num='';
+    return "<span class='lk-mini pose' aria-hidden='true'>"+html(look)+"</span>";
+  }
+  // The tile/toast picture for any item: hair from behind, hand/facing from the
+  // front, stances full body, everything else a color swatch.
+  function itemPic(slot,short){
+    if(slot==='hairstyle') return miniHead(short);
+    if(slot==='hand'||slot==='facing') return miniOpt(slot,short);
+    if(slot==='pose') return miniPose(short);
+    return "<span class='lk-sw' style='background:"+swatch(slot,short)+"'></span>";
+  }
 
   // First-run builder: three steps, everything pre-picked, so a kid can tap Done.
   var BUILD_STEPS=[['skin','Pick your skin tone'],['hairstyle','Pick your hockey hair'],['hair','Pick your hair color'],['jersey','Pick your jersey'],['hand','Which way do you shoot?'],['facing','Which way to face?']];
@@ -547,6 +562,10 @@
       ".lk-mini .av-wrap{font-size:3.2px;perspective:none}"+
       ".lk-mini .av-scene{bottom:-58px;transform:rotateX(-8deg) rotateY(150deg)}"+
       ".lk-mini.face .av-scene{transform:rotateX(-8deg) rotateY(var(--av-face,-25deg))}"+
+      // Stance tiles: the whole body, small enough to fit the tile.
+      ".lk-mini.pose{width:64px;height:84px}.lk-mini.pose .av-wrap{font-size:2px}"+
+      ".lk-mini.pose .av-scene{bottom:6px;transform:rotateX(-8deg) rotateY(var(--av-face,-25deg))}"+
+      ".lk-toast .lk-mini{flex:none;width:44px;height:52px}.lk-toast .lk-mini.pose .av-wrap{font-size:1.3px}"+
       ".lk-lbl{font-size:13px;font-weight:800;text-align:center;line-height:1.15}"+
       ".lk-sub{font-size:11px;color:var(--muted,#5F6F64);text-align:center;line-height:1.2}"+
       ".lk-item.locked .lk-sw{opacity:.45}"+
@@ -594,6 +613,10 @@
     t.className='lk-tabs'; t.setAttribute('role','tablist');
     if(foot){ foot.hidden=true; foot.innerHTML=''; }
     t.innerHTML=GEAR_TABS.map(function(x){ return "<button type='button' role='tab' class='lk-tab' data-tab='"+x[0]+"' aria-selected='"+(L.tab===x[0])+"'>"+x[1]+"</button>"; }).join('');
+    // Opened on a later tab (e.g. from a New move! message): keep the selected
+    // tab in view instead of leaving the row scrolled to Skin.
+    var sel=t.querySelector('[aria-selected=true]');
+    if(sel && sel.scrollIntoView){ try{ sel.scrollIntoView({block:'nearest',inline:'nearest'}); }catch(_){} }
   }
   function paintGrid(){
     var g=document.querySelector('.lk-grid'); if(!g||!L.data) return;
@@ -605,7 +628,7 @@
       return "<button type='button' class='lk-item"+(own?'':' locked')+"' data-id='"+esc(it.id)+"' aria-pressed='"+on+"'"+
         " aria-label='"+esc(lbl+(own?'':', locked. '+ruleText(it)+' to unlock'))+"'>"+
         (own?'':"<i class='lk-lock' aria-hidden='true'></i>")+(own&&isNew(it.id)?"<i class='lk-new'>New</i>":"")+
-        (it.slot==='hairstyle'?miniHead(short):(it.slot==='hand'||it.slot==='facing')?miniOpt(it.slot,short):"<span class='lk-sw' style='background:"+swatch(it.slot,short)+"'></span>")+
+        itemPic(it.slot,short)+
         "<span class='lk-lbl'>"+esc(lbl)+"</span>"+(sub?"<span class='lk-sub'>"+esc(sub)+"</span>":"")+"</button>";
     }).join('');
   }
@@ -724,7 +747,7 @@
     var old=document.querySelector('.lk-toast'); if(old) old.remove();
     var short=it.id.slice(it.slot.length+1);
     var b=document.createElement('button'); b.type='button'; b.className='lk-toast'; b.setAttribute('role','status');
-    b.innerHTML="<span class='lk-sw' style='background:"+swatch(it.slot,short)+"'></span><span>New gear! "+esc(it.label)+
+    b.innerHTML=itemPic(it.slot,short)+"<span>New "+(it.slot==='pose'?'move':'gear')+"! "+esc(it.label)+
       (count>1?' and '+(count-1)+' more':'')+"<small>Tap to try it on</small></span>";
     b.addEventListener('click',function(){ b.remove(); if(window.thwapOpenMyPlayer) window.thwapOpenMyPlayer({tab:it.slot}); else openLocker({tab:it.slot}); });
     document.body.appendChild(b);
@@ -745,8 +768,9 @@
     return fetch('/api/board?action=look',{credentials:'same-origin'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){
       if(!j) return null;
       // Only announce items a kid can actually see and wear: slots with a tab
-      // in My Player. Poses and celebrations have no tab until Phase 3, so they
+      // in My Player. Celebrations have no tab until they can play, so they
       // stay unseen (not announced, not recorded) and announce when it ships.
+      // Stances got the Moves tab, so moves held back earlier announce now.
       var shown={}; GEAR_TABS.forEach(function(t){ shown[t[0]]=1; });
       var ready=(j.unlocked||[]).filter(function(id){ var it=itemName(j,id); return !it || shown[it.slot]; });
       var seen=readList('thwapUnlockSeen');

@@ -39,9 +39,35 @@ describe('My Player', () => {
     const { w } = await open();
     expect(w.document.querySelector('.lk[role=dialog]')).toBeTruthy();
     expect(w.document.querySelector('.lk h2').textContent).toBe('My Player');
-    expect(w.document.querySelectorAll('.lk-tab').length).toBe(11);
+    expect(w.document.querySelectorAll('.lk-tab').length).toBe(12);
     expect(w.document.querySelector('.lk-stage .av-wrap')).toBeTruthy();
     expect(w.document.querySelector('.lk-btn')).toBeNull();
+  });
+
+  it('Moves tab: 8 stances, each tile drawn in its stance, Ready worn to start', async () => {
+    const { w } = await open();
+    w.document.querySelector('[data-tab=pose]').click();
+    expect(w.document.querySelector('[data-tab=pose]').textContent).toBe('Moves');
+    const tiles = w.document.querySelectorAll('.lk-item');
+    expect(tiles.length).toBe(8);
+    for (const t of tiles) expect(t.querySelector('.lk-mini.pose .av-wrap')).toBeTruthy();
+    expect(w.document.querySelector('[data-id=pose-ready]').getAttribute('aria-pressed')).toBe('true');
+    expect(w.document.querySelector('[data-id=pose-shooting]').classList.contains('locked')).toBe(true);
+    expect(w.document.querySelector('[data-id=pose-shooting] .lk-sub').textContent).toBe('Finish 25 Shooting drills');
+  });
+
+  it('Moves tab: an earned stance saves; a locked one is try-on only', async () => {
+    const { w, posts } = await open({ progress: A.progressFrom({ shoot: 25 }, 2) });
+    w.document.querySelector('[data-tab=pose]').click();
+    w.document.querySelector('[data-id=pose-dangle]').click(); // Toe drag: 35 days, locked
+    for (let i = 0; i < 3; i++) await tick();
+    expect(posts.length).toBe(0);
+    expect(w.document.querySelector('.lk-note').textContent).toMatch(/Toe drag\. Train 35 days to unlock\./);
+    expect(w.document.querySelector('.lk-stage').innerHTML).toContain('rotateZ(-14deg)'); // Toe drag's sideways lean is on the stage
+    w.document.querySelector('[data-id=pose-shooting]').click(); // Snipe: earned
+    for (let i = 0; i < 5; i++) await tick();
+    expect(posts.length).toBe(1);
+    expect(posts[0].look.pose).toBe('pose-shooting');
   });
 
   it('opened from the card, a saved change calls onClose instead of reloading', async () => {
@@ -165,18 +191,23 @@ describe('unlock moment', () => {
     expect(w.document.querySelector('.lk-toast')).toBeNull(); // only once
     expect(data).toBeTruthy();
   });
-  it('holds back poses and celebrations (no tab yet): no toast, not marked seen', async () => {
+  it('releases moves held back before the Moves tab, but still holds celebrations', async () => {
     // 15 training days unlocks THWAP! (celebration); 25 Shooting unlocks Snipe (pose).
+    // A device that saw only gear (the #447 hold) now gets "New move! Snipe".
     const prog = A.progressFrom({ shoot: 25 }, 15);
     const { w } = await open({ progress: prog });
     w.document.querySelector('.lk-x').click();
     const gearOnly = A.unlockedIds(prog).filter((id) => !/^(pose|celebration)-/.test(id));
     w.localStorage.setItem('thwapUnlockSeen', JSON.stringify(gearOnly));
     await w.thwapAvatar.checkUnlocks();
-    expect(w.document.querySelector('.lk-toast')).toBeNull();
+    const toast = w.document.querySelector('.lk-toast');
+    expect(toast).toBeTruthy();
+    expect(toast.textContent).toMatch(/New move! Snipe/);
+    expect(toast.querySelector('.lk-mini.pose .av-wrap')).toBeTruthy();
     const seen = JSON.parse(w.localStorage.getItem('thwapUnlockSeen'));
+    expect(seen).toContain('pose-shooting');
     expect(seen).not.toContain('celebration-fistpump');
-    expect(seen).not.toContain('pose-shooting');
+    expect(JSON.parse(w.localStorage.getItem('thwapUnlockNew'))).toContain('pose-shooting');
   });
   it('the first check seeds silently (past training is the builder\'s job)', async () => {
     const { w } = await open();
