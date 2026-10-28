@@ -42,16 +42,21 @@
     white:{ body:'#F2F2F2', stripe:'#C8102E', trim:'#111111', num:'#C8102E' },
     forest:{ body:'#1F5A3A', stripe:'#F2F2F2', trim:'#111111', num:'#FFFFFF' },
     legend:{ body:'#D4A72C', stripe:'#111111', trim:'#FFFFFF', num:'#111111' },
-    pond:{ body:'#8CC8EA', stripe:'#F2F2F2', trim:'#16365C', num:'#16365C' }
+    pond:{ body:'#8CC8EA', stripe:'#F2F2F2', trim:'#16365C', num:'#16365C' },
+    warmup:{ body:'#5B6670', stripe:'#C8102E', trim:'#111111', num:'#FFFFFF' }
   };
-  var GLOVES={ black:'#141414', red:'#C8102E', white:'#EDEDED', ice:'#BFE6F2' };
+  var GLOVES={ black:'#141414', red:'#C8102E', white:'#EDEDED', ice:'#BFE6F2',
+    rangers:'linear-gradient(0deg,#C8102E 0 34%,#141414 34% 100%)' }; // team set: red cuffs
+  // Team set (Phase 4): stick tape, helmet decal and socks.
+  var TAPE={ white:'#E8E8E8', rangers:'repeating-linear-gradient(90deg,#C8102E 0 .35em,#111111 .35em .7em)' };
+  var SOCKS_RANGERS='repeating-linear-gradient(0deg,#111111 0 18%,#F2F2F2 18% 22%,#C8102E 22% 40%,#F2F2F2 40% 44%)'; // bold hoops
   var STICK={ classic:'#2B2B2B', wood:'#B07A45', red:'#C8102E', gold:'#D4A72C' };
   var HELMET={ chrome:'#B8C2CC', red:'#C8102E' };
   var CAGE={ steel:'#C9CED3', black:'#1A1A1A' };
   // hand/facing are free preference slots (server catalog: hand-*, facing-*).
   // grip is how the stick is held (oneHand/twoHand) -- a render default, not a
   // catalog slot, kept separate from the server's unlockable 'pose' (stances).
-  var DEFAULT_LOOK={ skin:'s3', hair:'brown', hairstyle:'flow', jersey:'red', helmet:'team', cage:'steel', gloves:'black', stick:'classic', num:'', hand:'right', facing:'left', grip:'oneHand' };
+  var DEFAULT_LOOK={ tape:'white', decal:'none', socks:'match', skin:'s3', hair:'brown', hairstyle:'flow', jersey:'red', helmet:'team', cage:'steel', gloves:'black', stick:'classic', num:'', hand:'right', facing:'left', grip:'oneHand' };
 
   // Server looks use catalog ids ('jersey-red', 'skin-s3'); the renderer keys
   // on the part after the slot prefix. Unknown values fall back to defaults.
@@ -226,6 +231,10 @@
     p.elTop=[-6.4,20.6,1.6]; p.handTop=[-7,26,2.4];
     p.knob=[-7.2,26.8,2.4]; p.heel=[-14.6,30,3]; p.toe=[-16,28.6,4.6];
   }
+  var STICK_UP={ lean:-4, head:-8, elTop:[-4.6,19.4,4.4], handTop:[-2.6,20.6,6.4], elBot:[4.4,19,4.6], handBot:[0.6,22.4,7.2],
+    knob:[-3,21,6], heel:[3.4,27.2,8.4], toe:[5.4,28,9] };
+  var STICK_TAP={ lean:10, drop:.6, elTop:[-4,16,4.6], handTop:[-1.4,12.8,6], elBot:[4,14.6,4.2], handBot:[0.6,9.4,7.2],
+    knob:[-1.6,13.4,5.6], heel:[2.8,0.7,10], toe:[2.8,0.8,13] };
   var CELLYS={
     // THWAP!: a quick crouch, then a big fist pump with the knee up; the word pops.
     fistpump:{ ms:900, word:'THWAP!', wordAt:.5, keys:[
@@ -237,6 +246,14 @@
       [1, frame({ lean:-4, head:-12, elBot:[6.6,24.8,1.6], handBot:[6.2,30.4,2.6],
         kneeR:[2.4,9,4.4], ankR:[2.4,5.4,2.8] })] ]},
     // Knee slide: skate in, drop to one knee and slide across, fist up.
+    // Stick tap (team set): raise the stick, then tap it on the ice twice.
+    sticktap:{ ms:1200, keys:[
+      [0, READY],
+      [.28, frame(STICK_UP)],
+      [.45, frame(STICK_TAP)],
+      [.62, frame(STICK_UP)],
+      [.8, frame(STICK_TAP)],
+      [1, frame(STICK_TAP)] ]},
     kneeslide:{ ms:1300, slide:[-10,2.5], keys:[
       [0, READY],
       [.28, frame(SLIDE_POSE)],
@@ -304,7 +321,9 @@
     // Jersey front/back with two arm-height stripes; number on the back.
     var torsoBg='linear-gradient(0deg,'+J.stripe+' 0 9%,'+J.trim+' 9% 12%,'+J.body+' 12% 100%)';
     var sleeveBg='linear-gradient(0deg,'+J.body+' 0 38%,'+J.trim+' 38% 44%,'+J.stripe+' 44% 58%,'+J.trim+' 58% 64%,'+J.body+' 64% 100%)';
-    var sockBg='linear-gradient(0deg,'+J.body+' 0 40%,'+J.stripe+' 40% 55%,'+J.trim+' 55% 62%,'+J.body+' 62% 100%)';
+    var sockBg=look.socks==='rangers'?SOCKS_RANGERS:'linear-gradient(0deg,'+J.body+' 0 40%,'+J.stripe+' 40% 55%,'+J.trim+' 55% 62%,'+J.body+' 62% 100%)';
+    var tapeC=TAPE[look.tape]||TAPE.white;
+    var decal=look.decal==='rangers';
     // Pixel weave: a transparent 2x2-checker tile over every fill, so sleeves, socks,
     // pants, gloves and skates read as the same style-A fabric as the jersey (whose
     // tile bakes the weave in). It rides on top of the colorway gradients and solids,
@@ -407,13 +426,16 @@
     // Stick: a flat blade along the ice keeps the original boxes (Ready). Any other
     // blade (raised, angled, closed) is a limb from heel to toe, tape at the heel.
     var flatBlade=(ice[0]===bladeToe[0] && ice[1]<1);
+    // Team-set tape also wraps the top of the shaft (grip tape), where the card
+    // camera can see it; blade tape alone sits at the card's bottom edge.
+    var grip=(look.tape==='rangers')?limb(lerp(knob,ice,.1),lerp(knob,ice,.36),1.45,tapeC):'';
     var stickParts=flatBlade?[
       limb(knob,ice,1.3,stickC),
-      box({w:1.5,h:1.6,d:1.6,x:ice[0],y:2.2,z:ice[2]-0.4,c:'#E8E8E8'}),
+      box({w:1.5,h:1.6,d:1.6,x:ice[0],y:2.2,z:ice[2]-0.4,c:tapeC}),
       box({w:1.4,h:2.2,d:(bladeToe[2]-ice[2]),x:ice[0],y:1.3,z:(ice[2]+bladeToe[2])/2,c:stickC})
     ]:[
       limb(knob,ice,1.3,stickC),
-      limb(lerp(knob,ice,.9),ice,1.5,'#E8E8E8'),
+      limb(lerp(knob,ice,.9),ice,1.5,tapeC),
       limb(ice,bladeToe,1.6,stickC)
     ];
     var puck=(P&&P.puck)?(function(p){ p=M(p); return box({w:3,h:1,d:3,x:p[0],y:p[1],z:p[2],c:'#111111'}); })(P.puck):'';
@@ -447,7 +469,9 @@
       hairBoxes(look.hairstyle||DEFAULT_LOOK.hairstyle, hair),
       // Helmet shell (top + back half), leaves the face open for the cage
       box({w:8.4,h:2.6,d:8.4,y:31.3,c:helmet,faces:helTop}),
-      box({w:8.4,h:4.6,d:2.4,y:28.2,z:-3.2,c:helmet,faces:helFaces}),
+      box({w:8.4,h:4.6,d:2.4,y:28.2,z:-3.2,c:helmet,faces:helFaces,backInner:decal?"<span class='av-decal'>R</span>":''}),
+      // Team-set decal: a Rangers R badge on each side of the helmet too.
+      decal?box({w:.14,h:2.1,d:2.1,x:-4.78,y:28.4,z:.2,c:'#C8102E'})+box({w:.14,h:2.1,d:2.1,x:4.78,y:28.4,z:.2,c:'#C8102E'}):'',
       box({w:1,h:4.8,d:5.6,x:-4.2,y:27.9,z:.6,c:helmet,faces:helFaces}),
       box({w:1,h:4.8,d:5.6,x:4.2,y:27.9,z:.6,c:helmet,faces:helFaces}),
       // Cage
@@ -464,7 +488,7 @@
       box({w:3.8,h:3.4,d:3.8,x:handBot[0],y:handBot[1],z:handBot[2],c:gloveC,faces:gloveFaces}),
       // Stick (shaft, white tape at the heel, blade). Recolored by the unlocked
       // stick (stickC: classic / wood / gold).
-      stickParts.join(''),
+      stickParts.join('')+grip,
       puck
     ];
     // Facing: left 3/4 is the default; right mirrors it, center faces head-on. Set
@@ -554,6 +578,7 @@
     ".av-eye{width:1.2em;height:1.2em;top:3.4em}.av-eye.l{left:1.4em}.av-eye.r{right:1.4em}"+
     ".av-brow{width:1.9em;height:.45em;top:2.5em}.av-brow.l{left:1.1em;transform:rotate(8deg)}.av-brow.r{right:1.1em;transform:rotate(-8deg)}"+
     ".av-mouth{width:2.4em;height:.4em;left:2.6em;top:5.6em}"+
+    ".av-decal{position:absolute;left:50%;top:18%;transform:translateX(-50%);width:1.5em;height:1.5em;box-sizing:border-box;border:.12em solid #fff;border-radius:.25em;background:#C8102E;color:#fff;font:900 1.6em/1.25 system-ui,-apple-system,sans-serif;text-align:center}"+
     // The celebration word (THWAP!) over the player, sized by its container.
     ".av-word{position:absolute;left:0;right:0;top:3%;z-index:3;text-align:center;font:900 2.8em/1 system-ui,-apple-system,sans-serif;letter-spacing:-.02em;color:var(--lime,#B9F06B);text-shadow:0 .06em 0 #15221B,0 0 .2em rgba(0,0,0,.35);pointer-events:none}";
   function injectCss(){
@@ -568,8 +593,12 @@
   // Opens from the My Player button on the player's own card. Tap an owned item: it goes on the
   // character and saves to the server. Tap a locked item: try it on, with the
   // progress line; nothing is saved. Unlocks come from the server only.
-  var GEAR_TABS=[['skin','Skin'],['hairstyle','Hair'],['hair','Hair color'],['jersey','Jersey'],['helmet','Helmet'],['cage','Cage'],['stripe','Stripe'],['gloves','Gloves'],['stick','Stick'],['pose','Moves'],['celebration','Cellys'],['hand','Shot'],['facing','View']];
-  var TIER_LABEL={ common:'', rare:'Pro', epic:'All-Star', legendary:'Legend' };
+  var GEAR_TABS=[['skin','Skin'],['hairstyle','Hair'],['hair','Hair color'],['jersey','Jersey',['jersey','socks']],['helmet','Helmet',['helmet','decal']],['cage','Cage'],['stripe','Stripe'],['gloves','Gloves'],['stick','Stick',['stick','tape']],['pose','Moves'],['celebration','Cellys'],['hand','Shot'],['facing','View']];
+  var TIER_LABEL={ common:'', rare:'Pro', epic:'All-Star', legendary:'Legend', team:'Team' };
+  // A tab can hold more than one slot (Stick holds the tape, Helmet the decal,
+  // Jersey the socks), so the team-set slots need no tabs of their own.
+  function slotsOf(tab){ for(var i=0;i<GEAR_TABS.length;i++) if(GEAR_TABS[i][0]===tab) return GEAR_TABS[i][2]||[tab]; return [tab]; }
+  function tabFor(slot){ for(var i=0;i<GEAR_TABS.length;i++) if(slotsOf(GEAR_TABS[i][0]).indexOf(slot)>=0) return GEAR_TABS[i][0]; return slot; }
   var L={ data:null, look:null, saved:null, tab:'skin', trying:null, changed:false, me:null };
 
   function swatch(slot,short){
@@ -578,6 +607,8 @@
     else if(slot==='jersey') c=(JERSEY[short]||{}).body; else if(slot==='gloves') c=GLOVES[short];
     else if(slot==='stick') c=STICK[short]; else if(slot==='helmet') c=HELMET[short]||'#141414'; else if(slot==='cage') c=CAGE[short];
     else if(slot==='stripe') c=short==='none'?'transparent':'#C8102E';
+    else if(slot==='tape') c=TAPE[short]; else if(slot==='decal') c=short==='rangers'?'#C8102E':'transparent';
+    else if(slot==='socks') c=short==='rangers'?SOCKS_RANGERS:((JERSEY[norm(L.look||{}).jersey]||JERSEY.red).body);
     return c||'#888';
   }
   function ruleText(it){
@@ -587,6 +618,7 @@
     if(r.type==='disc') return 'Finish '+r.n+' '+({stick:'Hands',shoot:'Shooting',dryland:'Dryland',netplay:'Net play',iq:'Hockey IQ',pass:'Passing'}[r.disc]||r.disc)+' drills';
     if(r.type==='window') return 'Train '+r.n+' days over winter break';
     if(r.type==='coach') return 'From your coach';
+    if(r.type==='team') return r.n===1?'1 team goal week':r.n+' team goal weeks';
     return '';
   }
   function have(it){
@@ -595,6 +627,7 @@
     if(r.type==='days') return p.trainingDays;
     if(r.type==='disc') return (p.disciplines||{})[r.disc]||0;
     if(r.type==='window') return (p.windows||{})[it.id]||0;
+    if(r.type==='team') return p.teamHits||0;
     return 0;
   }
   function owned(id){ return !!(L.data && L.data.unlocked.indexOf(id)>=0); }
@@ -722,7 +755,9 @@
     var note=document.querySelector('.lk-note');
     if(note){
       if(L.trying){ var it=L.trying.item, h=have(it), n=(it.rule||{}).n||0;
-        note.textContent=it.label+'. '+ruleText(it)+' to unlock. You\u2019re at '+Math.min(h,n)+'.'; }
+        note.textContent=(it.rule&&it.rule.type==='team')
+          ? it.label+'. Unlocks when the Rangers hit the weekly team goal'+(n>1?' '+n+' times':'')+'. So far: '+Math.min(h,n)+'.'
+          : it.label+'. '+ruleText(it)+' to unlock. You\u2019re at '+Math.min(h,n)+'.'; }
       else note.textContent=L.status||'';
     }
   }
@@ -747,7 +782,8 @@
   }
   function paintGrid(){
     var g=document.querySelector('.lk-grid'); if(!g||!L.data) return;
-    var items=L.data.items.filter(function(it){ return it.slot===L.tab; });
+    var tabSlots=slotsOf(L.tab);
+    var items=L.data.items.filter(function(it){ return tabSlots.indexOf(it.slot)>=0; });
     g.innerHTML=items.map(function(it){
       var short=it.id.slice(it.slot.length+1), own=owned(it.id), on=L.look[it.slot]===it.id;
       var sub=own?(TIER_LABEL[it.tier]||''):ruleText(it);
@@ -880,7 +916,7 @@
   // Milestone moment: when the kid has a celebration (or just earned one), the
   // message shows their own player doing it, wearing the new item. It never
   // blocks a tap; reduced motion shows the end pose.
-  function showToast(it,count,look){
+  function showToast(it,count,look,teamWeek){
     var old=document.querySelector('.lk-toast'); if(old) old.remove();
     var short=it.id.slice(it.slot.length+1);
     var my=norm(look||{}); my[it.slot]=it.id; my.num='';
@@ -888,11 +924,19 @@
     if(!CELLYS[cellyKey(celly)]) celly=null;
     var kind=it.slot==='pose'?'move':(it.slot==='celebration'?'celly':'gear');
     var b=document.createElement('button'); b.type='button'; b.className='lk-toast'; b.setAttribute('role','status');
-    b.innerHTML=(celly?"<span class='lk-mini pose lk-tcelly' aria-hidden='true'></span>":itemPic(it.slot,short))+"<span>New "+kind+"! "+esc(it.label)+
-      (count>1?' and '+(count-1)+' more':'')+"<small>Tap to try it on</small></span>";
+    var pic0=celly?"<span class='lk-mini pose lk-tcelly' aria-hidden='true'></span>":itemPic(it.slot,short);
+    if(it.rule && it.rule.type==='team'){
+      // The team did it: everyone gets it, so say who earned it and what this kid added.
+      var mine=teamWeek&&typeof teamWeek.mine==='number'?teamWeek.mine:null;
+      var add=mine>0?('You added '+mine+' drill'+(mine===1?'':'s')+'.'):'Train this week to help the team get the next one.';
+      b.innerHTML=pic0+"<span>The Rangers did it!<small>New team item: "+esc(it.label)+(count>1?' and '+(count-1)+' more':'')+". "+add+"</small></span>";
+    } else {
+      b.innerHTML=pic0+"<span>New "+kind+"! "+esc(it.label)+
+        (count>1?' and '+(count-1)+' more':'')+"<small>Tap to try it on</small></span>";
+    }
     if(celly){ var pic=b.querySelector('.lk-tcelly');
       playCelly(celly,my,function(m,sx){ pic.innerHTML=m; var sc=pic.querySelector('.av-scene'); if(sc) sc.style.translate=sx?(sx+'em 0'):''; }); }
-    b.addEventListener('click',function(){ b.remove(); if(window.thwapOpenMyPlayer) window.thwapOpenMyPlayer({tab:it.slot}); else openLocker({tab:it.slot}); });
+    b.addEventListener('click',function(){ b.remove(); var tb=tabFor(it.slot); if(window.thwapOpenMyPlayer) window.thwapOpenMyPlayer({tab:tb}); else openLocker({tab:tb}); });
     document.body.appendChild(b);
     try{ if(window.thwapSfx) window.thwapSfx('unlock'); }catch(_){}
     try{ if(window.thwapHaptic) window.thwapHaptic('done'); }catch(_){}
@@ -931,7 +975,7 @@
       // in My Player. Celebrations have no tab until they can play, so they
       // stay unseen (not announced, not recorded) and announce when it ships.
       // Stances got the Moves tab, so moves held back earlier announce now.
-      var shown={}; GEAR_TABS.forEach(function(t){ shown[t[0]]=1; });
+      var shown={}; GEAR_TABS.forEach(function(t){ slotsOf(t[0]).forEach(function(sl){ shown[sl]=1; }); });
       var ready=(j.unlocked||[]).filter(function(id){ var it=itemName(j,id); return !it || shown[it.slot]; });
       var seen=readList('thwapUnlockSeen');
       if(!seen){ writeList('thwapUnlockSeen',ready); return j; } // first look: past training is the builder's job
@@ -942,7 +986,7 @@
       if(fresh.length){
         writeList('thwapUnlockNew',(readList('thwapUnlockNew')||[]).concat(fresh));
         var first=itemName(j,fresh[0]);
-        if(first && !document.querySelector('.lk')) showToast(first,fresh.length,j.look);
+        if(first && !document.querySelector('.lk')) showToast(first,fresh.length,j.look,j.teamWeek);
       }
       if((readList('thwapUnlockNew')||[]).length) markDot();
       return j;
