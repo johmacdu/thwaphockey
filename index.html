@@ -2030,6 +2030,15 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 <div class='lb-track'><div class='lb-trackfill' id='chTrackFill'></div></div>
 </div>
 </div>
+<style>
+/* Coach home: each Top this week row shows the kid's character, head and
+   shoulders in a small circle, before the name. */
+.ch-avname{display:flex;align-items:center;gap:8px;min-width:0}
+.ch-avname>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ch-av{position:relative;flex:0 0 auto;width:32px;height:32px;border-radius:50%;overflow:hidden;background:var(--soft,#E7EEE8)}
+.ch-av .av-wrap{font-size:1.55px;perspective:none}
+.ch-av .av-scene{bottom:-22px;transform:rotateX(-6deg) rotateY(var(--av-face,-25deg))}
+</style>
 <p class='lb-scope ch-topfive-lab' id='chTopLab' hidden>Top this week</p>
 <div class='board ch-topfive' id='chTop'></div>
 </div>
@@ -3054,7 +3063,16 @@ window.thwapActiveTeam=function(coach){
             var el=document.createElement('button'); el.type='button'; el.className='row';
             var pct=Math.min(100,Math.round(100*x.tot/WEEK_TARGET));
             el.innerHTML='<span>'+(i<3?medals[i]:(i+1))+'</span><strong></strong><div class="bar"><div class="fill" style="width:'+pct+'%"></div></div><span class="score">'+x.tot+'</span>';
-            el.querySelector('strong').textContent=nameOf(x.m);
+            /* Each kid's own character next to their name (Phase 4: coach home shows
+               the roster's characters), inside the name cell so the row layout is
+               unchanged. Starter looks count, so nobody is blank. */
+            var nm=el.querySelector('strong');
+            if(window.thwapAvatar && window.thwapAvatar.on()){
+              var av=document.createElement('i'); av.className='ch-av'; av.setAttribute('aria-hidden','true');
+              av.innerHTML=window.thwapAvatar.html(window.thwapAvatar.lookFor({num:''}, x.m.playerId||x.m.firstName||''));
+              var label=document.createElement('span'); label.textContent=nameOf(x.m);
+              nm.classList.add('ch-avname'); nm.appendChild(av); nm.appendChild(label);
+            } else nm.textContent=nameOf(x.m);
             el.addEventListener('click',(function(nm){ return function(){ if(window.openPlayerPage) window.openPlayerPage(nm,'coachhome'); }; })(nameOf(x.m)));
             top.appendChild(el);
           });
