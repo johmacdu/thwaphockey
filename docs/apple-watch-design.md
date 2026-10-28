@@ -264,3 +264,14 @@ These are worth fixing before the watch launches, because a watch app makes team
 5. Complication.
 6. Game Day Goals (needs the web page to save picks to the server first).
 7. Privacy policy update, App Store privacy label, and a small test session with players.
+
+## 15. Decisions (product owner, Oct 28 2026)
+
+- **Parent approval: Option B.** The parent taps Approve in the email. This happens once per player, not once per sign-in.
+- **Teams:** move sign-in to the multi-team members store before the watch launches. No launch limited to Jr. Rangers 10U.
+- **Security:** fix the three endpoints in section 12 first, as their own PR, before any watch server work.
+- **Shared data:** move the drill library, rotation and timer scripts to a shared server module, and save Game Day Goals picks on the server.
+
+Agent defaults, open to change in review: a 30-day watch session, a "remove this watch" list in version 1, rings filled by the player view's per-discipline count, "Net play" as the goalie's second ring, no weekend bonus reps in version 1, a confirm step before undo, watchOS 10 as the oldest supported version, and shipping inside the existing iPhone app listing.
+
+Build order: (1) security fix, (2) multi-team sign-in, (3) shared drill module plus server-saved Game Day Goals, (4) parent approval actions, (5) the watch app's real API client replacing the placeholder data.
