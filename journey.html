@@ -26,7 +26,13 @@ html[data-theme='dark']{
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:'Nunito Sans',system-ui,sans-serif;font-size:var(--fs-body);line-height:1.4}
-.book{max-width:460px;margin:0 auto;padding:76px 14px 64px;display:flex;flex-direction:column;gap:22px}
+.book{max-width:min(820px,96vw);margin:0 auto;padding:76px 18px 64px;display:flex;flex-direction:column;gap:0}
+.jhead{padding:0 4px}
+.jhead h1{margin:2px 0 0}
+.jhead .who{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:20px;margin:10px 0 0;color:var(--text)}
+.jhead .who b{color:var(--acc)}
+.jhead .who .meta{display:block;font-family:'Nunito Sans',sans-serif;font-weight:700;font-size:var(--fs-support);color:var(--muted);margin-top:3px}
+html.embed .jhead .who{display:none}
 .eyebrow{font-family:'Oswald',system-ui,sans-serif;font-weight:600;font-size:var(--fs-eyebrow);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
 h1,h2,h3{font-family:'Archivo Black',system-ui,sans-serif;font-weight:400;margin:0;line-height:1.05}
 h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
@@ -35,9 +41,9 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 [data-sample][hidden]{display:none}
 .note{font-size:12px;color:var(--muted);border-left:3px solid var(--sample);padding:4px 0 4px 10px;margin:0}
 
-/* A book page. The page itself is not interactive, it is the paper. */
-.pg{position:relative;background:var(--page) var(--paper);background-size:512px;border-radius:6px 18px 18px 6px;box-shadow:0 10px 30px var(--shadow),inset 6px 0 0 var(--line);padding:26px 22px 40px 28px;overflow:hidden}
-.pg .folio{position:absolute;bottom:12px;right:20px;font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.12em;color:var(--muted)}
+/* A content section: flat on the page, separated by a divider line + padding. */
+.pg{position:relative;padding:28px 4px 8px;border-top:1px solid var(--line)}
+.pg:first-of-type{border-top:0;padding-top:12px}
 .pg h2{margin-bottom:4px}
 .rule{border:0;border-top:1px solid var(--line);margin:18px 0}
 
@@ -48,17 +54,6 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .art.has{background:none;border:0}
 .art.has>span{display:none}
 .art.fill>img{object-fit:cover}
-
-/* COVER */
-.cover{padding:0;border-radius:6px 22px 22px 6px;color:#F3F7F4;background:#1F3A2A}
-.cover .art{border-radius:0;border:0;--ar:1200/1600}
-.cover .art:not(.has){background:#1F3A2A}
-.cover .art:not(.has)>span{color:#9DACA2}
-.cover .over{position:absolute;inset:0;padding:30px 26px;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none}
-.cover .t1{font-family:'Oswald',sans-serif;letter-spacing:.2em;font-size:13px;text-transform:uppercase;color:#B9F06B}
-.cover h1{color:#F3F7F4;text-shadow:0 2px 10px rgba(0,0,0,.45)}
-.cover .who{font-family:'Archivo Black',sans-serif;font-size:22px;text-shadow:0 2px 8px rgba(0,0,0,.5)}
-.cover .who b{color:#B9F06B;font-weight:400}
 
 /* WHO I AM */
 .idrow{display:flex;gap:18px;align-items:center;margin-top:14px}
@@ -177,19 +172,16 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
 
 <main class="book">
 
-<!-- COVER -->
-<section class="pg cover" aria-label="Season book cover">
-  <div class="art fill" data-art="cover.webp"><span>cover.webp 1200x1600</span></div>
-  <div class="over">
-    <div><div class="t1" id="jSeason">Season 2026-27</div><h1>My Season Journey</h1></div>
-    <div><div class="who"><span id="jName">Lewie M.</span> <b id="jNum">#81</b></div><div class="t1" id="jMeta" style="margin-top:6px;color:#F3F7F4">Forward &nbsp; Jr. Rangers 10U</div></div>
-  </div>
-</section>
+<!-- HEADER (on-screen, not a book cover) -->
+<header class="jhead">
+  <p class="eyebrow" id="jSeason">Season 2026-27</p>
+  <h1>My Season Journey</h1>
+  <p class="who"><span id="jName">Lewie M.</span> <b id="jNum">#81</b><span class="meta" id="jMeta">Forward &nbsp; Jr. Rangers 10U</span></p>
+</header>
 
 <!-- 2 MY JOURNEY -->
 <section class="pg" aria-labelledby="h-journey">
-  <p class="eyebrow">Page 1 &nbsp; Where I am</p>
-  <h2 id="h-journey">My Season Journey</h2>
+  <h2 id="h-journey">Where I am</h2>
   <div class="tiernow"><b id="jTier">Practice Ice</b><span id="jStep">Step 2 of 3</span><span class="sample" data-sample>Sample</span></div>
 
   <div class="rinkwrap" id="jRink" style="--x:43%">
@@ -214,13 +206,12 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
   </div>
   <p class="nextup" id="jNext">5 more training days to step 3</p>
   <p class="why">Any day you do one drill counts. Miss a week and your spot waits for you.</p>
-  <span class="folio">1</span>
 </section>
 
 <!-- 4 MY BADGES -->
 <section class="pg" aria-labelledby="h-badges">
   <div class="badgehead">
-    <div><p class="eyebrow">Page 2 &nbsp; Earn stars, level up</p><h2 id="h-badges">My Badges</h2>
+    <div><p class="eyebrow">Earn stars, level up</p><h2 id="h-badges">My Badges</h2>
       <p class="sub">Every badge has 3 stars. Train to earn them. <span class="sample">Badge list from Woody</span></p></div>
     <div class="art has"><img src="login/sass-welcome.webp" alt=""></div>
   </div>
@@ -234,12 +225,10 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     <button class="badge locked"><div class="art" data-art="badge-07.webp"><span>07</span></div><b>Badge 7</b><div class="stars" aria-label="Not started"><span class="off">★★★</span></div></button>
     <button class="badge locked"><div class="art" data-art="badge-08.webp"><span>08</span></div><b>Badge 8</b><div class="stars" aria-label="Not started"><span class="off">★★★</span></div></button>
   </div>
-  <span class="folio">2</span>
 </section>
 
 <!-- 6 SEASON SO FAR -->
 <section class="pg" aria-labelledby="h-season">
-  <p class="eyebrow">Page 3</p>
   <h2 id="h-season">My Season So Far</h2>
   <ul class="tl" id="jMonths">
     <li><b>Sep</b><p>11 training days. Reached Locker Room. 3 badge stars.</p></li>
@@ -247,12 +236,10 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     <li class="future"><b>Nov</b><p>Your next page.</p></li>
   </ul>
   <p class="why"><span class="sample" data-sample>Sample</span></p>
-  <span class="folio">3</span>
 </section>
 
 <!-- 7 FINALE -->
 <section class="pg finale" id="finale" hidden aria-labelledby="h-finale">
-  <p class="eyebrow">Last page</p>
   <h2 id="h-finale">Season Complete</h2>
   <div class="art fill scene" data-art="finale.webp"><span>finale.webp 1600x1000</span></div>
   <div class="sf"><div class="art has"><img src="login/sass-celly.webp" alt="Sass celebrating"></div></div>
@@ -263,11 +250,10 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     <div data-sample><b>24</b><span>Weeks of hockey</span></div>
   </div>
   <p class="why">Next season starts a fresh book. <span class="sample" data-sample>Sample</span></p>
-  <span class="folio">4</span>
 </section>
 
 <!-- MY BOOKS -->
-<section aria-labelledby="h-books" style="padding:6px 6px 0">
+<section aria-labelledby="h-books" style="border-top:1px solid var(--line);padding:28px 4px 8px">
   <p class="eyebrow">My books</p>
   <h2 id="h-books" style="font-size:22px">Every season, a new book</h2>
   <div class="shelf">
