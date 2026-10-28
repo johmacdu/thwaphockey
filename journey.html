@@ -268,8 +268,11 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
 
 <script>
 // Season Complete appears only once the season is over (end of March). ?finale previews it.
-  var SEASON_END=new Date('2027-04-01T00:00:00');
-  if(new Date()>=SEASON_END||/[?&]finale\b/.test(location.search)){document.getElementById('finale').hidden=false;}
+  // Between seasons (Apr to Aug) the book is closed, matching lib/journey.js.
+  // Signed in, the server's seasonOver decides; ?finale previews it any time.
+  var PREVIEW_FINALE=/[?&]finale\b/.test(location.search);
+  var MON_NOW=new Date().getMonth()+1;
+  document.getElementById('finale').hidden=!(PREVIEW_FINALE||(MON_NOW>=4&&MON_NOW<=8));
   // Real numbers for the signed-in player (GET /api/board?action=journey).
   // Signed out or on any error the sample data stays, still tagged Sample.
   var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -311,7 +314,7 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     if(!b.seasonOver){var f=document.createElement('li');f.className='future';f.innerHTML='<b>Next</b><p>Your next page.</p>';ul.appendChild(f);}
     txt('jFinDays',b.trainingDays); txt('jFinTier',b.tier);
     if(Array.isArray(b.badges)){BADGES=b.badges;renderBadges();txt('jFinStars',b.badgeStars);}
-    if(b.seasonOver)document.getElementById('finale').hidden=false;
+    document.getElementById('finale').hidden=!(PREVIEW_FINALE||b.seasonOver);
     document.querySelectorAll('[data-sample]').forEach(function(el){el.hidden=true;});
   }
   // Badges: sample until the API answers. Tapping one says what it counts.
