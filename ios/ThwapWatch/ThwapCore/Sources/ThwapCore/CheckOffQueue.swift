@@ -9,8 +9,11 @@ import Foundation
 /// delivered. That matches the server's own per-drill dedup guard, so a retry
 /// can never double-count the leaderboard.
 ///
-/// In-memory for the scaffold. Persistence (file or App Group defaults) lands
-/// with the real client; `pending` is Codable-ready for that.
+/// Persistence: when built with a `fileURL` the queue loads that file on init
+/// and rewrites it (atomically) after every enqueue and every confirmed
+/// delivery, so a check-off made offline survives the app being killed. An
+/// entry leaves the file only after the API confirms it. `init()` with no URL
+/// stays in memory (tests, previews).
 public actor CheckOffQueue {
     public struct Entry: Codable, Equatable, Hashable, Sendable {
         public var date: String
@@ -18,10 +21,40 @@ public actor CheckOffQueue {
         public var key: String { "\(date)|\(request.drillId)" }
     }
 
+    /// On-disk shape. Versioned so a later format change can migrate.
+    struct Snapshot: Codable {
+        var version = 1
+        var entries: [Entry]
+        var delivered: [String]
+    }
+
     private var entries: [Entry] = []
     private var delivered: Set<String> = []
+    private let fileURL: URL?
 
-    public init() {}
+    /// In-memory queue.
+    public init() { fileURL = nil }
+
+    /// Persistent queue backed by `fileURL`. A missing or unreadable file
+    /// starts empty (a corrupt file never blocks a check-off).
+    public init(fileURL: URL) {
+        self.fileURL = fileURL
+        if let data = try? Data(contentsOf: fileURL),
+           let snap = try? JSONDecoder().decode(Snapshot.self, from: data) {
+            entries = snap.entries
+            delivered = Set(snap.delivered)
+        }
+    }
+
+    /// `checkoff-queue.json` in the App Group container shared with the
+    /// complication, falling back to Application Support when the group
+    /// container is unavailable (unsigned simulator builds, tests).
+    public static func defaultFileURL(appGroup: String = RingStore.appGroup) -> URL {
+        let fm = FileManager.default
+        let dir = fm.containerURL(forSecurityApplicationGroupIdentifier: appGroup)
+            ?? fm.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        return dir.appendingPathComponent("checkoff-queue.json")
+    }
 
     /// Everything not yet confirmed by the server, oldest first.
     public var pending: [Entry] { entries }
@@ -40,6 +73,8 @@ public actor CheckOffQueue {
             return false
         }
         entries.append(entry)
+        pruneDelivered(keepingFrom: date)
+        save()
         return true
     }
 
@@ -51,13 +86,32 @@ public actor CheckOffQueue {
         while let next = entries.first {
             do {
                 _ = try await api.markDone(next.request)
-                entries.removeFirst()
+                // Remove only after the server confirmed, then persist at once
+                // so a kill right after delivery cannot resend a stale entry.
+                entries.removeAll { $0.key == next.key }
                 delivered.insert(next.key)
+                save()
                 confirmed += 1
             } catch {
                 break
             }
         }
         return confirmed
+    }
+
+    /// Delivered keys only guard against re-sending; anything older than the
+    /// newest day being written can never be re-enqueued by the UI, so drop it
+    /// to keep the file small.
+    private func pruneDelivered(keepingFrom date: String) {
+        delivered = delivered.filter { (($0.split(separator: "|").first).map(String.init) ?? "") >= date }
+    }
+
+    private func save() {
+        guard let fileURL else { return }
+        let snap = Snapshot(entries: entries, delivered: delivered.sorted())
+        guard let data = try? JSONEncoder().encode(snap) else { return }
+        try? FileManager.default.createDirectory(at: fileURL.deletingLastPathComponent(),
+                                                 withIntermediateDirectories: true)
+        try? data.write(to: fileURL, options: .atomic)
     }
 }
