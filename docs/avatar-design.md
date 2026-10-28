@@ -17,8 +17,12 @@ changing the My Player screen.
   game face).
 - Never an attempt to look like a real kid. Identity comes from choices:
   skin tone, hair, number, gear.
-- Hair matters where it shows outside the helmet. Flow out the back is a
-  hair style option.
+- Hair matters where it shows outside the helmet: out the back, and at the
+  sides so it reads from the front too. Ten Minnesota hockey hair styles
+  (Buzz to Locs), each a few boxes, with color as a separate choice.
+- **Every hair style is free from day one.** Hair is part of who a kid is,
+  like skin tone. Ponytail, braids and locs are never something to earn.
+- Long styles stop just above the back number so it stays readable.
 
 ### Flat textures, lighting in code
 - `avatar.js` shades every box the same way: top lighter, sides darker,
@@ -61,13 +65,14 @@ A reference screenshot is inspiration, not a source of words.
 | Stripe | Plain, Bolt stripe, Double Bolt |
 | Gloves | Game gloves, Rangers Red gloves, Bigfoot gloves |
 | Stick | Game stick, Old School stick, Golden Stick |
+| Hair style | Buzz, Short, Flow, Lettuce, Mullet, Wings, Curls, Ponytail, Braids, Locs (Minnesota hockey hair) |
 | Pose | Ready, Toe drag, Dangle, Snipe, Tape to tape, Head up, Power, Big save |
 | Celebration | THWAP!, Knee slide |
 
 ## Interaction strategy
 
 ### First run: build your player in under a minute
-- Three steps: skin tone, hair, jersey color and number. All pre-picked, so a
+- Four steps: skin tone, hockey hair, hair color, jersey. All pre-picked, so a
   kid can tap Done.
 - Then the card reveal: the character lands on the card with the THWAP sound.
 

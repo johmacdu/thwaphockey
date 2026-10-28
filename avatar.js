@@ -32,7 +32,7 @@
   };
   var GLOVES={ black:'#141414', red:'#C8102E', ice:'#BFE6F2' };
   var STICK={ classic:'#2B2B2B', wood:'#B07A45', gold:'#D4A72C' };
-  var DEFAULT_LOOK={ skin:'s3', hair:'brown', jersey:'red', helmet:'team', gloves:'black', stick:'classic', num:'' };
+  var DEFAULT_LOOK={ skin:'s3', hair:'brown', hairstyle:'flow', jersey:'red', helmet:'team', gloves:'black', stick:'classic', num:'' };
 
   // Server looks use catalog ids ('jersey-red', 'skin-s3'); the renderer keys
   // on the part after the slot prefix. Unknown values fall back to defaults.
@@ -64,6 +64,51 @@
   }
 
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(ch){ return '&#'+ch.charCodeAt(0)+';'; }); }
+
+  // --- Hair styles (Minnesota hockey hair) --------------------------------------
+  // The head box spans y 24.2-31.8, z -3.8..3.8; the helmet's side pieces sit at
+  // x +/-4.2 and its back piece at z -2..-4.4 down to y 25.9. Hair shows below
+  // and around the helmet: out the back, and at the sides so it reads from the
+  // front too. Every style is plain boxes, so it works in every future pose.
+  var HAIR_STYLES={
+    buzz:function(c){ return [
+      box({w:.5,h:1.4,d:1.2,x:-3.95,y:25.4,z:1.6,c:c}), box({w:.5,h:1.4,d:1.2,x:3.95,y:25.4,z:1.6,c:c}) ]; },
+    short:function(c){ return [
+      box({w:6.8,h:1.4,d:1,y:25.3,z:-4.1,c:c}),
+      box({w:.6,h:1.8,d:2.4,x:-4,y:25.3,z:1,c:c}), box({w:.6,h:1.8,d:2.4,x:4,y:25.3,z:1,c:c}) ]; },
+    flow:function(c){ return [
+      box({w:7.4,h:3.4,d:1.4,y:24.4,z:-4.5,c:c,rot:'rotateX(-14deg)'}),
+      box({w:.8,h:2.4,d:3,x:-4.3,y:24.7,z:-.6,c:c}), box({w:.8,h:2.4,d:3,x:4.3,y:24.7,z:-.6,c:c}) ]; },
+    lettuce:function(c){ return [
+      box({w:8.4,h:4.6,d:1.8,y:23.8,z:-4.9,c:c,rot:'rotateX(-26deg)'}),
+      box({w:1.1,h:2.8,d:3.4,x:-4.6,y:24.3,z:-.8,c:c,rot:'rotateZ(18deg)'}),
+      box({w:1.1,h:2.8,d:3.4,x:4.6,y:24.3,z:-.8,c:c,rot:'rotateZ(-18deg)'}) ]; },
+    // Long styles stop at y ~20.6, just above the back number (top:36%), so the
+    // number stays readable on the back of the card.
+    mullet:function(c){ return [
+      box({w:5.4,h:5.6,d:1.2,y:23.2,z:-4.2,c:c}),
+      box({w:.5,h:1.4,d:1.2,x:-3.95,y:25.4,z:1.6,c:c}), box({w:.5,h:1.4,d:1.2,x:3.95,y:25.4,z:1.6,c:c}) ]; },
+    wings:function(c){ return [
+      box({w:6.8,h:1.6,d:1.2,y:25.2,z:-4.2,c:c}),
+      box({w:1.4,h:1.4,d:3.4,x:-4.9,y:25,z:-.4,c:c,rot:'rotateZ(38deg)'}),
+      box({w:1.4,h:1.4,d:3.4,x:4.9,y:25,z:-.4,c:c,rot:'rotateZ(-38deg)'}) ]; },
+    curls:function(c){ var out=[];
+      [-2.6,-.9,.9,2.6].forEach(function(x,i){ out.push(box({w:1.7,h:1.7,d:1.7,x:x,y:24.9-(i%2)*.7,z:-4.5,c:c})); });
+      [-1,1].forEach(function(s){ out.push(box({w:1.5,h:1.5,d:1.5,x:4.4*s,y:25.1,z:.4,c:c})); out.push(box({w:1.5,h:1.5,d:1.5,x:4.4*s,y:24.6,z:-1.8,c:c})); });
+      return out; },
+    ponytail:function(c){ return [
+      box({w:2.2,h:1.8,d:1.6,y:26.2,z:-4.8,c:c}),
+      box({w:1.6,h:4.8,d:1.4,y:23.2,z:-5.2,c:c,rot:'rotateX(8deg)'}),
+      box({w:.6,h:1.8,d:2.4,x:-4,y:25.3,z:1,c:c}), box({w:.6,h:1.8,d:2.4,x:4,y:25.3,z:1,c:c}) ]; },
+    braids:function(c){ return [
+      box({w:1.1,h:5.2,d:1.1,x:-1.7,y:23.3,z:-4.4,c:c}), box({w:1.1,h:5.2,d:1.1,x:1.7,y:23.3,z:-4.4,c:c}),
+      box({w:.6,h:1.8,d:2.4,x:-4,y:25.3,z:1,c:c}), box({w:.6,h:1.8,d:2.4,x:4,y:25.3,z:1,c:c}) ]; },
+    locs:function(c){ var out=[];
+      [-2.6,-1.3,0,1.3,2.6].forEach(function(x,i){ out.push(box({w:.85,h:5-(i%2)*.7,d:.85,x:x,y:23.3+(i%2)*.35,z:-4.4,c:c})); });
+      [-1,1].forEach(function(s){ out.push(box({w:.8,h:4,d:.8,x:4.3*s,y:23.8,z:-.8,c:c})); out.push(box({w:.8,h:3.4,d:.8,x:4.3*s,y:24.1,z:.8,c:c})); });
+      return out; }
+  };
+  function hairBoxes(style,c){ return (HAIR_STYLES[style]||HAIR_STYLES[DEFAULT_LOOK.hairstyle])(c).join(''); }
 
   // --- Character ---------------------------------------------------------------
   // Heights (em, from the ice up): blade 0-0.6, boot 0.6-2.2, legs 2.2-10,
@@ -125,8 +170,8 @@
       box({w:3.8,h:3.6,d:4,x:6.6,y:14.4,z:2.6,c:gloveC}),
       // Head
       box({w:7.6,h:7.6,d:7.6,y:28,c:skin,frontInner:faceInner}),
-      // Hair flow out the back of the helmet
-      box({w:6.8,h:2.4,d:1.4,y:25.3,z:-4.2,c:hair}),
+      // Hair: style is a few boxes around the helmet (see hairBoxes).
+      hairBoxes(look.hairstyle||DEFAULT_LOOK.hairstyle, hair),
       // Helmet shell (top + back half), leaves the face open for the cage
       box({w:8.4,h:2.6,d:8.4,y:31.3,c:helmet,faces:helTop}),
       box({w:8.4,h:4.6,d:2.4,y:28.2,z:-3.2,c:helmet,faces:helFaces}),
@@ -179,7 +224,7 @@
     ".av-f{position:absolute;left:0;top:0;backface-visibility:hidden;box-shadow:inset 0 0 0 .06em rgba(0,0,0,.35);background-size:100% 100%;image-rendering:pixelated}"+
     ".av-top{filter:brightness(1.18)}.av-right,.av-left{filter:brightness(.78)}.av-back{filter:brightness(.88)}.av-bottom{filter:brightness(.6)}"+
     ".av-cage{box-shadow:none;backface-visibility:visible;opacity:.95}"+
-    ".av-num{position:absolute;left:0;right:0;top:22%;text-align:center;font:900 3.6em/1 system-ui,-apple-system,sans-serif;letter-spacing:-.02em}"+
+    ".av-num{position:absolute;left:0;right:0;top:36%;text-align:center;font:900 3.6em/1 system-ui,-apple-system,sans-serif;letter-spacing:-.02em}"+
     ".av-num-sm{font-size:2em;top:30%;left:auto;right:12%;text-align:right}"+
     ".av-eye,.av-brow,.av-mouth{position:absolute;background:#141414;display:block}"+
     ".av-eye{width:1.2em;height:1.2em;top:3.4em}.av-eye.l{left:1.4em}.av-eye.r{right:1.4em}"+
@@ -197,7 +242,7 @@
   // Opens from the My Player button on the player's own card. Tap an owned item: it goes on the
   // character and saves to the server. Tap a locked item: try it on, with the
   // progress line; nothing is saved. Unlocks come from the server only.
-  var GEAR_TABS=[['skin','Skin'],['hair','Hair'],['jersey','Jersey'],['helmet','Helmet'],['stripe','Stripe'],['gloves','Gloves'],['stick','Stick']];
+  var GEAR_TABS=[['skin','Skin'],['hairstyle','Hair'],['hair','Hair color'],['jersey','Jersey'],['helmet','Helmet'],['stripe','Stripe'],['gloves','Gloves'],['stick','Stick']];
   var TIER_LABEL={ common:'', rare:'Pro', epic:'All-Star', legendary:'Legend' };
   var L={ data:null, look:null, saved:null, tab:'skin', trying:null, changed:false, me:null };
 
@@ -225,9 +270,17 @@
     return 0;
   }
   function owned(id){ return !!(L.data && L.data.unlocked.indexOf(id)>=0); }
+  // Hair style tiles show a small back view of the player's own head with that
+  // style, in their own hair color, so the kid sees exactly what they will get.
+  function miniHead(style){
+    var look=norm(L.look||{}); look.hairstyle=style; look.num='';
+    return "<span class='lk-mini' aria-hidden='true'>"+html(look)+"</span>";
+  }
 
   // First-run builder: three steps, everything pre-picked, so a kid can tap Done.
-  var BUILD_STEPS=[['skin','Pick your skin tone'],['hair','Pick your hair'],['jersey','Pick your jersey']];
+  var BUILD_STEPS=[['skin','Pick your skin tone'],['hairstyle','Pick your hockey hair'],['hair','Pick your hair color'],['jersey','Pick your jersey']];
+  // Hair is easiest to judge from behind, so those tabs turn the player around.
+  function spinFor(tab){ return (tab==='hair'||tab==='hairstyle')?150:-25; }
   // Unlock tracking on this device: ids already shown, and ids still marked New.
   function readList(k){ try{ var v=JSON.parse(localStorage.getItem(k)||'null'); return Array.isArray(v)?v:null; }catch(_){ return null; } }
   function writeList(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(_){} }
@@ -248,6 +301,9 @@
       ".lk-item{position:relative;min-height:96px;border-radius:14px;border:2px solid var(--line,#DCE5DE);background:var(--card,#fff);color:var(--text,#15221B);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px;cursor:pointer;font:inherit}"+
       ".lk-item[aria-pressed=true]{border-color:var(--linesel,#8FD65E);box-shadow:0 0 0 2px var(--linesel,#8FD65E) inset}"+
       ".lk-sw{width:34px;height:34px;border-radius:50%;border:1px solid rgba(0,0,0,.25)}"+
+      ".lk-mini{position:relative;display:block;width:64px;height:52px;overflow:hidden;pointer-events:none}"+
+      ".lk-mini .av-wrap{font-size:3.2px;perspective:none}"+
+      ".lk-mini .av-scene{bottom:-58px;transform:rotateX(-8deg) rotateY(150deg)}"+
       ".lk-lbl{font-size:13px;font-weight:800;text-align:center;line-height:1.15}"+
       ".lk-sub{font-size:11px;color:var(--muted,#5F6F64);text-align:center;line-height:1.2}"+
       ".lk-item.locked .lk-sw{opacity:.45}"+
@@ -306,7 +362,7 @@
       return "<button type='button' class='lk-item"+(own?'':' locked')+"' data-id='"+esc(it.id)+"' aria-pressed='"+on+"'"+
         " aria-label='"+esc(lbl+(own?'':', locked. '+ruleText(it)+' to unlock'))+"'>"+
         (own?'':"<i class='lk-lock' aria-hidden='true'></i>")+(own&&isNew(it.id)?"<i class='lk-new'>New</i>":"")+
-        "<span class='lk-sw' style='background:"+swatch(it.slot,short)+"'></span>"+
+        (it.slot==='hairstyle'?miniHead(short):"<span class='lk-sw' style='background:"+swatch(it.slot,short)+"'></span>")+
         "<span class='lk-lbl'>"+esc(lbl)+"</span>"+(sub?"<span class='lk-sub'>"+esc(sub)+"</span>":"")+"</button>";
     }).join('');
   }
@@ -330,10 +386,10 @@
       if(nav.getAttribute('data-build')==='back'){ L.build=Math.max(0,L.build-1); }
       else if(L.build<BUILD_STEPS.length-1){ L.build++; }
       else { finishBuild(); return; }
-      L.tab=BUILD_STEPS[L.build][0]; L.trying=null; L.spin=L.tab==='hair'?150:-25; paintTabs(); paintGrid(); paintStage(); return;
+      L.tab=BUILD_STEPS[L.build][0]; L.trying=null; L.spin=spinFor(L.tab); paintTabs(); paintGrid(); paintStage(); return;
     }
     var tab=e.target.closest('.lk-tab');
-    if(tab){ L.tab=tab.getAttribute('data-tab'); L.trying=null; paintTabs(); paintGrid(); paintStage(); return; }
+    if(tab){ L.tab=tab.getAttribute('data-tab'); L.trying=null; L.spin=spinFor(L.tab); paintTabs(); paintGrid(); paintStage(); return; }
     var b=e.target.closest('.lk-item'); if(!b||!L.data) return;
     var id=b.getAttribute('data-id'), it=null;
     for(var i=0;i<L.data.items.length;i++) if(L.data.items[i].id===id) it=L.data.items[i];
