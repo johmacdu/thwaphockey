@@ -189,3 +189,11 @@ the hockey year, August to June, and rolls over in August.
   reduced motion or sounds muted).
 - [ ] Recheck the ladder numbers against December's data before Phase 2 is
   called done.
+- [x] Phase 3 stances: joints on the rig and all 8 catalog poses as joint data
+  (`POSES` in `avatar.js`): Ready, Dangle, Toe drag, Snipe, Tape to tape,
+  Head up, Power, Big save. Ready is unchanged; a picked stance shows on
+  every card.
+- [x] Moves tab in My Player: pick a stance, try on locked ones. Moves held
+  back by the #447 rule now announce as "New move!".
+- [ ] Celebrations (THWAP!, Knee slide): Play button and milestone days, never
+  a card tap; reduced motion shows the final pose. Still held back until then.

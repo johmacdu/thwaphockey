@@ -55,7 +55,7 @@ h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weigh
 .deck-wrap{margin:4px 0 18px;text-align:center}
 .stickerbook-card{text-align:left}
 .hero-sticker{text-align:left;margin-bottom:14px}
-.stickerbook-head{display:flex;align-items:center;gap:24px;justify-content:center;padding-bottom:24px}.jy-embed{margin:0 -14px 8px}.jy-embed iframe{display:block;width:100%;height:1400px;border:0;background:transparent}.jy-h{font-size:22px;margin:18px 0 10px}.stickerbook-headtext{margin-bottom:14px}
+.stickerbook-head{display:flex;align-items:center;gap:24px;justify-content:center;padding-bottom:24px}.jy-embed{margin:0 -14px 8px}.jy-embed iframe{display:block;width:100%;height:1400px;border:0;background:transparent}#seasonSeg{margin:0 0 18px}#seasonJourney[hidden],#stickerBook[hidden]{display:none!important}.stickerbook-headtext{margin-bottom:14px}
 .stickerbook-headtext{display:flex;flex-direction:column;gap:8px}
 .stickerbook-lead{margin:0;color:var(--text);font-weight:800;font-size:16px;line-height:1.3}
 .stickerbook-head .stickcount{margin:0}
@@ -2389,8 +2389,14 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 
 <section id='stickers' class='page'>
 <a class='glassclose' href='.' aria-label='Close'>✕</a>
-<div class='hero hero-sticker'><h1>Journey</h1></div>
-<div class='stickerbook' id='stickerBook'>
+<div class='hero hero-sticker'><h1>My Season</h1></div>
+<div class='seg' id='seasonSeg' role='tablist' aria-label='My Season'>
+<button type='button' class='segbtn on' id='seasonTabJourney' data-seg='journey' role='tab' aria-selected='true' aria-controls='seasonJourney'>Journey</button>
+<button type='button' class='segbtn' id='seasonTabStickers' data-seg='stickers' role='tab' aria-selected='false' aria-controls='stickerBook'>Stickers</button>
+</div>
+<div class='jy-embed' id='seasonJourney' role='tabpanel' aria-labelledby='seasonTabJourney'><iframe id='jyFrame' title='My Season Journey' loading='lazy' scrolling='no' src='journey.html?embed=1'></iframe></div>
+<script>window.addEventListener('message',function(e){ if(e.origin!==location.origin||!e.data||typeof e.data.thwapJourneyHeight!=='number') return; var f=document.getElementById('jyFrame'); if(f) f.style.height=Math.max(200,Math.min(8000,e.data.thwapJourneyHeight))+'px'; });</script>
+<div class='stickerbook' id='stickerBook' role='tabpanel' aria-labelledby='seasonTabStickers' hidden>
 <div class='stickerbook-card'>
 <div class='stickerbook-head' id='stickerHead'>
 <button type='button' class='cardthumb' id='cardThumb' aria-label='Open your player card'>
@@ -2403,15 +2409,54 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 <p class='deck-tip'>Spin your card, drag a sticker onto it.</p>
 </div>
 </div>
-<div class='jy-embed' id='jyEmbed'><iframe id='jyFrame' title='My Season Journey' loading='lazy' scrolling='no' src='journey.html?embed=1'></iframe></div>
-<h2 class='jy-h'>Sticker Book</h2>
-<script>window.addEventListener('message',function(e){ if(e.origin!==location.origin||!e.data||typeof e.data.thwapJourneyHeight!=='number') return; var f=document.getElementById('jyFrame'); if(f) f.style.height=Math.max(200,Math.min(8000,e.data.thwapJourneyHeight))+'px'; });</script>
 <div class='stickerbook-headtext'>
 <p class='stickerbook-lead'>Finish drills to unlock stickers.</p>
 <div class='stickcount' id='stickCount'></div>
 </div>
 <div class='stickgrid' id='stickGrid'></div>
 </div>
+<script>
+/* My Season: one segmented control, Journey | Stickers (same .seg as Standings).
+   The player card lives in Stickers with the sticker grid, because stickers are
+   dragged onto the card. First visit opens Journey; after that the device
+   remembers the kid's last segment (thwapSeasonSeg). */
+(function(){
+  var KEY='thwapSeasonSeg';
+  var seg=document.getElementById('seasonSeg');
+  var jy=document.getElementById('seasonJourney');
+  var sb=document.getElementById('stickerBook');
+  if(!seg||!jy||!sb) return;
+  var btns=seg.querySelectorAll('.segbtn');
+  function pick(which, save){
+    if(which!=='stickers') which='journey';
+    for(var i=0;i<btns.length;i++){
+      var on=btns[i].getAttribute('data-seg')===which;
+      btns[i].classList.toggle('on',on);
+      btns[i].setAttribute('aria-selected',on?'true':'false');
+      btns[i].tabIndex=on?0:-1;
+    }
+    jy.hidden=(which!=='journey');
+    sb.hidden=(which!=='stickers');
+    if(save){ try{ localStorage.setItem(KEY,which); }catch(e){} }
+    /* Anything that measured itself while hidden (card thumb, deck) re-measures. */
+    if(which==='stickers'){ try{ window.dispatchEvent(new Event('resize')); }catch(e){} }
+  }
+  for(var i=0;i<btns.length;i++){
+    btns[i].addEventListener('click',function(){ pick(this.getAttribute('data-seg'),true); });
+  }
+  /* Arrow keys move between the two tabs, the standard tablist pattern. */
+  seg.addEventListener('keydown',function(e){
+    if(e.key!=='ArrowLeft'&&e.key!=='ArrowRight') return;
+    var cur=seg.querySelector('.segbtn.on');
+    var next=cur&&cur.getAttribute('data-seg')==='journey'?'stickers':'journey';
+    pick(next,true);
+    var b=seg.querySelector("[data-seg='"+next+"']"); if(b) b.focus();
+    e.preventDefault();
+  });
+  var saved=null; try{ saved=localStorage.getItem(KEY); }catch(e){}
+  pick(saved||'journey',false);
+})();
+</script>
 </section>
 
 <section id='player' class='page'>
@@ -2635,7 +2680,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 <section id='home'>
 <div class='wipnote' id='wipNote'>👋 Welcome to the Thwap beta. We're adding new training videos and features every week.</div>
 <script>(function(){try{fetch('/api/coach?action=beta',{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){if(d&&d.betaUntil){var until=Date.parse(d.betaUntil);if(!isNaN(until)&&Date.now()>until){var n=document.getElementById('wipNote');if(n)n.hidden=true;}}}).catch(function(){});}catch(e){}})();</script>
-<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.webp' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks' aria-label='Quick links'><span class='nav-authed'><a class='link' href='#stickers'>Journey</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a></span><span class='nav-guest'><a class='link' href='/about' id='navAbout'>About Thwap</a><span class='topsep'>|</span><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Explore pages' aria-expanded='false'>Explore</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#stickers'>Journey</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a></span><span class='nav-guest'><a href='/about' id='navAboutK'>About Thwap</a><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
+<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.webp' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks' aria-label='Quick links'><span class='nav-authed'><a class='link' href='#stickers'>My Season</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a></span><span class='nav-guest'><a class='link' href='/about' id='navAbout'>About Thwap</a><span class='topsep'>|</span><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Explore pages' aria-expanded='false'>Explore</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#stickers'>My Season</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a></span><span class='nav-guest'><a href='/about' id='navAboutK'>About Thwap</a><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
 <div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>there</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><script>(function(){try{var authed=/(?:^|; )thwapAuth=/.test(document.cookie);var p=localStorage.getItem('bfPlayer');var b=document.getElementById('homePlayer');if(b){if(p&&authed){b.textContent=p.trim().split(/\s+/)[0];}else{b.classList.add('needpick');}}}catch(e){}
 /* Team plan: hide the category rows the coach turned OFF for today. On any failure
    or unset plan, stick + shoot stay shown (the built-in rotation), and dryland
@@ -2769,7 +2814,7 @@ window.thwapTrainingToday=function(){
 <nav class='tabbar' id='tabbar' aria-label='Main'>
   <span class='tab-player'>
     <a class='tabbar-btn' href='#home' data-tab='home'><span class='tabbar-ico' aria-hidden='true'>🏒</span><span class='tabbar-lab'>Train</span></a>
-    <a class='tabbar-btn' href='#stickers' data-tab='stickers'><span class='tabbar-ico' aria-hidden='true'>📖</span><span class='tabbar-lab'>Journey</span></a>
+    <a class='tabbar-btn' href='#stickers' data-tab='stickers'><span class='tabbar-ico' aria-hidden='true'>📖</span><span class='tabbar-lab'>My Season</span></a>
     <a class='tabbar-btn' href='#roster' data-tab='roster'><span class='tabbar-ico' aria-hidden='true'>👥</span><span class='tabbar-lab'>Team</span></a>
     <a class='tabbar-btn' href='#progress' data-tab='progress'><span class='tabbar-ico' aria-hidden='true'>🏆</span><span class='tabbar-lab'>Standings</span></a>
     <a class='tabbar-btn' href='#profile' data-tab='profile'><span class='tabbar-ico' aria-hidden='true'>👤</span><span class='tabbar-lab'>Profile</span></a>

@@ -155,6 +155,58 @@
   };
   function hairBoxes(style,c){ return (HAIR_STYLES[style]||HAIR_STYLES[DEFAULT_LOOK.hairstyle])(c).join(''); }
 
+  // --- Stances (Phase 3) ---------------------------------------------------------
+  // A stance is joint points, not art: elbows, stick (knob -> heel -> toe, the
+  // hands ride the shaft at bot), knees and ankles, plus how far the upper body
+  // leans forward (lean, degrees), sinks toward the ice (drop, em) and tilts the
+  // head (head, degrees; negative = chin up). Points are for a right-handed shot;
+  // lefties mirror across x. Keys are the catalog ids without 'pose-' (the ids
+  // predate the names: pose-dangle is 'Toe drag', pose-stickhandling is 'Dangle').
+  // 'ready' has no entry on purpose: it is the card's standing grip, unchanged.
+  var POSES={
+    // Dangle: very wide and low, stick reaching far out to the forehand side,
+    // puck on the blade. The shape that reads: arms and stick out to one side.
+    stickhandling:{ lean:18, drop:1.8, bot:.36,
+      elTop:[-1.6,15,4.4], elBot:[6.6,12.6,.6],
+      knob:[1.4,12.8,4.4], heel:[9.4,0.7,-7.2], toe:[10.2,0.8,-4.4], puck:[7.6,.5,-5.6],
+      kneeL:[-3.8,5.2,2.2], ankL:[-4.4,2.4,.6], kneeR:[3.8,5.2,2.2], ankR:[4.4,2.4,.6], skL:-12, skR:12 },
+    // Toe drag: body tips over the bent backhand leg, the other leg kicked
+    // straight out, puck pulled back beside the back skate on the blade's toe.
+    dangle:{ lean:14, drop:1.4, roll:-14, bot:.36,
+      elTop:[-5.6,14.8,4], elBot:[1.6,13,6.4],
+      knob:[-1,12.6,6.4], heel:[-9.8,0.7,-1.6], toe:[-7.6,0.8,1], puck:[-9,.5,.2],
+      kneeL:[-3.4,5,2], ankL:[-3.8,2.4,.4], kneeR:[5,6.4,.8], ankR:[8.4,2.4,.4], skR:20 },
+    // Snipe: shot follow-through, blade up high, back leg extended.
+    shooting:{ lean:8, drop:0, bot:.32,
+      elTop:[-4.4,18.6,3.6], elBot:[3.6,19,6.4],
+      knob:[-1.8,16.4,5.2], heel:[4.6,21.6,9.6], toe:[6.4,22.8,10.4],
+      kneeL:[-2.2,6.4,2.8], ankL:[-2.2,2.4,1.8], kneeR:[2.4,6.6,-1], ankR:[2.6,2.6,-3] },
+    // Tape to tape: standing tall after the pass, arms straight out, stick pointing
+    // at the target, the puck already sliding away across the ice.
+    passing:{ lean:4, drop:0, bot:.3,
+      elTop:[-2.6,18.4,6.4], elBot:[2.4,17.2,8],
+      knob:[0.6,16.8,8.4], heel:[-6.2,7,8.4], toe:[-9,7.6,8.8], puck:[-9.4,.5,1.8],
+      kneeL:[-2.2,6.4,2.4], ankL:[-2.2,2.4,1.4], kneeR:[2.4,6.4,.4], ankR:[2.6,2.4,-1] },
+    // Head up: skating stride, one hand pushing the puck ahead, the free arm
+    // pointing out and up the ice at the play (across the card, not at the
+    // viewer, so it reads at roster size), chin well up.
+    reading:{ lean:6, drop:.4, head:-26, bot:.36,
+      elTop:[-4.6,17,4.4], elBot:[8,21.4,1.8], handBot:[11.4,24.6,2.8],
+      knob:[-2.4,13.6,5.6], heel:[-1.6,0.7,3.4], toe:[-4.2,0.8,4], puck:[-3.4,.5,2.2],
+      kneeL:[-2.2,6,2.6], ankL:[-2.2,2.4,1.2], kneeR:[2.4,6.8,-2.4], ankR:[2.8,7.4,-6.4], skR:-30 },
+    // Power (dryland): deep squat, stick held level across the body, arms out front.
+    power:{ lean:12, drop:2.2,
+      elTop:[-5.6,16.4,5.2], elBot:[5.6,16.4,5.2], handTop:[-4,15.6,8.4], handBot:[4,15.6,8.4],
+      knob:[-6.4,15.6,8.4], heel:[6.4,15.6,8.4], toe:[6.6,13.6,8.4],
+      kneeL:[-3.2,5,3], ankL:[-3.4,2.4,.6], kneeR:[3.2,5,3], ankR:[3.4,2.4,.6] },
+    // Big save: butterfly. Knees on the ice, pads flared, glove up, paddle down.
+    butterfly:{ lean:4, drop:5.4,
+      elTop:[-6.6,13.4,3.4], handTop:[-7,16.4,5.6], elBot:[6.6,12.4,3.6], handBot:[4,9,6.6],
+      knob:[4,9.4,6.4], heel:[1.6,0.7,11], toe:[-1.8,0.8,11.4],
+      kneeL:[-3,1.3,3], ankL:[-7.4,1.1,-1], kneeR:[3,1.3,3], ankR:[7.4,1.1,-1], skL:70, skR:-70 }
+  };
+  function lerp(a,b,t){ return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t]; }
+
   // --- Character ---------------------------------------------------------------
   // Heights (em, from the ice up): blade 0-0.6, boot 0.6-2.2, legs 2.2-10,
   // pants 10-14.6, torso 14.6-24, head 24-32. Minecraft-like 8/12/12 rhythm,
@@ -208,10 +260,31 @@
     var lefty=(look.hand==='left');
     function M(p){ return lefty?[-p[0],p[1],p[2]]:p; }
 
-    var shTop=M([-4.6,22.4,1]), shBot=M([4.6,22.4,1]);       // shoulders
-    // Arm + stick points per pose. elTop/elBot are elbows (= Phase-3 elbow joints).
+    // Stance: Ready (no entry) keeps the standing grip below, unchanged.
+    var P=POSES[look.pose]||null;
+    var lean=P?(P.lean||0):0, drop=P?(P.drop||0):0, headTilt=P?(P.head||0):0;
+    // roll: sideways lean at the waist (degrees, positive tips toward +x), mirrored for lefties.
+    var roll=P?((P.roll||0)*(look.hand==='left'?-1:1)):0;
+    // Where a point on the upper body ends up after it leans forward around the
+    // waist (y 14.6) and sinks by drop. Used for the shoulders, so the arms stay
+    // attached while the torso group leans.
+    var ls=Math.sin(lean*Math.PI/180), lc=Math.cos(lean*Math.PI/180);
+    var rs=Math.sin(roll*Math.PI/180), rc=Math.cos(roll*Math.PI/180);
+    function up(p){
+      var dy=p[1]-14.6, dz=p[2];
+      var y1=dy*lc-dz*ls, z1=dy*ls+dz*lc;             // forward lean
+      return [p[0]*rc+y1*rs, 14.6-p[0]*rs+y1*rc-drop, z1];   // then sideways roll
+    }
+    var shTop=M(up([-4.6,22.4,1])), shBot=M(up([4.6,22.4,1]));       // shoulders
+    // Arm + stick points per pose. elTop/elBot are elbows.
     var elTop,elBot,handTop,handBot,knob,ice,bladeToe;
-    if(look.grip==='twoHand'){
+    if(P){
+      knob=M(P.knob); ice=M(P.heel); bladeToe=M(P.toe);
+      elTop=M(P.elTop); elBot=M(P.elBot);
+      // Hands ride the shaft unless the stance places them (goalie, overhead press).
+      handTop=P.handTop?M(P.handTop):lerp(knob,ice,.07);
+      handBot=P.handBot?M(P.handBot):lerp(knob,ice,P.bot);
+    } else if(look.grip==='twoHand'){
       // Two-handed ready grip: both hands in front, top hand on the knob, bottom a
       // forearm down the shaft, blade flat on the ice.
       elTop=M([-3.5,16.5,3.6]); elBot=M([4,14.6,4.2]);
@@ -231,13 +304,44 @@
     var kneeBend=1.5;
     var kneeL=[-2.1,6.2,kneeBend], ankL=[-2.1,2.4,.6];
     var kneeR=[2.1,6.2,kneeBend], ankR=[2.1,2.4,.6];
+    if(P){ kneeL=M(P.kneeL); ankL=M(P.ankL); kneeR=M(P.kneeR); ankR=M(P.ankR); }
+    // Skates sit under the ankles; a stance can turn one out (stride push, butterfly).
+    function skate(ank,turn){
+      var dy=Math.max(ank[1]-2.4,-.6), rot=turn?'rotateY('+(lefty?-turn:turn)+'deg)':'';
+      return box({w:.5,h:.6,d:5.4,x:ank[0],y:.3+dy,z:ank[2],c:steel,rot:rot})+
+        box({w:3,h:1.6,d:5,x:ank[0],y:1.4+dy,z:ank[2],c:black,faces:skateFaces,rot:rot});
+    }
+    var skL=P?(P.skL||0):0, skR=P?(P.skR||0):0;
+    // Thighs run hip -> knee under the pants, so a bent or spread knee never
+    // leaves a gap between the pant hem and the knee pad.
+    var hipY=10.6-drop;
+    var thighL=P?limb([kneeL[0]<0?-2.1:2.1,hipY,0],kneeL,3.6,black,pantsFaces):'';
+    var thighR=P?limb([kneeR[0]<0?-2.1:2.1,hipY,0],kneeR,3.6,black,pantsFaces):'';
+
+    // Stick: a flat blade along the ice keeps the original boxes (Ready). Any other
+    // blade (raised, angled, closed) is a limb from heel to toe, tape at the heel.
+    var flatBlade=(ice[0]===bladeToe[0] && ice[1]<1);
+    var stickParts=flatBlade?[
+      limb(knob,ice,1.3,stickC),
+      box({w:1.5,h:1.6,d:1.6,x:ice[0],y:2.2,z:ice[2]-0.4,c:'#E8E8E8'}),
+      box({w:1.4,h:2.2,d:(bladeToe[2]-ice[2]),x:ice[0],y:1.3,z:(ice[2]+bladeToe[2])/2,c:stickC})
+    ]:[
+      limb(knob,ice,1.3,stickC),
+      limb(lerp(knob,ice,.9),ice,1.5,'#E8E8E8'),
+      limb(ice,bladeToe,1.6,stickC)
+    ];
+    var puck=(P&&P.puck)?(function(p){ p=M(p); return box({w:3,h:1,d:3,x:p[0],y:p[1],z:p[2],c:'#111111'}); })(P.puck):'';
+
+    // Upper body (torso + head) as one group that leans at the waist and sinks by
+    // drop; the head group inside it tilts at the neck. CSS y runs down, so a
+    // forward lean is a negative rotateX.
+    var upperTf='translate3d(0,'+(drop-14.6)+'em,0) rotateZ('+roll+'deg) rotateX('+(-lean)+'deg) translate3d(0,14.6em,0)';
+    var headTf='translate3d(0,-24.2em,0) rotateX('+(-headTilt)+'deg) translate3d(0,24.2em,0)';
 
     var parts=[
       // Skates: blade + boot
-      box({w:.5,h:.6,d:5.4,x:-2.1,y:.3,z:.6,c:steel}),
-      box({w:.5,h:.6,d:5.4,x:2.1,y:.3,z:.6,c:steel}),
-      box({w:3,h:1.6,d:5,x:-2.1,y:1.4,z:.6,c:black,faces:skateFaces}),
-      box({w:3,h:1.6,d:5,x:2.1,y:1.4,z:.6,c:black,faces:skateFaces}),
+      skate(ankL,skL), skate(ankR,skR),
+      thighL, thighR,
       // Shins (socks over shin guards), knee -> ankle: the bent knee shows here.
       limb(kneeL,ankL,3.4,J.body,{front:sockTx,back:sockTx,side:sockTx,top:sockTx}),
       limb(kneeR,ankR,3.4,J.body,{front:sockTx,back:sockTx,side:sockTx,top:sockTx}),
@@ -245,18 +349,12 @@
       box({w:3.6,h:2.8,d:3.8,x:kneeL[0],y:kneeL[1],z:kneeL[2]+.3,c:J.body,faces:{front:sockTx,back:sockTx,side:sockTx,top:sockTx,bottom:sockTx}}),
       box({w:3.6,h:2.8,d:3.8,x:kneeR[0],y:kneeR[1],z:kneeR[2]+.3,c:J.body,faces:{front:sockTx,back:sockTx,side:sockTx,top:sockTx,bottom:sockTx}}),
       // Hockey pants (breezers) to the knees: bulky, cover hips + thighs.
-      box({w:9,h:8,d:5.2,y:11,c:black,faces:pantsFaces}),
+      box({w:9,h:8,d:5.2,y:11-drop,c:black,faces:pantsFaces}),
+      // Upper body group: torso, head, hair, helmet, cage (leans with the stance).
+      "<div class='av-b av-upper' style='transform:"+upperTf+"'>",
       // Torso (jersey over shoulder pads)
       box({w:9.6,h:9.4,d:5.4,y:19.3,c:J.body,faces:{front:jTex,back:jTex,side:jTex,top:jTex},frontInner:chestNum,backInner:backNum}),
-      // Arms: upper arm (shoulder->elbow) + forearm (elbow->hand), bending onto the
-      // stick so the character actually holds it (both hands land on the grip).
-      limb(shTop,elTop,3.4,J.body,{front:sleeveTx,back:sleeveTx,side:sleeveTx,top:sleeveTx}),
-      limb(elTop,handTop,3.2,J.body,{front:sleeveTx,back:sleeveTx,side:sleeveTx,top:sleeveTx}),
-      limb(shBot,elBot,3.4,J.body,{front:sleeveTx,back:sleeveTx,side:sleeveTx,top:sleeveTx}),
-      limb(elBot,handBot,3.2,J.body,{front:sleeveTx,back:sleeveTx,side:sleeveTx,top:sleeveTx}),
-      // Gloves at the two grip points
-      box({w:3.8,h:3.4,d:3.8,x:handTop[0],y:handTop[1],z:handTop[2],c:gloveC,faces:gloveFaces}),
-      box({w:3.8,h:3.4,d:3.8,x:handBot[0],y:handBot[1],z:handBot[2],c:gloveC,faces:gloveFaces}),
+      "<div class='av-b av-head' style='transform:"+headTf+"'>",
       // Head
       box({w:7.6,h:7.6,d:7.6,y:28,c:skin,frontInner:faceInner}),
       // Hair: style is a few boxes around the helmet (see hairBoxes).
@@ -268,11 +366,20 @@
       box({w:1,h:4.8,d:5.6,x:4.2,y:27.9,z:.6,c:helmet,faces:helFaces}),
       // Cage
       "<div class='av-b' style='transform:translate3d(0,-27.4em,4.3em)'>"+face('av-cage',7.8,6.4,'none',cageBg)+"</div>",
-      // Stick (knob -> ice shaft, white tape at the heel, blade along the ice to the
-      // toe). Recolored by the unlocked stick (stickC: classic / wood / gold).
-      limb(knob,ice,1.3,stickC),
-      box({w:1.5,h:1.6,d:1.6,x:ice[0],y:2.2,z:ice[2]-0.4,c:'#E8E8E8'}),
-      box({w:1.4,h:2.2,d:(bladeToe[2]-ice[2]),x:ice[0],y:1.3,z:(ice[2]+bladeToe[2])/2,c:stickC})
+      "</div></div>",
+      // Arms: upper arm (shoulder->elbow) + forearm (elbow->hand), bending onto the
+      // stick so the character actually holds it (both hands land on the grip).
+      limb(shTop,elTop,3.4,J.body,{front:sleeveTx,back:sleeveTx,side:sleeveTx,top:sleeveTx}),
+      limb(elTop,handTop,3.2,J.body,{front:sleeveTx,back:sleeveTx,side:sleeveTx,top:sleeveTx}),
+      limb(shBot,elBot,3.4,J.body,{front:sleeveTx,back:sleeveTx,side:sleeveTx,top:sleeveTx}),
+      limb(elBot,handBot,3.2,J.body,{front:sleeveTx,back:sleeveTx,side:sleeveTx,top:sleeveTx}),
+      // Gloves at the two grip points
+      box({w:3.8,h:3.4,d:3.8,x:handTop[0],y:handTop[1],z:handTop[2],c:gloveC,faces:gloveFaces}),
+      box({w:3.8,h:3.4,d:3.8,x:handBot[0],y:handBot[1],z:handBot[2],c:gloveC,faces:gloveFaces}),
+      // Stick (shaft, white tape at the heel, blade). Recolored by the unlocked
+      // stick (stickC: classic / wood / gold).
+      stickParts.join(''),
+      puck
     ];
     // Facing: left 3/4 is the default; right mirrors it, center faces head-on. Set
     // as a CSS var so the builder's spin and the mini previews still win.
@@ -368,7 +475,7 @@
   // Opens from the My Player button on the player's own card. Tap an owned item: it goes on the
   // character and saves to the server. Tap a locked item: try it on, with the
   // progress line; nothing is saved. Unlocks come from the server only.
-  var GEAR_TABS=[['skin','Skin'],['hairstyle','Hair'],['hair','Hair color'],['jersey','Jersey'],['helmet','Helmet'],['cage','Cage'],['stripe','Stripe'],['gloves','Gloves'],['stick','Stick'],['hand','Shot'],['facing','View']];
+  var GEAR_TABS=[['skin','Skin'],['hairstyle','Hair'],['hair','Hair color'],['jersey','Jersey'],['helmet','Helmet'],['cage','Cage'],['stripe','Stripe'],['gloves','Gloves'],['stick','Stick'],['pose','Moves'],['hand','Shot'],['facing','View']];
   var TIER_LABEL={ common:'', rare:'Pro', epic:'All-Star', legendary:'Legend' };
   var L={ data:null, look:null, saved:null, tab:'skin', trying:null, changed:false, me:null };
 
@@ -410,6 +517,20 @@
     var look=norm(L.look||{}); look[slot]=val; look.num='';
     return "<span class='lk-mini face' aria-hidden='true'>"+html(look)+"</span>";
   }
+  // Moves tiles show the player's own whole body in that stance, so the kid
+  // sees the move on their player before they wear (or try on) it.
+  function miniPose(pose){
+    var look=norm(L.look||{}); look.pose=pose; look.num='';
+    return "<span class='lk-mini pose' aria-hidden='true'>"+html(look)+"</span>";
+  }
+  // The tile/toast picture for any item: hair from behind, hand/facing from the
+  // front, stances full body, everything else a color swatch.
+  function itemPic(slot,short){
+    if(slot==='hairstyle') return miniHead(short);
+    if(slot==='hand'||slot==='facing') return miniOpt(slot,short);
+    if(slot==='pose') return miniPose(short);
+    return "<span class='lk-sw' style='background:"+swatch(slot,short)+"'></span>";
+  }
 
   // First-run builder: three steps, everything pre-picked, so a kid can tap Done.
   var BUILD_STEPS=[['skin','Pick your skin tone'],['hairstyle','Pick your hockey hair'],['hair','Pick your hair color'],['jersey','Pick your jersey'],['hand','Which way do you shoot?'],['facing','Which way to face?']];
@@ -441,6 +562,10 @@
       ".lk-mini .av-wrap{font-size:3.2px;perspective:none}"+
       ".lk-mini .av-scene{bottom:-58px;transform:rotateX(-8deg) rotateY(150deg)}"+
       ".lk-mini.face .av-scene{transform:rotateX(-8deg) rotateY(var(--av-face,-25deg))}"+
+      // Stance tiles: the whole body, small enough to fit the tile.
+      ".lk-mini.pose{width:64px;height:84px}.lk-mini.pose .av-wrap{font-size:2px}"+
+      ".lk-mini.pose .av-scene{bottom:6px;transform:rotateX(-8deg) rotateY(var(--av-face,-25deg))}"+
+      ".lk-toast .lk-mini{flex:none;width:44px;height:52px}.lk-toast .lk-mini.pose .av-wrap{font-size:1.3px}"+
       ".lk-lbl{font-size:13px;font-weight:800;text-align:center;line-height:1.15}"+
       ".lk-sub{font-size:11px;color:var(--muted,#5F6F64);text-align:center;line-height:1.2}"+
       ".lk-item.locked .lk-sw{opacity:.45}"+
@@ -488,6 +613,10 @@
     t.className='lk-tabs'; t.setAttribute('role','tablist');
     if(foot){ foot.hidden=true; foot.innerHTML=''; }
     t.innerHTML=GEAR_TABS.map(function(x){ return "<button type='button' role='tab' class='lk-tab' data-tab='"+x[0]+"' aria-selected='"+(L.tab===x[0])+"'>"+x[1]+"</button>"; }).join('');
+    // Opened on a later tab (e.g. from a New move! message): keep the selected
+    // tab in view instead of leaving the row scrolled to Skin.
+    var sel=t.querySelector('[aria-selected=true]');
+    if(sel && sel.scrollIntoView){ try{ sel.scrollIntoView({block:'nearest',inline:'nearest'}); }catch(_){} }
   }
   function paintGrid(){
     var g=document.querySelector('.lk-grid'); if(!g||!L.data) return;
@@ -499,7 +628,7 @@
       return "<button type='button' class='lk-item"+(own?'':' locked')+"' data-id='"+esc(it.id)+"' aria-pressed='"+on+"'"+
         " aria-label='"+esc(lbl+(own?'':', locked. '+ruleText(it)+' to unlock'))+"'>"+
         (own?'':"<i class='lk-lock' aria-hidden='true'></i>")+(own&&isNew(it.id)?"<i class='lk-new'>New</i>":"")+
-        (it.slot==='hairstyle'?miniHead(short):(it.slot==='hand'||it.slot==='facing')?miniOpt(it.slot,short):"<span class='lk-sw' style='background:"+swatch(it.slot,short)+"'></span>")+
+        itemPic(it.slot,short)+
         "<span class='lk-lbl'>"+esc(lbl)+"</span>"+(sub?"<span class='lk-sub'>"+esc(sub)+"</span>":"")+"</button>";
     }).join('');
   }
@@ -618,7 +747,7 @@
     var old=document.querySelector('.lk-toast'); if(old) old.remove();
     var short=it.id.slice(it.slot.length+1);
     var b=document.createElement('button'); b.type='button'; b.className='lk-toast'; b.setAttribute('role','status');
-    b.innerHTML="<span class='lk-sw' style='background:"+swatch(it.slot,short)+"'></span><span>New gear! "+esc(it.label)+
+    b.innerHTML=itemPic(it.slot,short)+"<span>New "+(it.slot==='pose'?'move':'gear')+"! "+esc(it.label)+
       (count>1?' and '+(count-1)+' more':'')+"<small>Tap to try it on</small></span>";
     b.addEventListener('click',function(){ b.remove(); if(window.thwapOpenMyPlayer) window.thwapOpenMyPlayer({tab:it.slot}); else openLocker({tab:it.slot}); });
     document.body.appendChild(b);
@@ -638,9 +767,15 @@
     if(!on() || typeof fetch!=='function') return Promise.resolve(null);
     return fetch('/api/board?action=look',{credentials:'same-origin'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){
       if(!j) return null;
+      // Only announce items a kid can actually see and wear: slots with a tab
+      // in My Player. Celebrations have no tab until they can play, so they
+      // stay unseen (not announced, not recorded) and announce when it ships.
+      // Stances got the Moves tab, so moves held back earlier announce now.
+      var shown={}; GEAR_TABS.forEach(function(t){ shown[t[0]]=1; });
+      var ready=(j.unlocked||[]).filter(function(id){ var it=itemName(j,id); return !it || shown[it.slot]; });
       var seen=readList('thwapUnlockSeen');
-      if(!seen){ writeList('thwapUnlockSeen',j.unlocked||[]); return j; } // first look: past training is the builder's job
-      var unseen=(j.unlocked||[]).filter(function(id){ return seen.indexOf(id)<0; });
+      if(!seen){ writeList('thwapUnlockSeen',ready); return j; } // first look: past training is the builder's job
+      var unseen=ready.filter(function(id){ return seen.indexOf(id)<0; });
       // Free starting items are never "earned", so they join silently.
       var fresh=unseen.filter(function(id){ var it=itemName(j,id); return it && it.rule && it.rule.type!=='start'; });
       if(unseen.length) writeList('thwapUnlockSeen',seen.concat(unseen));
@@ -687,5 +822,5 @@
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bootLocker); else bootLocker();
 
-  window.thwapAvatar={ on:on, live:LIVE, html:html, lookFor:lookFor, refreshTeamLooks:refreshTeamLooks, openLocker:openLocker, checkUnlocks:checkUnlocks, norm:norm, SKIN:SKIN, HAIR:HAIR, JERSEY:JERSEY, DEFAULT_LOOK:DEFAULT_LOOK };
+  window.thwapAvatar={ on:on, live:LIVE, html:html, lookFor:lookFor, refreshTeamLooks:refreshTeamLooks, openLocker:openLocker, checkUnlocks:checkUnlocks, norm:norm, SKIN:SKIN, HAIR:HAIR, JERSEY:JERSEY, DEFAULT_LOOK:DEFAULT_LOOK, POSES:['ready'].concat(Object.keys(POSES)) };
 })();

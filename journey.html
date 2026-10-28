@@ -15,14 +15,14 @@ if(/[?&]embed=1\b/.test(location.search))document.documentElement.classList.add(
   --bg:#F3F7F4;--page:#FBFDFB;--card:#FFFFFF;--card2:#E7EEE8;--text:#15221B;--muted:#5F6F64;
   --line:#DCE5DE;--line2:#C9D5CC;--acc:#2F6B41;--lime:#B9F06B;--onlime:#15221B;
   --stick:#2F6B41;--shoot:#2E7BD6;--dry:#D9661A;--sample:#C25A12;--ph:#E2E8E3;--phtext:#7C8C82;
-  --shadow:rgba(20,40,25,.12);--paper:url(journey/art/paper.webp);
+  --shadow:rgba(20,40,25,.12);
   --fs-eyebrow:11px;--fs-support:14px;--fs-body:clamp(15px,4vw,17px);
   --fs-section:clamp(24px,6vw,30px);--fs-title:clamp(34px,9vw,52px);
 }
 html[data-theme='dark']{
   --bg:#0B130E;--page:#101A14;--card:#182420;--card2:#1E2B24;--text:#F3F7F4;--muted:#9DACA2;
   --line:#2A3831;--line2:#3A4A40;--acc:#B9F06B;--stick:#8fd65e;--shoot:#75B8FF;--dry:#FF9D4D;
-  --sample:#FF9D4D;--ph:#1A2620;--phtext:#6E7E74;--shadow:rgba(0,0,0,.4);--paper:url(journey/art/paper-dark.webp);
+  --sample:#FF9D4D;--ph:#1A2620;--phtext:#6E7E74;--shadow:rgba(0,0,0,.4);
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:'Nunito Sans',system-ui,sans-serif;font-size:var(--fs-body);line-height:1.4}
@@ -41,9 +41,10 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 [data-sample][hidden]{display:none}
 .note{font-size:12px;color:var(--muted);border-left:3px solid var(--sample);padding:4px 0 4px 10px;margin:0}
 
-/* A content section: flat on the page, separated by a divider line + padding. */
-.pg{position:relative;padding:28px 4px 8px;border-top:1px solid var(--line)}
-.pg:first-of-type{border-top:0;padding-top:12px}
+/* A content section: flat on the page, separated by spacing only (no dividers). */
+.pg{position:relative;padding:26px 4px}
+.pg:first-of-type{padding-top:10px}
+.pg.seasonfar{padding-top:52px}
 .pg h2{margin-bottom:4px}
 .rule{border:0;border-top:1px solid var(--line);margin:18px 0}
 
@@ -70,7 +71,7 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .rinkwrap{position:relative;margin:56px -6px 6px}
 .rinkwrap .art{--ar:1600/700}
 .rinkwrap svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
-.rinkwrap .sassp{position:absolute;width:34%;left:var(--x);bottom:54%;transform:translateX(-50%);filter:drop-shadow(0 6px 10px rgba(20,40,25,.35));animation:skate 400ms ease-out both}
+.rinkwrap .sassp{position:absolute;width:17%;left:var(--x);bottom:58%;transform:translateX(-50%);filter:drop-shadow(0 4px 7px rgba(20,40,25,.35));animation:skate 400ms ease-out both}
 .rinkwrap .sassp .art{--ar:1}
 @keyframes skate{from{left:6%}to{left:var(--x)}}
 .tiers{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;text-align:center;margin-top:6px}
@@ -107,41 +108,25 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .crushed li span{color:var(--muted);font-weight:600;font-size:var(--fs-support);white-space:nowrap}
 
 /* BADGES: tappable tiles */
-.badgehead{display:grid;grid-template-columns:1fr 30%;align-items:end;gap:8px}
-.badgehead .art{--ar:1}
-.badges{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
-.badge{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 4px;text-align:center;min-height:48px;cursor:pointer;color:var(--text);font:inherit}
-.badge:focus-visible,.stamp:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.badgehead{margin-bottom:2px}
+.badges{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:14px}
+.badge{min-width:0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 4px;text-align:center;min-height:48px;cursor:pointer;color:var(--text);font:inherit}
+.badge:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
 .badge .art{--ar:1;border-radius:50%}
 .badge b{display:block;font-family:'Oswald',sans-serif;font-weight:600;font-size:11px;letter-spacing:.04em;text-transform:uppercase;margin-top:5px}
 .stars{color:var(--acc);font-size:12px;letter-spacing:1px}
 .stars .off{color:var(--line2)}
 .badge.locked .art{filter:grayscale(1);opacity:.4}
 
-/* STAMP BOOK */
-.month{margin-top:16px}
-.month h3{font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding-bottom:6px;border-bottom:1px solid var(--line)}
-.stamps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
-.stamp{background:none;border:0;padding:2px;cursor:pointer;color:var(--text);font:inherit;text-align:center;min-height:48px}
-.seal{position:relative;width:86%;aspect-ratio:1;margin:0 auto;transform:rotate(var(--r,-7deg))}
-.seal .ink{position:absolute;inset:0;border:3px solid var(--c,var(--acc));border-radius:50%;opacity:.9}
-html.has-stamp .seal .ink{border:0;background:var(--c,var(--acc));-webkit-mask:var(--m,url(journey/art/stamp.webp)) center/contain no-repeat;mask:var(--m,url(journey/art/stamp.webp)) center/contain no-repeat}
-.seal .d{position:absolute;inset:0;display:grid;place-items:center;font-family:'Archivo Black',sans-serif;font-size:12px;color:var(--c,var(--acc));text-align:center;line-height:1.05}
-html.has-stamp .seal .d{align-items:end;padding-bottom:16%;font-size:10px}
-.stamp .st{font-size:11px;color:var(--acc);letter-spacing:1px;margin-top:4px}
-.stamp .st .off{color:var(--line2)}
-.stamp.next .ink{border:2px dashed var(--line2)!important;background:none!important;-webkit-mask:none!important;mask:none!important}
-.stamp.next .d{color:var(--muted)}
 .specials{display:flex;gap:10px;margin-top:10px}
 .specials .art{--ar:1;width:72px;border-radius:50%}
 
 /* SEASON SO FAR */
 .tl{list-style:none;padding:0;margin:10px 0 0}
-.tl li{display:grid;grid-template-columns:44px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
-.tl li b{font-family:'Oswald',sans-serif;font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-size:13px}
-.tl li p{margin:0;font-size:var(--fs-support)}
+.tl li{display:grid;grid-template-columns:52px 1fr;gap:14px;padding:12px 0;align-items:baseline}
+.tl li b{font-family:'Oswald',sans-serif;font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-size:16px}
+.tl li p{margin:0;font-size:17px;line-height:1.45}
 .tl li.future{color:var(--muted)}
-.tl li:last-child{border-bottom:0}
 
 /* FINALE */
 .finale .art.scene{--ar:1600/1000;margin-top:12px}
@@ -162,6 +147,8 @@ html.has-stamp .seal .d{align-items:end;padding-bottom:16%;font-size:10px}
 .shelf{display:flex;gap:10px;margin-top:14px;align-items:flex-end}
 .spine{width:58px;height:150px;border-radius:4px 8px 8px 4px;background:var(--acc);color:var(--page);display:flex;align-items:flex-end;justify-content:center;padding-bottom:10px;font-family:'Oswald',sans-serif;font-weight:600;font-size:12px;letter-spacing:.08em;writing-mode:vertical-rl;transform:rotate(180deg);box-shadow:inset -6px 0 0 rgba(0,0,0,.18)}
 .spine.next{background:none;border:2px dashed var(--line2);color:var(--muted);box-shadow:none}
+/* The current season is still being written -- outlined, not a finished (solid) book, not openable. */
+.spine.current{background:none;border:2px solid var(--acc);color:var(--acc);box-shadow:none}
 
 html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed body{background:transparent}
 .glassclose{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);right:max(16px, calc(50vw - 534px));z-index:50;display:inline-grid;place-items:center;width:48px;height:48px;border-radius:50%;font-size:20px;font-weight:700;color:var(--text);cursor:pointer;text-decoration:none;background:color-mix(in srgb,var(--card) 62%,transparent);border:1px solid color-mix(in srgb,var(--text) 12%,transparent);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);box-shadow:0 6px 20px var(--shadow)}
@@ -184,7 +171,7 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
 <!-- 2 MY JOURNEY -->
 <section class="pg" aria-labelledby="h-journey">
   <h2 id="h-journey">Where I am</h2>
-  <div class="tiernow"><b id="jTier">Practice Ice</b><span id="jStep">Step 2 of 3</span></div>
+  <div class="tiernow"><b id="jTier">Practice Ice</b></div>
 
   <div class="rinkwrap" id="jRink" style="--x:43%">
     <div class="art" data-art="rink-path.webp"><span>rink-path.webp 1600x700</span></div>
@@ -201,7 +188,7 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     <div class="on" role="listitem"><div class="ic"><div class="art" data-art="tier-1.webp"><span>tier-1</span></div></div><b>Locker Room</b>Done</div>
     <div class="on" role="listitem"><div class="ic"><div class="art" data-art="tier-2.webp"><span>tier-2</span></div></div><b>Practice Ice</b>You are here</div>
     <div class="off" role="listitem"><div class="ic"><div class="art" data-art="tier-3.webp"><span>tier-3</span></div></div><b>Game Ready</b>Next stop</div>
-    <div class="off" role="listitem"><div class="ic"><div class="art" data-art="tier-4.webp"><span>tier-4</span></div></div><b>Tier 4</b>Name TBD</div>
+    <div class="off" role="listitem"><div class="ic"><div class="art" data-art="tier-4.webp"><span>tier-4</span></div></div><b>Legend</b>Later</div>
   </div>
   <div class="pips" id="jPips" role="progressbar" aria-valuemin="0" aria-valuemax="12" aria-valuenow="4" aria-label="Step 4 of 12 this season">
     <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="now"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
@@ -213,9 +200,8 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
 <!-- 4 MY BADGES -->
 <section class="pg" aria-labelledby="h-badges">
   <div class="badgehead">
-    <div><p class="eyebrow">Earn stars, level up</p><h2 id="h-badges">My Badges</h2>
-      <p class="sub">Every badge has 3 stars. Train to earn them.</p></div>
-    <div class="art has"><img src="login/sass-welcome.webp" alt=""></div>
+    <p class="eyebrow">Earn stars, level up</p><h2 id="h-badges">My Badges</h2>
+    <p class="sub">Every badge has 3 stars. Train to earn them.</p>
   </div>
   <div class="badges">
     <button class="badge"><div class="art" data-art="badge-01.webp"><span>01</span></div><b>Badge 1</b><div class="stars" aria-label="2 of 3 stars">★★<span class="off">★</span></div></button>
@@ -230,12 +216,15 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
 </section>
 
 <!-- 6 SEASON SO FAR -->
-<section class="pg" aria-labelledby="h-season">
+<section class="pg seasonfar" aria-labelledby="h-season">
   <h2 id="h-season">My Season So Far</h2>
   <ul class="tl" id="jMonths">
     <li><b>Sep</b><p>11 training days. Reached Locker Room. 3 badge stars.</p></li>
     <li><b>Oct</b><p>12 training days so far. Reached Practice Ice. 2 badge stars.</p></li>
-    <li class="future"><b>Nov</b><p>Coming up.</p></li>
+    <li class="future"><b>Nov</b><p>Still ahead.</p></li>
+    <li class="future"><b>Dec</b><p>Still ahead.</p></li>
+    <li class="future"><b>Jan</b><p>Still ahead.</p></li>
+    <li class="future"><b>Feb</b><p>Still ahead.</p></li>
   </ul>
 </section>
 
@@ -246,7 +235,7 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
   <div class="sf"><div class="art has"><img src="login/sass-celly.webp" alt="Sass celebrating"></div></div>
   <div class="sumgrid">
     <div><b id="jFinDays">96</b><span>Training days</span></div>
-    <div><b id="jFinTier">Tier 4</b><span>Highest tier</span></div>
+    <div><b id="jFinTier">Legend</b><span>Highest tier</span></div>
     <div data-sample><b>19</b><span>Badge stars</span></div>
     <div data-sample><b>24</b><span>Weeks of hockey</span></div>
   </div>
@@ -254,13 +243,14 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
 </section>
 
 <!-- MY BOOKS -->
-<section aria-labelledby="h-books" style="border-top:1px solid var(--line);padding:28px 4px 8px">
+<section aria-labelledby="h-books" style="padding:44px 4px 8px">
   <p class="eyebrow">My books</p>
   <h2 id="h-books" style="font-size:22px">Every season, a new book</h2>
   <div class="shelf">
-    <div class="spine">2026-27</div>
+    <div class="spine current">2026-27</div>
     <div class="spine next">2027-28</div>
   </div>
+  <p class="why" style="margin-top:12px">This season's book opens when the season ends in the spring.</p>
 </section>
 
 </main>
@@ -278,7 +268,6 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
   function render(b){
     txt('jSeason','Season '+b.season.label);
     txt('jTier',b.tier);
-    txt('jStep',b.complete?'Top of the book':'Step '+b.step+' of 3');
     document.getElementById('jRink').style.setProperty('--x',xFor(b.stepsDone)+'%');
     var tiers=document.getElementById('jTiers').children;
     for(var i=0;i<tiers.length;i++){
@@ -299,7 +288,14 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
       pp.textContent=m.days+' training day'+(m.days===1?'':'s')+'.';
       li.appendChild(bb);li.appendChild(pp);ul.appendChild(li);
     });
-    if(!b.seasonOver){var f=document.createElement('li');f.className='future';f.innerHTML='<b>Next</b><p>Coming up.</p>';ul.appendChild(f);}
+    if(!b.seasonOver){ // show the rest of the season (through February) as still-ahead rows
+      var lm=b.months.length?b.months[b.months.length-1].month:null;
+      var yy=lm?Number(lm.slice(0,4)):new Date().getFullYear(), mm=lm?Number(lm.slice(5)):9;
+      for(var gi=0;gi<7;gi++){ mm++; if(mm>12){mm=1;yy++;}
+        var fl=document.createElement('li'); fl.className='future';
+        fl.innerHTML='<b>'+MON[mm-1]+'</b><p>Still ahead.</p>'; ul.appendChild(fl);
+        if(mm===2) break; }
+    }
     txt('jFinDays',b.trainingDays); txt('jFinTier',b.tier);
     if(b.seasonOver)document.getElementById('finale').hidden=false;
     document.querySelectorAll('[data-sample]').forEach(function(el){el.hidden=true;});
@@ -315,7 +311,6 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     img.onload=function(){ slot.insertBefore(img,slot.firstChild); slot.classList.add('has'); };
     img.src='journey/art/'+slot.getAttribute('data-art');
   });
-  var s=new Image(); s.onload=function(){document.documentElement.classList.add('has-stamp');}; s.src='journey/art/stamp.webp';
 })();
 // Embedded: tell the Journey page our height so it scrolls as one page.
 (function(){
