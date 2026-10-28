@@ -122,3 +122,37 @@ describe('GET /api/board?action=journey badges', () => {
     expect(res.body.badges[1].id).toBe('netboss');
   });
 });
+
+describe('GET /api/board?action=journey safety', () => {
+  it('401 for a forged or garbled session', async () => {
+    expect((await get('not-a-real-token')).statusCode).toBe(401);
+    const forged = mintSession('lewie', 'p@e.com').replace(/.$/, (c) => (c === 'a' ? 'b' : 'a'));
+    expect((await get(forged)).statusCode).toBe(401);
+  });
+
+  it('never counts a teammate\'s training or cheers', async () => {
+    fake._seed('days:william', ['2026-10-01', '2026-10-02', '2026-10-03']);
+    fake._seed('events:william', Array.from({ length: 60 }, () => ({ date: '2026-10-01', disc: 'stick' })));
+    fake._seed('cheersent:fw-2026:william', 50);
+    const res = await get(mintSession('lewie', 'p@e.com'));
+    expect(res.body.id).toBe('lewie');
+    expect(res.body.trainingDays).toBe(0);
+    expect(res.body.badgeStars).toBe(0);
+  });
+
+  it('a player with no history gets all 8 badges at zero', async () => {
+    const res = await get(mintSession('teddy', 'p@e.com'));
+    expect(res.body.badges).toHaveLength(8);
+    expect(res.body.badges.every((b) => b.count === 0 && b.stars === 0)).toBe(true);
+    expect(res.body.badges[1].id).toBe('sniper');
+  });
+
+  it('is read-only with badges too', async () => {
+    fake._seed('days:lewie', ['2026-10-01']);
+    fake._seed('events:lewie', [{ date: '2026-10-01', disc: 'stick' }]);
+    fake._seed('cheersent:fw-2026:lewie', 3);
+    const before = JSON.stringify([...fake.map.entries()]);
+    await get(mintSession('lewie', 'p@e.com'));
+    expect(JSON.stringify([...fake.map.entries()])).toBe(before);
+  });
+});
