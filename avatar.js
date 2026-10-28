@@ -13,12 +13,19 @@
 (function(){
   'use strict';
 
-  // --- Flag -------------------------------------------------------------------
+  // --- Launch switch -------------------------------------------------------------
+  // LIVE is THE switch. false: the character only shows on a device that opted in
+  // with ?avatar=1 (preview). true: every player gets the character and Edit
+  // player; player photos stop being fetched or shown, and photo upload is gone.
+  // Flipping this one line is the whole launch.
+  var LIVE=false;
+
+  // --- Preview flag (only matters while LIVE is false) ----------------------------
   try{
     var q=(location.search||'').match(/[?&]avatar=([01])/);
     if(q){ if(q[1]==='1') localStorage.setItem('thwapAvatarPreview','1'); else localStorage.removeItem('thwapAvatarPreview'); }
   }catch(_){}
-  function on(){ try{ return localStorage.getItem('thwapAvatarPreview')==='1'; }catch(_){ return false; } }
+  function on(){ if(LIVE) return true; try{ return localStorage.getItem('thwapAvatarPreview')==='1'; }catch(_){ return false; } }
 
   // --- Palette (placeholder colors until the art kit lands) -------------------
   var SKIN={ s1:'#F4D3B5', s2:'#E6B793', s3:'#C99470', s4:'#A26E4B', s5:'#7A4E32', s6:'#4E3121' };
@@ -551,5 +558,5 @@
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bootLocker); else bootLocker();
 
-  window.thwapAvatar={ on:on, html:html, lookFor:lookFor, refreshTeamLooks:refreshTeamLooks, openLocker:openLocker, checkUnlocks:checkUnlocks, norm:norm, SKIN:SKIN, HAIR:HAIR, JERSEY:JERSEY, DEFAULT_LOOK:DEFAULT_LOOK };
+  window.thwapAvatar={ on:on, live:LIVE, html:html, lookFor:lookFor, refreshTeamLooks:refreshTeamLooks, openLocker:openLocker, checkUnlocks:checkUnlocks, norm:norm, SKIN:SKIN, HAIR:HAIR, JERSEY:JERSEY, DEFAULT_LOOK:DEFAULT_LOOK };
 })();
