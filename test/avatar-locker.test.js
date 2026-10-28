@@ -124,7 +124,7 @@ describe('first-run builder', () => {
 });
 
 describe('hair styles', () => {
-  const STYLES = ['buzz', 'short', 'flow', 'lettuce', 'mullet', 'wings', 'curls', 'ponytail', 'braids', 'locs'];
+  const STYLES = ['buzz', 'short', 'flow', 'lettuce', 'mullet', 'wings', 'curls', 'ponytail', 'braids', 'locs', 'afro', 'bun', 'pigtails'];
   it('every style is free from day one, even for a brand-new player', () => {
     const owned = A.unlockedIds(A.progressFrom(null, 0));
     for (const s of STYLES) expect(owned).toContain(`hairstyle-${s}`);

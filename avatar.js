@@ -21,8 +21,14 @@
   function on(){ try{ return localStorage.getItem('thwapAvatarPreview')==='1'; }catch(_){ return false; } }
 
   // --- Palette (placeholder colors until the art kit lands) -------------------
-  var SKIN={ s1:'#F4D3B5', s2:'#E6B793', s3:'#C99470', s4:'#A26E4B', s5:'#7A4E32', s6:'#4E3121' };
-  var HAIR={ black:'#1E1A18', brown:'#5A3A22', auburn:'#8A3B1E', blonde:'#D9B163', red:'#B5522A', grey:'#9A9A9A' };
+  // Skin: a fair->deep ramp. s1-s6 are the originals (do not renumber -- stored
+  // looks reference them); s7-s11 fill the gaps and extend the range.
+  var SKIN={ s1:'#F4D3B5', s2:'#E6B793', s3:'#C99470', s4:'#A26E4B', s5:'#7A4E32', s6:'#4E3121',
+    s7:'#F0C9A8', s8:'#D8A87E', s9:'#B07E54', s10:'#8A5A38', s11:'#2F1D12' };
+  // Hair colors: the common natural shades (single-word keys so the label reads
+  // cleanly next to the swatch).
+  var HAIR={ black:'#1E1A18', brown:'#5A3A22', auburn:'#8A3B1E', blonde:'#D9B163', red:'#B5522A', grey:'#9A9A9A',
+    cocoa:'#3B2515', chestnut:'#8B5A2B', sandy:'#AF8C56', platinum:'#ECE0B8', white:'#EDEDED' };
   var JERSEY={
     red:  { body:'#C8102E', stripe:'#111111', trim:'#FFFFFF', num:'#FFFFFF' },
     black:{ body:'#151515', stripe:'#C8102E', trim:'#FFFFFF', num:'#FFFFFF' },
@@ -120,7 +126,22 @@
     locs:function(c){ var out=[];
       [-2.6,-1.3,0,1.3,2.6].forEach(function(x,i){ out.push(box({w:.85,h:5-(i%2)*.7,d:.85,x:x,y:23.3+(i%2)*.35,z:-4.4,c:c})); });
       [-1,1].forEach(function(s){ out.push(box({w:.8,h:4,d:.8,x:4.3*s,y:23.8,z:-.8,c:c})); out.push(box({w:.8,h:3.4,d:.8,x:4.3*s,y:24.1,z:.8,c:c})); });
-      return out; }
+      return out; },
+    // Big round volume at the back and sides.
+    afro:function(c){ return [
+      box({w:9,h:5.2,d:2.4,y:24.6,z:-4.7,c:c}),
+      box({w:2,h:5,d:4.6,x:-4.7,y:25,z:-.2,c:c}), box({w:2,h:5,d:4.6,x:4.7,y:25,z:-.2,c:c}),
+      box({w:7.2,h:1.6,d:1.2,y:21.6,z:-4.5,c:c}) ]; },
+    // A bun high on the back of the head, thin hair at the nape and sides.
+    bun:function(c){ return [
+      box({w:3.2,h:3.2,d:2.8,y:29.2,z:-5,c:c}),
+      box({w:6.8,h:1.4,d:1,y:25.3,z:-4.1,c:c}),
+      box({w:.6,h:1.8,d:2.4,x:-4,y:25.3,z:1,c:c}), box({w:.6,h:1.8,d:2.4,x:4,y:25.3,z:1,c:c}) ]; },
+    // Two tied bunches out the sides.
+    pigtails:function(c){ return [
+      box({w:6.8,h:1.4,d:1,y:25.3,z:-4.1,c:c}),
+      box({w:1.8,h:1.8,d:1.8,x:-4.6,y:26.4,z:-.6,c:c}), box({w:1.5,h:3.8,d:1.5,x:-5,y:23.6,z:-.6,c:c}),
+      box({w:1.8,h:1.8,d:1.8,x:4.6,y:26.4,z:-.6,c:c}), box({w:1.5,h:3.8,d:1.5,x:5,y:23.6,z:-.6,c:c}) ]; }
   };
   function hairBoxes(style,c){ return (HAIR_STYLES[style]||HAIR_STYLES[DEFAULT_LOOK.hairstyle])(c).join(''); }
 
