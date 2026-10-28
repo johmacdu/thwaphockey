@@ -226,6 +226,13 @@
   }
   function owned(id){ return !!(L.data && L.data.unlocked.indexOf(id)>=0); }
 
+  // First-run builder: three steps, everything pre-picked, so a kid can tap Done.
+  var BUILD_STEPS=[['skin','Pick your skin tone'],['hair','Pick your hair'],['jersey','Pick your jersey']];
+  // Unlock tracking on this device: ids already shown, and ids still marked New.
+  function readList(k){ try{ var v=JSON.parse(localStorage.getItem(k)||'null'); return Array.isArray(v)?v:null; }catch(_){ return null; } }
+  function writeList(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(_){} }
+  function isNew(id){ var n=readList('thwapUnlockNew')||[]; return n.indexOf(id)>=0; }
+
   function lockerCss(){
     return ".lk{position:fixed;inset:0;z-index:9999;background:var(--bg,#F3F7F4);color:var(--text,#15221B);display:flex;flex-direction:column;font-family:inherit;overflow:hidden}.lk>*{min-width:0;flex-shrink:0}.lk>.lk-grid{flex:1 1 auto;min-height:0;align-content:start}"+
       ".lk-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 8px}"+
@@ -248,7 +255,17 @@
       ".lk-tier{font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#5F6F64)}"+
       ".lk-btn{position:fixed;left:12px;bottom:84px;z-index:50;min-height:48px;padding:0 16px;border-radius:24px;border:1px solid var(--line,#DCE5DE);background:var(--card,#fff);color:var(--text,#15221B);font-weight:900;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.18)}"+
       ".lk-msg{padding:32px 16px;text-align:center;color:var(--muted,#5F6F64)}"+
-      "@media (prefers-reduced-motion:no-preference){.lk-stage .av-scene{transition:transform .25s ease}}";
+      ".lk-step{padding:12px 16px 4px;font-size:16px;font-weight:900}.lk-step small{display:block;font-size:13px;font-weight:700;color:var(--muted,#5F6F64)}"+
+      ".lk-foot{padding:8px 16px 16px;display:flex;gap:8px}"+
+      ".lk-go{flex:1;min-height:52px;border-radius:26px;border:0;background:var(--text,#15221B);color:var(--bg,#F3F7F4);font-weight:900;font-size:17px;cursor:pointer}"+
+      ".lk-back{min-height:52px;padding:0 20px;border-radius:26px;border:1px solid var(--line,#DCE5DE);background:var(--card,#fff);color:var(--text,#15221B);font-weight:800;cursor:pointer}"+
+      ".lk-new{position:absolute;top:6px;left:6px;font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:8px;background:var(--lime,#B9F06B);color:#15221B}"+
+      ".lk-btn .lk-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--lime,#B9F06B);margin-left:8px;box-shadow:0 0 0 2px var(--card,#fff)}"+
+      ".lk-toast{position:fixed;left:50%;bottom:24px;z-index:10000;transform:translateX(-50%);min-height:56px;max-width:min(92vw,420px);display:flex;align-items:center;gap:12px;padding:8px 18px 8px 10px;border-radius:28px;border:2px solid var(--lime,#B9F06B);background:var(--card,#fff);color:var(--text,#15221B);font:inherit;font-weight:900;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.25)}"+
+      ".lk-toast .lk-sw{flex:none}.lk-toast small{display:block;font-weight:700;font-size:12px;color:var(--muted,#5F6F64)}"+
+      "@media (prefers-reduced-motion:no-preference){.lk-stage .av-scene{transition:transform .25s ease}"+
+        ".lk-toast{animation:lkUp .3s ease-out}@keyframes lkUp{from{transform:translate(-50%,24px);opacity:0}to{transform:translate(-50%,0);opacity:1}}"+
+        ".av-reveal .av-scene{animation:avDrop .35s cubic-bezier(.2,.9,.3,1.2)}@keyframes avDrop{from{translate:0 -6em;opacity:0}to{translate:0 0;opacity:1}}}";
   }
 
   function paintStage(){
@@ -265,7 +282,18 @@
     }
   }
   function paintTabs(){
-    var t=document.querySelector('.lk-tabs'); if(!t) return;
+    var t=document.querySelector('[data-lk=tabs]'); if(!t) return;
+    var foot=document.querySelector('.lk-foot');
+    if(L.build!=null){
+      var st=BUILD_STEPS[L.build];
+      t.className='lk-step'; t.removeAttribute('role');
+      t.innerHTML="<small>Step "+(L.build+1)+" of "+BUILD_STEPS.length+"</small>"+st[1];
+      if(foot){ foot.hidden=false; foot.innerHTML=(L.build>0?"<button type='button' class='lk-back' data-build='back'>Back</button>":"")+
+        "<button type='button' class='lk-go' data-build='next'>"+(L.build===BUILD_STEPS.length-1?'Done':'Next')+"</button>"; }
+      return;
+    }
+    t.className='lk-tabs'; t.setAttribute('role','tablist');
+    if(foot){ foot.hidden=true; foot.innerHTML=''; }
     t.innerHTML=GEAR_TABS.map(function(x){ return "<button type='button' role='tab' class='lk-tab' data-tab='"+x[0]+"' aria-selected='"+(L.tab===x[0])+"'>"+x[1]+"</button>"; }).join('');
   }
   function paintGrid(){
@@ -277,7 +305,7 @@
       var lbl=it.slot==='skin'?'Tone '+short.slice(1):(it.slot==='hair'?short.charAt(0).toUpperCase()+short.slice(1):it.label);
       return "<button type='button' class='lk-item"+(own?'':' locked')+"' data-id='"+esc(it.id)+"' aria-pressed='"+on+"'"+
         " aria-label='"+esc(lbl+(own?'':', locked, unlocks at '+ruleText(it)))+"'>"+
-        (own?'':"<i class='lk-lock' aria-hidden='true'></i>")+
+        (own?'':"<i class='lk-lock' aria-hidden='true'></i>")+(own&&isNew(it.id)?"<i class='lk-new'>New</i>":"")+
         "<span class='lk-sw' style='background:"+swatch(it.slot,short)+"'></span>"+
         "<span class='lk-lbl'>"+esc(lbl)+"</span>"+(sub?"<span class='lk-sub'>"+esc(sub)+"</span>":"")+"</button>";
     }).join('');
@@ -297,6 +325,13 @@
   }
 
   function onTap(e){
+    var nav=e.target.closest('[data-build]');
+    if(nav){
+      if(nav.getAttribute('data-build')==='back'){ L.build=Math.max(0,L.build-1); }
+      else if(L.build<BUILD_STEPS.length-1){ L.build++; }
+      else { finishBuild(); return; }
+      L.tab=BUILD_STEPS[L.build][0]; L.trying=null; L.spin=L.tab==='hair'?150:-25; paintTabs(); paintGrid(); paintStage(); return;
+    }
     var tab=e.target.closest('.lk-tab');
     if(tab){ L.tab=tab.getAttribute('data-tab'); L.trying=null; paintTabs(); paintGrid(); paintStage(); return; }
     var b=e.target.closest('.lk-item'); if(!b||!L.data) return;
@@ -310,7 +345,9 @@
     L.trying=null;
     if(L.look[it.slot]===id){ paintStage(); return; }
     var prev={}; for(var k2 in L.look) prev[k2]=L.look[k2];
-    L.look[it.slot]=id; paintGrid(); save(prev);
+    L.look[it.slot]=id; paintGrid();
+    if(L.build!=null){ paintStage(); return; } // the builder saves once, on Done
+    save(prev);
     try{ if(window.thwapHaptic) window.thwapHaptic('tap'); }catch(_){}
   }
 
@@ -323,6 +360,15 @@
     st.addEventListener('pointerup',up); st.addEventListener('pointercancel',up);
   }
 
+  function finishBuild(){
+    var prev={}; for(var k in L.look) prev[k]=L.look[k];
+    save(prev).then(function(){
+      if(!L.changed) return; // save failed; the note says so and the kid can retry
+      try{ sessionStorage.setItem('thwapReveal','1'); }catch(_){}
+      closeLocker();
+    });
+  }
+
   function closeLocker(){
     var el=document.querySelector('.lk'); if(el) el.remove();
     document.removeEventListener('keydown',onKey);
@@ -331,14 +377,15 @@
   }
   function onKey(e){ if(e.key==='Escape') closeLocker(); }
 
-  function openLocker(){
+  function openLocker(opts){
+    opts=opts||{};
     if(document.querySelector('.lk')) return;
     if(!document.getElementById('lk-css')){ var s=document.createElement('style'); s.id='lk-css'; s.textContent=lockerCss(); document.head.appendChild(s); }
-    L={ data:null, look:null, tab:'skin', trying:null, changed:false, me:null, spin:-25, status:'', num:'' };
+    L={ data:null, look:null, tab:opts.tab||'skin', trying:null, changed:false, me:null, spin:-25, status:'', num:'', build:null };
     var el=document.createElement('div'); el.className='lk'; el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true'); el.setAttribute('aria-label','Locker Room');
     el.innerHTML="<div class='lk-head'><h2>Locker Room</h2><button type='button' class='lk-x' aria-label='Close'>&#10005;</button></div>"+
       "<div class='lk-stage' aria-label='Your player. Drag to spin.'></div><div class='lk-note' aria-live='polite'></div>"+
-      "<div class='lk-tabs' role='tablist'></div><div class='lk-grid'><div class='lk-msg'>Opening your locker...</div></div>";
+      "<div class='lk-tabs' role='tablist' data-lk='tabs'></div><div class='lk-grid'><div class='lk-msg'>Opening your locker...</div></div><div class='lk-foot' hidden></div>";
     document.body.appendChild(el);
     el.querySelector('.lk-x').addEventListener('click',closeLocker);
     el.addEventListener('click',onTap);
@@ -349,25 +396,94 @@
       try{ var rp=(window.THWAP_ROSTER||{}); var info=rp[j.id]||rp[j.id&&j.id.charAt(0).toUpperCase()+j.id.slice(1)]; if(info&&info.num) L.num=info.num; }catch(_){}
       var nx=(j.next||[])[0];
       L.status=nx?('Next: '+nx.label+', '+nx.left+' to go.'):'';
+      if(!j.saved || opts.builder){ L.build=0; L.tab=BUILD_STEPS[0][0]; L.status=''; }
+      if(!readList('thwapUnlockSeen')) writeList('thwapUnlockSeen',j.unlocked||[]);
       paintTabs(); paintGrid(); paintStage();
+      // New tags show once: opening the Locker Room counts as seeing them.
+      writeList('thwapUnlockNew',[]); var dot=document.querySelector('.lk-btn .lk-dot'); if(dot) dot.remove();
     }).catch(function(code){
       var g=el.querySelector('.lk-grid'); if(g) g.innerHTML="<div class='lk-msg'>"+(code===401?'Sign in to build your player.':'Your locker didn\u2019t open. Try again in a minute.')+"</div>";
       L.look={}; paintStage();
     });
   }
 
+  // --- Unlock moment ---------------------------------------------------------
+  // After a drill is marked done, ask the server what is unlocked now. Anything
+  // not seen on this device before gets a short "New gear!" moment that never
+  // blocks the next tap, a New tag in the Locker Room, and a dot on its button.
+  var toastTimer=null;
+  function itemName(j,id){ for(var i=0;i<(j.items||[]).length;i++) if(j.items[i].id===id) return j.items[i]; return null; }
+  function showToast(it,count){
+    var old=document.querySelector('.lk-toast'); if(old) old.remove();
+    var short=it.id.slice(it.slot.length+1);
+    var b=document.createElement('button'); b.type='button'; b.className='lk-toast'; b.setAttribute('role','status');
+    b.innerHTML="<span class='lk-sw' style='background:"+swatch(it.slot,short)+"'></span><span>New gear! "+esc(it.label)+
+      (count>1?' and '+(count-1)+' more':'')+"<small>Tap to see it in the Locker Room</small></span>";
+    b.addEventListener('click',function(){ b.remove(); openLocker({tab:it.slot}); });
+    document.body.appendChild(b);
+    try{ if(window.thwapSfx) window.thwapSfx('cardOpen'); }catch(_){}
+    try{ if(window.thwapHaptic) window.thwapHaptic('done'); }catch(_){}
+    clearTimeout(toastTimer); toastTimer=setTimeout(function(){ if(b.parentNode) b.remove(); },5000);
+  }
+  function markDot(){
+    var btn=document.querySelector('.lk-btn');
+    if(btn && !btn.querySelector('.lk-dot')){ var d=document.createElement('i'); d.className='lk-dot'; d.setAttribute('aria-label','new gear'); btn.appendChild(d); }
+  }
+  function checkUnlocks(){
+    if(!on() || typeof fetch!=='function') return Promise.resolve(null);
+    return fetch('/api/board?action=look',{credentials:'same-origin'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){
+      if(!j) return null;
+      var seen=readList('thwapUnlockSeen');
+      if(!seen){ writeList('thwapUnlockSeen',j.unlocked||[]); return j; } // first look: past training is the builder's job
+      var unseen=(j.unlocked||[]).filter(function(id){ return seen.indexOf(id)<0; });
+      // Free starting items are never "earned", so they join silently.
+      var fresh=unseen.filter(function(id){ var it=itemName(j,id); return it && it.rule && it.rule.type!=='start'; });
+      if(unseen.length) writeList('thwapUnlockSeen',seen.concat(unseen));
+      if(fresh.length){
+        writeList('thwapUnlockNew',(readList('thwapUnlockNew')||[]).concat(fresh));
+        var first=itemName(j,fresh[0]);
+        if(first && !document.querySelector('.lk')) showToast(first,fresh.length);
+      }
+      if((readList('thwapUnlockNew')||[]).length) markDot();
+      return j;
+    }).catch(function(){ return null; });
+  }
+  function hookMarkDone(){
+    var orig=window.thwapMarkDone;
+    if(typeof orig!=='function' || orig.__avHooked) return;
+    var wrapped=function(discipline,drillId,undo){
+      var p=orig.apply(this,arguments);
+      if(!undo) Promise.resolve(p).then(function(r){ if(!r || r.ok!==false) setTimeout(checkUnlocks,300); });
+      return p;
+    };
+    wrapped.__avHooked=true;
+    window.thwapMarkDone=wrapped;
+  }
+
   // Preview-only entry points: #locker, and a floating button while the flag is on.
   function bootLocker(){
     if(!on()) return;
+    try{ if(sessionStorage.getItem('thwapReveal')){ sessionStorage.removeItem('thwapReveal');
+      document.body.classList.add('av-reveal'); setTimeout(function(){ document.body.classList.remove('av-reveal'); },800);
+      try{ if(window.thwapSfx) window.thwapSfx('cardOpen'); }catch(_){} } }catch(_){}
     if(location.hash==='#locker') openLocker();
     window.addEventListener('hashchange',function(){ if(location.hash==='#locker') openLocker(); });
     if(!document.querySelector('.lk-btn') && document.body){
       if(!document.getElementById('lk-css')){ var s=document.createElement('style'); s.id='lk-css'; s.textContent=lockerCss(); document.head.appendChild(s); }
       var b=document.createElement('button'); b.type='button'; b.className='lk-btn'; b.textContent='Locker Room';
-      b.addEventListener('click',openLocker); document.body.appendChild(b);
+      b.addEventListener('click',function(){ openLocker(); }); document.body.appendChild(b);
+    }
+    if((readList('thwapUnlockNew')||[]).length) markDot();
+    hookMarkDone(); window.addEventListener('load',hookMarkDone);
+    // First visit: open the builder once if this player has never saved a look.
+    if(location.hash!=='#locker'){
+      checkUnlocks().then(function(j){
+        var offered=false; try{ offered=!!localStorage.getItem('thwapBuilderOffered'); }catch(_){}
+        if(j && !j.saved && !offered){ try{ localStorage.setItem('thwapBuilderOffered','1'); }catch(_){} openLocker({builder:true}); }
+      });
     }
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bootLocker); else bootLocker();
 
-  window.thwapAvatar={ on:on, html:html, lookFor:lookFor, refreshTeamLooks:refreshTeamLooks, openLocker:openLocker, norm:norm, SKIN:SKIN, HAIR:HAIR, JERSEY:JERSEY, DEFAULT_LOOK:DEFAULT_LOOK };
+  window.thwapAvatar={ on:on, html:html, lookFor:lookFor, refreshTeamLooks:refreshTeamLooks, openLocker:openLocker, checkUnlocks:checkUnlocks, norm:norm, SKIN:SKIN, HAIR:HAIR, JERSEY:JERSEY, DEFAULT_LOOK:DEFAULT_LOOK };
 })();

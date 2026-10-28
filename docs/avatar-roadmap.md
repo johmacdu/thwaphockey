@@ -167,5 +167,9 @@ the hockey year, August to June, and rolls over in August.
   (`lib/look_api.js`, routed via `api/board.js?action=look|looks` to stay
   inside the Vercel 12-function cap)
 - [x] Locker Room, Gear tabs, tap to wear, try on locked items (preview only)
-- [ ] First-run builder (skin, hair, jersey, Done)
-- [ ] Unlock moment after a drill
+- [x] First-run builder (skin, hair, jersey, Done), opens once for a player
+  with no saved look, then the character drops onto the card
+- [x] Unlock moment after a drill (New gear toast, New tags, dot on the
+  Locker Room button)
+- [ ] Launch: character on for everyone, real Locker Room entry point,
+  photo upload removed (stored photos deleted only after Woody confirms)
