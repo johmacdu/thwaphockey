@@ -122,6 +122,7 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .stars{color:var(--acc);font-size:12px;letter-spacing:1px}
 .stars .off{color:var(--line2)}
 .badge.locked .art{filter:grayscale(1);opacity:.4}
+.badge[aria-pressed="true"]{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
 
 .specials{display:flex;gap:10px;margin-top:10px}
 .specials .art{--ar:1;width:72px;border-radius:50%}
@@ -207,19 +208,20 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
 <section class="pg" aria-labelledby="h-badges">
   <div class="badgehead">
     <div><p class="eyebrow">Page 2 &nbsp; Earn stars, level up</p><h2 id="h-badges">My Badges</h2>
-      <p class="sub">Every badge has 3 stars. Train to earn them. <span class="sample">Badge list from Woody</span></p></div>
+      <p class="sub">Every badge has 3 stars. Train to earn them. Tap a badge to see how. <span class="sample" data-sample>Sample</span></p></div>
     <div class="art has"><img src="login/sass-welcome.webp" alt=""></div>
   </div>
-  <div class="badges">
-    <button class="badge"><div class="art" data-art="badge-01.webp"><span>01</span></div><b>Badge 1</b><div class="stars" aria-label="2 of 3 stars">★★<span class="off">★</span></div></button>
-    <button class="badge"><div class="art" data-art="badge-02.webp"><span>02</span></div><b>Badge 2</b><div class="stars" aria-label="1 of 3 stars">★<span class="off">★★</span></div></button>
-    <button class="badge"><div class="art" data-art="badge-03.webp"><span>03</span></div><b>Badge 3</b><div class="stars" aria-label="3 of 3 stars">★★★</div></button>
-    <button class="badge"><div class="art" data-art="badge-04.webp"><span>04</span></div><b>Badge 4</b><div class="stars" aria-label="1 of 3 stars">★<span class="off">★★</span></div></button>
-    <button class="badge locked"><div class="art" data-art="badge-05.webp"><span>05</span></div><b>Badge 5</b><div class="stars" aria-label="Not started"><span class="off">★★★</span></div></button>
-    <button class="badge locked"><div class="art" data-art="badge-06.webp"><span>06</span></div><b>Badge 6</b><div class="stars" aria-label="Not started"><span class="off">★★★</span></div></button>
-    <button class="badge locked"><div class="art" data-art="badge-07.webp"><span>07</span></div><b>Badge 7</b><div class="stars" aria-label="Not started"><span class="off">★★★</span></div></button>
-    <button class="badge locked"><div class="art" data-art="badge-08.webp"><span>08</span></div><b>Badge 8</b><div class="stars" aria-label="Not started"><span class="off">★★★</span></div></button>
+  <div class="badges" id="jBadges">
+    <button type="button" class="badge" data-i="0"><div class="art" data-art="badge-01.webp"><span>01</span></div><b>Dangler</b><div class="stars" aria-label="2 of 3 stars">★★<span class="off">★</span></div></button>
+    <button type="button" class="badge" data-i="1"><div class="art" data-art="badge-02.webp"><span>02</span></div><b>Sniper</b><div class="stars" aria-label="1 of 3 stars">★<span class="off">★★</span></div></button>
+    <button type="button" class="badge" data-i="2"><div class="art" data-art="badge-03.webp"><span>03</span></div><b>Engine</b><div class="stars" aria-label="3 of 3 stars">★★★</div></button>
+    <button type="button" class="badge" data-i="3"><div class="art" data-art="badge-04.webp"><span>04</span></div><b>Tape to Tape</b><div class="stars" aria-label="1 of 3 stars">★<span class="off">★★</span></div></button>
+    <button type="button" class="badge locked" data-i="4"><div class="art" data-art="badge-05.webp"><span>05</span></div><b>Hockey Brain</b><div class="stars" aria-label="Not started"><span class="off">★★★</span></div></button>
+    <button type="button" class="badge locked" data-i="5"><div class="art" data-art="badge-06.webp"><span>06</span></div><b>On a Heater</b><div class="stars" aria-label="Not started"><span class="off">★★★</span></div></button>
+    <button type="button" class="badge locked" data-i="6"><div class="art" data-art="badge-07.webp"><span>07</span></div><b>Full Week</b><div class="stars" aria-label="Not started"><span class="off">★★★</span></div></button>
+    <button type="button" class="badge locked" data-i="7"><div class="art" data-art="badge-08.webp"><span>08</span></div><b>Hype Squad</b><div class="stars" aria-label="Not started"><span class="off">★★★</span></div></button>
   </div>
+  <p class="why" id="jBadgeNote" aria-live="polite"></p>
   <span class="folio">2</span>
 </section>
 
@@ -245,7 +247,7 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
   <div class="sumgrid">
     <div><b id="jFinDays">96</b><span>Training days</span></div>
     <div><b id="jFinTier">Legend</b><span>Highest tier</span></div>
-    <div data-sample><b>19</b><span>Badge stars</span></div>
+    <div><b id="jFinStars">19</b><span>Badge stars</span></div>
     <div data-sample><b>24</b><span>Weeks of hockey</span></div>
   </div>
   <p class="why">Next season starts a fresh book. <span class="sample" data-sample>Sample</span></p>
@@ -308,9 +310,34 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     });
     if(!b.seasonOver){var f=document.createElement('li');f.className='future';f.innerHTML='<b>Next</b><p>Your next page.</p>';ul.appendChild(f);}
     txt('jFinDays',b.trainingDays); txt('jFinTier',b.tier);
+    if(Array.isArray(b.badges)){BADGES=b.badges;renderBadges();txt('jFinStars',b.badgeStars);}
     if(b.seasonOver)document.getElementById('finale').hidden=false;
     document.querySelectorAll('[data-sample]').forEach(function(el){el.hidden=true;});
   }
+  // Badges: sample until the API answers. Tapping one says what it counts.
+  var BADGES=null;
+  function starHtml(n){return '\u2605'.repeat(n)+(n<3?'<span class="off">'+'\u2605'.repeat(3-n)+'</span>':'');}
+  function renderBadges(){
+    var btns=document.querySelectorAll('#jBadges .badge');
+    BADGES.forEach(function(g,i){
+      var el=btns[i]; if(!el)return;
+      el.querySelector('b').textContent=g.name;
+      var st=el.querySelector('.stars'); st.innerHTML=starHtml(g.stars);
+      st.setAttribute('aria-label',g.stars?g.stars+' of 3 stars':'Not started');
+      el.classList.toggle('locked',g.stars===0);
+    });
+  }
+  function noteFor(g){
+    if(g.next==null)return g.name+': '+g.count+' '+g.unit+'. All 3 stars!';
+    var left=g.next-g.count;
+    return g.name+': '+g.count+' '+g.unit+'. '+left+' more for star '+(g.stars+1)+'.';
+  }
+  document.getElementById('jBadges').addEventListener('click',function(e){
+    var el=e.target.closest('.badge'); if(!el)return;
+    document.querySelectorAll('#jBadges .badge').forEach(function(x){x.setAttribute('aria-pressed',x===el?'true':'false');});
+    var g=BADGES&&BADGES[Number(el.getAttribute('data-i'))];
+    txt('jBadgeNote',g?noteFor(g):el.querySelector('b').textContent+': sign in to see your count.');
+  });
   fetch('/api/board?action=journey',{credentials:'same-origin',cache:'no-store'})
     .then(function(r){return r.ok?r.json():null;})
     .then(function(b){if(b&&b.season&&Array.isArray(b.months))render(b);})
