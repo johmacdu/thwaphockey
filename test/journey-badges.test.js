@@ -105,3 +105,16 @@ describe('badgesFor', () => {
     expect(byId(r).dangler.count).toBe(1);
   });
 });
+
+describe('weeksWith / weeksTrained', () => {
+  it('counts Monday-based weeks with at least N training days', async () => {
+    const { weeksWith, journeyFor } = await import('../lib/journey.js');
+    // Week of Sep 7: 1 day. Week of Sep 14: 2 days. Week of Sep 28: 1 day.
+    const days = ['2026-09-07', '2026-09-14', '2026-09-20', '2026-09-28'];
+    expect(weeksWith(days, 1)).toBe(3);
+    expect(weeksWith(days, 2)).toBe(1);
+    expect(weeksWith([], 1)).toBe(0);
+    // journeyFor exposes weeks of hockey for the finale, this season only.
+    expect(journeyFor([...days, '2026-08-30', '2026-09-07'], '2026-10-28').weeksTrained).toBe(3);
+  });
+});

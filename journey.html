@@ -179,8 +179,8 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
 
 <!-- 2 MY JOURNEY -->
 <section class="pg" aria-labelledby="h-journey">
-  <p class="eyebrow">Page 1 &nbsp; Where I am</p>
-  <h2 id="h-journey">My Season Journey</h2>
+  <p class="eyebrow">Page 1</p>
+  <h2 id="h-journey">Where I Am</h2>
   <div class="tiernow"><b id="jTier">Practice Ice</b><span id="jStep">Step 2 of 3</span><span class="sample" data-sample>Sample</span></div>
 
   <div class="rinkwrap" id="jRink" style="--x:43%">
@@ -252,7 +252,7 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     <div><b id="jFinDays">96</b><span>Training days</span></div>
     <div><b id="jFinTier">Legend</b><span>Highest tier</span></div>
     <div><b id="jFinStars">19</b><span>Badge stars</span></div>
-    <div data-sample><b>24</b><span>Weeks of hockey</span></div>
+    <div><b id="jFinWeeks">24</b><span>Weeks of hockey</span></div>
   </div>
   <p class="why">Next season starts a fresh book. <span class="sample" data-sample>Sample</span></p>
   <span class="folio">4</span>
@@ -320,6 +320,7 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     });
     if(!b.seasonOver){var f=document.createElement('li');f.className='future';f.innerHTML='<b>Next</b><p>Your next page.</p>';ul.appendChild(f);}
     txt('jFinDays',b.trainingDays); txt('jFinTier',b.tier);
+    if(typeof b.weeksTrained==='number')txt('jFinWeeks',b.weeksTrained);
     if(Array.isArray(b.badges)){BADGES=b.badges;renderBadges();txt('jFinStars',b.badgeStars);}
     document.getElementById('finale').hidden=!(PREVIEW_FINALE||b.seasonOver);
     document.querySelectorAll('[data-sample]').forEach(function(el){el.hidden=true;});
