@@ -1322,7 +1322,7 @@ body.is-native.is-authed:not(.login-locked) .app{
 }
 .tabbar-btn:active{transform:scale(.94)}
 .tabbar-ico{font-size:22px;line-height:1;opacity:.9}
-.tabbar-lab{font-size:11px;font-weight:800;letter-spacing:.01em}
+.tabbar-lab{font-size:12px;font-weight:800;letter-spacing:.01em}
 .tabbar-btn.on{color:var(--green2)}
 .tabbar-btn.on .tabbar-ico{filter:none;opacity:1}
 /* Role split: player tabs vs coach tabs, mirrors the existing nav spans. Each
@@ -2399,7 +2399,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 <button type='button' class='segbtn on' id='seasonTabJourney' data-seg='journey' role='tab' aria-selected='true' aria-controls='seasonJourney'>Journey</button>
 <button type='button' class='segbtn' id='seasonTabStickers' data-seg='stickers' role='tab' aria-selected='false' aria-controls='stickerBook'>Stickers</button>
 </div>
-<div class='jy-embed' id='seasonJourney' role='tabpanel' aria-labelledby='seasonTabJourney'><iframe id='jyFrame' title='My Season Journey' loading='lazy' scrolling='no' src='journey.html?embed=1'></iframe></div>
+<div class='jy-embed' id='seasonJourney' role='tabpanel' aria-labelledby='seasonTabJourney'><iframe id='jyFrame' title='My Journey' loading='lazy' scrolling='no' src='journey.html?embed=1'></iframe></div>
 <script>window.addEventListener('message',function(e){ if(e.origin!==location.origin||!e.data||typeof e.data.thwapJourneyHeight!=='number') return; var f=document.getElementById('jyFrame'); if(f) f.style.height=Math.max(200,Math.min(8000,e.data.thwapJourneyHeight))+'px'; });</script>
 <div class='stickerbook' id='stickerBook' role='tabpanel' aria-labelledby='seasonTabStickers' hidden>
 <div class='stickerbook-card'>

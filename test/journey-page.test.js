@@ -104,11 +104,12 @@ describe('signed out', () => {
 describe('signed in: cover', () => {
   it('shows the player name, number, position and team', async () => {
     const w = await boot({ api: book() });
-    expect($(w, 'jSeason').textContent).toBe('Season 2026-27');
+    expect($(w, 'jSeason').textContent).toBe('2026-27 Jr. Rangers 10U');
+    expect(w.document.querySelector('.cover h1, h1').textContent).toBe('My Journey');
     expect($(w, 'jName').textContent).toBe('Lewie M.');
     expect($(w, 'jNum').textContent).toBe('#81');
     expect($(w, 'jNum').hidden).toBe(false);
-    expect($(w, 'jMeta').textContent).toMatch(/^Forward\s+Jr\. Rangers 10U$/);
+    expect($(w, 'jMeta').textContent).toBe('Forward'); // team moved up to the season line
   });
 
   it('hides the number and meta line when the roster has neither', async () => {
@@ -116,6 +117,7 @@ describe('signed in: cover', () => {
     expect($(w, 'jName').textContent).toBe('Alder');
     expect($(w, 'jNum').hidden).toBe(true);
     expect($(w, 'jMeta').hidden).toBe(true);
+    expect($(w, 'jSeason').textContent).toBe('2026-27 Season'); // no team on file
   });
 
   it('hides every Sample tag once real data loads', async () => {
@@ -194,8 +196,10 @@ describe('signed in: badges', () => {
     expect(label(1)).toBe('Not started');
     expect(btns[0].classList.contains('locked')).toBe(false);
     expect(btns[1].classList.contains('locked')).toBe(true);
-    expect(btns[0].querySelector('.stars').textContent).toBe('\u2605\u2605\u2605');
-    expect(btns[0].querySelectorAll('.stars .off')).toHaveLength(1);
+    // Earned stars are filled, empty ones hollow: never color alone.
+    expect(btns[0].querySelector('.stars').textContent).toBe('\u2605\u2605\u2606');
+    expect(btns[0].querySelector('.stars .off').textContent).toBe('\u2606');
+    expect(btns[1].querySelector('.stars').textContent).toBe('\u2606\u2606\u2606');
   });
 
   it('tapping a badge says the count and what the next star needs', async () => {
@@ -260,7 +264,7 @@ describe('Season Complete', () => {
     expect($(signedOut, 'finale').hidden).toBe(true);
     const signedIn = await boot({ api: book({ today: '2027-09-15' }), now: '2027-09-15T19:00:00Z' });
     expect($(signedIn, 'finale').hidden).toBe(true);
-    expect($(signedIn, 'jSeason').textContent).toBe('Season 2027-28');
+    expect($(signedIn, 'jSeason').textContent).toBe('2027-28 Jr. Rangers 10U');
   });
 });
 
