@@ -3984,21 +3984,15 @@ window.addEventListener('hashchange',function(){ if(location.hash===''||location
     if(off2!==off) ms=guess-off2*60000;
     return ms;
   }
-  /* Thursday 06:00 America/Vancouver of the current week. "Week" is anchored so
-     the cutoff is the NEXT Thursday-6am on/after Monday of this Vancouver week:
-     for any day Mon..Thu it is this week's Thursday; Fri..Sun it is the coming
-     Thursday. A game that just passed on the weekend stays available through the
-     following Thursday 6am. */
-  function thursday6amCutoffMs(nowMs){
-    var p=vancouverParts(nowMs);
-    /* Days from today's Vancouver weekday to Thursday(4). Sunday(0) -> +4,
-       Mon(1)->+3, Tue->+2, Wed->+1, Thu(4)->0, Fri(5)->+6, Sat(6)->+5. */
-    var delta=(4 - p.dow + 7) % 7;           // 0..6, days until the coming Thursday
-    /* On Thursday itself keep today's 6am as the cutoff (delta 0). */
-    var cutUTC=Date.UTC(p.y,p.m-1,p.d);       // midnight Vancouver-date in UTC terms
-    var base=new Date(cutUTC);
-    var ty=base.getUTCFullYear(), tm=base.getUTCMonth()+1, td=base.getUTCDate()+delta;
-    return vancouverWallMs(ty,tm,td,6,0);
+  /* How long a passed game's card stays up: a week and a half (10 days),
+     counted from the game's own Vancouver date. Anchored to the GAME, never to
+     today: the old "next Thursday 6am from now" cutoff was always in the
+     future, so an unlogged game stayed on the card forever. */
+  var KEEP_DAYS=10;
+  function gameKeepUntilMs(game){
+    var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(String(game&&game.date||''));
+    if(!m) return 0;
+    return vancouverWallMs(parseInt(m[1],10),parseInt(m[2],10),parseInt(m[3],10)+KEEP_DAYS,0,0);
   }
   /* Today's Vancouver date as 'YYYY-MM-DD'. */
   function vancouverToday(nowMs){
@@ -4014,7 +4008,7 @@ window.addEventListener('hashchange',function(){ if(location.hash===''||location
   /* Decide which game the card should surface.
      opts: { events, nextGame, nowMs, isDone(gameId) }
      Returns { game, passed } or null. A just-passed game that the player has NOT
-     completed, and whose keep-until-Thursday window has not elapsed, wins over the
+     completed, and whose 10-day keep window has not elapsed, wins over the
      upcoming nextGame; otherwise fall through to nextGame. */
   function pickGameToShow(opts){
     opts=opts||{};
@@ -4022,14 +4016,14 @@ window.addEventListener('hashchange',function(){ if(location.hash===''||location
     var today=vancouverToday(now);
     var isDone=typeof opts.isDone==='function'?opts.isDone:function(){ return false; };
     var past=mostRecentPastGame(opts.events, today);
-    if(past && now < thursday6amCutoffMs(now) && !isDone(past.id)){
+    if(past && now < gameKeepUntilMs(past) && !isDone(past.id)){
       return { game:past, passed:true };
     }
     if(opts.nextGame) return { game:opts.nextGame, passed:false };
     return null;
   }
   function gameDoneKey(pid,gid){ return 'thwapGameDone|'+String(pid||'')+'|'+String(gid||''); }
-  window.ThwapGameDay={ vancouverParts:vancouverParts, thursday6amCutoffMs:thursday6amCutoffMs, vancouverToday:vancouverToday, mostRecentPastGame:mostRecentPastGame, pickGameToShow:pickGameToShow, gameDoneKey:gameDoneKey, vancouverWallMs:vancouverWallMs };
+  window.ThwapGameDay={ vancouverParts:vancouverParts, gameKeepUntilMs:gameKeepUntilMs, KEEP_DAYS:KEEP_DAYS, vancouverToday:vancouverToday, mostRecentPastGame:mostRecentPastGame, pickGameToShow:pickGameToShow, gameDoneKey:gameDoneKey, vancouverWallMs:vancouverWallMs };
 })();
 (function(){
   var card=document.getElementById('pNextGame'); if(!card) return;
@@ -4059,7 +4053,7 @@ window.addEventListener('hashchange',function(){ if(location.hash===''||location
       var sched=j.schedule||{};
       var pid=playerId();
       /* Choose the game to surface: a just-passed, not-yet-completed game stays
-         until Thursday 06:00 Vancouver; otherwise the upcoming nextGame. */
+         for 10 days after it was played; otherwise the upcoming nextGame. */
       var pick=GD.pickGameToShow?GD.pickGameToShow({ events:sched.events||[], nextGame:(j.next&&j.next.nextGame)||null, nowMs:Date.now(), isDone:function(gid){ return gameDone(pid,gid); } }):(j.next&&j.next.nextGame?{game:j.next.nextGame,passed:false}:null);
       if(!pick||!pick.game) return;
       var g=pick.game, passed=pick.passed;
