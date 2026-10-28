@@ -18,7 +18,7 @@
   // with ?avatar=1 (preview). true: every player gets the character and Edit
   // player; player photos stop being fetched or shown, and photo upload is gone.
   // Flipping this one line is the whole launch.
-  var LIVE=false;
+  var LIVE=true;
 
   // --- Preview flag (only matters while LIVE is false) ----------------------------
   try{
@@ -282,16 +282,27 @@
   // look, then the default. The number always comes from the roster.
   var teamLooks=null;
   try{ teamLooks=JSON.parse(localStorage.getItem('thwapLooksCache')||'null'); }catch(_){}
-  // Returns null when this player has never built a character: their card then
-  // shows the Big Number card (Thwap's designed no-picture card), never a copy
-  // of the default character, so the roster is not a row of twins.
+  // A player who has never built a character still gets one on their card: a
+  // starter look picked from their name, so the roster is not a row of twins.
+  // Hair style, hair color and the three free Rangers jerseys vary (all free;
+  // the jersey is what reads from the front, under the helmet). Skin tone stays
+  // the default: guessing a real kid's skin tone is not ours to do. The kid
+  // replaces all of it in the first-run builder.
+  var STARTER_HAIR=['brown','black','cocoa','chestnut','blonde','sandy','auburn'];
+  var STARTER_JERSEY=['red','black','white'];
+  function starterLook(id){
+    var h=0; for(var i=0;i<id.length;i++) h=(h*31+id.charCodeAt(i))>>>0;
+    var styles=Object.keys(HAIR_STYLES);
+    return { hairstyle:styles[h%styles.length], hair:STARTER_HAIR[Math.floor(h/styles.length)%STARTER_HAIR.length],
+      jersey:STARTER_JERSEY[Math.floor(h/(styles.length*STARTER_HAIR.length))%STARTER_JERSEY.length] };
+  }
   function lookFor(p,slug){
     var look={}; for(var k in DEFAULT_LOOK) look[k]=DEFAULT_LOOK[k];
     var id=String(slug||'').toLowerCase();
     var src=null;
     if(teamLooks && teamLooks[id]) src=norm(teamLooks[id]);
     if(!src){ try{ src=(JSON.parse(localStorage.getItem('thwapLooks')||'{}'))[id]||null; }catch(_){} }
-    if(!src) return null;
+    if(!src) src=starterLook(id);
     for(var m in src) if(m!=='num') look[m]=src[m];
     look.num=(p&&p.num)||'';
     return look;
