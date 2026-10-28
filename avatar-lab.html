@@ -29,6 +29,16 @@ A.POSES.concat(['shooting:left']).forEach(function(k){
   d.innerHTML="<div class='slot'><img src='cards/plate_front_red.svg' alt=''>"+A.html({pose:p[0],hand:p[1]||'right',jersey:'red',hairstyle:'mullet',num:'72'})+"</div><div class='cap'>"+NAMES[p[0]]+(p[1]?' (shoots left)':'')+"</div>";
   r2.appendChild(d);
 });
+// Team set (Phase 4): the six items in unlock order, then all of them together.
+var h5=document.createElement('h1'); h5.textContent='Team set (in unlock order)'; document.body.appendChild(h5);
+var r5=document.createElement('div'); r5.className='row'; document.body.appendChild(r5);
+[['Rangers tape',{tape:'tape-rangers',facing:'center'}],['Rangers decal',{decal:'decal-rangers',facing:'right'}],['Team socks',{socks:'socks-rangers'}],
+ ['Rangers gloves',{gloves:'gloves-rangers'}],['Warm-up jersey',{jersey:'jersey-warmup'}],['Tournament jersey',{jersey:'jersey-tournament'}],
+ ['All together',{tape:'tape-rangers',decal:'decal-rangers',socks:'socks-rangers',gloves:'gloves-rangers',jersey:'jersey-warmup',facing:'right'}]].forEach(function(c){
+  var d=document.createElement('div'), look=c[1]; look.num='72';
+  d.innerHTML="<div class='slot'><img src='cards/plate_front_red.svg' alt=''>"+A.html(look)+"</div><div class='cap'>"+c[0]+"</div>";
+  r5.appendChild(d);
+});
 // Letters (Phase 4): the coach-granted C and A on each jersey.
 var h4=document.createElement('h1'); h4.textContent='Letters'; document.body.appendChild(h4);
 var r4=document.createElement('div'); r4.className='row'; document.body.appendChild(r4);
