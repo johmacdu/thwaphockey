@@ -32,7 +32,10 @@
   };
   var GLOVES={ black:'#141414', red:'#C8102E', ice:'#BFE6F2' };
   var STICK={ classic:'#2B2B2B', wood:'#B07A45', gold:'#D4A72C' };
-  var DEFAULT_LOOK={ skin:'s3', hair:'brown', hairstyle:'flow', jersey:'red', helmet:'team', gloves:'black', stick:'classic', num:'', hand:'right', facing:'left', pose:'oneHand' };
+  // hand/facing are free preference slots (server catalog: hand-*, facing-*).
+  // grip is how the stick is held (oneHand/twoHand) -- a render default, not a
+  // catalog slot, kept separate from the server's unlockable 'pose' (stances).
+  var DEFAULT_LOOK={ skin:'s3', hair:'brown', hairstyle:'flow', jersey:'red', helmet:'team', gloves:'black', stick:'classic', num:'', hand:'right', facing:'left', grip:'oneHand' };
 
   // Server looks use catalog ids ('jersey-red', 'skin-s3'); the renderer keys
   // on the part after the slot prefix. Unknown values fall back to defaults.
@@ -177,7 +180,7 @@
     var shTop=M([-4.6,22.4,1]), shBot=M([4.6,22.4,1]);       // shoulders
     // Arm + stick points per pose. elTop/elBot are elbows (= Phase-3 elbow joints).
     var elTop,elBot,handTop,handBot,knob,ice,bladeToe;
-    if(look.pose==='twoHand'){
+    if(look.grip==='twoHand'){
       // Two-handed ready grip: both hands in front, top hand on the knob, bottom a
       // forearm down the shaft, blade flat on the ice.
       elTop=M([-3.5,16.5,3.6]); elBot=M([4,14.6,4.2]);
@@ -302,7 +305,7 @@
   // Opens from the My Player button on the player's own card. Tap an owned item: it goes on the
   // character and saves to the server. Tap a locked item: try it on, with the
   // progress line; nothing is saved. Unlocks come from the server only.
-  var GEAR_TABS=[['skin','Skin'],['hairstyle','Hair'],['hair','Hair color'],['jersey','Jersey'],['helmet','Helmet'],['stripe','Stripe'],['gloves','Gloves'],['stick','Stick']];
+  var GEAR_TABS=[['skin','Skin'],['hairstyle','Hair'],['hair','Hair color'],['jersey','Jersey'],['helmet','Helmet'],['stripe','Stripe'],['gloves','Gloves'],['stick','Stick'],['hand','Shot'],['facing','View']];
   var TIER_LABEL={ common:'', rare:'Pro', epic:'All-Star', legendary:'Legend' };
   var L={ data:null, look:null, saved:null, tab:'skin', trying:null, changed:false, me:null };
 
@@ -336,11 +339,19 @@
     var look=norm(L.look||{}); look.hairstyle=style; look.num='';
     return "<span class='lk-mini' aria-hidden='true'>"+html(look)+"</span>";
   }
+  // Preview a free preference (hand/facing) on the player, seen from the front
+  // (not the hair back-view) so the stick side and the facing read.
+  function miniOpt(slot,val){
+    var look=norm(L.look||{}); look[slot]=val; look.num='';
+    return "<span class='lk-mini face' aria-hidden='true'>"+html(look)+"</span>";
+  }
 
   // First-run builder: three steps, everything pre-picked, so a kid can tap Done.
-  var BUILD_STEPS=[['skin','Pick your skin tone'],['hairstyle','Pick your hockey hair'],['hair','Pick your hair color'],['jersey','Pick your jersey']];
+  var BUILD_STEPS=[['skin','Pick your skin tone'],['hairstyle','Pick your hockey hair'],['hair','Pick your hair color'],['jersey','Pick your jersey'],['hand','Which way do you shoot?'],['facing','Which way to face?']];
   // Hair is easiest to judge from behind, so those tabs turn the player around.
-  function spinFor(tab){ return (tab==='hair'||tab==='hairstyle')?150:-25; }
+  // Facing turns the player to the picked side so the stage shows the real view.
+  function faceSpin(f){ return f==='right'?25:(f==='center'?0:-25); }
+  function spinFor(tab){ return (tab==='hair'||tab==='hairstyle')?150:(tab==='facing'?faceSpin(norm(L.look||{}).facing):-25); }
   // Unlock tracking on this device: ids already shown, and ids still marked New.
   function readList(k){ try{ var v=JSON.parse(localStorage.getItem(k)||'null'); return Array.isArray(v)?v:null; }catch(_){ return null; } }
   function writeList(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(_){} }
@@ -364,6 +375,7 @@
       ".lk-mini{position:relative;display:block;width:64px;height:52px;overflow:hidden;pointer-events:none}"+
       ".lk-mini .av-wrap{font-size:3.2px;perspective:none}"+
       ".lk-mini .av-scene{bottom:-58px;transform:rotateX(-8deg) rotateY(150deg)}"+
+      ".lk-mini.face .av-scene{transform:rotateX(-8deg) rotateY(var(--av-face,-25deg))}"+
       ".lk-lbl{font-size:13px;font-weight:800;text-align:center;line-height:1.15}"+
       ".lk-sub{font-size:11px;color:var(--muted,#5F6F64);text-align:center;line-height:1.2}"+
       ".lk-item.locked .lk-sw{opacity:.45}"+
@@ -422,7 +434,7 @@
       return "<button type='button' class='lk-item"+(own?'':' locked')+"' data-id='"+esc(it.id)+"' aria-pressed='"+on+"'"+
         " aria-label='"+esc(lbl+(own?'':', locked. '+ruleText(it)+' to unlock'))+"'>"+
         (own?'':"<i class='lk-lock' aria-hidden='true'></i>")+(own&&isNew(it.id)?"<i class='lk-new'>New</i>":"")+
-        (it.slot==='hairstyle'?miniHead(short):"<span class='lk-sw' style='background:"+swatch(it.slot,short)+"'></span>")+
+        (it.slot==='hairstyle'?miniHead(short):(it.slot==='hand'||it.slot==='facing')?miniOpt(it.slot,short):"<span class='lk-sw' style='background:"+swatch(it.slot,short)+"'></span>")+
         "<span class='lk-lbl'>"+esc(lbl)+"</span>"+(sub?"<span class='lk-sub'>"+esc(sub)+"</span>":"")+"</button>";
     }).join('');
   }
@@ -462,6 +474,7 @@
     if(L.look[it.slot]===id){ paintStage(); return; }
     var prev={}; for(var k2 in L.look) prev[k2]=L.look[k2];
     L.look[it.slot]=id; paintGrid();
+    if(it.slot==='facing') L.spin=faceSpin(id.slice(it.slot.length+1)); // turn the stage to the picked view
     if(L.build!=null){ paintStage(); return; } // the builder saves once, on Done
     save(prev);
     try{ if(window.thwapHaptic) window.thwapHaptic('tap'); }catch(_){}
@@ -519,6 +532,7 @@
       var nx=(j.next||[])[0];
       L.status=nx?('Next up: '+nx.label+'. '+nx.left+' to go.'):'';
       if(!j.saved || opts.builder){ L.build=0; L.tab=BUILD_STEPS[0][0]; L.status=''; }
+      L.spin=spinFor(L.tab); // open at the right angle (hair from behind, facing to its side)
       if(!readList('thwapUnlockSeen')) writeList('thwapUnlockSeen',j.unlocked||[]);
       paintTabs(); paintGrid(); paintStage();
       // New tags show once: opening the My Player counts as seeing them.
