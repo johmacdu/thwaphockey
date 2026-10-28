@@ -125,7 +125,7 @@ describe('unlock moment', () => {
     expect(toast).toBeTruthy();
     expect(toast.textContent).toMatch(/New gear! Rangers Red gloves/);
     expect(w.document.querySelector('#cardImageBtn .lk-dot')).toBeTruthy();
-    expect(w.document.querySelector('#homePlayer .lk-dot')).toBeTruthy();
+    expect(w.document.querySelector('#homePlayer .lk-dot')).toBeNull();
     toast.remove();
     await w.thwapAvatar.checkUnlocks();
     expect(w.document.querySelector('.lk-toast')).toBeNull(); // only once
@@ -153,8 +153,8 @@ describe('unlock moment', () => {
 
 describe('card entry point (index.html)', () => {
   const INDEX = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
-  it('the own-card image button becomes My Player when the character is on', () => {
-    expect(INDEX).toMatch(/imageBtn\.innerHTML=avOn\?'\\u270F\\uFE0F My Player'/);
+  it('the player card image button becomes Edit player when the character is on', () => {
+    expect(INDEX).toMatch(/imageBtn\.innerHTML=avOn\?'\\u270F\\uFE0F Edit player'/);
     expect(INDEX).toMatch(/if\(window\.thwapAvatar && window\.thwapAvatar\.on\(\)\)\{ window\.thwapAvatar\.openLocker\(\{onClose:function\(\)\{ buildFaces\(\); paint\(\); \}\}\); return; \}/);
   });
   it('closing the card after a look change reloads once so every card updates', () => {

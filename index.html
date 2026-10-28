@@ -5791,7 +5791,7 @@ function buildThemePicker(){
   /* Character (avatar.js): the image button becomes My Player. The kid's own
      character replaces the photo on the card. */
   var avOn=false; try{ avOn=!!(window.thwapAvatar && window.thwapAvatar.on()); }catch(_){}
-  if(imageBtn){ imageBtn.innerHTML=avOn?'\u270F\uFE0F My Player':(hasPhoto?'\u270F\uFE0F image':'+ image'); imageBtn.setAttribute('aria-label', avOn?'Edit my player':'Change card image'); }
+  if(imageBtn){ imageBtn.innerHTML=avOn?'\u270F\uFE0F Edit player':(hasPhoto?'\u270F\uFE0F image':'+ image'); imageBtn.setAttribute('aria-label', avOn?'Edit player':'Change card image'); }
   var dirty=false;
   function setSave(){ if(saveBtn){ saveBtn.disabled=!dirty; saveBtn.setAttribute('aria-disabled', dirty?'false':'true'); } }
   function showMain(){ main.hidden=false; themeRow.hidden=true; }

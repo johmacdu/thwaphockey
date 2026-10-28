@@ -431,8 +431,8 @@
     try{ if(window.thwapHaptic) window.thwapHaptic('done'); }catch(_){}
     clearTimeout(toastTimer); toastTimer=setTimeout(function(){ if(b.parentNode) b.remove(); },5000);
   }
-  // Dot on the card's My Player button and on the home "Hey <name>" card link.
-  var DOT_TARGETS='#cardImageBtn,#homePlayer';
+  // Dot on the card's Edit player button while new gear is waiting.
+  var DOT_TARGETS='#cardImageBtn';
   function markDot(){
     var els=document.querySelectorAll(DOT_TARGETS);
     for(var i=0;i<els.length;i++){ var btn=els[i];
