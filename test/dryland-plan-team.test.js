@@ -89,12 +89,22 @@ describe('get-plan with no code uses the signed-in player team', () => {
     expect(r.body.plan.wed.dryland).toEqual(RANGERS_DRY);
   });
 
-  it('coach UI: an explicit ?code= wins over the session, unchanged', async () => {
-    const asFlyer = await call(coach.getPlan, getAs('zara', { code: _seed.SEED_TEAM_CODE }));
-    expect(asFlyer.body.plan.wed.dryland).toEqual(RANGERS_DRY);
-    const noSession = await call(coach.getPlan, getAs(null, { code: 'FLYERS10' }));
-    expect(noSession.body.plan.wed.dryland).toEqual(FLYERS_DRY);
-    expect((await call(coach.getPlan, getAs(null, { code: 'NOPE99' }))).statusCode).toBe(404);
+  it('naming a team directly needs that team: coach, admin, or a player on it', async () => {
+    const post = (body) => ({ method: 'POST', body, query: {}, headers: {} });
+    const headCoach = (await call(coach.coachLogin, post({ email: _seed.SEED_COACH_EMAIL, password: _seed.SEED_COACH_PASSWORD }))).body.token;
+    const stranger = (await call(coach.coachRegister, post({ email: 'stranger@example.com', password: 'secret1', name: 'Stranger' }))).body.token;
+    // Signed out, or another team's player, cannot read a team's plan by its code.
+    expect((await call(coach.getPlan, getAs(null, { code: 'FLYERS10' }))).statusCode).toBe(403);
+    expect((await call(coach.getPlan, getAs('zara', { code: _seed.SEED_TEAM_CODE }))).statusCode).toBe(403);
+    // A coach who does not run the team is refused too.
+    expect((await call(coach.getPlan, getAs(null, { code: _seed.SEED_TEAM_CODE, coachToken: stranger }))).statusCode).toBe(403);
+    // The head coach reads their team; a player may name their own team.
+    const asCoach = await call(coach.getPlan, getAs(null, { code: _seed.SEED_TEAM_CODE, coachToken: headCoach }));
+    expect(asCoach.statusCode).toBe(200);
+    expect(asCoach.body.plan.wed.dryland).toEqual(RANGERS_DRY);
+    const own = await call(coach.getPlan, getAs('zara', { code: 'FLYERS10' }));
+    expect(own.statusCode).toBe(200);
+    expect(own.body.plan.wed.dryland).toEqual(FLYERS_DRY);
   });
 
   it('web dryland list equals /api/done?view=today for the same player and date', async () => {
@@ -116,7 +126,7 @@ describe('index.html player plan fetches', () => {
     for (const c of calls) expect(c).toContain("credentials:'include'");
     expect(html).not.toMatch(/action=get-plan&code=RANGERS/);
   });
-  it('coach Plan screen still names its own team code', () => {
-    expect(html).toContain("fetch('/api/coach?action=get-plan&code='+encodeURIComponent(code))");
+  it('coach Plan screen names its team and sends its coach token', () => {
+    expect(html).toContain("fetch('/api/coach?action=get-plan&code='+encodeURIComponent(code)+'&coachToken='");
   });
 });

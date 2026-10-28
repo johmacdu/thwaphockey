@@ -331,7 +331,7 @@ describe('team weekly plan', () => {
   it('defaults to empty categories every day when unset', async () => {
     await loginSeedCoach();
     const res = makeRes();
-    await _handlers.getPlan(get({ code: _seed.SEED_TEAM_CODE }), res);
+    await _handlers.getPlan(get({ code: _seed.SEED_TEAM_CODE, coachToken: (await loginSeedCoach()).body.token }), res);
     expect(res.statusCode).toBe(200);
     expect(res.body.plan.mon).toEqual({});
     expect(res.body.plan.sun).toEqual({});
@@ -347,7 +347,7 @@ describe('team weekly plan', () => {
     expect(setRes.body.plan.tue).toEqual({});               // an off day
 
     const getRes = makeRes();
-    await _handlers.getPlan(get({ code: _seed.SEED_TEAM_CODE }), getRes);
+    await _handlers.getPlan(get({ code: _seed.SEED_TEAM_CODE, coachToken: (await loginSeedCoach()).body.token }), getRes);
     expect(getRes.body.plan.mon).toEqual({ stick: [] });
     expect(getRes.body.plan.wed).toEqual({ shoot: [], dryland: [] });
   });
@@ -366,7 +366,7 @@ describe('team weekly plan', () => {
     expect(setRes.body.plan.wed.bogus).toBeUndefined();
 
     const getRes = makeRes();
-    await _handlers.getPlan(get({ code: _seed.SEED_TEAM_CODE }), getRes);
+    await _handlers.getPlan(get({ code: _seed.SEED_TEAM_CODE, coachToken: (await loginSeedCoach()).body.token }), getRes);
     expect(getRes.body.plan.wed.shoot).toEqual(['Wrist Shots', 'Snap Shots']);
   });
 
@@ -385,7 +385,7 @@ describe('team weekly plan', () => {
     expect(setRes.body.plan.sat.stick).toEqual(['Toe Drag & Rescue']);
 
     const getRes = makeRes();
-    await _handlers.getPlan(get({ code: _seed.SEED_TEAM_CODE }), getRes);
+    await _handlers.getPlan(get({ code: _seed.SEED_TEAM_CODE, coachToken: (await loginSeedCoach()).body.token }), getRes);
     expect(getRes.body.plan.sat.opt.sort()).toEqual(['shoot', 'stick']);
     expect(getRes.body.plan.sat.shoot).toEqual(['Wrist Shots']);
   });
@@ -432,7 +432,7 @@ describe('team weekly plan', () => {
   it('get-plan carries the team billing status for the client paywall', async () => {
     await loginSeedCoach();
     const res = makeRes();
-    await _handlers.getPlan(get({ code: _seed.SEED_TEAM_CODE }), res);
+    await _handlers.getPlan(get({ code: _seed.SEED_TEAM_CODE, coachToken: (await loginSeedCoach()).body.token }), res);
     expect(res.statusCode).toBe(200);
     expect(res.body.billing).toMatchObject({
       active: expect.any(Boolean),

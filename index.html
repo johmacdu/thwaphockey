@@ -3777,7 +3777,7 @@ window.thwapActiveTeam=function(coach){
   function loadPlan(){
     if(planLoaded) return Promise.resolve();
     if(planLoading) return planLoading;
-    planLoading=fetch('/api/coach?action=get-plan&code='+encodeURIComponent(code))
+    planLoading=fetch('/api/coach?action=get-plan&code='+encodeURIComponent(code)+'&coachToken='+encodeURIComponent((coach&&coach.token)||''),{cache:'no-store',credentials:'include'})
       .then(function(r){ return r.json(); })
       .then(function(j){ try{ if(window.thwapPaywall) window.thwapPaywall(j&&j.billing, code); }catch(e){} var p=(j&&j.ok&&j.plan)?j.plan:null; if(p&&planHasDrills(p)){ plan=p; } else { seedDefaults(); } planLoaded=true; setDirty(false); render(); })
       .catch(function(){ seedDefaults(); planLoaded=true; setDirty(false); render(); });

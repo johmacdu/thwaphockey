@@ -848,7 +848,16 @@ async function setCoachProfile(req, res) {
 // session for a player no longer on any team) keeps the Jr. Rangers 10U default.
 async function getPlan(req, res) {
   if (!methodGuard(req, res, 'GET')) return;
-  const code = (req.query && req.query.code) || (await sessionTeamCode(req)) || SEED_TEAM_CODE;
+  const asked = String((req.query && req.query.code) || '').trim().toUpperCase();
+  const mine = await sessionTeamCode(req);
+  // A team code is an identifier, not a secret: naming one directly needs a coach
+  // of that team, an admin, or a signed-in player on that same team.
+  if (asked && asked !== String(mine || '').toUpperCase()) {
+    const coach = await coachFromReq(req);
+    const allowed = (coach && (await coachRunsTeam(coach, asked))) || (await isAdminReq(req));
+    if (!allowed) return res.status(403).json({ error: 'not allowed' });
+  }
+  const code = asked || mine || SEED_TEAM_CODE;
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
   res.setHeader('Cache-Control', 'no-store');
   // Billing status rides along so the client can paywall from the call it already
