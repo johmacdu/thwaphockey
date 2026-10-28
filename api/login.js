@@ -11,6 +11,14 @@
 //                                          jersey+season code (the existing sign-in) and sets
 //                                          the HTTP-only cookie. Same UX as today, now server-checked.
 //   GET  /api/login?action=session                                   -> { authed, player }
+//   GET  /api/login?action=team-players&code=<TEAMCODE>              -> { ok, team:{name},
+//                                          players:[{id, firstName, number}] } for a name
+//                                          picker (no last names, emails or photos)
+//
+// Players resolve from the multi-team members store (lib/signin_players.js), so
+// a player on any team can sign in. The 16 original Jr. Rangers 10U players
+// fall back to the built-in ROSTER. request-code, verify and code-signin accept
+// an optional teamCode; when sent, the player must be on that team.
 //   POST /api/login?action=logout                                    -> clears the cookie
 //
 // Behavior is identical to the previous api/login/<action>.js files; only the
@@ -19,13 +27,13 @@
 // KV_REST_API_* / UPSTASH_REDIS_REST_*, and SESSION_TOKEN_SECRET (falls back to
 // PHOTO_TOKEN_SECRET).
 
-import { getKv, parseBody, isRosterPlayer, emailConfigured } from '../lib/photo_common.js';
+import { getKv, parseBody, emailConfigured } from '../lib/photo_common.js';
 import { checkAndBumpRate, putOtp, randomCode, checkOtp, recordConsent } from '../lib/photo_store.js';
 import {
   mintSession, verifySession, sessionCookie, clearSessionCookie,
   readSessionCookie, sessionConfigured,
 } from '../lib/session_store.js';
-import { ROSTER } from '../lib/store.js';
+import { resolveSigninPlayer, listTeamPlayersPublic } from '../lib/signin_players.js';
 import { getMember, parentEmailList } from '../lib/teams_store.js';
 
 // The player sign-in code is the jersey number followed by a season year. Both
@@ -69,9 +77,10 @@ async function requestCode(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (!emailConfigured()) return res.status(503).json({ error: 'login not configured' });
 
-  const { playerId } = parseBody(req);
+  const { playerId, teamCode } = parseBody(req);
   const pid = String(playerId || '').toLowerCase();
-  if (!isRosterPlayer(pid)) return res.status(200).json({ ok: true, sent: 0 });
+  const player = await resolveSigninPlayer(pid, teamCode);
+  if (!player) return res.status(200).json({ ok: true, sent: 0 });
 
   const kv = getKv();
   const allowed = await checkAndBumpRate(kv, 'pid:' + pid);
@@ -83,9 +92,8 @@ async function requestCode(req, res) {
 
   const code = randomCode();
   await putOtp(kv, 'pid:' + pid, code);
-  const player = ROSTER.find((p) => p.id === pid);
   let sent = 0;
-  for (const em of emails) { if (await sendLoginCode(em, code, player ? player.name : 'your player')) sent += 1; }
+  for (const em of emails) { if (await sendLoginCode(em, code, player.name || 'your player')) sent += 1; }
   return res.status(200).json({ ok: true, sent });
 }
 
@@ -93,9 +101,10 @@ async function verify(req, res) {
   if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).json({ error: 'method not allowed' }); }
   if (!emailConfigured() || !sessionConfigured()) return res.status(503).json({ error: 'login not configured' });
 
-  const { playerId, code, keep } = parseBody(req);
+  const { playerId, code, keep, teamCode } = parseBody(req);
   const pid = String(playerId || '').toLowerCase();
-  if (!isRosterPlayer(pid) || !/^\d{6}$/.test(String(code || ''))) {
+  const player = await resolveSigninPlayer(pid, teamCode);
+  if (!player || !/^\d{6}$/.test(String(code || ''))) {
     return res.status(400).json({ error: 'bad input' });
   }
 
@@ -113,8 +122,7 @@ async function verify(req, res) {
   if (!token) return res.status(503).json({ error: 'login not configured' });
   res.setHeader('Set-Cookie', sessionCookie(token, { keep: !!keep, secure: isSecure(req) }));
 
-  const player = ROSTER.find((p) => p.id === pid);
-  return res.status(200).json({ ok: true, player: player ? { id: player.id, name: player.name, number: player.number } : { id: pid } });
+  return res.status(200).json({ ok: true, player: { id: player.id, name: player.name, number: player.number } });
 }
 
 // Phase 1 server sessions. The player types the SAME code they use today (jersey
@@ -126,13 +134,13 @@ async function codeSignin(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (!sessionConfigured()) return res.status(503).json({ error: 'sessions not configured' });
 
-  const { playerId, code, email, keep } = parseBody(req);
+  const { playerId, code, email, keep, teamCode } = parseBody(req);
   const pid = String(playerId || '').toLowerCase();
-  const player = ROSTER.find((p) => p.id === pid);
+  const player = await resolveSigninPlayer(pid, teamCode);
   if (!player) return res.status(400).json({ error: 'unknown player' });
 
   const c = String(code || '').trim();
-  const ok = CODE_SEASONS.some((y) => c === `${player.number}${y}`);
+  const ok = player.numbers.some((n) => CODE_SEASONS.some((y) => c === `${n}${y}`));
   if (!ok) return res.status(401).json({ error: 'bad code' });
 
   const token = mintSession(pid, String(email || '').toLowerCase());
@@ -141,18 +149,30 @@ async function codeSignin(req, res) {
   return res.status(200).json({ ok: true, player: { id: player.id, name: player.name, number: player.number } });
 }
 
-function session(req, res) {
+async function session(req, res) {
   if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).json({ error: 'method not allowed' }); }
   res.setHeader('Cache-Control', 'no-store');
   if (!sessionConfigured()) return res.status(200).json({ authed: false });
 
   const claims = verifySession(readSessionCookie(req));
   if (!claims) return res.status(200).json({ authed: false });
-  const player = ROSTER.find((p) => p.id === claims.playerId);
+  const player = await resolveSigninPlayer(claims.playerId);
   return res.status(200).json({
     authed: true,
     player: player ? { id: player.id, name: player.name, number: player.number } : { id: claims.playerId },
   });
+}
+
+// GET ?code=<TEAMCODE> -> the team's players for a name picker. Public (only a
+// team code is needed), so it returns first name + jersey number ONLY.
+async function teamPlayers(req, res) {
+  if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).json({ error: 'method not allowed' }); }
+  res.setHeader('Cache-Control', 'no-store');
+  const code = String((req.query && req.query.code) || '').trim();
+  if (!code) return res.status(400).json({ error: 'team code required' });
+  const out = await listTeamPlayersPublic(code);
+  if (!out) return res.status(404).json({ error: 'unknown team' });
+  return res.status(200).json({ ok: true, team: out.team, players: out.players });
 }
 
 function logout(req, res) {
@@ -169,8 +189,9 @@ export default async function handler(req, res) {
   if (action === 'code-signin') return codeSignin(req, res);
   if (action === 'session') return session(req, res);
   if (action === 'logout') return logout(req, res);
+  if (action === 'team-players') return teamPlayers(req, res);
   return res.status(404).json({ error: 'unknown login action' });
 }
 
 // Exported for unit tests (call the sub-handlers directly with a query.action-free req).
-export const _handlers = { requestCode, verify, codeSignin, session, logout };
+export const _handlers = { requestCode, verify, codeSignin, session, logout, teamPlayers };
