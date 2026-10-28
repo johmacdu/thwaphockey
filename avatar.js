@@ -194,7 +194,7 @@
 
 
   // --- My Player (Phase 1: Gear) ---------------------------------------------
-  // Opens with #locker or the preview button. Tap an owned item: it goes on the
+  // Opens from the My Player button on the player's own card. Tap an owned item: it goes on the
   // character and saves to the server. Tap a locked item: try it on, with the
   // progress line; nothing is saved. Unlocks come from the server only.
   var GEAR_TABS=[['skin','Skin'],['hair','Hair'],['jersey','Jersey'],['helmet','Helmet'],['stripe','Stripe'],['gloves','Gloves'],['stick','Stick']];
@@ -260,7 +260,7 @@
       ".lk-go{flex:1;min-height:52px;border-radius:26px;border:0;background:var(--text,#15221B);color:var(--bg,#F3F7F4);font-weight:900;font-size:17px;cursor:pointer}"+
       ".lk-back{min-height:52px;padding:0 20px;border-radius:26px;border:1px solid var(--line,#DCE5DE);background:var(--card,#fff);color:var(--text,#15221B);font-weight:800;cursor:pointer}"+
       ".lk-new{position:absolute;top:6px;left:6px;font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:8px;background:var(--lime,#B9F06B);color:#15221B}"+
-      ".lk-btn .lk-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--lime,#B9F06B);margin-left:8px;box-shadow:0 0 0 2px var(--card,#fff)}"+
+      ".lk-dot{display:inline-block;vertical-align:middle;width:10px;height:10px;border-radius:50%;background:var(--lime,#B9F06B);margin-left:8px;box-shadow:0 0 0 2px var(--card,#fff)}"+
       ".lk-toast{position:fixed;left:50%;bottom:24px;z-index:10000;transform:translateX(-50%);min-height:56px;max-width:min(92vw,420px);display:flex;align-items:center;gap:12px;padding:8px 18px 8px 10px;border-radius:28px;border:2px solid var(--lime,#B9F06B);background:var(--card,#fff);color:var(--text,#15221B);font:inherit;font-weight:900;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.25)}"+
       ".lk-toast .lk-sw{flex:none}.lk-toast small{display:block;font-weight:700;font-size:12px;color:var(--muted,#5F6F64)}"+
       "@media (prefers-reduced-motion:no-preference){.lk-stage .av-scene{transition:transform .25s ease}"+
@@ -372,8 +372,14 @@
   function closeLocker(){
     var el=document.querySelector('.lk'); if(el) el.remove();
     document.removeEventListener('keydown',onKey);
-    if(location.hash==='#locker'){ try{ history.replaceState(null,'',location.pathname+location.search); }catch(_){} }
-    if(L.changed) location.reload(); // cards read the look once at render
+    if(location.hash==='#myplayer'){ try{ history.replaceState(null,'',location.pathname+location.search); }catch(_){} }
+    if(L.changed){
+      // Every card on the page (home, deck, roster) reads the look when it is
+      // drawn. Opened from the card: redraw that card now and refresh the rest
+      // when the card closes. Opened anywhere else: reload once.
+      window.__thwapLookChanged=true;
+      if(L.onClose){ try{ L.onClose(); }catch(_){} } else location.reload();
+    }
   }
   function onKey(e){ if(e.key==='Escape') closeLocker(); }
 
@@ -381,7 +387,7 @@
     opts=opts||{};
     if(document.querySelector('.lk')) return;
     if(!document.getElementById('lk-css')){ var s=document.createElement('style'); s.id='lk-css'; s.textContent=lockerCss(); document.head.appendChild(s); }
-    L={ data:null, look:null, tab:opts.tab||'skin', trying:null, changed:false, me:null, spin:-25, status:'', num:'', build:null };
+    L={ onClose:opts.onClose||null, data:null, look:null, tab:opts.tab||'skin', trying:null, changed:false, me:null, spin:-25, status:'', num:'', build:null };
     var el=document.createElement('div'); el.className='lk'; el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true'); el.setAttribute('aria-label','My Player');
     el.innerHTML="<div class='lk-head'><h2>My Player</h2><button type='button' class='lk-x' aria-label='Close'>&#10005;</button></div>"+
       "<div class='lk-stage' aria-label='Your player. Drag to spin.'></div><div class='lk-note' aria-live='polite'></div>"+
@@ -400,7 +406,7 @@
       if(!readList('thwapUnlockSeen')) writeList('thwapUnlockSeen',j.unlocked||[]);
       paintTabs(); paintGrid(); paintStage();
       // New tags show once: opening the My Player counts as seeing them.
-      writeList('thwapUnlockNew',[]); var dot=document.querySelector('.lk-btn .lk-dot'); if(dot) dot.remove();
+      writeList('thwapUnlockNew',[]); clearDot();
     }).catch(function(code){
       var g=el.querySelector('.lk-grid'); if(g) g.innerHTML="<div class='lk-msg'>"+(code===401?'Sign in to build your player.':'Your player didn\u2019t load. Try again in a minute.')+"</div>";
       L.look={}; paintStage();
@@ -419,16 +425,20 @@
     var b=document.createElement('button'); b.type='button'; b.className='lk-toast'; b.setAttribute('role','status');
     b.innerHTML="<span class='lk-sw' style='background:"+swatch(it.slot,short)+"'></span><span>New gear! "+esc(it.label)+
       (count>1?' and '+(count-1)+' more':'')+"<small>Tap to try it on</small></span>";
-    b.addEventListener('click',function(){ b.remove(); openLocker({tab:it.slot}); });
+    b.addEventListener('click',function(){ b.remove(); if(window.thwapOpenMyPlayer) window.thwapOpenMyPlayer({tab:it.slot}); else openLocker({tab:it.slot}); });
     document.body.appendChild(b);
     try{ if(window.thwapSfx) window.thwapSfx('cardOpen'); }catch(_){}
     try{ if(window.thwapHaptic) window.thwapHaptic('done'); }catch(_){}
     clearTimeout(toastTimer); toastTimer=setTimeout(function(){ if(b.parentNode) b.remove(); },5000);
   }
+  // Dot on the card's My Player button and on the home "Hey <name>" card link.
+  var DOT_TARGETS='#cardImageBtn,#homePlayer';
   function markDot(){
-    var btn=document.querySelector('.lk-btn');
-    if(btn && !btn.querySelector('.lk-dot')){ var d=document.createElement('i'); d.className='lk-dot'; d.setAttribute('aria-label','new gear'); btn.appendChild(d); }
+    var els=document.querySelectorAll(DOT_TARGETS);
+    for(var i=0;i<els.length;i++){ var btn=els[i];
+      if(!btn.querySelector('.lk-dot')){ var d=document.createElement('i'); d.className='lk-dot'; d.setAttribute('aria-label','new gear'); btn.appendChild(d); } }
   }
+  function clearDot(){ var ds=document.querySelectorAll('.lk-dot'); for(var i=0;i<ds.length;i++) ds[i].remove(); }
   function checkUnlocks(){
     if(!on() || typeof fetch!=='function') return Promise.resolve(null);
     return fetch('/api/board?action=look',{credentials:'same-origin'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){
@@ -460,26 +470,26 @@
     window.thwapMarkDone=wrapped;
   }
 
-  // Preview-only entry points: #locker, and a floating button while the flag is on.
+  // Entry points: the My Player button on the player's own card (index.html),
+  // the New gear toast, the first-run builder, and #myplayer for testing.
   function bootLocker(){
     if(!on()) return;
     try{ if(sessionStorage.getItem('thwapReveal')){ sessionStorage.removeItem('thwapReveal');
       document.body.classList.add('av-reveal'); setTimeout(function(){ document.body.classList.remove('av-reveal'); },800);
       try{ if(window.thwapSfx) window.thwapSfx('cardOpen'); }catch(_){} } }catch(_){}
-    if(location.hash==='#locker') openLocker();
-    window.addEventListener('hashchange',function(){ if(location.hash==='#locker') openLocker(); });
-    if(!document.querySelector('.lk-btn') && document.body){
-      if(!document.getElementById('lk-css')){ var s=document.createElement('style'); s.id='lk-css'; s.textContent=lockerCss(); document.head.appendChild(s); }
-      var b=document.createElement('button'); b.type='button'; b.className='lk-btn'; b.textContent='My Player';
-      b.addEventListener('click',function(){ openLocker(); }); document.body.appendChild(b);
-    }
+    if(location.hash==='#myplayer') openLocker();
+    window.addEventListener('hashchange',function(){ if(location.hash==='#myplayer') openLocker(); });
+    // The entry point is the player's own card (My Player button), not a
+    // floating button. Styles are needed up front for the dot and the toast.
+    if(!document.getElementById('lk-css')){ var s=document.createElement('style'); s.id='lk-css'; s.textContent=lockerCss(); document.head.appendChild(s); }
     if((readList('thwapUnlockNew')||[]).length) markDot();
+    window.addEventListener('load',function(){ if((readList('thwapUnlockNew')||[]).length) markDot(); });
     hookMarkDone(); window.addEventListener('load',hookMarkDone);
     // First visit: open the builder once if this player has never saved a look.
-    if(location.hash!=='#locker'){
+    if(location.hash!=='#myplayer'){
       checkUnlocks().then(function(j){
         var offered=false; try{ offered=!!localStorage.getItem('thwapBuilderOffered'); }catch(_){}
-        if(j && !j.saved && !offered){ try{ localStorage.setItem('thwapBuilderOffered','1'); }catch(_){} openLocker({builder:true}); }
+        if(j && !j.saved && !offered){ try{ localStorage.setItem('thwapBuilderOffered','1'); }catch(_){} if(window.thwapOpenMyPlayer) window.thwapOpenMyPlayer({builder:true}); else openLocker({builder:true}); }
       });
     }
   }
