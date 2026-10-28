@@ -163,7 +163,8 @@ the hockey year, August to June, and rolls over in August.
 - [x] Phase 1 texture spec, written to style A (`docs/avatar-texture-spec.md`)
 - [x] Flat-texture pipeline proof (jersey + helmet tiles render crisp + shade
   cleanly in the rig; `avatar-tex/`)
-- [ ] Remaining Phase 1 texture kit (sleeves, socks, pants, gloves, skate, skin, hair)
+- [x] Phase 1 texture kit: shared weave overlay (`avatar-tex/grain.png`) on
+  sleeves, socks, pants, gloves and skates; skin and hair stay flat on purpose
 - [x] Unlock rules (`lib/avatar_items.js`) and look storage
   (`lib/look_api.js`, routed via `api/board.js?action=look|looks` to stay
   inside the Vercel 12-function cap)
@@ -172,11 +173,19 @@ the hockey year, August to June, and rolls over in August.
   with no saved look, then the character drops onto the card
 - [x] Unlock moment after a drill (New gear toast, New tags, dot on the
   My Player button)
-- [ ] Launch: character on for everyone, real My Player entry point,
-  photo upload removed (stored photos deleted only after Woody confirms)
-- Launch switch: `var LIVE` in `avatar.js` (ships false). A player who has not
-  built a character keeps the Big Number card until they do, so the roster is
-  never a row of identical default players.
-- Photo retirement: admin page, Roster tab, "Retire player photos". Always a
-  dry run first; deleting needs the exact phrase DELETE ALL PLAYER PHOTOS.
-  Run it about a week after launch, once the characters are confirmed working.
+- [x] Launch (Oct 28 2026): `var LIVE=true` in `avatar.js`. Every card shows a
+  character. A player who has not built one gets a starter look picked from
+  their name (hair style, hair color, one of the free Rangers jerseys; skin
+  stays the default), so the roster is never a row of twins. No player photos
+  anywhere; Lewie's built-in photo was removed.
+- [x] Photo retirement: stored player photos and consent records deleted from
+  the admin page (Roster, "Retire player photos") on Oct 28 2026.
+- [x] Light edge around the character so black gear reads on dark card plates.
+- [x] Phase 2 gear to 75 training days: Rangers Red helmet (25), Ice White
+  gloves (30), Blackout cage (40, new `cage` slot), Rangers Red stick (60).
+- [x] Winter break item: Frozen Pond jersey, 5 training days between
+  Dec 19 2026 and Jan 4 2027 (`window` rule, counted from the real day list).
+- [x] Unlock sound on New gear (bar-down ring and a crowd pop; silent with
+  reduced motion or sounds muted).
+- [ ] Recheck the ladder numbers against December's data before Phase 2 is
+  called done.

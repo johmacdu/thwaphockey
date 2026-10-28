@@ -10255,9 +10255,9 @@ document.getElementById('coachInfoScrim') && document.getElementById('coachInfoS
     streak:{c:'buzzer',g:0.7}, error:{c:'whistle',g:0.6},
     done:{c:'done',g:1.0}, handsReward:{c:'hands',g:0.9},
     shootReward:{c:'bardown',g:1.0}, drylandReward:{c:'buzzer',r:1.15,g:0.55},
-    sticker:{c:'hands',r:1.2,g:0.7}, perfect:{c:'__perfect__'}
+    sticker:{c:'hands',r:1.2,g:0.7}, perfect:{c:'__perfect__'}, unlock:{c:'__unlock__'}
   };
-  var CELEBRATE={done:1,perfect:1,sticker:1,shootReward:1,handsReward:1,drylandReward:1,streak:1};
+  var CELEBRATE={done:1,perfect:1,unlock:1,sticker:1,shootReward:1,handsReward:1,drylandReward:1,streak:1};
   var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var AC=null,MASTER=null,BUF={},decoded=false;
   var DBG=/[?&]sfxdebug=1/.test(location.search);
@@ -10315,6 +10315,8 @@ document.getElementById('coachInfoScrim') && document.getElementById('coachInfoS
     if(!sfxOn())return; if(reduce&&CELEBRATE[name])return;
     var m=MAP[name]; if(!m){dlog('no MAP for '+name);return;} ctx(); if(!AC)return;
     if(m.c==='__perfect__'){ var t=AC.currentTime; shot('buzzer',1,0.85,t); shot('goal-crowd',1,0.6,t+0.12); if(navigator.vibrate)navigator.vibrate(24); return; }
+    /* New gear unlocked: the bar-down ring, then a short crowd pop. */
+    if(m.c==='__unlock__'){ var t2=AC.currentTime; shot('bardown',1.08,0.95,t2); shot('goal-crowd',1.1,0.35,t2+0.1); if(navigator.vibrate)navigator.vibrate(18); return; }
     shot(m.c,m.r,m.g);
     if(navigator.vibrate){ navigator.vibrate(CELEBRATE[name]?18:8); }
   }

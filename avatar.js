@@ -41,14 +41,17 @@
     black:{ body:'#151515', stripe:'#C8102E', trim:'#FFFFFF', num:'#FFFFFF' },
     white:{ body:'#F2F2F2', stripe:'#C8102E', trim:'#111111', num:'#C8102E' },
     forest:{ body:'#1F5A3A', stripe:'#F2F2F2', trim:'#111111', num:'#FFFFFF' },
-    legend:{ body:'#D4A72C', stripe:'#111111', trim:'#FFFFFF', num:'#111111' }
+    legend:{ body:'#D4A72C', stripe:'#111111', trim:'#FFFFFF', num:'#111111' },
+    pond:{ body:'#8CC8EA', stripe:'#F2F2F2', trim:'#16365C', num:'#16365C' }
   };
-  var GLOVES={ black:'#141414', red:'#C8102E', ice:'#BFE6F2' };
-  var STICK={ classic:'#2B2B2B', wood:'#B07A45', gold:'#D4A72C' };
+  var GLOVES={ black:'#141414', red:'#C8102E', white:'#EDEDED', ice:'#BFE6F2' };
+  var STICK={ classic:'#2B2B2B', wood:'#B07A45', red:'#C8102E', gold:'#D4A72C' };
+  var HELMET={ chrome:'#B8C2CC', red:'#C8102E' };
+  var CAGE={ steel:'#C9CED3', black:'#1A1A1A' };
   // hand/facing are free preference slots (server catalog: hand-*, facing-*).
   // grip is how the stick is held (oneHand/twoHand) -- a render default, not a
   // catalog slot, kept separate from the server's unlockable 'pose' (stances).
-  var DEFAULT_LOOK={ skin:'s3', hair:'brown', hairstyle:'flow', jersey:'red', helmet:'team', gloves:'black', stick:'classic', num:'', hand:'right', facing:'left', grip:'oneHand' };
+  var DEFAULT_LOOK={ skin:'s3', hair:'brown', hairstyle:'flow', jersey:'red', helmet:'team', cage:'steel', gloves:'black', stick:'classic', num:'', hand:'right', facing:'left', grip:'oneHand' };
 
   // Server looks use catalog ids ('jersey-red', 'skin-s3'); the renderer keys
   // on the part after the slot prefix. Unknown values fall back to defaults.
@@ -162,8 +165,8 @@
     var hair=HAIR[look.hair]||HAIR[DEFAULT_LOOK.hair];
     var J=JERSEY[look.jersey]||JERSEY[DEFAULT_LOOK.jersey];
     var num=esc(look.num);
-    var black='#141414', steel='#C9CED3';
-    var helmet=look.helmet==='chrome'?'#B8C2CC':(look.jersey==='white'?'#F2F2F2':'#141414');
+    var black='#141414', steel=CAGE[look.cage]||CAGE.steel;
+    var helmet=HELMET[look.helmet]||(look.jersey==='white'?'#F2F2F2':'#141414');
     var gloveC=GLOVES[look.gloves]||black;
     var stickC=STICK[look.stick]||'#2B2B2B';
 
@@ -336,7 +339,11 @@
   // --- Styles -----------------------------------------------------------------
   var css=
     ".av-wrap{position:absolute;inset:0;z-index:2;pointer-events:none;perspective:60em;perspective-origin:50% 30%;"+
-      "font-size:min(9px,2.2vw)}"+
+      "font-size:min(9px,2.2vw);"+
+      // Faint light edge around the whole character, so black gear (Rink Black
+      // jersey, helmet, pants, stick) keeps its outline on the dark card plates
+      // and in dark mode. Invisible on light backgrounds.
+      "filter:drop-shadow(0 0 1px rgba(255,255,255,.85)) drop-shadow(0 0 1px rgba(255,255,255,.55))}"+
     ".av-scene{position:absolute;left:50%;bottom:9%;width:0;height:0;transform-style:preserve-3d;"+
       "transform:rotateX(-10deg) rotateY(var(--av-face,-25deg))}"+
     ".av-b{position:absolute;left:0;top:0;width:0;height:0;transform-style:preserve-3d}"+
@@ -361,7 +368,7 @@
   // Opens from the My Player button on the player's own card. Tap an owned item: it goes on the
   // character and saves to the server. Tap a locked item: try it on, with the
   // progress line; nothing is saved. Unlocks come from the server only.
-  var GEAR_TABS=[['skin','Skin'],['hairstyle','Hair'],['hair','Hair color'],['jersey','Jersey'],['helmet','Helmet'],['stripe','Stripe'],['gloves','Gloves'],['stick','Stick'],['hand','Shot'],['facing','View']];
+  var GEAR_TABS=[['skin','Skin'],['hairstyle','Hair'],['hair','Hair color'],['jersey','Jersey'],['helmet','Helmet'],['cage','Cage'],['stripe','Stripe'],['gloves','Gloves'],['stick','Stick'],['hand','Shot'],['facing','View']];
   var TIER_LABEL={ common:'', rare:'Pro', epic:'All-Star', legendary:'Legend' };
   var L={ data:null, look:null, saved:null, tab:'skin', trying:null, changed:false, me:null };
 
@@ -369,7 +376,7 @@
     var c='#888';
     if(slot==='skin') c=SKIN[short]; else if(slot==='hair') c=HAIR[short];
     else if(slot==='jersey') c=(JERSEY[short]||{}).body; else if(slot==='gloves') c=GLOVES[short];
-    else if(slot==='stick') c=STICK[short]; else if(slot==='helmet') c=short==='chrome'?'#B8C2CC':'#141414';
+    else if(slot==='stick') c=STICK[short]; else if(slot==='helmet') c=HELMET[short]||'#141414'; else if(slot==='cage') c=CAGE[short];
     else if(slot==='stripe') c=short==='none'?'transparent':'#C8102E';
     return c||'#888';
   }
@@ -378,6 +385,7 @@
     if(r.type==='activities') return 'Finish '+r.n+' drills';
     if(r.type==='days') return 'Train '+r.n+' days';
     if(r.type==='disc') return 'Finish '+r.n+' '+({stick:'Hands',shoot:'Shooting',dryland:'Dryland',netplay:'Net play',iq:'Hockey IQ',pass:'Passing'}[r.disc]||r.disc)+' drills';
+    if(r.type==='window') return 'Train '+r.n+' days over winter break';
     if(r.type==='coach') return 'From your coach';
     return '';
   }
@@ -386,6 +394,7 @@
     if(r.type==='activities') return p.activities;
     if(r.type==='days') return p.trainingDays;
     if(r.type==='disc') return (p.disciplines||{})[r.disc]||0;
+    if(r.type==='window') return (p.windows||{})[it.id]||0;
     return 0;
   }
   function owned(id){ return !!(L.data && L.data.unlocked.indexOf(id)>=0); }
@@ -613,7 +622,7 @@
       (count>1?' and '+(count-1)+' more':'')+"<small>Tap to try it on</small></span>";
     b.addEventListener('click',function(){ b.remove(); if(window.thwapOpenMyPlayer) window.thwapOpenMyPlayer({tab:it.slot}); else openLocker({tab:it.slot}); });
     document.body.appendChild(b);
-    try{ if(window.thwapSfx) window.thwapSfx('cardOpen'); }catch(_){}
+    try{ if(window.thwapSfx) window.thwapSfx('unlock'); }catch(_){}
     try{ if(window.thwapHaptic) window.thwapHaptic('done'); }catch(_){}
     clearTimeout(toastTimer); toastTimer=setTimeout(function(){ if(b.parentNode) b.remove(); },5000);
   }
