@@ -1,0 +1,102 @@
+# XcodeGen spec for the standalone Thwap Apple Watch app.
+# Regenerate the project after editing:  cd ios/ThwapWatch && xcodegen generate
+#
+# This is a SIBLING project to the Capacitor app (ios/App). It does not touch
+# ios/App/App.xcodeproj, its Pods, or the iOS App target's build settings.
+name: ThwapWatch
+options:
+  bundleIdPrefix: com.thwaphockey.app
+  deploymentTarget:
+    watchOS: "26.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: ""
+packages:
+  ThwapCore:
+    path: ThwapCore
+targets:
+  ThwapWatch:
+    type: application
+    platform: watchOS
+    sources:
+      - WatchApp
+      - Shared
+    dependencies:
+      - package: ThwapCore
+      - target: ThwapComplication
+    entitlements:
+      path: WatchApp/ThwapWatch.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.thwaphockey.app
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.thwaphockey.app.watchkitapp
+        PRODUCT_NAME: Thwap
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Thwap
+        INFOPLIST_KEY_WKApplication: YES
+        # "Supports running without iOS app installation" = YES (standalone).
+        INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp: YES
+        INFOPLIST_KEY_WKCompanionAppBundleIdentifier: com.thwaphockey.app
+        TARGETED_DEVICE_FAMILY: "4"
+        ENABLE_PREVIEWS: YES
+  ThwapComplication:
+    type: app-extension
+    platform: watchOS
+    sources:
+      - Complication
+      - Shared
+    dependencies:
+      - package: ThwapCore
+      - sdk: WidgetKit.framework
+      - sdk: SwiftUI.framework
+    entitlements:
+      path: Complication/ThwapComplication.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.com.thwaphockey.app
+    info:
+      path: Complication/Info.plist
+      properties:
+        CFBundleDisplayName: Thwap rings
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.widgetkit-extension
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.thwaphockey.app.watchkitapp.complication
+        TARGETED_DEVICE_FAMILY: "4"
+        SKIP_INSTALL: YES
+  ThwapWatchTests:
+    type: bundle.unit-test
+    platform: watchOS
+    sources:
+      - path: ThwapCore/Tests/ThwapCoreTests
+    dependencies:
+      - package: ThwapCore
+      - target: ThwapWatch
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.thwaphockey.app.watchkitapp.tests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Thwap.app/Thwap"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+schemes:
+  ThwapWatch:
+    build:
+      targets:
+        ThwapWatch: all
+        ThwapComplication: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - ThwapWatchTests
