@@ -1,5 +1,7 @@
-// Locker Room (avatar.js): owned items save to the server, locked items are
+// My Player (avatar.js): owned items save to the server, locked items are
 // try-on only and never POSTed, and a signed-out player gets a plain message.
+// The entry point is the card's My Player button (#cardImageBtn); there is no
+// floating button.
 import { describe, it, expect } from 'vitest';
 import { JSDOM } from 'jsdom';
 import fs from 'fs';
@@ -10,7 +12,7 @@ const SRC = fs.readFileSync(path.join(__dirname, '..', 'avatar.js'), 'utf8');
 const tick = () => new Promise((r) => setTimeout(r, 0));
 
 async function open({ status = 200, progress = A.progressFrom({ stick: 6 }, 2), saved = true, before } = {}) {
-  const dom = new JSDOM('<!doctype html><html><head></head><body></body></html>', { url: 'https://thwaphockey.com/?avatar=1', runScripts: 'outside-only' });
+  const dom = new JSDOM("<!doctype html><html><head></head><body><button id='homePlayer'>Lewie</button><button id='cardImageBtn'>My Player</button></body></html>", { url: 'https://thwaphockey.com/?avatar=1', runScripts: 'outside-only' });
   const w = dom.window;
   const posts = [];
   const data = { id: 'lewie', look: { ...A.DEFAULT_LOOK }, saved, items: A.ITEMS, progress, unlocked: A.unlockedIds(progress), next: [] };
@@ -32,13 +34,28 @@ async function open({ status = 200, progress = A.progressFrom({ stick: 6 }, 2), 
   return { w, posts, data };
 }
 
-describe('Locker Room', () => {
-  it('opens with tabs and a character preview, plus a preview entry button', async () => {
+describe('My Player', () => {
+  it('opens with tabs and a character preview, and adds no floating button', async () => {
     const { w } = await open();
     expect(w.document.querySelector('.lk[role=dialog]')).toBeTruthy();
+    expect(w.document.querySelector('.lk h2').textContent).toBe('My Player');
     expect(w.document.querySelectorAll('.lk-tab').length).toBe(7);
     expect(w.document.querySelector('.lk-stage .av-wrap')).toBeTruthy();
-    expect(w.document.querySelector('.lk-btn')).toBeTruthy();
+    expect(w.document.querySelector('.lk-btn')).toBeNull();
+  });
+
+  it('opened from the card, a saved change calls onClose instead of reloading', async () => {
+    const { w } = await open();
+    w.document.querySelector('.lk-x').click();
+    let closed = 0;
+    w.thwapAvatar.openLocker({ onClose: () => { closed++; } });
+    for (let i = 0; i < 5; i++) await tick();
+    w.document.querySelector('[data-tab=gloves]').click();
+    w.document.querySelector('[data-id=gloves-red]').click();
+    for (let i = 0; i < 5; i++) await tick();
+    w.document.querySelector('.lk-x').click();
+    expect(closed).toBe(1);
+    expect(w.__thwapLookChanged).toBe(true);
   });
 
   it('tapping an owned item saves the new look', async () => {
@@ -107,7 +124,8 @@ describe('unlock moment', () => {
     const toast = w.document.querySelector('.lk-toast');
     expect(toast).toBeTruthy();
     expect(toast.textContent).toMatch(/New gear! Rangers Red gloves/);
-    expect(w.document.querySelector('.lk-btn .lk-dot')).toBeTruthy();
+    expect(w.document.querySelector('#cardImageBtn .lk-dot')).toBeTruthy();
+    expect(w.document.querySelector('#homePlayer .lk-dot')).toBeNull();
     toast.remove();
     await w.thwapAvatar.checkUnlocks();
     expect(w.document.querySelector('.lk-toast')).toBeNull(); // only once
@@ -130,5 +148,19 @@ describe('unlock moment', () => {
     expect(w.thwapMarkDone.__avHooked).toBe(true);
     await w.thwapMarkDone('stick', 'stick:0');
     expect(called).toBe(1);
+  });
+});
+
+describe('card entry point (index.html)', () => {
+  const INDEX = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  it('the player card image button becomes Edit player when the character is on', () => {
+    expect(INDEX).toMatch(/imageBtn\.innerHTML=avOn\?'\\u270F\\uFE0F Edit player'/);
+    expect(INDEX).toMatch(/if\(window\.thwapAvatar && window\.thwapAvatar\.on\(\)\)\{ window\.thwapAvatar\.openLocker\(\{onClose:function\(\)\{ buildFaces\(\); paint\(\); \}\}\); return; \}/);
+  });
+  it('closing the card after a look change reloads once so every card updates', () => {
+    expect(INDEX).toMatch(/if\(window\.__thwapLookChanged\)\{ window\.__thwapLookChanged=false; location\.reload\(\); return; \}/);
+  });
+  it('exposes thwapOpenMyPlayer for the toast and the builder', () => {
+    expect(INDEX).toContain('window.thwapOpenMyPlayer=function(opts){');
   });
 });

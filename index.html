@@ -5788,7 +5788,10 @@ function buildThemePicker(){
   /* image button label: pencil if a photo exists, + if not */
   var hasPhoto=false; try{ hasPhoto=!!localStorage.getItem('thwapCardPhoto:'+slug); }catch(_){}
   if(themeBtn){ themeBtn.innerHTML='\u270F\uFE0F Theme'; }
-  if(imageBtn){ imageBtn.innerHTML=hasPhoto?'\u270F\uFE0F image':'+ image'; }
+  /* Character (avatar.js): the image button becomes My Player. The kid's own
+     character replaces the photo on the card. */
+  var avOn=false; try{ avOn=!!(window.thwapAvatar && window.thwapAvatar.on()); }catch(_){}
+  if(imageBtn){ imageBtn.innerHTML=avOn?'\u270F\uFE0F Edit player':(hasPhoto?'\u270F\uFE0F image':'+ image'); imageBtn.setAttribute('aria-label', avOn?'Edit player':'Change card image'); }
   var dirty=false;
   function setSave(){ if(saveBtn){ saveBtn.disabled=!dirty; saveBtn.setAttribute('aria-disabled', dirty?'false':'true'); } }
   function showMain(){ main.hidden=false; themeRow.hidden=true; }
@@ -5827,6 +5830,7 @@ function buildThemePicker(){
   if(imageBtn && !imageBtn._wired){ imageBtn._wired=1;
     imageBtn.addEventListener('pointerdown',function(e){e.stopPropagation();});
     imageBtn.addEventListener('click',function(e){ e.stopPropagation();
+      if(window.thwapAvatar && window.thwapAvatar.on()){ window.thwapAvatar.openLocker({onClose:function(){ buildFaces(); paint(); }}); return; }
       var s=cb2Slug(); var has=false; try{ has=!!localStorage.getItem('thwapCardPhoto:'+s); }catch(_){}
       /* parent-consent + photo flow. On success land in the theme-controls view
          with Save active, so the player can confirm the added image. */
@@ -5906,6 +5910,9 @@ function open(){
   document.addEventListener('keydown', onKey);
 }
 function close(){
+  /* A My Player change redraws this card at once. The rest of the page (home,
+     deck, roster) picks it up with one reload when the card closes. */
+  if(window.__thwapLookChanged){ window.__thwapLookChanged=false; location.reload(); return; }
   overlay.classList.remove('show');
   document.removeEventListener('keydown', onKey);
   window.thwapViewTarget=null; document.body.classList.remove('viewing-teammate');
@@ -5923,6 +5930,14 @@ window.openPlayerCardToBack=function(){ open(); ry=180; flipped=true; rx=0; _las
    "See my stats" button). Distinct from the read-only teammate viewer: a player
    tapping their own card on the Team page should land here, not in viewing-teammate. */
 window.thwapOpenMyCard=function(){ open(); };
+/* Open the player's own card, then My Player on top of it (New gear toast,
+   first-run builder). Closing My Player lands back on the card. */
+window.thwapOpenMyPlayer=function(opts){
+  try{ open(); }catch(e){}
+  if(overlay.hidden) return; /* no player picked yet: open() sent them to pick one */
+  opts=opts||{}; opts.onClose=function(){ buildFaces(); paint(); };
+  if(window.thwapAvatar) window.thwapAvatar.openLocker(opts);
+};
 
 /* ---- Teammate card viewer (read-only): tap any player on the Team page to open
    their card and rotate it front/back. Shows their photo (parent-consented,
