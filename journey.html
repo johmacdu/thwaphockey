@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Thwap Hockey: My Season Journey</title>
+<title>Thwap Hockey: My Journey</title>
 <script>try{if(localStorage.getItem('thwapTheme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}
 /* ?embed=1: shown inside the app's Journey page (index.html #stickers). */
 if(/[?&]embed=1\b/.test(location.search))document.documentElement.classList.add('embed');</script>
@@ -168,8 +168,8 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
 <section class="pg cover" aria-label="Season book cover">
   <div class="art fill" data-art="cover.webp"><span>cover.webp 1200x1600</span></div>
   <div class="over">
-    <div><div class="t1" id="jSeason">Season 2026-27</div><h1>My Season Journey</h1></div>
-    <div><div class="who"><span id="jName">Lewie M.</span> <b id="jNum">#81</b></div><div class="t1" id="jMeta" style="margin-top:6px;color:#F3F7F4">Forward &nbsp; Jr. Rangers 10U</div></div>
+    <div><div class="t1" id="jSeason">2026-27 Jr. Rangers 10U</div><h1>My Journey</h1></div>
+    <div><div class="who"><span id="jName">Lewie M.</span> <b id="jNum">#81</b></div><div class="t1" id="jMeta" style="margin-top:6px;color:#F3F7F4">Forward</div></div>
   </div>
 </section>
 
@@ -280,13 +280,16 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
   function xFor(n){for(var i=1;i<STOP.length;i++){var a=STOP[i-1],b=STOP[i];if(n<=b[0])return a[1]+(b[1]-a[1])*(n-a[0])/(b[0]-a[0]);}return 89;}
   function txt(id,v){var el=document.getElementById(id);if(el)el.textContent=v;}
   function render(b){
-    txt('jSeason','Season '+b.season.label);
+    // Season line: the season plus the player's team (which carries the age
+    // level, e.g. Jr. Rangers 10U), so each book labels itself on the shelf.
+    var team=b.player&&b.player.team?String(b.player.team):'';
+    txt('jSeason',b.season.label+' '+(team||'Season'));
     if(b.player&&b.player.name){
       txt('jName',b.player.name);
       var num=document.getElementById('jNum'); if(b.player.number!=null){num.textContent='#'+b.player.number;num.hidden=false;}else{num.hidden=true;}
       var pos=b.player.position?String(b.player.position):'';
       pos=pos?pos.charAt(0).toUpperCase()+pos.slice(1):'';
-      var meta=[pos,b.player.team||''].filter(Boolean);
+      var meta=[pos].filter(Boolean);
       var m=document.getElementById('jMeta'); m.textContent=meta.join('\u00a0\u00a0 '); m.hidden=!meta.length;
     }
     txt('jTier',b.tier);
