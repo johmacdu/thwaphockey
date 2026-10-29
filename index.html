@@ -1892,6 +1892,20 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
       </div>
       <p class='login-msg' id='loginOtpMsg' aria-live='polite'></p>
     </div>
+    <div id='loginParentView' hidden>
+      <div class='login-otphead'>
+        <button type='button' class='login-back' id='loginParentBack' aria-label='Back to sign in'><span aria-hidden='true'>&#8249;</span></button>
+        <h2 class='login-h' id='loginParentTitle'>Ask a parent</h2>
+      </div>
+      <p class='login-sub login-otpsub' id='loginParentSub'>This is a new device. We emailed a 6-digit code to your parent. Ask them for it.</p>
+      <label class='login-field'>
+        <span class='login-lab'>Code from your parent</span>
+        <input class='login-in' id='loginParentCode' type='text' name='thwapParentCode' inputmode='numeric' autocomplete='one-time-code' pattern='[0-9]{6}' maxlength='6' autocapitalize='off' autocorrect='off' spellcheck='false' placeholder='6 digits'>
+      </label>
+      <button type='button' class='login-go' id='loginParentGo'>Sign In &#8594;</button>
+      <p class='login-msg' id='loginParentMsg' aria-live='polite'></p>
+      <button type='button' class='login-otp-toggle' id='loginParentResend'>Send a new code</button>
+    </div>
   </form>
   <div class='policy-page' id='policySheet' hidden>
     <button type='button' class='glassclose policy-x' id='policyClose' aria-label='Close'>&#215;</button>
@@ -9877,6 +9891,7 @@ function show(){
   document.body.classList.add('login-locked');
   var sv=document.getElementById('loginSignInView'), ov=document.getElementById('loginOtpView');
   if(sv&&ov){ sv.hidden=false; ov.hidden=true; }
+  var pv=document.getElementById('loginParentView'); if(pv) pv.hidden=true;
   var csf=document.getElementById('coachSignupForm'); if(csf) csf.hidden=true;
 }
 function hide(){
@@ -9968,21 +9983,31 @@ function maybeSplash(){
    same code the player typed. Non-blocking and time-boxed: if the server is down
    or unconfigured we still let the player in on the client-side path below, so no
    one is ever locked out. Demo players (client-only, no backend) are skipped. */
-function mintServerSession(pid,code,email,keep){
+/* The server only hands out a session for a browser it already trusts (one with
+   a valid session, or one a parent approved before). A NEW browser gets
+   {needsParentCode:true}: the parent was emailed a 6-digit code and the sheet
+   asks for it. quiet=true (the silent self-heal) never emails a parent.
+   Resolves {ok,status,reason,body}; ok is true only when a session was set. */
+function mintServerSession(pid,code,email,keep,quiet){
   if(!pid||pid==='demo'||!code) return Promise.resolve({ok:false,status:0,reason:'no-credentials'});
   return new Promise(function(resolve){
     var settled=false, fin=function(v){ if(settled)return; settled=true; resolve(v||{ok:false,status:0,reason:'timeout'}); };
-    var to=setTimeout(function(){ fin({ok:false,status:0,reason:'timeout'}); },3500);
+    var to=setTimeout(function(){ fin({ok:false,status:0,reason:'timeout'}); },quiet?3500:8000);
     try{
       fetch('/api/login?action=code-signin',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',
-        body:JSON.stringify({playerId:pid,code:String(code||''),email:String(email||''),keep:!!keep})})
-        .then(function(r){ clearTimeout(to); fin({ok:!!(r&&r.ok),status:(r?r.status:0),reason:(r&&r.ok)?'ok':'mint-failed'}); },
-              function(){ clearTimeout(to); fin({ok:false,status:0,reason:'network'}); });
+        body:JSON.stringify({playerId:pid,code:String(code||''),email:String(email||''),keep:!!keep,quiet:!!quiet})})
+        .then(function(r){
+          return r.json().catch(function(){ return {}; }).then(function(j){
+            clearTimeout(to);
+            var ok=!!(r&&r.ok&&j&&j.ok);
+            var reason=ok?'ok':(j&&j.needsParentCode)?'needs-parent-code':(j&&j.needsParentEmail)?'needs-parent-email':'mint-failed';
+            fin({ok:ok,status:(r?r.status:0),reason:reason,body:j||{}});
+          });
+        }, function(){ clearTimeout(to); fin({ok:false,status:0,reason:'network'}); });
     }catch(e){ clearTimeout(to); fin({ok:false,status:0,reason:'threw'}); }
   });
 }
-function signIn(player,email,keep,code){
-  function finish(){
+function finishSignIn(player,email,keep){
     var rec={pid:player.pid,name:player.name,email:String(email||'').trim(),year:SEASON_YEAR,ts:Date.now()};
     try{
       var json=JSON.stringify(rec);
@@ -9991,14 +10016,99 @@ function signIn(player,email,keep,code){
       localStorage.removeItem(AUTH_KEY); sessionStorage.removeItem(AUTH_KEY);
       localStorage.setItem('bfPlayer',player.name);
     }catch(e){}
+    try{ sessionStorage.removeItem('thwapNeedsParent'); }catch(e){}
     hide();
     if(location.hash==='#login'){ location.hash='#home'; }
     location.reload();
-  }
-  /* establish the server session first (so the cookie is set before the reload),
-     then finish regardless of the outcome */
-  mintServerSession(player.pid, code, email, keep).then(finish, finish);
 }
+function signIn(player,email,keep,code){
+  /* Establish the server session first (so the cookie is set before the reload).
+     A new device stops here and asks for the parent's code. A down or
+     unconfigured server (no answer, or 5xx) still lets the player in on the
+     client-side path, as before, so nobody is locked out by an outage. */
+  errEl.textContent='Signing in...';
+  mintServerSession(player.pid, code, email, keep, false).then(function(r){
+    r=r||{};
+    if(r.ok){ finishSignIn(player,email,keep); return; }
+    errEl.textContent='';
+    if(r.reason==='needs-parent-code'){ showParentStep(player,email,keep,!!(r.body&&r.body.sent)); return; }
+    if(r.reason==='needs-parent-email'){ errEl.textContent='This is a new device, and we need a parent to say yes. Ask your coach to add a parent email, then try again.'; return; }
+    if(r.status===401){ errEl.textContent='That code did not match.'; pwEl.focus(); pwEl.select(); return; }
+    if(r.status===429){ errEl.textContent='Too many tries. Wait a few minutes and try again.'; return; }
+    if(!r.status || r.status>=500){ finishSignIn(player,email,keep); return; }
+    errEl.textContent='Sign in did not work. Try again.';
+  });
+}
+/* ---- New device: the parent's 6-digit code ---------------------------------
+   Shown after a correct player code on a browser the parent has not approved.
+   The server already emailed the code to the parent(s) on file; verify checks
+   it and sets the session (and, with Keep me signed in, remembers this browser
+   for 30 days so it does not ask again). */
+var parentView=document.getElementById('loginParentView'),
+    parentCodeEl=document.getElementById('loginParentCode'),
+    parentGo=document.getElementById('loginParentGo'),
+    parentMsg=document.getElementById('loginParentMsg'),
+    parentSub=document.getElementById('loginParentSub'),
+    parentResend=document.getElementById('loginParentResend'),
+    parentBack=document.getElementById('loginParentBack');
+var parentCtx=null;
+function parentNote(text,kind){ if(!parentMsg) return; parentMsg.className='login-msg'+(kind?' '+kind:''); parentMsg.textContent=text||''; }
+function showParentStep(player,email,keep,sent){
+  parentCtx={player:player,email:email,keep:keep};
+  var sv=document.getElementById('loginSignInView'), ov=document.getElementById('loginOtpView');
+  if(sv) sv.hidden=true; if(ov) ov.hidden=true;
+  if(!parentView){ errEl.textContent='Ask a parent to help you sign in.'; return; }
+  parentView.hidden=false;
+  var first=String(player.name||'').split(/\s+/)[0]||'your player';
+  if(parentSub) parentSub.textContent='This is a new device. We emailed a 6-digit code to the parent email on file for '+first+'. Ask your parent for it.';
+  if(parentCodeEl){ parentCodeEl.value=''; parentCodeEl.focus(); }
+  if(parentGo){ parentGo.disabled=false; parentGo.textContent='Sign In \u2192'; }
+  if(sent) parentNote('');
+  else parentNote('We could not send the email. Tap Send a new code to try again.','err');
+}
+function hideParentStep(){
+  parentCtx=null;
+  if(parentView) parentView.hidden=true;
+  var sv=document.getElementById('loginSignInView'); if(sv) sv.hidden=false;
+  parentNote(''); errEl.textContent='';
+}
+function parentVerify(){
+  if(!parentCtx) return;
+  var code=String((parentCodeEl&&parentCodeEl.value)||'').replace(/\D+/g,'');
+  if(!/^\d{6}$/.test(code)){ parentNote('Enter the 6-digit code.','err'); if(parentCodeEl) parentCodeEl.focus(); return; }
+  var ctx=parentCtx;
+  if(parentGo){ parentGo.disabled=true; parentGo.textContent='Signing in...'; }
+  parentNote('');
+  fetch('/api/login?action=verify',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',
+    body:JSON.stringify({playerId:ctx.player.pid,code:code,keep:!!ctx.keep})})
+    .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return {ok:r.ok,status:r.status,j:j}; }); })
+    .then(function(res){
+      if(res.ok && res.j && res.j.ok){ finishSignIn(ctx.player,ctx.email,ctx.keep); return; }
+      if(parentGo){ parentGo.disabled=false; parentGo.textContent='Sign In \u2192'; }
+      var why=res.j&&res.j.reason;
+      if(why==='expired'||why==='locked'||why==='none') parentNote('That code has run out. Tap Send a new code.','err');
+      else parentNote('That code did not match. Check it with your parent and try again.','err');
+      if(parentCodeEl){ parentCodeEl.focus(); parentCodeEl.select(); }
+    })
+    .catch(function(){ if(parentGo){ parentGo.disabled=false; parentGo.textContent='Sign In \u2192'; } parentNote('Could not reach Thwap. Check your connection.','err'); });
+}
+if(parentGo) parentGo.addEventListener('click',parentVerify);
+if(parentBack) parentBack.addEventListener('click',hideParentStep);
+if(parentCodeEl) parentCodeEl.addEventListener('keydown',function(e){ if(e.key==='Enter'){ e.preventDefault(); parentVerify(); } });
+if(parentResend) parentResend.addEventListener('click',function(){
+  if(!parentCtx) return;
+  parentResend.disabled=true;
+  parentNote('Sending...');
+  fetch('/api/login?action=request-code',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({playerId:parentCtx.player.pid})})
+    .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return {ok:r.ok,status:r.status,j:j}; }); })
+    .then(function(res){
+      parentResend.disabled=false;
+      if(res.ok && res.j && res.j.sent>0) parentNote('A new code is on its way to your parent.','ok');
+      else if(res.status===429) parentNote('Too many codes. Wait a few minutes and try again.','err');
+      else parentNote('We could not send the email. Try again soon.','err');
+    })
+    .catch(function(){ parentResend.disabled=false; parentNote('Could not reach Thwap. Check your connection.','err'); });
+});
 /* ---- Unified sign in --------------------------------------------------------
    ONE form, two kinds of user. On submit we try coach-login first (email +
    password); if that returns a token the user is a coach. If it does not match,
@@ -10020,7 +10130,9 @@ function completeCoachLogin(email,coach,token){
 }
 if(form){
   form.addEventListener('submit',function(e){
-    e.preventDefault(); errEl.textContent='';
+    e.preventDefault();
+    if(parentView && !parentView.hidden){ parentVerify(); return; }
+    errEl.textContent='';
     if(consentEl&&!consentEl.checked){ errEl.textContent='Please agree to the Terms and Privacy Policy.'; return; }
     try{ localStorage.setItem('thwapTerms', JSON.stringify({at:new Date().toISOString(), version:POLICY_VERSION})); }catch(_){}
     var email=String(emailEl.value||'').trim();
@@ -10080,7 +10192,7 @@ window.thwapEnsureSession=function(){
   try{
     var a=readAuth(); if(!a||!a.pid||a.pid==='demo') return Promise.resolve({ok:false,status:0,reason:'no-auth-cookie'});
     var num=NUMS[a.pid]; if(!num) return Promise.resolve({ok:false,status:0,reason:'no-jersey:'+a.pid});
-    return mintServerSession(a.pid, String(num)+String(a.year||SEASON_YEAR), a.email||'', true);
+    return mintServerSession(a.pid, String(num)+String(a.year||SEASON_YEAR), a.email||'', true, true);
   }catch(e){ return Promise.resolve({ok:false,status:0,reason:'threw'}); }
 };
 /* Already-signed-in players (from before server sessions existed) silently get a
@@ -10094,7 +10206,24 @@ window.thwapEnsureSession=function(){
     var a=readAuth(); if(!a||!a.pid||a.pid==='demo') return;
     var num=NUMS[a.pid]; if(!num) return;
     sessionStorage.setItem('thwapSessSync','1');
-    mintServerSession(a.pid, String(num)+String(a.year||SEASON_YEAR), a.email||'', true);
+    /* quiet: never emails a parent. A browser with a valid session (every current
+       user) just gets it refreshed. A browser the server does not trust (no valid
+       session and never approved by a parent) is signed out here, so the player
+       signs in again and the parent is asked once. An outage changes nothing. */
+    mintServerSession(a.pid, String(num)+String(a.year||SEASON_YEAR), a.email||'', true, true).then(function(r){
+      if(!r || (r.reason!=='needs-parent-code' && r.reason!=='needs-parent-email')) return;
+      try{ cookieDel(AUTH_KEY); localStorage.removeItem(AUTH_KEY); sessionStorage.removeItem(AUTH_KEY); }catch(_){}
+      try{ sessionStorage.setItem('thwapNeedsParent','1'); }catch(_){}
+      location.reload();
+    });
+  }catch(e){}
+})();
+/* After a sign-out for an unapproved device, say why on the sign-in sheet. */
+(function(){
+  try{
+    if(sessionStorage.getItem('thwapNeedsParent')!=='1' || isAuthed()) return;
+    sessionStorage.removeItem('thwapNeedsParent');
+    if(errEl) errEl.textContent='Please sign in again. A parent needs to say yes to this device.';
   }catch(e){}
 })();
 /* Emailed sign-in code (OTP): request a 6-digit code to the parent email(s) ON

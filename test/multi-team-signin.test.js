@@ -23,8 +23,18 @@ function setEnv() {
 setEnv();
 
 const { _handlers } = await import('../api/login.js');
-const { codeSignin, requestCode, verify, session } = _handlers;
-const { verifySession, SESSION_COOKIE } = await import('../lib/session_store.js');
+const { requestCode, verify, session } = _handlers;
+const { verifySession, SESSION_COOKIE, mintDeviceToken, deviceCookieName } = await import('../lib/session_store.js');
+// These tests are about WHO can sign in with a player code, so every call comes
+// from a browser the parent already approved (remembered-device cookie) and
+// starts with fresh rate-limit windows. The new-device parent step and the
+// limits themselves are covered in test/web-signin-protection.test.js.
+const codeSignin = async (req, res) => {
+  for (const k of [...fake.map.keys()]) if (String(k).startsWith('rl:')) fake.map.delete(k);
+  const pid = String((req.body && req.body.playerId) || '').trim().toLowerCase();
+  req.headers = { ...(req.headers || {}), cookie: `${deviceCookieName(pid)}=${mintDeviceToken(pid)}` };
+  return _handlers.codeSignin(req, res);
+};
 const { ROSTER } = await import('../lib/store.js');
 const { setTeam, addMember, updateMember, removeMember } = await import('../lib/teams_store.js');
 
@@ -98,7 +108,8 @@ describe('code-signin on a non-Rangers team', () => {
     await seedFlyers();
     const res = makeRes();
     await codeSignin(post({ playerId: 'zara', teamCode: 'RANGERS72', code: '442026' }), res);
-    expect(res.statusCode).toBe(400);
+    expect(res.statusCode).toBe(401);
+    expect(res.body).toEqual({ error: 'bad code' });
   });
 
   it('rejects a player removed from their team', async () => {
@@ -106,7 +117,8 @@ describe('code-signin on a non-Rangers team', () => {
     await removeMember('FLYERS10', 'milo');
     const res = makeRes();
     await codeSignin(post({ playerId: 'milo', code: '82026' }), res);
-    expect(res.statusCode).toBe(400);
+    expect(res.statusCode).toBe(401);
+    expect(res.body).toEqual({ error: 'bad code' });
   });
 
   it('session reports the Flyers player by name', async () => {

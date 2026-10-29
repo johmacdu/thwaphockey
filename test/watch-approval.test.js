@@ -26,7 +26,7 @@ setEnv();
 
 const { default: loginHandler, _handlers, watchEmailText } = await import('../api/login.js');
 const { default: doneHandler } = await import('../api/done.js');
-const { verifySession, mintSession, SESSION_COOKIE } = await import('../lib/session_store.js');
+const { verifySession, mintSession, SESSION_COOKIE, mintDeviceToken, deviceCookieName } = await import('../lib/session_store.js');
 const watch = await import('../lib/watch_store.js');
 const rl = await import('../lib/rate_limit.js');
 const { setTeam, addMember } = await import('../lib/teams_store.js');
@@ -598,8 +598,9 @@ describe('non-Rangers team', () => {
 });
 
 describe('web sign-in unchanged', () => {
-  it('code-signin still issues a normal web session that /session and /done accept', async () => {
-    const res = await call('code-signin', { method: 'POST', body: { playerId: 'lewie', code: '722027', keep: true } });
+  it('code-signin on a parent-approved browser still issues a normal web session that /session and /done accept', async () => {
+    const dev = `${deviceCookieName('lewie')}=${mintDeviceToken('lewie')}`;
+    const res = await call('code-signin', { method: 'POST', body: { playerId: 'lewie', code: '722027', keep: true }, headers: { ...IP, cookie: dev } });
     expect(res.statusCode).toBe(200);
     const tok = decodeURIComponent(/thwapSession=([^;]*)/.exec(res.headers['Set-Cookie'])[1]);
     expect(tok.split('.')[1]).toMatch(/^[0-9a-f]{64}$/); // email hash slot, not a watch id
