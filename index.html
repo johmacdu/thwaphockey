@@ -39,7 +39,6 @@ html[data-theme='dark']{
 --bg:#101A14;--bg2:#0B130E;--panel:#182420;--panel2:#141E19;--line:#2A3831;--text:#F3F7F4;--muted:#9DACA2;--green:#B9F06B;--green2:#CDEFA0;--soft:#1F2C24;--card:#182420;--card2:#1E2B24;--cardgrad1:#20302A;--cardgrad2:#131C16;--line2:#3A4A40;--line3:#2A3831;--linesel:#B9F06B;--text2:#D3DDD6;--muted2:#9DACA2;--chev:#7C8C82;--onaccent:#15221B;--shadow:rgba(0,0,0,.35);--warn-text:#FFB870;--alert-text:#FF8A80}
 *{box-sizing:border-box}main{display:block}html{background:var(--bg);-webkit-text-size-adjust:100%;text-size-adjust:100%}body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2));color:var(--text);font-family:'Nunito Sans',system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;min-height:100dvh;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
 h1,h2,h3,.brand,.big{font-family:'Archivo Black',system-ui,sans-serif;font-weight:600}a{color:inherit;text-decoration:none}.app{max-width:1100px;margin:auto;min-height:100vh;min-height:100dvh;padding:0 16px 44px}
-.wipnote{margin:14px 0 0;padding:10px 14px;border-radius:12px;background:var(--soft);border:1px solid var(--line);color:var(--muted);font-size:13px;font-weight:600;line-height:1.4}
 /* Sticker Book */
 .stickcount{margin:6px 0 16px;font-size:13px;font-weight:800;color:var(--muted);letter-spacing:.02em}
 .stickgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:14px}
@@ -1341,11 +1340,6 @@ body.is-native.is-authed:not(.login-locked) .app{
 .tabbar .tab-player,.tabbar .tab-coach{display:none}
 body.is-native:not(.is-coach) .tabbar .tab-player{display:contents}
 body.is-native.is-coach .tabbar .tab-coach{display:contents}
-
-/* Beta banner is a web-only welcome note. In the installed apps it is
-   noise above the training, so hide it there. Web (no is-native) keeps it,
-   and the betaUntil auto-hide script is untouched. */
-body.is-native #wipNote{display:none !important}
 
 /* --- 3b. Material 3 navigation bar, ANDROID ONLY. Gated on
    body.is-native.is-android so iOS and the website are untouched. Adds the
@@ -2730,8 +2724,6 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 </div>
 </section>
 <section id='home'>
-<div class='wipnote' id='wipNote'>👋 Welcome to the Thwap beta. We're adding new training videos and features every week.</div>
-<script>(function(){try{fetch('/api/coach?action=beta',{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){if(d&&d.betaUntil){var until=Date.parse(d.betaUntil);if(!isNaN(until)&&Date.now()>until){var n=document.getElementById('wipNote');if(n)n.hidden=true;}}}).catch(function(){});}catch(e){}})();</script>
 <div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.webp' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks' aria-label='Quick links'><span class='nav-authed'><a class='link' href='#myseason'>My Season</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a></span><span class='nav-guest'><a class='link' href='/about' id='navAbout'>About Thwap</a><span class='topsep'>|</span><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Explore pages' aria-expanded='false'>Explore</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#myseason'>My Season</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a></span><span class='nav-guest'><a href='/about' id='navAboutK'>About Thwap</a><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
 <div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>there</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><script>(function(){try{var authed=/(?:^|; )thwapAuth=/.test(document.cookie);var p=localStorage.getItem('bfPlayer');var b=document.getElementById('homePlayer');if(b){if(p&&authed){b.textContent=p.trim().split(/\s+/)[0];}else{b.classList.add('needpick');}}}catch(e){}
 /* Team plan: hide the category rows the coach turned OFF for today. On any failure
