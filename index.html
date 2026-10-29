@@ -6129,17 +6129,20 @@ function currentPlayer(){
    matching type (Anton display + Oswald labels + red underline). 6 color themes,
    assigned per player by name (stable). Plates arrive as cards/plate_<face>_<theme>.svg;
    a missing plate falls back to red so nothing breaks. */
-var CB2_THEMES=['red','blue','gold','rainbow','grunge','amber','fire'];
+var CB2_THEMES=['red','blue','gold','rainbow','grunge','amber','fire','neonpink','neonlime','neoncyan','neonpurple','neonorange','neonblue','neonrainbow','neongrid','neonflames','neonice','neonlightning','neongraffiti','neonsmoke','neongalaxy','neoncircuit','neonhex','neonwaves','neonsplatter','neoncamo','neontiger','neonaurora','neongrunge','neonbokeh','neonsunburst','neonmountain','neonsnow','neonsticks','neonrink','neondrip','neonchrome'];
+/* The original 7 are SVG plates; the 30 neon backgrounds are WebP images. */
+var CB2_SVG={red:1,blue:1,gold:1,rainbow:1,grunge:1,amber:1,fire:1};
 /* swatch color shown in the picker + which are unlocked to start (red, blue).
    Others unlock later via the earned/sticker system (window.thwapThemeUnlocked). */
 var CB2_META={
   red:{sw:'#C0252A'}, blue:{sw:'#2E7DC4'}, gold:{sw:'#C9A227'}, rainbow:{sw:'linear-gradient(135deg,#ff5f6d,#ffc371,#2ec5ce,#a06cd5)'},
-  grunge:{sw:'#8A8F94'}, amber:{sw:'#E8A317'}, fire:{sw:'#E24A26'}
+  grunge:{sw:'#8A8F94'}, amber:{sw:'#E8A317'}, fire:{sw:'#E24A26'},
+  neonpink:{sw:"#ff2d95"}, neonlime:{sw:"#39ff14"}, neoncyan:{sw:"#00f0ff"}, neonpurple:{sw:"#b24bff"}, neonorange:{sw:"#ff7a1a"}, neonblue:{sw:"#2f6bff"}, neonrainbow:{sw:"linear-gradient(135deg,#ff2d95,#ffcf33,#39ff14,#00f0ff,#b24bff)"}, neongrid:{sw:"linear-gradient(135deg,#ff2d95,#00f0ff)"}, neonflames:{sw:"linear-gradient(135deg,#ff7a1a,#ff2d95)"}, neonice:{sw:"#7ef0ff"}, neonlightning:{sw:"#e8ff3a"}, neongraffiti:{sw:"linear-gradient(135deg,#39ff14,#ff2d95,#00f0ff)"}, neonsmoke:{sw:"linear-gradient(135deg,#ff6ad5,#2ec5ce)"}, neongalaxy:{sw:"#b24bff"}, neoncircuit:{sw:"#39ff14"}, neonhex:{sw:"#00f0ff"}, neonwaves:{sw:"linear-gradient(135deg,#00f0ff,#ff2d95)"}, neonsplatter:{sw:"linear-gradient(135deg,#39ff14,#ff7a1a)"}, neoncamo:{sw:"#52ff6a"}, neontiger:{sw:"#ff7a1a"}, neonaurora:{sw:"linear-gradient(135deg,#39ff14,#b24bff)"}, neongrunge:{sw:"#a0ff4a"}, neonbokeh:{sw:"#ff6ad5"}, neonsunburst:{sw:"#ffcf33"}, neonmountain:{sw:"#39ffd0"}, neonsnow:{sw:"#9fe8ff"}, neonsticks:{sw:"#39ff14"}, neonrink:{sw:"#3af0ff"}, neondrip:{sw:"linear-gradient(135deg,#ff2d95,#39ff14)"}, neonchrome:{sw:"linear-gradient(135deg,#9fe8ff,#ff6ad5,#ffcf33)"}
 };
 var CB2_START_UNLOCKED=['red','blue'];
 /* Themes beyond red+blue unlock by total stickers EARNED (the same thwapEarned:<slug>
    counter the Sticker Book reads). red+blue are free; the rest cross a milestone. */
-var CB2_UNLOCK_AT={ gold:10, rainbow:20, grunge:35, amber:55, fire:80 };
+var CB2_UNLOCK_AT={ gold:10, rainbow:20, grunge:35, amber:55, fire:80, neonpink:6, neonlime:11, neoncyan:15, neonpurple:20, neonorange:24, neonblue:29, neonrainbow:34, neongrid:38, neonflames:43, neonice:48, neonlightning:52, neongraffiti:57, neonsmoke:61, neongalaxy:66, neoncircuit:71, neonhex:75, neonwaves:80, neonsplatter:85, neoncamo:89, neontiger:94, neonaurora:98, neongrunge:103, neonbokeh:108, neonsunburst:112, neonmountain:117, neonsnow:122, neonsticks:126, neonrink:131, neondrip:135, neonchrome:140 };
 function cb2Earned(slug){
   slug=slug||cb2Slug();
   try{ return parseInt(localStorage.getItem('thwapEarned:'+slug)||'0',10)||0; }catch(e){ return 0; }
@@ -6152,7 +6155,8 @@ window.thwapThemeUnlocked=function(){
   Object.keys(CB2_UNLOCK_AT).forEach(function(t){ if(n>=CB2_UNLOCK_AT[t]) out.push(t); });
   return out;
 };
-var CB2_HAVE={ front:{red:1,blue:1,gold:1,rainbow:1,grunge:1,amber:1,fire:1}, back:{red:1,blue:1,gold:1,rainbow:1,grunge:1,amber:1,fire:1} };
+var CB2_NEON={neonpink:1,neonlime:1,neoncyan:1,neonpurple:1,neonorange:1,neonblue:1,neonrainbow:1,neongrid:1,neonflames:1,neonice:1,neonlightning:1,neongraffiti:1,neonsmoke:1,neongalaxy:1,neoncircuit:1,neonhex:1,neonwaves:1,neonsplatter:1,neoncamo:1,neontiger:1,neonaurora:1,neongrunge:1,neonbokeh:1,neonsunburst:1,neonmountain:1,neonsnow:1,neonsticks:1,neonrink:1,neondrip:1,neonchrome:1};
+var CB2_HAVE={ front:Object.assign({red:1,blue:1,gold:1,rainbow:1,grunge:1,amber:1,fire:1}, CB2_NEON), back:Object.assign({red:1,blue:1,gold:1,rainbow:1,grunge:1,amber:1,fire:1}, CB2_NEON) };
 function cb2Slug(){ try{ return (localStorage.getItem('bfPlayer')||'guest').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,'')||'guest'; }catch(e){ return 'guest'; } }
 function cb2Unlocked(){ /* returns the set of unlocked theme keys for this player */
   var set={}; CB2_START_UNLOCKED.forEach(function(t){set[t]=1;});
@@ -6170,7 +6174,8 @@ function cb2Theme(slug){ /* stored per-player choice, else a stable pick among u
   return keys[cb2Hash(slug)%keys.length];
 }
 function cb2SetTheme(slug,theme){ try{ localStorage.setItem('thwapCardTheme:'+slug, theme); }catch(e){} }
-function cb2Plate(face,slug){ var t=cb2Theme(slug); if(!(CB2_HAVE[face]&&CB2_HAVE[face][t])) t='red'; return 'cards/plate_'+face+'_'+t+'.svg'; }
+function cb2Ext(t){ return CB2_SVG[t]?'svg':'webp'; }
+function cb2Plate(face,slug){ var t=cb2Theme(slug); if(!(CB2_HAVE[face]&&CB2_HAVE[face][t])) t='red'; return 'cards/plate_'+face+'_'+t+'.'+cb2Ext(t); }
 function cb2PosLabel(pos){ return pos==='G'?'Goalie':pos==='D'?'Defense':pos==='FD'?'Forward & Defense':pos==='DF'?'Defense & Forward':'Forward'; }
 /* Card-back stats. Prefer the all-time board, but the all-time cumulative
    counters can be empty (the backend aggregates completions into the weekly
@@ -6212,7 +6217,7 @@ function buildFront(p,slug,photoUrl,themeOverride){
     ? "<img class='cf2-photo"+(slug==='liam'?' cf2-photo-lg':'')+" cf2-photo-"+slug+"' src='"+photoUrl+"' alt='"+p.first+" photo'><div class='cf2-photo-mask'></div>"
     : "";
   var th=themeOverride||cb2Theme(slug);
-  var plate=themeOverride?('cards/plate_front_'+themeOverride+'.svg'):cb2Plate('front',slug);
+  var plate=themeOverride?('cards/plate_front_'+themeOverride+'.'+cb2Ext(themeOverride)):cb2Plate('front',slug);
   var teamLabel=window.thwapTeamLabel||'Jr Rangers<br>Vancouver WA';
   return "<div class='cf2 cb2-th-"+th+"'>"+
       "<img class='cf2-plate' src='"+plate+"' alt=''>"+
