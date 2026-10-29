@@ -21,6 +21,18 @@ describe('gear ladder to 75 training days', () => {
     const slots = new Set(gear.map((it) => it.slot));
     for (const s of ['helmet', 'cage', 'stripe', 'gloves', 'stick']) expect(slots.has(s)).toBe(true);
   });
+  it('a brand-new player starts with exactly the agreed set (Oct 28 2026)', () => {
+    const owned = unlockedIds(progressFrom({}, 0));
+    const count = (slot) => owned.filter((id) => itemById(id).slot === slot).length;
+    expect(count('hairstyle')).toBe(2);
+    expect(count('jersey')).toBe(3);
+    expect(count('helmet')).toBe(1);
+    expect(count('gloves')).toBe(1);
+    expect(count('stick')).toBe(1);
+    expect(count('pose')).toBe(1);
+    // One real celly (THWAP!) plus the No celly off switch.
+    expect(owned.filter((id) => itemById(id).slot === 'celebration' && id !== 'celebration-none')).toEqual(['celebration-fistpump']);
+  });
   it('no two items share a training-day tier', () => {
     const tiers = ITEMS.filter((it) => it.rule.type === 'days').map((it) => it.rule.n);
     expect(new Set(tiers).size).toBe(tiers.length);
