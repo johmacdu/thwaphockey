@@ -459,7 +459,28 @@ describe('season path: one scene at a time', () => {
     const w = await at20();
     const txt = w.document.querySelector('section[aria-labelledby="h-journey"]').textContent;
     expect(txt).not.toMatch(/Dot \d+ of 91|Dots \d|never drop out/);
-    expect(txt).toContain('Every training day fills a dot. Skip 5 days in a row and you lose one.');
+    expect(txt).not.toContain('Skip 5 days'); // the rule lives behind the i, not on the page
+  });
+
+  it('the rule is tucked behind an i next to the title', async () => {
+    const w = await at20();
+    const btn = $(w, 'jRuleBtn'), pop = $(w, 'jRule');
+    expect(btn.getAttribute('aria-label')).toBe('How the dots work');
+    expect(pop.hidden).toBe(true);
+    tap(w, btn);
+    expect(pop.hidden).toBe(false);
+    expect(btn.getAttribute('aria-expanded')).toBe('true');
+    expect(pop.textContent).toBe('Every training day fills a dot. Skip 5 days in a row and you lose one.');
+    tap(w, $(w, 'h-badges')); // a tap anywhere else closes it
+    expect(pop.hidden).toBe(true);
+    tap(w, btn);
+    w.document.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(pop.hidden).toBe(true);
+  });
+
+  it('Who skates sits on the same row as the scene name', async () => {
+    const w = await at20();
+    expect($(w, 'h-journey').closest('.scenerow').querySelector('.whoskates')).toBeTruthy();
   });
 
   it('the stage row: done, here, locked', async () => {

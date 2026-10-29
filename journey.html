@@ -29,6 +29,16 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:'Nunito Sans',s
 .book{max-width:min(820px,96vw);margin:0 auto;padding:76px 18px 64px;display:flex;flex-direction:column;gap:0}
 .jhead{padding:0 4px}
 .jhead h1{margin:2px 0 0}
+.titlerow{position:relative}
+.titlerow h1{display:inline}
+.titlerow .infobtn{display:inline-grid;vertical-align:middle;margin:-6px -8px 0 -2px}
+.infobtn{flex:none;width:48px;height:48px;border:0;background:none;padding:0;display:grid;place-items:center;cursor:pointer;color:var(--muted);font:italic 800 17px/1 Georgia,serif}
+.infobtn::before{content:'';position:absolute;width:28px;height:28px;border-radius:50%;border:2px solid currentColor}
+.infobtn{position:relative}
+.infobtn:hover,.infobtn[aria-expanded="true"]{color:var(--text)}
+.infobtn:focus-visible{outline:3px solid var(--acc);outline-offset:-6px;border-radius:50%}
+.rulepop{position:absolute;left:0;right:0;top:100%;z-index:20;max-width:360px;margin:4px 0 0;padding:14px 16px;border-radius:14px;background:var(--text);color:var(--page);font-weight:700;font-size:16px;line-height:1.4;box-shadow:0 10px 24px -8px var(--shadow)}
+.rulepop[hidden]{display:none}
 .jhead .who{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:20px;margin:10px 0 0;color:var(--text)}
 .jhead .who b{color:var(--acc)}
 .jhead .who .meta{display:block;font-family:'Nunito Sans',sans-serif;font-weight:700;font-size:var(--fs-support);color:var(--muted);margin-top:3px}
@@ -127,13 +137,16 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .dotline{margin:8px 0 0;font-family:'Archivo Black',sans-serif;font-size:20px;color:var(--acc)}
 .slipwarn{margin:12px 0 0;padding:4px 0 4px 12px;border-left:3px solid var(--dry);font-weight:800;line-height:1.4}
 .slipwarn[hidden]{display:none}
-.whoskates{display:flex;align-items:center;gap:8px;margin:18px 0 0;font-size:var(--fs-support);color:var(--muted);font-weight:700}
-.whoskates button{min-height:44px;min-width:64px;padding:0 16px;border-radius:22px;border:1px solid var(--line2);background:var(--card);color:var(--text);font:inherit;font-weight:800;cursor:pointer}
+.scenerow{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.scenerow h2{margin-bottom:0}
+.whoskates{display:flex;flex-direction:column;align-items:flex-end;gap:4px;margin:0 0 2px auto;font-size:12px;color:var(--muted);font-weight:700}
+.whoskates .ws{display:flex;gap:4px}
+.whoskates button{min-height:48px;min-width:56px;padding:0 14px;border-radius:22px;border:1px solid var(--line2);background:var(--card);color:var(--text);font:inherit;font-weight:800;cursor:pointer}
 .whoskates button[aria-pressed="true"]{background:var(--text);color:var(--page);border-color:var(--text)}
 .whoskates button:focus-visible,.scenehead:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
 .scenetitle{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 /* One scene at a time: the kid's own scene, or the stage they tapped. */
-.stage{position:relative;margin:20px -6px 0;border-radius:18px;overflow:hidden;aspect-ratio:4/3;background:var(--scene-bg,var(--card2))}
+.stage{position:relative;margin:20px -6px 0;border-radius:18px;overflow:hidden;aspect-ratio:16/10;background:var(--scene-bg,var(--card2))}
 @media (min-width:600px){.stage{max-width:560px;margin-left:auto;margin-right:auto}}
 .stage.s0{--scene-bg:#2E3A44}.stage.s1{--scene-bg:#DCEBF2}.stage.s2{--scene-bg:#1E2A33}.stage.s3{--scene-bg:#3A2F12}
 .sceneart{position:absolute;inset:0;border:0;border-radius:0;aspect-ratio:auto;background:none}
@@ -142,7 +155,7 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .sceneart>img.rot{object-fit:cover}
 .stage.locked .sceneart{filter:blur(6px) grayscale(.6);opacity:.55}
 .stagetag{position:absolute;left:12px;top:12px;z-index:2;display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;background:rgba(10,18,13,.72);color:#fff;font:600 13px/1.6 'Oswald',sans-serif;letter-spacing:.06em;text-transform:uppercase}
-.skater{position:absolute;z-index:2;bottom:6%;left:var(--x,12%);width:20%;aspect-ratio:76/96;transform:translateX(-50%);pointer-events:none;filter:drop-shadow(0 4px 6px rgba(0,0,0,.4))}
+.skater{position:absolute;z-index:2;bottom:6%;left:var(--x,12%);width:17%;aspect-ratio:76/96;transform:translateX(-50%);pointer-events:none;filter:drop-shadow(0 4px 6px rgba(0,0,0,.4))}
 .skater img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
 .skater .me{position:absolute;inset:0}.skater .me .av-wrap{font-size:.26rem;perspective:none} /* the character's own scale (all em), not text */
 .skater.move{transition:left 700ms cubic-bezier(.5,0,.3,1)}
@@ -269,25 +282,29 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
 <!-- HEADER (on-screen, not a book cover) -->
 <header class="jhead">
   <p class="eyebrow" id="jSeason">Season 2026-27</p>
-  <h1>My Season Journey</h1>
+  <div class="titlerow">
+    <h1>My Season Journey</h1>
+    <button type="button" class="infobtn" id="jRuleBtn" aria-expanded="false" aria-controls="jRule" aria-label="How the dots work">i</button>
+    <p class="rulepop" id="jRule" role="status" hidden>Every training day fills a dot. Skip 5 days in a row and you lose one.</p>
+  </div>
 </header>
 
 <!-- 2 MY JOURNEY: the season path, one dot per training day, four scenes -->
 <section class="pg" aria-labelledby="h-journey">
-  <p class="eyebrow">Where I am</p>
-  <h2 id="h-journey"><span id="jTier">Practice Ice</span></h2>
+  <div class="scenerow">
+    <div><p class="eyebrow">Where I am</p>
+    <h2 id="h-journey"><span id="jTier">Practice Ice</span></h2></div>
+    <div class="whoskates" role="group" aria-label="Who skates in your scene">
+      <span>Who skates</span>
+      <div class="ws"><button type="button" data-who="me" aria-pressed="true">Me</button><button type="button" data-who="sass" aria-pressed="false">Sass</button></div>
+    </div>
+  </div>
   <div class="stage s1" id="jStage" role="group" aria-label="Practice Ice"></div>
   <div class="scpips" id="jPips" role="img" aria-label=""></div>
   <p class="nextup" id="jNext" aria-live="polite">13 training days to Game Ready</p>
   <p class="stagesub" id="jSub"></p>
   <p class="slipwarn" id="jSlip" role="status" hidden></p>
   <div class="tiers" id="jTiers" role="group" aria-label="Season stages"></div>
-  <p class="why">Every training day fills a dot. Skip 5 days in a row and you lose one.</p>
-  <div class="whoskates" role="group" aria-label="Who skates in your scene">
-    <span>Who skates</span>
-    <button type="button" data-who="me" aria-pressed="true">Me</button>
-    <button type="button" data-who="sass" aria-pressed="false">Sass</button>
-  </div>
   <p class="vh" id="jCheer" role="status" aria-live="polite"></p>
 </section>
 
@@ -706,6 +723,13 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     txt('jNext',main); txt('jSub',sub);
     fillArt(stage); fillArt(document.getElementById('jTiers'));
   }
+  (function(){
+    var btn=document.getElementById('jRuleBtn'), pop=document.getElementById('jRule');
+    function set(open){ pop.hidden=!open; btn.setAttribute('aria-expanded',open?'true':'false'); }
+    btn.addEventListener('click',function(){ set(pop.hidden); });
+    document.addEventListener('click',function(e){ if(!pop.hidden&&e.target!==btn&&!pop.contains(e.target)) set(false); });
+    document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!pop.hidden){ set(false); btn.focus(); } });
+  })();
   document.getElementById('jTiers').addEventListener('click',function(e){
     var btn=e.target.closest('.tierbtn'); if(!btn)return;
     var b=BOOK||SAMPLE, i=Number(btn.getAttribute('data-t'));
