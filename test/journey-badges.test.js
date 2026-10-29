@@ -8,15 +8,27 @@ import { BADGES, badgesFor, bestStreak, fullWeeks, starsFor } from '../lib/journ
 const TODAY = '2026-10-28';
 const ev = (date, disc, n = 1) => Array.from({ length: n }, () => ({ date, disc }));
 const byId = (r) => Object.fromEntries(r.badges.map((b) => [b.id, b]));
+// `n` consecutive YYYY-MM-DD dates from `start`.
+const range = (start, n) => {
+  const base = Date.UTC(Number(start.slice(0, 4)), Number(start.slice(5, 7)) - 1, Number(start.slice(8, 10)));
+  return Array.from({ length: n }, (_, i) => new Date(base + i * 86400000).toISOString().slice(0, 10));
+};
 
 describe('badge list', () => {
-  it('has 8 badges in art order with 3 rising star thresholds each', () => {
-    expect(BADGES.map((b) => b.name)).toEqual(['Dangler', 'Sniper', 'Engine', 'Tape to Tape', 'Hockey Brain', 'On a Heater', 'Full Week', 'Hype Squad']);
+  it('has 32 badges in art order, the first eight unchanged', () => {
+    expect(BADGES).toHaveLength(32);
+    expect(BADGES.slice(0, 8).map((b) => b.name)).toEqual(['Dangler', 'Sniper', 'Engine', 'Tape to Tape', 'Hockey Brain', 'On a Heater', 'Full Week', 'Hype Squad']);
     BADGES.forEach((b, i) => {
-      expect(b.art).toBe(`badge-0${i + 1}.webp`);
-      expect(b.stars).toHaveLength(3);
-      expect(b.stars[0] < b.stars[1] && b.stars[1] < b.stars[2]).toBe(true);
+      expect(b.art).toBe(`badge-${String(i + 1).padStart(2, '0')}.webp`);
+      expect(b.id).toBeTruthy();
+      expect(b.name).toBeTruthy();
+      expect(Array.isArray(b.stars) && b.stars.length >= 1).toBe(true);
+      for (let k = 1; k < b.stars.length; k++) expect(b.stars[k] > b.stars[k - 1]).toBe(true); // rising
     });
+  });
+  it('the five journey milestones are one-and-done (a single star), the rest have three', () => {
+    expect(BADGES.filter((b) => b.stars.length === 1).map((b) => b.id)).toEqual(['calledup', 'gametime', 'topshelf', 'seasonsweep', 'openingnight']);
+    expect(BADGES.filter((b) => b.stars.length === 3)).toHaveLength(27);
   });
 });
 
@@ -90,9 +102,12 @@ describe('badgesFor', () => {
     expect([b.hypesquad.count, b.hypesquad.stars]).toEqual([21, 2]);
   });
 
-  it('badgeStars is the total across all 8', () => {
+  it('badgeStars is the sum of every badge\'s stars', () => {
     const r = badgesFor({ events: ev('2026-10-01', 'stick', 60), cheersSent: 5 }, TODAY);
-    expect(r.badgeStars).toBe(4);
+    expect(r.badgeStars).toBe(r.badges.reduce((s, b) => s + b.stars, 0));
+    const b = byId(r);
+    expect(b.dangler.stars).toBe(3); // 60 hands drills
+    expect(b.hypesquad.stars).toBe(1); // 5 cheers
   });
 
   it('Jan-Mar counts toward the season that began in September', () => {
@@ -103,6 +118,72 @@ describe('badgesFor', () => {
   it('ignores malformed events', () => {
     const r = badgesFor({ events: [null, { date: 'nope', disc: 'stick' }, { disc: 'stick' }, ...ev('2026-10-01', 'stick')] }, TODAY);
     expect(byId(r).dangler.count).toBe(1);
+  });
+});
+
+describe('badgesFor: batch-2 badges', () => {
+  it('days feed First Shift and Rink Rat', () => {
+    const b = byId(badgesFor({ days: range('2026-09-01', 5) }, TODAY));
+    expect([b.firstshift.count, b.firstshift.stars]).toEqual([5, 2]);
+    expect([b.rinkrat.count, b.rinkrat.stars]).toEqual([5, 0]);
+  });
+  it('Grinder counts every drill this season, any discipline', () => {
+    const events = [...ev('2026-10-01', 'stick', 50), ...ev('2026-10-02', 'pass', 40)];
+    expect(byId(badgesFor({ events }, TODAY)).grinder).toMatchObject({ count: 90, stars: 1 });
+  });
+  it('Complete Player is the fewest drills across the five core skills', () => {
+    const d = '2026-10-01';
+    const full = ['stick', 'shoot', 'pass', 'dryland', 'iq'].flatMap((x) => ev(d, x, 5));
+    expect(byId(badgesFor({ events: full }, TODAY)).completeplayer).toMatchObject({ count: 5, stars: 1 });
+    const gap = ['stick', 'shoot', 'pass', 'dryland'].flatMap((x) => ev(d, x, 9)).concat(ev(d, 'iq', 4));
+    expect(byId(badgesFor({ events: gap }, TODAY)).completeplayer.count).toBe(4); // the weakest skill caps it
+  });
+  it('elite discipline badges stack on top of the base ones', () => {
+    const b = byId(badgesFor({ events: ev('2026-10-01', 'shoot', 180) }, TODAY));
+    expect(b.sniper.stars).toBe(3); // base, caps at 60
+    expect([b.bardown.count, b.bardown.stars]).toEqual([180, 2]); // elite: 100/175/250
+  });
+  it('goalies get Brick Wall for Net play in the Bar Down slot', () => {
+    const r = badgesFor({ events: ev('2026-10-01', 'netplay', 120), goalie: true }, TODAY);
+    expect(byId(r).brickwall).toMatchObject({ count: 120, stars: 1 });
+    expect(r.badges.some((x) => x.id === 'bardown')).toBe(false);
+  });
+  it('week badges read their own minimum (any / 3+ / 4+ days)', () => {
+    const days = [...range('2026-10-05', 3), ...range('2026-10-12', 4), '2026-10-19']; // 3-day, 4-day, 1-day weeks
+    const b = byId(badgesFor({ days }, TODAY));
+    expect(b.clockwork.count).toBe(3); // weeks with 1+ day
+    expect(b.hattrickweek.count).toBe(2); // weeks with 3+ days
+    expect(b.lockedin.count).toBe(1); // weeks with 4+ days
+  });
+  it('No Days Off is the long streak; Month Maker counts months', () => {
+    const b = byId(badgesFor({ days: [...range('2026-09-15', 21), '2026-10-20'] }, TODAY));
+    expect([b.nodaysoff.count, b.nodaysoff.stars]).toEqual([21, 1]);
+    expect(b.monthmaker.count).toBe(2); // September and October
+  });
+  it('Weekend Warrior counts Sat/Sun; Winter Warrior counts Dec-Feb', () => {
+    // Sat 2026-10-03, Sun 2026-10-04 are weekend days.
+    expect(byId(badgesFor({ days: ['2026-10-03', '2026-10-04', '2026-10-05'] }, TODAY)).weekendwarrior.count).toBe(2);
+    expect(byId(badgesFor({ days: ['2026-12-10', '2027-01-05', '2027-02-02', '2026-11-30'] }, '2027-02-15')).winterwarrior.count).toBe(3);
+  });
+  it('Big Week is the most drills in one Monday week; Comeback Kid counts returns after a 5+ day gap', () => {
+    const events = [...ev('2026-10-05', 'stick', 20), ...ev('2026-10-14', 'stick', 5)]; // 20 in one week, 5 the next
+    expect(byId(badgesFor({ events }, TODAY)).bigweek).toMatchObject({ count: 20, stars: 2 });
+    const days = ['2026-09-01', '2026-09-02', '2026-09-10', '2026-09-20']; // two gaps of 8 and 10 days
+    expect(byId(badgesFor({ days }, TODAY)).comebackkid.count).toBe(2);
+  });
+  it('milestones are one star: tier reached, finished, and opening night', () => {
+    const b19 = byId(badgesFor({ days: range('2026-09-01', 19) }, TODAY));
+    expect([b19.calledup.count, b19.calledup.stars, b19.calledup.next]).toEqual([1, 1, null]); // reached Practice Ice
+    expect(byId(badgesFor({ days: range('2026-09-01', 18) }, TODAY)).calledup.stars).toBe(0); // not yet
+    expect(byId(badgesFor({ days: range('2026-09-01', 91) }, '2027-03-31')).seasonsweep.stars).toBe(1); // finished
+    expect(byId(badgesFor({ days: ['2026-09-10'] }, TODAY)).openingnight.stars).toBe(1); // within first two weeks
+    expect(byId(badgesFor({ days: ['2026-09-20'] }, TODAY)).openingnight.stars).toBe(0); // after the opener
+  });
+  it('carries short/kind through so the page can phrase any badge', () => {
+    const b = byId(badgesFor({ days: range('2026-09-01', 5) }, TODAY));
+    expect(b.firstshift.kind).toBe('days');
+    expect(b.firstshift.short).toBe('days');
+    expect(b.clockwork.min).toBe(1);
   });
 });
 

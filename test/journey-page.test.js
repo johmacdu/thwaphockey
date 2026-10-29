@@ -141,11 +141,13 @@ describe('signed in: badges', () => {
   it('shows only the badges a kid has earned, with their stars', async () => {
     const w = await boot({ api: book({ events, cheersSent: 5 }) });
     const btns = badgeBtns(w);
-    expect(btns.map((b) => b.getAttribute('data-id'))).toEqual(['dangler', 'hockeybrain', 'hypesquad']);
+    // 34 stick + 30 iq in one week also earns Big Week (most drills in a week).
+    expect(btns.map((b) => b.getAttribute('data-id'))).toEqual(['dangler', 'hockeybrain', 'hypesquad', 'bigweek']);
     const label = (i) => btns[i].querySelector('.stars').getAttribute('aria-label');
     expect(label(0)).toBe('2 of 3 stars'); // Dangler 34
     expect(label(1)).toBe('3 of 3 stars'); // Hockey Brain 30
     expect(label(2)).toBe('1 of 3 stars'); // Hype Squad 5
+    expect(label(3)).toBe('3 of 3 stars'); // Big Week: 64 drills in one week
     // Earned stars are filled, empty ones hollow: never color alone.
     expect(btns[0].querySelector('.stars').textContent).toBe('\u2605\u2605\u2606');
     expect(btns[0].querySelector('.stars .off').textContent).toBe('\u2606');
@@ -212,12 +214,13 @@ describe('signed in: badges', () => {
     tap(w, byId('onaheater'));
     expect($(w, 'jBpLine').textContent).toBe('Train 7 days in a row for star 2!');
     tap(w, byId('fullweek'));
-    expect($(w, 'jBpLine').textContent).toBe('4 more weeks with 4 training days to star 2!');
+    expect($(w, 'jBpLine').textContent).toBe('4 more weeks with 4+ training days to star 2!');
   });
 
   it('the finale shows the real badge-star total', async () => {
     const w = await boot({ api: book({ events, cheersSent: 5 }) });
-    expect($(w, 'jFinStars').textContent).toBe('6');
+    // Dangler 2 + Hockey Brain 3 + Hype Squad 1 + Big Week 3 = 9.
+    expect($(w, 'jFinStars').textContent).toBe('9');
   });
 });
 
@@ -361,7 +364,9 @@ describe('badge modal: open and close', () => {
     const w = await boot({ api: book({ events }) });
     tap(w, badgeBtns(w)[0]); tap(w, $(w, 'jBpClose')); tap(w, badgeBtns(w)[1]);
     expect($(w, 'jBpName').textContent).toBe('Hockey Brain');
-    expect(badgeBtns(w).map((b) => b.getAttribute('aria-expanded'))).toEqual(['false', 'true']);
+    const expanded = badgeBtns(w).map((b) => b.getAttribute('aria-expanded'));
+    expect(expanded[1]).toBe('true'); // the second badge is now open
+    expect(expanded.filter((x) => x === 'true')).toHaveLength(1); // and only it
   });
   it('embedded in My Season, the modal opens on the app page so it centers on the screen', async () => {
     const parent = new JSDOM('<!doctype html><html><head></head><body><iframe id="jyFrame"></iframe></body></html>', { url: 'https://thwaphockey.com/' });

@@ -53,9 +53,10 @@ const badge = (w, i) => w.document.querySelectorAll('#jBadges .badge')[i];
 const seenOf = (w) => JSON.parse(w.localStorage.getItem(KEY));
 const tap = (w, el) => el.dispatchEvent(new w.Event('click', { bubbles: true }));
 
-// 10 Hands drills = Dangler star 1. 30 = star 2.
-const before = book({ days: range('2026-09-01', 10), events: ev('2026-10-01', 'stick', 10) });
-const after = book({ days: range('2026-09-01', 10), events: ev('2026-10-01', 'stick', 30) });
+// 10 Hands drills = Dangler star 1. 30 = star 2. The 15 shoot drills keep Big
+// Week maxed in both books, so Dangler's star is the only new one to celebrate.
+const before = book({ days: range('2026-09-01', 10), events: [...ev('2026-10-01', 'stick', 10), ...ev('2026-10-01', 'shoot', 15)] });
+const after = book({ days: range('2026-09-01', 10), events: [...ev('2026-10-01', 'stick', 30), ...ev('2026-10-01', 'shoot', 15)] });
 
 describe('first visit', () => {
   it('records what the kid has, celebrates nothing', async () => {
