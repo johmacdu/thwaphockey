@@ -1,0 +1,8 @@
+{
+  "ok": true,
+  "undo": true,
+  "drills": [
+    "stick:0",
+    "stick#the-triangle-drill"
+  ]
+}
