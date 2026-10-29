@@ -565,4 +565,12 @@ describe('season path: one scene at a time', () => {
     expect($(w, 'jSkater').querySelector('img').getAttribute('src')).toContain('sass');
     expect(w.localStorage.getItem('thwapJourneySkater')).toBe('sass');
   });
+
+  it('Me skates facing right like Sass, even when the card is set to face left', async () => {
+    const w = await boot({ api: 401 });
+    w.localStorage.setItem('bfPlayer', 'Lewie');
+    w.thwapAvatar = { lookFor: () => ({ facing: 'left', hand: 'right' }), html: (l) => `<i data-facing="${l.facing}"></i>` };
+    tap(w, w.document.querySelector('.whoskates [data-who=me]'));
+    expect($(w, 'jSkater').querySelector('.me [data-facing]').getAttribute('data-facing')).toBe('right');
+  });
 });

@@ -670,7 +670,9 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
   function skaterHtml(){
     var who=WHO==='sass'||!window.thwapAvatar?'sass':'me', id=BOOK&&BOOK.id||myId();
     if(who==='me'&&id){
-      try{ var look=window.thwapAvatar.lookFor({num:''},id); return '<span class="me">'+window.thwapAvatar.html(look)+'</span>'; }catch(_){}
+      // The path runs left to right, so the skater always faces right (like Sass),
+      // whatever View the kid picked for their card in My Player.
+      try{ var look=window.thwapAvatar.lookFor({num:''},id); look.facing='right'; return '<span class="me">'+window.thwapAvatar.html(look)+'</span>'; }catch(_){}
     }
     return '<img src="login/sass-stride-m.webp" alt="">';
   }
