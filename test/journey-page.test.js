@@ -108,7 +108,7 @@ describe('signed in: header', () => {
   it('shows the season label and title in the header', async () => {
     const w = await boot({ api: book() });
     expect($(w, 'jSeason').textContent).toBe('Season 2026-27');
-    expect(w.document.querySelector('.jhead h1').textContent).toBe('My Season Journey');
+    expect(w.document.querySelector('.jhead h1').textContent).toBe('My Journey');
   });
 
   it('hides every Sample tag once real data loads', async () => {
