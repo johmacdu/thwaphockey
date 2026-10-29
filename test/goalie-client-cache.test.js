@@ -2,7 +2,7 @@
 //
 // The web app learns "goalie" from the server (GET /api/done -> goalie, from
 // the member store's roster position) and caches it per player, so a goalie
-// on any team gets Net play, not just the names in THWAP_GOALIE_NAMES.
+// on any team gets Net play. Without a server answer the roster position decides.
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -34,7 +34,7 @@ async function boot(player, serverGet) {
 }
 
 describe('goalie flag from the server', () => {
-  it('without a server answer the name list decides (Johnny yes, Gus no)', async () => {
+  it('without a server answer the roster position decides (Johnny pos G yes, Gus no)', async () => {
     expect((await boot('Johnny')).thwapIsGoalie()).toBe(true);
     expect((await boot('Gus')).thwapIsGoalie()).toBe(false);
   });
@@ -48,7 +48,7 @@ describe('goalie flag from the server', () => {
     expect(win.document.querySelector('#shootList .soon-empty')).toBeTruthy();
   });
 
-  it('a server "not a goalie" overrides the name list', async () => {
+  it('a server "not a goalie" overrides the roster position', async () => {
     const win = await boot('Johnny', { ok: true, player: 'johnny', date: '2026-10-28', goalie: false, drills: [], disciplines: {} });
     await win.thwapHydrateDone();
     expect(win.thwapIsGoalie()).toBe(false);

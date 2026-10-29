@@ -250,7 +250,7 @@ These are worth fixing before the watch launches, because a watch app makes team
 10. **Weekend bonus reps.** Leave them out of the watch in version 1, or show them?
 11. **Undo on the wrist.** Is a confirm step ("Undo this drill?") right, or should a tap on a done row undo straight away like the web app?
 12. **Minimum watch.** Is watchOS 10 (Series 4 and later, and the SE models) the right floor, or do players have older watches?
-13. **App Store setup.** Ship the watch app inside the existing iPhone app listing, or as its own listing? Do we want the Kids category, which forbids any analytics or ads?
+13. **App Store setup.** RESOLVED 2026-10-29, see section 16. (Was: ship the watch app inside the existing iPhone app listing, or as its own listing? Do we want the Kids category, which forbids any analytics or ads?)
 14. **The three unauthenticated endpoints in section 12** that expose parent emails or allow writes. Fix them before the watch launch?
 15. **Haptic strength.** Who tests the haptic map on real kids' wrists, and is the double buzz for THWAP strong enough or too much?
 
@@ -274,3 +274,14 @@ These are worth fixing before the watch launches, because a watch app makes team
 Agent defaults, open to change in review: a 30-day watch session, a "remove this watch" list in version 1, rings filled by the player view's per-discipline count, "Net play" as the goalie's second ring, no weekend bonus reps in version 1, a confirm step before undo, watchOS 10 as the oldest supported version, and shipping inside the existing iPhone app listing.
 
 Build order: (1) security fix, (2) multi-team sign-in, (3) shared drill module plus server-saved Game Day Goals, (4) parent approval actions, (5) the watch app's real API client replacing the placeholder data.
+
+## 16. Decisions (product owner, Oct 29 2026)
+
+These close open question 13 (App Store setup).
+
+- **One listing.** The watch app ships inside the existing Thwap iPhone App Store listing. There is no separate watch listing.
+- **Age rating: 4+.**
+- **Not in the Kids category for version 1.** We may apply for the Kids category later, once the app is stable.
+- **No third-party analytics inside the iPhone or Android apps.** PR #492 already removed them. The website keeps Vercel Web Analytics.
+- **Firebase on Android is for push notifications only.** No Firebase analytics or other Firebase services.
+- **No child photos are stored.** Player photo uploads were retired on 2026-10-29 (PR #494) and the Blob photo store has been deleted, so the app stores no photos of children. Earlier mentions of photos in this doc describe the old consent flow only.

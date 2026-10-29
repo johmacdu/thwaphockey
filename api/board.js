@@ -18,8 +18,9 @@
 // store. The sender is NEVER taken from the body: it is the signed-in session, so
 // a kid cannot cheer as someone else.
 
-import { listPlayers, weekBoard, currentTeamGoal, listCheers, sendCheer, listFires, sendFire, ROSTER, getRecentCheerers, getRecentFirers, getTrainingDays, getDrillEvents, getCheersSent, GOALIE_IDS, localDateStr } from '../lib/store.js';
+import { listPlayers, weekBoard, currentTeamGoal, listCheers, sendCheer, listFires, sendFire, ROSTER, getRecentCheerers, getRecentFirers, getTrainingDays, getDrillEvents, getCheersSent, localDateStr } from '../lib/store.js';
 import { journeyFor, badgesFor } from '../lib/journey.js';
+import { isGoalie } from '../lib/positions.js';
 import { getMember, getTeam } from '../lib/teams_store.js';
 import { verifySession, readSessionCookie } from '../lib/session_store.js';
 import { handleLooks, handleLookGet, handleLookPost } from '../lib/look_api.js';
@@ -147,7 +148,8 @@ export default async function handler(req, res) {
       getTrainingDays(me), getDrillEvents(me), getCheersSent(me), coverPlayer(me),
     ]);
     const book = journeyFor(days, today);
-    const badges = badgesFor({ events, days, cheersSent, goalie: GOALIE_IDS.includes(me) }, today);
+    // Goalie by roster position (member store), GOALIE_IDS only as fallback.
+    const badges = badgesFor({ events, days, cheersSent, goalie: await isGoalie(me) }, today);
     res.setHeader('Cache-Control', 'no-store');
     return res.status(200).json({ id: me, player, ...book, ...badges });
   }
