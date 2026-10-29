@@ -1,0 +1,15 @@
+{
+  "ok": true,
+  "player": "lewie",
+  "date": "2026-10-28",
+  "goalie": false,
+  "drills": [
+    "stick:0",
+    "stick#the-triangle-drill",
+    "dryland:1"
+  ],
+  "disciplines": {
+    "stick": true,
+    "dryland": true
+  }
+}
