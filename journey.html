@@ -205,35 +205,6 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .bmore{display:block;margin:16px auto 0;min-height:48px;padding:0 24px;border-radius:24px;border:1px solid var(--line2);background:var(--card);color:var(--text);font:inherit;font-weight:800;cursor:pointer}
 .bmore[hidden]{display:none}
 .bmore:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
-/* BADGE POP-UP: opens next to the tapped badge (the page sits in a tall frame,
-   so a pop-up centered on the screen would land off screen). */
-.bpop{position:absolute;z-index:30;width:min(340px,calc(100% - 8px));background:var(--card);border:1px solid var(--line2);border-radius:20px;padding:22px 18px 20px;text-align:center;box-shadow:0 22px 44px -14px var(--shadow),0 2px 6px var(--shadow);transform-origin:var(--tip,50%) 0;animation:bpopin 240ms cubic-bezier(.2,1.4,.4,1) both}
-.bpop[hidden]{display:none}
-.bpop-tip{position:absolute;top:-8px;left:var(--tip,50%);width:16px;height:16px;margin-left:-8px;background:var(--card);border-left:1px solid var(--line2);border-top:1px solid var(--line2);transform:rotate(45deg)}
-.bpop-x{position:absolute;top:4px;right:4px;width:48px;height:48px;border:0;background:none;color:var(--muted);font-size:20px;font-weight:700;cursor:pointer;border-radius:50%}
-.bpop-x:hover{color:var(--text)}
-.bpop-x:focus-visible{outline:3px solid var(--acc);outline-offset:-4px}
-.bpop-art{--ar:1;width:128px;margin:0 auto;border-radius:50%;animation:bartpop 320ms cubic-bezier(.2,1.6,.4,1) 60ms both}
-.bpop h3{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:26px;text-transform:uppercase;letter-spacing:.02em;margin:12px 0 2px}
-.bpop-tag{margin:0;color:var(--muted);font-size:15px;font-weight:700}
-.bpop-stars{list-style:none;display:flex;justify-content:center;gap:22px;padding:0;margin:16px 0 0}
-.bpop-stars li{display:flex;flex-direction:column;align-items:center;min-width:44px}
-.bpop-stars .s{font-size:40px;line-height:1;color:var(--line2)}
-.bpop-stars li.got .s{color:var(--gold);text-shadow:0 2px 0 rgba(0,0,0,.12);animation:bstar 300ms cubic-bezier(.2,1.6,.4,1) both;animation-delay:calc(280ms + var(--k) * 140ms)}
-.bpop-stars li.next .s{color:var(--acc)}
-.bpop-stars em{font-style:normal;font-weight:800;font-size:13px;color:var(--muted);margin-top:2px}
-.bpop-stars li.got em{color:var(--text)}
-.bpop-meter{display:flex;align-items:center;gap:12px;margin:18px 4px 0}
-.bpop-meter[hidden]{display:none}
-.bpop-meter b{flex:none;min-width:64px;text-align:right;font-family:'Archivo Black',sans-serif;font-weight:400;font-size:18px;color:var(--text)}
-.bpop-bar{position:relative;flex:1;height:22px;border-radius:14px;background:var(--card2);overflow:hidden;box-shadow:inset 0 2px 3px var(--shadow)}
-.bpop-bar .fill{position:absolute;left:0;top:0;bottom:0;width:var(--p,0%);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,0) 55%),var(--acc);animation:bfill 420ms ease-out 360ms both}
-.bpop-bar.max .fill{background:linear-gradient(180deg,rgba(255,255,255,.4),rgba(255,255,255,0) 55%),var(--gold)}
-.bpop-line{margin:14px 0 0;font-family:'Archivo Black',sans-serif;font-weight:400;font-size:18px;line-height:1.25}
-@keyframes bpopin{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
-@keyframes bartpop{0%{transform:scale(.4);opacity:0}100%{transform:none;opacity:1}}
-@keyframes bstar{0%{transform:scale(.2) rotate(-40deg)}100%{transform:none}}
-@keyframes bfill{from{width:0}}
 
 .specials{display:flex;gap:10px;margin-top:10px}
 .specials .art{--ar:1;width:72px;border-radius:50%}
@@ -295,7 +266,7 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
 .glassclose{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);right:max(16px, calc(50vw - 534px));z-index:50;display:inline-grid;place-items:center;width:48px;height:48px;border-radius:50%;font-size:20px;font-weight:700;color:var(--text);cursor:pointer;text-decoration:none;background:color-mix(in srgb,var(--card) 62%,transparent);border:1px solid color-mix(in srgb,var(--text) 12%,transparent);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);box-shadow:0 6px 20px var(--shadow)}
 .glassclose:hover{background:color-mix(in srgb,var(--card) 80%,transparent)}
 .glassclose:active{transform:scale(.94)}
-@media (prefers-reduced-motion:reduce){.bpop,.bpop-art,.bpop-stars li.got .s,.bpop-bar .fill,.spine.nope,.spine.nope .booklock{animation:none}.spine.nope .booklock{background:var(--dry)}.badge.stamp .stars .new,.badge.stamp::after,.badge.stamp .newchip,.scene.tierup .scenehead .ic,#jTier.swap{animation:none}.skater.move{transition:none}.jburst{display:none}}
+@media (prefers-reduced-motion:reduce){.spine.nope,.spine.nope .booklock{animation:none}.spine.nope .booklock{background:var(--dry)}.badge.stamp .stars .new,.badge.stamp::after,.badge.stamp .newchip,.scene.tierup .scenehead .ic,#jTier.swap{animation:none}.skater.move{transition:none}.jburst{display:none}}
 </style>
 </head>
 <body>
@@ -335,16 +306,6 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
   <div class="badges" id="jBadges"></div>
   <p class="why" id="jBadgeEmpty" hidden>Your first badge comes with your first drills.</p>
   <button type="button" class="bmore" id="jBadgeMore" aria-expanded="false" hidden>Show more</button>
-  <div class="bpop" id="jBadgePop" role="dialog" aria-labelledby="jBpName" hidden>
-    <i class="bpop-tip" aria-hidden="true"></i>
-    <button type="button" class="bpop-x" id="jBpClose" aria-label="Close">&#10005;</button>
-    <div class="art bpop-art" id="jBpArt" aria-hidden="true"></div>
-    <h3 id="jBpName"></h3>
-    <p class="bpop-tag" id="jBpTag"></p>
-    <ol class="bpop-stars" id="jBpStars"></ol>
-    <div class="bpop-meter" id="jBpMeter"><div class="bpop-bar" id="jBpBar" role="progressbar" aria-valuemin="0"><div class="fill"></div></div><b id="jBpCount" aria-hidden="true"></b></div>
-    <p class="bpop-line" id="jBpLine"></p>
-  </div>
 </section>
 
 <!-- 6 SEASON SO FAR -->
@@ -387,6 +348,18 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
 </section>
 
 </main>
+<!-- Badge modal: opened on the app page when embedded, so it centers on the screen. -->
+<template id="jBadgeTpl"><div class="jbm" id="jBadgeModal" hidden>
+  <div class="bpop" id="jBadgePop" role="dialog" aria-modal="true" aria-labelledby="jBpName">
+  <button type="button" class="bpop-x" id="jBpClose" aria-label="Close">&#10005;</button>
+  <div class="art bpop-art" id="jBpArt" aria-hidden="true"></div>
+  <h3 id="jBpName"></h3>
+  <p class="bpop-tag" id="jBpTag"></p>
+  <ol class="bpop-stars" id="jBpStars"></ol>
+  <div class="bpop-meter" id="jBpMeter"><div class="bpop-bar" id="jBpBar" role="progressbar" aria-valuemin="0"><div class="fill"></div></div><b id="jBpCount" aria-hidden="true"></b></div>
+  <p class="bpop-line" id="jBpLine"></p>
+</div>
+</div></template>
 
 <script src="avatar.js"></script>
 <script>
@@ -554,55 +527,80 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
       el.textContent=Math.round(to*k)+(of?' / '+of:''); if(k<1)requestAnimationFrame(step); }
     requestAnimationFrame(step);
   }
+  // The modal lives on the page the kid is looking at: the app page when the
+  // Journey is embedded (a centered modal inside this tall frame would land
+  // off screen), this page when it is opened on its own.
+  var HOST=null, MODAL_CSS='.jbm{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:max(24px,env(safe-area-inset-top)) 20px max(24px,env(safe-area-inset-bottom));background:rgba(8,16,11,.55);font-family:\'Nunito Sans\',system-ui,sans-serif;color:var(--text);line-height:1.4;animation:jbmfade 200ms ease-out both} .jbm[hidden]{display:none} .jbm *{box-sizing:border-box} .jbm .art{position:relative;aspect-ratio:var(--ar,1);width:100%;background:var(--ph);border:2px dashed var(--line2);border-radius:12px;display:grid;place-items:center;overflow:hidden} .jbm .art>span{font-family:\'Oswald\',sans-serif;font-size:12px;color:var(--phtext)} .jbm .art>img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain} .jbm .art.has{background:none;border:0}.jbm .art.has>span{display:none} @keyframes jbmfade{from{opacity:0}} @media (prefers-reduced-motion:reduce){.jbm,.jbm .bpop,.jbm .bpop-art,.jbm .bpop-stars li.got .s,.jbm .bpop-bar .fill{animation:none}} .jbm .bpop{position:relative;width:min(360px,100%);max-height:100%;overflow:auto;background:var(--card);border:1px solid var(--line2);border-radius:20px;padding:22px 18px 20px;text-align:center;box-shadow:0 22px 44px -14px var(--shadow),0 2px 6px var(--shadow);animation:bpopin 240ms cubic-bezier(.2,1.4,.4,1) both} .jbm .bpop[hidden]{display:none} .jbm .bpop-x{position:absolute;top:4px;right:4px;width:48px;height:48px;border:0;background:none;color:var(--muted);font-size:20px;font-weight:700;cursor:pointer;border-radius:50%} .jbm .bpop-x:hover{color:var(--text)} .jbm .bpop-x:focus-visible{outline:3px solid var(--acc);outline-offset:-4px} .jbm .bpop-art{--ar:1;width:128px;margin:0 auto;border-radius:50%;animation:bartpop 320ms cubic-bezier(.2,1.6,.4,1) 60ms both} .jbm .bpop h3{font-family:\'Archivo Black\',sans-serif;font-weight:400;font-size:26px;text-transform:uppercase;letter-spacing:.02em;margin:12px 0 2px} .jbm .bpop-tag{margin:0;color:var(--muted);font-size:15px;font-weight:700} .jbm .bpop-stars{list-style:none;display:flex;justify-content:center;gap:22px;padding:0;margin:16px 0 0} .jbm .bpop-stars li{display:flex;flex-direction:column;align-items:center;min-width:44px} .jbm .bpop-stars .s{font-size:40px;line-height:1;color:var(--line2)} .jbm .bpop-stars li.got .s{color:var(--gold);text-shadow:0 2px 0 rgba(0,0,0,.12);animation:bstar 300ms cubic-bezier(.2,1.6,.4,1) both;animation-delay:calc(280ms + var(--k) * 140ms)} .jbm .bpop-stars li.next .s{color:var(--acc)} .jbm .bpop-stars em{font-style:normal;font-weight:800;font-size:13px;color:var(--muted);margin-top:2px} .jbm .bpop-stars li.got em{color:var(--text)} .jbm .bpop-meter{display:flex;align-items:center;gap:12px;margin:18px 4px 0} .jbm .bpop-meter[hidden]{display:none} .jbm .bpop-meter b{flex:none;min-width:64px;text-align:right;font-family:\'Archivo Black\',sans-serif;font-weight:400;font-size:18px;color:var(--text)} .jbm .bpop-bar{position:relative;flex:1;height:22px;border-radius:14px;background:var(--card2);overflow:hidden;box-shadow:inset 0 2px 3px var(--shadow)} .jbm .bpop-bar .fill{position:absolute;left:0;top:0;bottom:0;width:var(--p,0%);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,0) 55%),var(--acc);animation:bfill 420ms ease-out 360ms both} .jbm .bpop-bar.max .fill{background:linear-gradient(180deg,rgba(255,255,255,.4),rgba(255,255,255,0) 55%),var(--gold)} .jbm .bpop-line{margin:14px 0 0;font-family:\'Archivo Black\',sans-serif;font-weight:400;font-size:18px;line-height:1.25} @keyframes bpopin{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}} @keyframes bartpop{0%{transform:scale(.4);opacity:0}100%{transform:none;opacity:1}} @keyframes bstar{0%{transform:scale(.2) rotate(-40deg)}100%{transform:none}} @keyframes bfill{from{width:0}}';
+  var TOKENS=['--bg','--card','--card2','--text','--muted','--line','--line2','--acc','--gold','--shadow','--ph','--phtext'];
+  function hostDoc(){
+    try{ if(document.documentElement.classList.contains('embed')&&window.parent!==window&&window.frameElement&&window.parent.document.body) return window.parent.document; }catch(_){}
+    return document;
+  }
+  function P(id){return HOST?HOST.getElementById(id):null;}
+  function setText(id,v){var el=P(id);if(el)el.textContent=v;}
+  function ensureModal(){
+    var d=hostDoc();
+    if(HOST===d&&P('jBadgeModal')) return P('jBadgeModal');
+    HOST=d;
+    if(!d.getElementById('jbmStyle')){var st=d.createElement('style');st.id='jbmStyle';st.textContent=MODAL_CSS;d.head.appendChild(st);}
+    var m=d.importNode(document.getElementById('jBadgeTpl').content,true).firstElementChild;
+    d.body.appendChild(m);
+    m.addEventListener('click',function(e){if(e.target===m)closePop();});
+    m.querySelector('#jBpClose').addEventListener('click',function(){closePop();});
+    m.addEventListener('keydown',function(e){
+      if(e.key==='Escape'){e.preventDefault();closePop();}
+      else if(e.key==='Tab'){e.preventDefault();m.querySelector('#jBpClose').focus();} // the only control, so focus stays in
+    });
+    return m;
+  }
+  var SCROLL_WAS='';
   function openPop(el){
     var id=el.getAttribute('data-id'), g=(BADGES||[]).filter(function(x){return x.id===id;})[0];
     var sample=!g; if(sample) g=SAMPLE_BADGES.filter(function(x){return x.id===id;})[0];
-    var pop=document.getElementById('jBadgePop');
-    // Replay the pop-in every time it opens.
-    pop.hidden=true; void pop.offsetWidth;
-    var art=document.getElementById('jBpArt'), src=el.querySelector('.art');
-    art.innerHTML=src.innerHTML; art.className='art bpop-art'+(src.classList.contains('has')?' has':'');
-    txt('jBpName',g.name);
-    txt('jBpTag',TAGLINE[g.id]||'');
+    var m=ensureModal(), pop=P('jBadgePop');
+    // Theme: carry this page's colors (light or dark) onto the modal.
+    var cs=getComputedStyle(document.documentElement);
+    TOKENS.forEach(function(t){m.style.setProperty(t,cs.getPropertyValue(t));});
+    var art=P('jBpArt'), src=el.querySelector('.art'), im=src.querySelector('img');
+    art.innerHTML=''; art.className='art bpop-art'+(im&&src.classList.contains('has')?' has':'');
+    if(im&&src.classList.contains('has')){var ni=HOST.createElement('img');ni.alt='';ni.src=im.src;art.appendChild(ni);}
+    else{var ph=HOST.createElement('span');ph.textContent=String(g.art||'').replace(/\D/g,'');art.appendChild(ph);}
+    setText('jBpName',g.name);
+    setText('jBpTag',TAGLINE[g.id]||'');
     var th=Array.isArray(g.thresholds)?g.thresholds:null;
-    var ol=document.getElementById('jBpStars'); ol.innerHTML='';
+    var ol=P('jBpStars'); ol.innerHTML='';
     for(var k=0;k<3;k++){
-      var li=document.createElement('li'), got=k<g.stars;
+      var li=HOST.createElement('li'), got=k<g.stars;
       li.className=got?'got':(k===g.stars?'next':''); li.style.setProperty('--k',k);
       li.innerHTML='<span class="s" aria-hidden="true">'+(got?'\u2605':'\u2606')+'</span>';
-      if(th){var em=document.createElement('em'); em.textContent=starNum(g,th[k]); li.appendChild(em);}
+      if(th){var em=HOST.createElement('em'); em.textContent=starNum(g,th[k]); li.appendChild(em);}
       li.setAttribute('aria-label','Star '+(k+1)+(got?', earned':', not yet')+(th?', '+th[k]+' '+g.unit:''));
       ol.appendChild(li);
     }
-    var bar=document.getElementById('jBpBar'), cnt=document.getElementById('jBpCount');
-    if(sample||!th){ document.getElementById('jBpMeter').hidden=true; txt('jBpLine','Sign in to see your count.'); }
+    var bar=P('jBpBar'), cnt=P('jBpCount');
+    if(sample||!th){ P('jBpMeter').hidden=true; setText('jBpLine','Sign in to see your count.'); }
     else{
-      document.getElementById('jBpMeter').hidden=false;
+      P('jBpMeter').hidden=false;
       var max=g.next==null, goal=max?th[2]:g.next;
       bar.classList.toggle('max',max);
       bar.style.setProperty('--p',Math.min(100,Math.round(100*g.count/goal))+'%');
       bar.setAttribute('aria-valuenow',g.count); bar.setAttribute('aria-valuemax',goal);
       bar.setAttribute('aria-label',max?g.unit:g.unit+' toward star '+(g.stars+1));
       countUp(cnt,g.count,max?0:goal);
-      txt('jBpLine',lineFor(g));
+      setText('jBpLine',lineFor(g));
     }
-    document.querySelectorAll('#jBadges .badge').forEach(function(x){x.setAttribute('aria-expanded',x===el?'true':'false');x.setAttribute('aria-pressed',x===el?'true':'false');});
-    pop.hidden=false; placePop(pop,el); POP_FROM=el;
-    document.getElementById('jBpClose').focus({preventScroll:true});
-    if(pop.scrollIntoView) try{pop.scrollIntoView({block:'nearest',behavior:REDUCED?'auto':'smooth'});}catch(_){}
-  }
-  // Under the badge, centered on it, kept inside the section; the tip points at it.
-  function placePop(pop,el){
-    var sec=pop.parentNode, sr=sec.getBoundingClientRect(), er=el.getBoundingClientRect();
-    var w=pop.offsetWidth||Math.min(340,sr.width), mid=er.left-sr.left+er.width/2;
-    var left=Math.max(4,Math.min(sr.width-w-4,mid-w/2));
-    pop.style.left=left+'px'; pop.style.top=(er.bottom-sr.top+12)+'px';
-    pop.style.setProperty('--tip',Math.max(24,Math.min(w-24,mid-left))+'px');
+    document.querySelectorAll('#jBadges .badge').forEach(function(x){x.setAttribute('aria-expanded',x===el?'true':'false');});
+    // Replay the animations each time it opens.
+    m.hidden=true; void m.offsetWidth; m.hidden=false; pop.hidden=false;
+    if(!POP_FROM){ SCROLL_WAS=HOST.documentElement.style.overflow; HOST.documentElement.style.overflow='hidden'; }
+    POP_FROM=el;
+    P('jBpClose').focus({preventScroll:true});
   }
   function closePop(refocus){
-    var pop=document.getElementById('jBadgePop'); if(!pop||pop.hidden)return;
-    pop.hidden=true;
-    document.querySelectorAll('#jBadges .badge').forEach(function(x){x.setAttribute('aria-expanded','false');x.setAttribute('aria-pressed','false');});
+    var m=P('jBadgeModal'); if(!m||m.hidden)return;
+    m.hidden=true;
+    HOST.documentElement.style.overflow=SCROLL_WAS;
+    document.querySelectorAll('#jBadges .badge').forEach(function(x){x.setAttribute('aria-expanded','false');});
     if(refocus!==false&&POP_FROM&&POP_FROM.isConnected) POP_FROM.focus({preventScroll:true});
     POP_FROM=null;
   }
@@ -783,20 +781,14 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
       try{ window.parent.postMessage({thwapJourneyScrollTo:y},location.origin); }catch(_){}
     }else if(sk.scrollIntoView){ try{ sk.scrollIntoView({block:'center'}); }catch(_){} }
   }
+  // Leaving the page (or the frame) never strands the modal on the app page.
+  window.addEventListener('pagehide',function(){closePop(false);var m=P('jBadgeModal');if(m&&HOST!==document)m.remove();});
   document.getElementById('jBadges').addEventListener('click',function(e){
     var el=e.target.closest('.badge'); if(!el)return;
     ackBadge(el);
-    if(el.getAttribute('aria-expanded')==='true'){closePop();return;}
     openPop(el);
   });
-  document.getElementById('jBpClose').addEventListener('click',function(){closePop();});
   document.addEventListener('keydown',function(e){if(e.key==='Escape')closePop();});
-  document.addEventListener('click',function(e){
-    var pop=document.getElementById('jBadgePop'); if(pop.hidden)return;
-    if(pop.contains(e.target)||e.target.closest('#jBadges .badge'))return;
-    closePop(false);
-  });
-  window.addEventListener('resize',function(){var pop=document.getElementById('jBadgePop');if(!pop.hidden&&POP_FROM)placePop(pop,POP_FROM);});
   // The season books aren't tappable yet. Kids tap them anyway, so the lock
   // wiggles and the book shakes: shut, not broken.
   document.querySelectorAll('.shelf .spine').forEach(function(sp){
