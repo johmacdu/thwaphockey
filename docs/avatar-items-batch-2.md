@@ -5,9 +5,9 @@ New items for each My Player category, about 25 per category with the items that
 ## How to run it
 
 1. On the other laptop, read `docs/avatar-items-batch-2.json`. Each item has an `id`, a `label`, a `tier`, a `file` path and a full `prompt`.
-2. Generate one transparent PNG per item (1024 x 1024 is fine; the app scales it down) and save it at its `file` path, under `avatar-icons/`.
-3. Use the same model and settings for the whole set, in one run, so the style stays uniform (see `docs/avatar-style-test/README.md` for the model that worked last time).
-4. Push the PNGs on an `art/*` branch, the same way the stickers and textures go.
+2. Generate one transparent image per item (1024 x 1024 from the model; the app scales it down) and save it at its `file` path, under `avatar-icons/`. Shipped as transparent **WebP** to match the rest of the art (the model returns PNG; it is converted down from ~1 MB to ~80 KB each). The `file` paths in the JSON end in `.webp`.
+3. Use the same model and settings for the whole set, in one run, so the style stays uniform (see `docs/avatar-style-test/README.md` for the model that worked last time): `gpt-image-2.5-sunburst`, transparent background, high quality.
+4. Push the images on an `art/*` branch, the same way the stickers and textures go.
 5. Check every image before it ships: no text or logos, nothing scary or mean, and it reads at small size on a dark card.
 
 ## What the images are for

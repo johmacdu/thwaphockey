@@ -7,7 +7,7 @@
       "label": "Fade",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/hairstyle-fade.png",
+      "file": "avatar-icons/hairstyle-fade.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: the back of a blocky pixel-voxel hockey player head wearing a black helmet, showing a very short sides fading to skin, a little length on top showing under the helmet. Brown hair."
     },
     {
@@ -16,7 +16,7 @@
       "label": "Crew cut",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/hairstyle-crewcut.png",
+      "file": "avatar-icons/hairstyle-crewcut.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: the back of a blocky pixel-voxel hockey player head wearing a black helmet, showing a short even crew cut, neat edges at the back of the neck. Brown hair."
     },
     {
@@ -25,7 +25,7 @@
       "label": "Spikes",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/hairstyle-spikes.png",
+      "file": "avatar-icons/hairstyle-spikes.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: the back of a blocky pixel-voxel hockey player head wearing a black helmet, showing a short spiky hair poking out under the helmet edges in little blocks. Brown hair."
     },
     {
@@ -34,7 +34,7 @@
       "label": "Faux hawk",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/hairstyle-fauxhawk.png",
+      "file": "avatar-icons/hairstyle-fauxhawk.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: the back of a blocky pixel-voxel hockey player head wearing a black helmet, showing a short sides with a raised center ridge peeking out the back. Brown hair."
     },
     {
@@ -43,7 +43,7 @@
       "label": "Side part",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/hairstyle-sidepart.png",
+      "file": "avatar-icons/hairstyle-sidepart.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: the back of a blocky pixel-voxel hockey player head wearing a black helmet, showing a short hair with a side sweep visible at the temples. Brown hair."
     },
     {
@@ -52,7 +52,7 @@
       "label": "Waves",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/hairstyle-waves.png",
+      "file": "avatar-icons/hairstyle-waves.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: the back of a blocky pixel-voxel hockey player head wearing a black helmet, showing a short hair with wave rows across the back, close to the head. Brown hair."
     },
     {
@@ -61,7 +61,7 @@
       "label": "Twists",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/hairstyle-twists.png",
+      "file": "avatar-icons/hairstyle-twists.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: the back of a blocky pixel-voxel hockey player head wearing a black helmet, showing a medium two-strand twists hanging out the back to just above the collar. Brown hair."
     },
     {
@@ -70,7 +70,7 @@
       "label": "Cornrows",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/hairstyle-cornrows.png",
+      "file": "avatar-icons/hairstyle-cornrows.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: the back of a blocky pixel-voxel hockey player head wearing a black helmet, showing a neat straight-back cornrows visible below the helmet, ending at the neck. Brown hair."
     },
     {
@@ -79,7 +79,7 @@
       "label": "Space buns",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/hairstyle-spacebuns.png",
+      "file": "avatar-icons/hairstyle-spacebuns.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: the back of a blocky pixel-voxel hockey player head wearing a black helmet, showing a two round buns, one each side at the back, below the helmet. Brown hair."
     },
     {
@@ -88,7 +88,7 @@
       "label": "Top knot",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/hairstyle-topknot.png",
+      "file": "avatar-icons/hairstyle-topknot.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: the back of a blocky pixel-voxel hockey player head wearing a black helmet, showing a long hair gathered into one knot low at the back of the head. Brown hair."
     },
     {
@@ -97,7 +97,7 @@
       "label": "Shag",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/hairstyle-shag.png",
+      "file": "avatar-icons/hairstyle-shag.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: the back of a blocky pixel-voxel hockey player head wearing a black helmet, showing a choppy layered medium hair flaring out at the sides and back. Brown hair."
     },
     {
@@ -106,7 +106,7 @@
       "label": "Long flow",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/hairstyle-longflow.png",
+      "file": "avatar-icons/hairstyle-longflow.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: the back of a blocky pixel-voxel hockey player head wearing a black helmet, showing a long flowing hockey hair out the back of the helmet, stopping just above the jersey number. Brown hair."
     },
     {
@@ -115,7 +115,7 @@
       "label": "Midnight Navy",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/jersey-navy.png",
+      "file": "avatar-icons/jersey-navy.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey jersey on its own, dark navy body, white stripes, red trim.",
       "colors": {
         "body": "#16243F",
@@ -129,7 +129,7 @@
       "label": "Sky Blue",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/jersey-sky.png",
+      "file": "avatar-icons/jersey-sky.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey jersey on its own, light sky blue body, white stripes, navy trim.",
       "colors": {
         "body": "#6FB7E8",
@@ -143,7 +143,7 @@
       "label": "Teal Wave",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/jersey-teal.png",
+      "file": "avatar-icons/jersey-teal.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey jersey on its own, teal body, white stripes, black trim.",
       "colors": {
         "body": "#138A8A",
@@ -157,7 +157,7 @@
       "label": "Royal Blue",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/jersey-royal.png",
+      "file": "avatar-icons/jersey-royal.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey jersey on its own, royal blue body, white stripes, gold trim.",
       "colors": {
         "body": "#1F4FBF",
@@ -171,7 +171,7 @@
       "label": "Grape",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/jersey-grape.png",
+      "file": "avatar-icons/jersey-grape.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey jersey on its own, deep purple body, white stripes, black trim.",
       "colors": {
         "body": "#5B2B86",
@@ -185,7 +185,7 @@
       "label": "Sunset Orange",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/jersey-sunset.png",
+      "file": "avatar-icons/jersey-sunset.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey jersey on its own, bright orange body, black stripes, white trim.",
       "colors": {
         "body": "#E86A1C",
@@ -199,7 +199,7 @@
       "label": "Gold Rush",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/jersey-gold.png",
+      "file": "avatar-icons/jersey-gold.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey jersey on its own, gold body, black stripes, white trim.",
       "colors": {
         "body": "#D4A72C",
@@ -213,7 +213,7 @@
       "label": "Silver Ice",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/jersey-silver.png",
+      "file": "avatar-icons/jersey-silver.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey jersey on its own, silver-grey body, navy stripes, white trim.",
       "colors": {
         "body": "#B8C2CC",
@@ -227,7 +227,7 @@
       "label": "Retro Cream",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/jersey-retro.png",
+      "file": "avatar-icons/jersey-retro.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey jersey on its own, vintage cream body with red and black barber stripes on the sleeves and hem, laced collar.",
       "colors": {
         "body": "#EDE3C8",
@@ -241,7 +241,7 @@
       "label": "Barber Pole",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/jersey-barber.png",
+      "file": "avatar-icons/jersey-barber.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey jersey on its own, red and white horizontal hoops all the way around the body.",
       "colors": {
         "body": "#C8102E",
@@ -255,7 +255,7 @@
       "label": "Pond Plaid",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/jersey-plaid.png",
+      "file": "avatar-icons/jersey-plaid.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey jersey on its own, red and black buffalo plaid like a flannel, for outdoor pond hockey.",
       "colors": {
         "body": "#A3232F",
@@ -269,7 +269,7 @@
       "label": "Northern Lights",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/jersey-aurora.png",
+      "file": "avatar-icons/jersey-aurora.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey jersey on its own, dark night-sky body with green and purple northern-lights bands.",
       "colors": {
         "body": "#0F2A3A",
@@ -283,7 +283,7 @@
       "label": "Lava",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/jersey-lava.png",
+      "file": "avatar-icons/jersey-lava.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey jersey on its own, black body with glowing orange-red crack lines.",
       "colors": {
         "body": "#151515",
@@ -297,7 +297,7 @@
       "label": "Snowstorm",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/jersey-snow.png",
+      "file": "avatar-icons/jersey-snow.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey jersey on its own, white body with light blue snowflake speckles.",
       "colors": {
         "body": "#F2F2F2",
@@ -311,7 +311,7 @@
       "label": "Night Game",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/jersey-night.png",
+      "file": "avatar-icons/jersey-night.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey jersey on its own, black body with bright lime glowing piping on seams and stripes.",
       "colors": {
         "body": "#111111",
@@ -325,7 +325,7 @@
       "label": "Hat Trick",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/jersey-hattrick.png",
+      "file": "avatar-icons/jersey-hattrick.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey jersey on its own, red body with three gold stripes on each sleeve.",
       "colors": {
         "body": "#C8102E",
@@ -339,7 +339,7 @@
       "label": "Thwap Lime",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/jersey-lime.png",
+      "file": "avatar-icons/jersey-lime.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey jersey on its own, bright lime body, black stripes, black trim.",
       "colors": {
         "body": "#B9F06B",
@@ -353,7 +353,7 @@
       "label": "Rink Black",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/helmet-black.png",
+      "file": "avatar-icons/helmet-black.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey helmet with a steel cage, glossy black shell."
     },
     {
@@ -362,7 +362,7 @@
       "label": "Ice White",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/helmet-white.png",
+      "file": "avatar-icons/helmet-white.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey helmet with a steel cage, white shell."
     },
     {
@@ -371,7 +371,7 @@
       "label": "Thwap Green",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/helmet-green.png",
+      "file": "avatar-icons/helmet-green.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey helmet with a steel cage, dark green shell (#1F5A3A)."
     },
     {
@@ -380,7 +380,7 @@
       "label": "Midnight Navy",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/helmet-navy.png",
+      "file": "avatar-icons/helmet-navy.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey helmet with a steel cage, dark navy shell."
     },
     {
@@ -389,7 +389,7 @@
       "label": "Sky Blue",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/helmet-sky.png",
+      "file": "avatar-icons/helmet-sky.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey helmet with a steel cage, light sky blue shell."
     },
     {
@@ -398,7 +398,7 @@
       "label": "Thwap Lime",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/helmet-lime.png",
+      "file": "avatar-icons/helmet-lime.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey helmet with a steel cage, bright lime shell."
     },
     {
@@ -407,7 +407,7 @@
       "label": "Matte Black",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/helmet-matte.png",
+      "file": "avatar-icons/helmet-matte.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey helmet with a steel cage, flat matte black shell, no shine."
     },
     {
@@ -416,7 +416,7 @@
       "label": "Two-tone",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/helmet-twotone.png",
+      "file": "avatar-icons/helmet-twotone.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey helmet with a steel cage, front half red, back half black."
     },
     {
@@ -425,7 +425,7 @@
       "label": "Racing Stripe",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/helmet-stripe.png",
+      "file": "avatar-icons/helmet-stripe.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey helmet with a steel cage, white shell with one red stripe front to back."
     },
     {
@@ -434,7 +434,7 @@
       "label": "Pinstripe",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/helmet-pinstripe.png",
+      "file": "avatar-icons/helmet-pinstripe.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey helmet with a steel cage, black shell with thin white pinstripes."
     },
     {
@@ -443,7 +443,7 @@
       "label": "Bolt",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/helmet-bolt.png",
+      "file": "avatar-icons/helmet-bolt.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey helmet with a steel cage, black shell with a yellow lightning bolt on each side."
     },
     {
@@ -452,7 +452,7 @@
       "label": "Flame",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/helmet-flame.png",
+      "file": "avatar-icons/helmet-flame.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey helmet with a steel cage, black shell with orange and red flames from the front."
     },
     {
@@ -461,7 +461,7 @@
       "label": "Ice Crack",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/helmet-icecrack.png",
+      "file": "avatar-icons/helmet-icecrack.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey helmet with a steel cage, light blue shell with white crack lines like cracked ice."
     },
     {
@@ -470,7 +470,7 @@
       "label": "Star Field",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/helmet-stars.png",
+      "file": "avatar-icons/helmet-stars.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey helmet with a steel cage, navy shell with small white pixel stars."
     },
     {
@@ -479,7 +479,7 @@
       "label": "Checkerboard",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/helmet-checker.png",
+      "file": "avatar-icons/helmet-checker.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey helmet with a steel cage, black and white checkerboard shell."
     },
     {
@@ -488,7 +488,7 @@
       "label": "Bigfoot Tracks",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/helmet-tracks.png",
+      "file": "avatar-icons/helmet-tracks.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey helmet with a steel cage, white shell with brown blocky footprints walking across it."
     },
     {
@@ -497,7 +497,7 @@
       "label": "Snowflake",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/helmet-snowflake.png",
+      "file": "avatar-icons/helmet-snowflake.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey helmet with a steel cage, white shell with light blue pixel snowflakes."
     },
     {
@@ -506,7 +506,7 @@
       "label": "Carbon",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/helmet-carbon.png",
+      "file": "avatar-icons/helmet-carbon.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey helmet with a steel cage, dark grey woven carbon-fibre pattern shell."
     },
     {
@@ -515,7 +515,7 @@
       "label": "Mirror Silver",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/helmet-mirror.png",
+      "file": "avatar-icons/helmet-mirror.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey helmet with a steel cage, shiny polished silver shell."
     },
     {
@@ -524,7 +524,7 @@
       "label": "Gold",
       "tier": "legendary",
       "tierLabel": "Legend",
-      "file": "avatar-icons/helmet-gold.png",
+      "file": "avatar-icons/helmet-gold.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey helmet with a steel cage, shiny gold shell."
     },
     {
@@ -533,7 +533,7 @@
       "label": "Northern Lights",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/helmet-aurora.png",
+      "file": "avatar-icons/helmet-aurora.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey helmet with a steel cage, dark shell with green and purple northern-lights bands."
     },
     {
@@ -542,7 +542,7 @@
       "label": "Lava",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/helmet-lava.png",
+      "file": "avatar-icons/helmet-lava.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey helmet with a steel cage, black shell with glowing orange crack lines."
     },
     {
@@ -551,7 +551,7 @@
       "label": "Midnight Navy",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/gloves-navy.png",
+      "file": "avatar-icons/gloves-navy.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a pair of blocky hockey gloves, dark navy gloves, white cuff."
     },
     {
@@ -560,7 +560,7 @@
       "label": "Sky Blue",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/gloves-sky.png",
+      "file": "avatar-icons/gloves-sky.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a pair of blocky hockey gloves, light sky blue gloves, white cuff."
     },
     {
@@ -569,7 +569,7 @@
       "label": "Thwap Green",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/gloves-green.png",
+      "file": "avatar-icons/gloves-green.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a pair of blocky hockey gloves, dark green gloves, white cuff."
     },
     {
@@ -578,7 +578,7 @@
       "label": "Thwap Lime",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/gloves-lime.png",
+      "file": "avatar-icons/gloves-lime.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a pair of blocky hockey gloves, bright lime gloves, black cuff."
     },
     {
@@ -587,7 +587,7 @@
       "label": "Sunset Orange",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/gloves-orange.png",
+      "file": "avatar-icons/gloves-orange.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a pair of blocky hockey gloves, bright orange gloves, black cuff."
     },
     {
@@ -596,7 +596,7 @@
       "label": "Grape",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/gloves-grape.png",
+      "file": "avatar-icons/gloves-grape.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a pair of blocky hockey gloves, deep purple gloves, white cuff."
     },
     {
@@ -605,7 +605,7 @@
       "label": "Teal",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/gloves-teal.png",
+      "file": "avatar-icons/gloves-teal.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a pair of blocky hockey gloves, teal gloves, black cuff."
     },
     {
@@ -614,7 +614,7 @@
       "label": "Silver",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/gloves-silver.png",
+      "file": "avatar-icons/gloves-silver.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a pair of blocky hockey gloves, silver-grey gloves, navy cuff."
     },
     {
@@ -623,7 +623,7 @@
       "label": "Red and White",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/gloves-redwhite.png",
+      "file": "avatar-icons/gloves-redwhite.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a pair of blocky hockey gloves, red gloves with a white cuff and white finger tips."
     },
     {
@@ -632,7 +632,7 @@
       "label": "Black and Gold",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/gloves-blackgold.png",
+      "file": "avatar-icons/gloves-blackgold.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a pair of blocky hockey gloves, black gloves with a gold cuff."
     },
     {
@@ -641,7 +641,7 @@
       "label": "Checkerboard",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/gloves-checker.png",
+      "file": "avatar-icons/gloves-checker.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a pair of blocky hockey gloves, black and white checkerboard backs."
     },
     {
@@ -650,7 +650,7 @@
       "label": "Bolt",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/gloves-bolt.png",
+      "file": "avatar-icons/gloves-bolt.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a pair of blocky hockey gloves, black gloves with a yellow lightning bolt on the back."
     },
     {
@@ -659,7 +659,7 @@
       "label": "Snowflake",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/gloves-snowflake.png",
+      "file": "avatar-icons/gloves-snowflake.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a pair of blocky hockey gloves, white gloves with light blue pixel snowflakes."
     },
     {
@@ -668,7 +668,7 @@
       "label": "Old School",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/gloves-leather.png",
+      "file": "avatar-icons/gloves-leather.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a pair of blocky hockey gloves, tan-brown worn leather gloves, like vintage gear."
     },
     {
@@ -677,7 +677,7 @@
       "label": "Flame",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/gloves-flame.png",
+      "file": "avatar-icons/gloves-flame.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a pair of blocky hockey gloves, black gloves with orange and red flames on the back."
     },
     {
@@ -686,7 +686,7 @@
       "label": "Carbon",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/gloves-carbon.png",
+      "file": "avatar-icons/gloves-carbon.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a pair of blocky hockey gloves, dark grey woven carbon-fibre gloves."
     },
     {
@@ -695,7 +695,7 @@
       "label": "Northern Lights",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/gloves-aurora.png",
+      "file": "avatar-icons/gloves-aurora.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a pair of blocky hockey gloves, dark gloves with green and purple bands."
     },
     {
@@ -704,7 +704,7 @@
       "label": "Lava",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/gloves-lava.png",
+      "file": "avatar-icons/gloves-lava.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a pair of blocky hockey gloves, black gloves with glowing orange crack lines."
     },
     {
@@ -713,7 +713,7 @@
       "label": "Glow",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/gloves-glow.png",
+      "file": "avatar-icons/gloves-glow.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a pair of blocky hockey gloves, black gloves with bright lime glowing trim."
     },
     {
@@ -722,7 +722,7 @@
       "label": "Gold",
       "tier": "legendary",
       "tierLabel": "Legend",
-      "file": "avatar-icons/gloves-gold.png",
+      "file": "avatar-icons/gloves-gold.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a pair of blocky hockey gloves, shiny gold gloves with a black cuff."
     },
     {
@@ -731,7 +731,7 @@
       "label": "The Twig",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/stick-twig.png",
+      "file": "avatar-icons/stick-twig.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey stick lying diagonally, plain light ash wood stick, no paint, white tape on the blade."
     },
     {
@@ -740,7 +740,7 @@
       "label": "Matte Black",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/stick-matte.png",
+      "file": "avatar-icons/stick-matte.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey stick lying diagonally, flat matte black stick."
     },
     {
@@ -749,7 +749,7 @@
       "label": "Ice White",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/stick-white.png",
+      "file": "avatar-icons/stick-white.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey stick lying diagonally, white stick."
     },
     {
@@ -758,7 +758,7 @@
       "label": "Midnight Navy",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/stick-navy.png",
+      "file": "avatar-icons/stick-navy.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey stick lying diagonally, dark navy stick."
     },
     {
@@ -767,7 +767,7 @@
       "label": "Sky Blue",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/stick-sky.png",
+      "file": "avatar-icons/stick-sky.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey stick lying diagonally, light sky blue stick."
     },
     {
@@ -776,7 +776,7 @@
       "label": "Thwap Green",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/stick-green.png",
+      "file": "avatar-icons/stick-green.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey stick lying diagonally, dark green stick."
     },
     {
@@ -785,7 +785,7 @@
       "label": "Thwap Lime",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/stick-lime.png",
+      "file": "avatar-icons/stick-lime.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey stick lying diagonally, bright lime stick."
     },
     {
@@ -794,7 +794,7 @@
       "label": "Sunset Orange",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/stick-orange.png",
+      "file": "avatar-icons/stick-orange.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey stick lying diagonally, bright orange stick."
     },
     {
@@ -803,7 +803,7 @@
       "label": "Grape",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/stick-grape.png",
+      "file": "avatar-icons/stick-grape.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey stick lying diagonally, deep purple stick."
     },
     {
@@ -812,7 +812,7 @@
       "label": "Teal",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/stick-teal.png",
+      "file": "avatar-icons/stick-teal.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey stick lying diagonally, teal stick."
     },
     {
@@ -821,7 +821,7 @@
       "label": "Silver",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/stick-silver.png",
+      "file": "avatar-icons/stick-silver.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey stick lying diagonally, brushed silver stick."
     },
     {
@@ -830,7 +830,7 @@
       "label": "Two-tone",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/stick-twotone.png",
+      "file": "avatar-icons/stick-twotone.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey stick lying diagonally, red shaft with a black blade."
     },
     {
@@ -839,7 +839,7 @@
       "label": "Checkerboard",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/stick-checker.png",
+      "file": "avatar-icons/stick-checker.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey stick lying diagonally, black and white checkerboard shaft."
     },
     {
@@ -848,7 +848,7 @@
       "label": "Candy Cane",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/stick-candycane.png",
+      "file": "avatar-icons/stick-candycane.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey stick lying diagonally, red and white spiral stripes down the shaft."
     },
     {
@@ -857,7 +857,7 @@
       "label": "Snowflake",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/stick-snowflake.png",
+      "file": "avatar-icons/stick-snowflake.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey stick lying diagonally, white shaft with light blue pixel snowflakes."
     },
     {
@@ -866,7 +866,7 @@
       "label": "Bolt",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/stick-bolt.png",
+      "file": "avatar-icons/stick-bolt.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey stick lying diagonally, black stick with yellow lightning bolts down the shaft."
     },
     {
@@ -875,7 +875,7 @@
       "label": "Carbon",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/stick-carbon.png",
+      "file": "avatar-icons/stick-carbon.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey stick lying diagonally, dark grey woven carbon-fibre stick."
     },
     {
@@ -884,7 +884,7 @@
       "label": "Flame",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/stick-flame.png",
+      "file": "avatar-icons/stick-flame.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey stick lying diagonally, black stick with orange and red flames up from the blade."
     },
     {
@@ -893,7 +893,7 @@
       "label": "Northern Lights",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/stick-aurora.png",
+      "file": "avatar-icons/stick-aurora.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey stick lying diagonally, dark stick with green and purple bands."
     },
     {
@@ -902,7 +902,7 @@
       "label": "Lava",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/stick-lava.png",
+      "file": "avatar-icons/stick-lava.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey stick lying diagonally, black stick with glowing orange crack lines."
     },
     {
@@ -911,7 +911,7 @@
       "label": "Glow",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/stick-glow.png",
+      "file": "avatar-icons/stick-glow.webp",
       "prompt": "A single hockey item icon for a kids' hockey app, in a blocky pixel-voxel style like Minecraft: chunky boxes, pixel-art texture on every block face at 16px per block unit, crisp hard pixel edges, soft simple shading. Shown alone, centered, three-quarter view turned about 25 degrees and seen slightly from above, on a fully transparent background. No text, no letters, no numbers, no logos, no brand marks, no people's faces. Bold, cool, not cute. Must read clearly at 120px on both light and dark backgrounds. The item: a blocky hockey stick lying diagonally, black stick with a bright lime glowing stripe."
     },
     {
@@ -920,7 +920,7 @@
       "label": "Slap shot",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/pose-slapshot.png",
+      "file": "avatar-icons/pose-slapshot.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is winding up for a slap shot, stick raised high behind the shoulder."
     },
     {
@@ -929,7 +929,7 @@
       "label": "Wrister",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/pose-wrister.png",
+      "file": "avatar-icons/pose-wrister.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is follow-through of a wrist shot, stick blade pointing at the target."
     },
     {
@@ -938,7 +938,7 @@
       "label": "Backhand",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/pose-backhand.png",
+      "file": "avatar-icons/pose-backhand.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is taking a backhand shot, body turned, puck on the back of the blade."
     },
     {
@@ -947,7 +947,7 @@
       "label": "One-timer",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/pose-onetimer.png",
+      "file": "avatar-icons/pose-onetimer.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is leaning into a one-timer, stick swinging down to meet a pass."
     },
     {
@@ -956,7 +956,7 @@
       "label": "Saucer pass",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/pose-saucer.png",
+      "file": "avatar-icons/pose-saucer.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is flicking a saucer pass, puck floating just off the ice."
     },
     {
@@ -965,7 +965,7 @@
       "label": "Poke check",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/pose-pokecheck.png",
+      "file": "avatar-icons/pose-pokecheck.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is reaching out one-handed with the stick to poke the puck away."
     },
     {
@@ -974,7 +974,7 @@
       "label": "Shot block",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/pose-shotblock.png",
+      "file": "avatar-icons/pose-shotblock.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is dropping low and sideways to block a shot, gloves tucked in."
     },
     {
@@ -983,7 +983,7 @@
       "label": "Crossovers",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/pose-crossovers.png",
+      "file": "avatar-icons/pose-crossovers.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is mid crossover stride, one skate crossing over the other."
     },
     {
@@ -992,7 +992,7 @@
       "label": "Hockey stop",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/pose-hockeystop.png",
+      "file": "avatar-icons/pose-hockeystop.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is sharp hockey stop with a spray of pixel snow off the skates."
     },
     {
@@ -1001,7 +1001,7 @@
       "label": "Spin-o-rama",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/pose-spin.png",
+      "file": "avatar-icons/pose-spin.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is spinning on the skates with the puck tight to the stick."
     },
     {
@@ -1010,7 +1010,7 @@
       "label": "Between the legs",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/pose-betweenlegs.png",
+      "file": "avatar-icons/pose-betweenlegs.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is pulling the puck through the legs with the stick."
     },
     {
@@ -1019,7 +1019,7 @@
       "label": "Lacrosse lift",
       "tier": "legendary",
       "tierLabel": "Legend",
-      "file": "avatar-icons/pose-lacrosse.png",
+      "file": "avatar-icons/pose-lacrosse.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is scooping the puck onto the blade and lifting it up like a lacrosse stick."
     },
     {
@@ -1028,7 +1028,7 @@
       "label": "Faceoff",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/pose-faceoff.png",
+      "file": "avatar-icons/pose-faceoff.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is crouched low in a faceoff stance, stick on the ice."
     },
     {
@@ -1037,7 +1037,7 @@
       "label": "Breakaway",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/pose-breakaway.png",
+      "file": "avatar-icons/pose-breakaway.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is racing forward alone, low and fast, puck out in front."
     },
     {
@@ -1046,7 +1046,7 @@
       "label": "Backwards skate",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/pose-backwards.png",
+      "file": "avatar-icons/pose-backwards.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is skating backwards in a low ready stance, stick out front."
     },
     {
@@ -1055,7 +1055,7 @@
       "label": "Stick lift",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/pose-sticklift.png",
+      "file": "avatar-icons/pose-sticklift.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is lifting an opponent-side stick with the blade (shown with a second stick only, no other player)."
     },
     {
@@ -1064,7 +1064,7 @@
       "label": "Glove save",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/pose-glovesave.png",
+      "file": "avatar-icons/pose-glovesave.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is goalie snapping a big glove save, catching glove up high."
     },
     {
@@ -1073,7 +1073,7 @@
       "label": "Arms up",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/celebration-armsup.png",
+      "file": "avatar-icons/celebration-armsup.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is both arms and stick raised high over the head."
     },
     {
@@ -1082,7 +1082,7 @@
       "label": "Stick raise",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/celebration-stickraise.png",
+      "file": "avatar-icons/celebration-stickraise.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is one arm pumping the stick straight up to the sky."
     },
     {
@@ -1091,7 +1091,7 @@
       "label": "Glove pound",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/celebration-glovepound.png",
+      "file": "avatar-icons/celebration-glovepound.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is reaching out a glove for a fist bump."
     },
     {
@@ -1100,7 +1100,7 @@
       "label": "Airplane",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/celebration-airplane.png",
+      "file": "avatar-icons/celebration-airplane.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is gliding with both arms straight out like airplane wings."
     },
     {
@@ -1109,7 +1109,7 @@
       "label": "Heart hands",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/celebration-heart.png",
+      "file": "avatar-icons/celebration-heart.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is making a heart shape with both gloves."
     },
     {
@@ -1118,7 +1118,7 @@
       "label": "Flex",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/celebration-flex.png",
+      "file": "avatar-icons/celebration-flex.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is flexing both arms, stick tucked under one arm."
     },
     {
@@ -1127,7 +1127,7 @@
       "label": "Glass bump",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/celebration-glass.png",
+      "file": "avatar-icons/celebration-glass.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is jumping chest-first into the rink glass."
     },
     {
@@ -1136,7 +1136,7 @@
       "label": "Spin",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/celebration-spin.png",
+      "file": "avatar-icons/celebration-spin.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is spinning in place on one skate, arms out."
     },
     {
@@ -1145,7 +1145,7 @@
       "label": "Salute",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/celebration-salute.png",
+      "file": "avatar-icons/celebration-salute.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is a crisp salute with the glove to the helmet."
     },
     {
@@ -1154,7 +1154,7 @@
       "label": "Rocket launch",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/celebration-rocket.png",
+      "file": "avatar-icons/celebration-rocket.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is crouching low then blasting up into a jump, pixel snow puffing out below."
     },
     {
@@ -1163,7 +1163,7 @@
       "label": "Moonwalk",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/celebration-moonwalk.png",
+      "file": "avatar-icons/celebration-moonwalk.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is sliding backwards on the skates in a moonwalk."
     },
     {
@@ -1172,7 +1172,7 @@
       "label": "Ice shuffle",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/celebration-shuffle.png",
+      "file": "avatar-icons/celebration-shuffle.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is a quick happy dance shuffle on the skates."
     },
     {
@@ -1181,7 +1181,7 @@
       "label": "Snow angel",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/celebration-snowangel.png",
+      "file": "avatar-icons/celebration-snowangel.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is lying on the ice making a snow angel."
     },
     {
@@ -1190,7 +1190,7 @@
       "label": "Point to the sky",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/celebration-sky.png",
+      "file": "avatar-icons/celebration-sky.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is pointing one glove up to the sky."
     },
     {
@@ -1199,7 +1199,7 @@
       "label": "Thumbs up",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/celebration-thumbs.png",
+      "file": "avatar-icons/celebration-thumbs.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is two big thumbs up."
     },
     {
@@ -1208,7 +1208,7 @@
       "label": "Robot",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/celebration-robot.png",
+      "file": "avatar-icons/celebration-robot.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is doing the robot dance, arms bent at sharp angles."
     },
     {
@@ -1217,7 +1217,7 @@
       "label": "Flamingo",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/celebration-flamingo.png",
+      "file": "avatar-icons/celebration-flamingo.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is balancing on one skate, the other leg tucked up."
     },
     {
@@ -1226,7 +1226,7 @@
       "label": "Penguin slide",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/celebration-penguin.png",
+      "file": "avatar-icons/celebration-penguin.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is sliding on the belly across the ice, arms back like a penguin."
     },
     {
@@ -1235,7 +1235,7 @@
       "label": "Bigfoot stomp",
       "tier": "legendary",
       "tierLabel": "Legend",
-      "file": "avatar-icons/celebration-stomp.png",
+      "file": "avatar-icons/celebration-stomp.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is big heavy Bigfoot stomp, one skate raised high."
     },
     {
@@ -1244,7 +1244,7 @@
       "label": "Kangaroo hops",
       "tier": "rare",
       "tierLabel": "Pro",
-      "file": "avatar-icons/celebration-kangaroo.png",
+      "file": "avatar-icons/celebration-kangaroo.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is hopping forward with both skates together."
     },
     {
@@ -1253,7 +1253,7 @@
       "label": "Stick guitar",
       "tier": "epic",
       "tierLabel": "All-Star",
-      "file": "avatar-icons/celebration-guitar.png",
+      "file": "avatar-icons/celebration-guitar.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is playing the stick like a guitar."
     },
     {
@@ -1262,7 +1262,7 @@
       "label": "Wave to the crowd",
       "tier": "common",
       "tierLabel": "Rookie",
-      "file": "avatar-icons/celebration-wave.png",
+      "file": "avatar-icons/celebration-wave.webp",
       "prompt": "A blocky pixel-voxel hockey player (square head, box torso, box arms and legs, in a plain red jersey, black pants, black helmet with a steel cage, black gloves, dark stick, skates), seen in three-quarter view, full body, on a fully transparent background, in the style of Minecraft: crisp hard pixel edges, 16px per block unit. Simple face with no likeness of a real person. No text, no logos. Cool, not cute. The player is waving a glove to the crowd."
     }
   ]
