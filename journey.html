@@ -330,7 +330,7 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
 <section class="pg" aria-labelledby="h-badges">
   <div class="badgehead">
     <p class="eyebrow">Earn stars, level up</p><h2 id="h-badges">My Badges</h2>
-    <p class="sub">Every badge has 3 stars. Tap one to see your next star.</p>
+    <p class="sub">Earn stars as you train. Tap one to see what&rsquo;s next.</p>
   </div>
   <div class="badges" id="jBadges"></div>
   <p class="why" id="jBadgeEmpty" hidden>Your first badge comes with your first drills.</p>
@@ -453,7 +453,7 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     if(b.tierIndex>PREV_TIER) msgs.push('New scene: '+b.tier+'.'+(REWARDS[b.tierIndex]?' You unlocked '+REWARDS[b.tierIndex].label+'.':''));
     else if(moved) msgs.push('You moved to dot '+b.dots+'.');
     showNew(pending,fresh);
-    fresh.forEach(function(id){var g=b.badges.filter(function(x){return x.id===id;})[0];if(g)msgs.push('New star: '+g.name+', '+g.stars+' of 3.');});
+    fresh.forEach(function(id){var g=b.badges.filter(function(x){return x.id===id;})[0];if(g)msgs.push('New star: '+g.name+', '+g.stars+' of '+((g.thresholds&&g.thresholds.length)||3)+'.');});
     if(msgs.length)txt('jCheer',msgs.join(' '));
     rec.tierIndex=Math.max(b.tierIndex,PREV_TIER); rec.pending=pending;
     writeSeen(rec);
@@ -475,7 +475,8 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
         if(!chip){chip=document.createElement('span');chip.className='newchip';chip.textContent='New';el.appendChild(chip);}
         if(fresh.indexOf(g.id)>=0){var st=el.querySelector('.stars');
           // Wrap the newest earned star so it can stamp in.
-          st.innerHTML='\u2605'.repeat(g.stars-1)+'<span class="new">\u2605</span>'+(g.stars<3?'<span class="off">'+'\u2606'.repeat(3-g.stars)+'</span>':'');
+          var mx=(g.thresholds&&g.thresholds.length)||3;
+          st.innerHTML='\u2605'.repeat(g.stars-1)+'<span class="new">\u2605</span>'+(g.stars<mx?'<span class="off">'+'\u2606'.repeat(mx-g.stars)+'</span>':'');
           stampWhenVisible(el);}
       }else if(chip){chip.remove();}
     });
@@ -499,13 +500,20 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     {id:'engine',name:'Engine',art:'badge-03.webp',stars:3},
     {id:'tapetotape',name:'Tape to Tape',art:'badge-04.webp',stars:1}
   ];
-  // One line of attitude per badge. Cool, not cute.
+  // One line of attitude per badge (keyed by id, incl. goalie swaps). Cool, not cute.
   var TAGLINE={dangler:'Hands too quick to follow.',sniper:'Picks corners for fun.',netboss:'Nothing gets past you.',
     engine:'You never run out of gas.',tapetotape:'Every pass lands on the tape.',hockeybrain:'You see the play before it happens.',
-    onaheater:'Once you start, nobody stops you.',fullweek:'Four days a week, every week.',hypesquad:'The loudest voice on the bench.'};
-  // The short word a kid would say ("5 more drills"), not the full unit.
-  var SHORT={dangler:'drills',sniper:'drills',netboss:'drills',engine:'workouts',tapetotape:'drills',hockeybrain:'sessions',cheers:'cheers',hypesquad:'cheers'};
-  function starHtml(n){return '\u2605'.repeat(n)+(n<3?'<span class="off">'+'\u2606'.repeat(3-n)+'</span>':'');}
+    onaheater:'Once you start, nobody stops you.',fullweek:'Four days a week, every week.',hypesquad:'The loudest voice on the bench.',
+    firstshift:'Every legend starts with one shift.',rinkrat:'You basically live at the rink.',grinder:'Reps on reps on reps.',
+    completeplayer:'Good at everything, dangerous anywhere.',bardown:'Top corner, every time.',brickwall:'Nothing gets through you.',
+    magician:'Now you see it, now it\u2019s in the net.',playmaker:'You make everyone around you better.',motor:'You just don\u2019t stop.',
+    bigbrain:'Two moves ahead of everybody.',clockwork:'Week after week, like clockwork.',lockedin:'Dialed in, every week.',
+    hattrickweek:'Three days a week, minimum.',nodaysoff:'Rest is for the off-season.',monthmaker:'Month after month, still at it.',
+    weekendwarrior:'Saturdays and Sundays are for the rink.',micdup:'You bring the energy, every shift.',winterwarrior:'Cold rink, warm hands.',
+    bigweek:'When you go, you GO.',comebackkid:'You always bounce back.',calledup:'Welcome to Practice Ice.',
+    gametime:'You made it to Game Ready.',topshelf:'Legend status, unlocked.',seasonsweep:'You finished the whole path.',
+    openingnight:'First on the ice this season.'};
+  function starHtml(n,max){max=max||3;return '\u2605'.repeat(n)+(n<max?'<span class="off">'+'\u2606'.repeat(max-n)+'</span>':'');}
   function renderBadges(){
     closePop(false);
     var list=(BADGES||SAMPLE_BADGES).filter(function(g){return g.stars>0;});
@@ -516,7 +524,8 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
       var art=document.createElement('div'); art.className='art'; art.setAttribute('data-art',g.art||'');
       var ph=document.createElement('span'); ph.textContent=String(g.art||'').replace(/\D/g,''); art.appendChild(ph);
       var nm=document.createElement('b'); nm.textContent=g.name;
-      var st=document.createElement('div'); st.className='stars'; st.innerHTML=starHtml(g.stars); st.setAttribute('aria-label',g.stars+' of 3 stars');
+      var mx=(g.thresholds&&g.thresholds.length)||3;
+      var st=document.createElement('div'); st.className='stars'; st.innerHTML=starHtml(g.stars,mx); st.setAttribute('aria-label',g.stars+' of '+mx+' star'+(mx===1?'':'s'));
       el.appendChild(art); el.appendChild(nm); el.appendChild(st);
       if(k>=BADGE_LIMIT&&!SHOW_ALL) el.hidden=true;
       box.appendChild(el);
@@ -532,18 +541,21 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     SHOW_ALL=!SHOW_ALL; renderBadges();
     if(SHOW_ALL){var first=document.querySelectorAll('#jBadges .badge')[BADGE_LIMIT]; if(first) first.focus();}
   });
-  // What the pop-up says: one sentence, in a kid's words.
+  // What the pop-up says: one sentence, in a kid's words. Phrasing comes from
+  // the badge's `kind`/`short`, so new badges need no code here.
   function lineFor(g){
-    if(g.next==null) return 'Maxed out! All 3 stars.';
+    var max=(g.thresholds&&g.thresholds.length)||3;
+    if(g.next==null) return max===1?'Earned!':'Maxed out! All '+max+' stars.';
+    if(max===1) return g.hint||'Reach it to earn this badge.';
     var left=g.next-g.count, star='star '+(g.stars+1);
-    if(g.id==='onaheater') return 'Train '+g.next+' days in a row for '+star+'!';
-    if(g.id==='fullweek') return left+' more '+(left===1?'week':'weeks')+' with 4 training days to '+star+'!';
-    var w=SHORT[g.id]||'drills'; if(left===1) w=w.replace(/s$/,'');
+    if(g.kind==='streak') return 'Train '+g.next+' days in a row for '+star+'!';
+    if(g.kind==='weeks') return left+' more '+(left===1?'week':'weeks')+' with '+(g.min||4)+'+ training days to '+star+'!';
+    var w=g.short||'drills'; if(left===1) w=w.replace(/s$/,'');
     return left+' more '+w+' to '+star+'!';
   }
   function starNum(g,t){
-    if(g.id==='onaheater') return t+' days';
-    if(g.id==='fullweek') return t+' weeks';
+    if(g.kind==='streak') return t+' days';
+    if(g.kind==='weeks') return t+' '+(t===1?'week':'weeks');
     return String(t);
   }
   var POP_FROM=null, REDUCED=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -565,20 +577,21 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     txt('jBpName',g.name);
     txt('jBpTag',TAGLINE[g.id]||'');
     var th=Array.isArray(g.thresholds)?g.thresholds:null;
-    var ol=document.getElementById('jBpStars'); ol.innerHTML='';
-    for(var k=0;k<3;k++){
+    var N=th?th.length:3, one=N===1; // one-and-done milestones show a single star, no numbers
+    var ol=document.getElementById('jBpStars'); ol.innerHTML=''; ol.classList.toggle('one',one);
+    for(var k=0;k<N;k++){
       var li=document.createElement('li'), got=k<g.stars;
       li.className=got?'got':(k===g.stars?'next':''); li.style.setProperty('--k',k);
       li.innerHTML='<span class="s" aria-hidden="true">'+(got?'\u2605':'\u2606')+'</span>';
-      if(th){var em=document.createElement('em'); em.textContent=starNum(g,th[k]); li.appendChild(em);}
-      li.setAttribute('aria-label','Star '+(k+1)+(got?', earned':', not yet')+(th?', '+th[k]+' '+g.unit:''));
+      if(th&&!one){var em=document.createElement('em'); em.textContent=starNum(g,th[k]); li.appendChild(em);}
+      li.setAttribute('aria-label','Star '+(k+1)+(got?', earned':', not yet')+(th&&!one?', '+th[k]+' '+g.unit:(th?', '+g.unit:'')));
       ol.appendChild(li);
     }
     var bar=document.getElementById('jBpBar'), cnt=document.getElementById('jBpCount');
     if(sample||!th){ document.getElementById('jBpMeter').hidden=true; txt('jBpLine','Sign in to see your count.'); }
     else{
       document.getElementById('jBpMeter').hidden=false;
-      var max=g.next==null, goal=max?th[2]:g.next;
+      var max=g.next==null, goal=max?th[N-1]:g.next;
       bar.classList.toggle('max',max);
       bar.style.setProperty('--p',Math.min(100,Math.round(100*g.count/goal))+'%');
       bar.setAttribute('aria-valuenow',g.count); bar.setAttribute('aria-valuemax',goal);

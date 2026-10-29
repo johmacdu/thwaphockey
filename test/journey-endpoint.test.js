@@ -109,12 +109,15 @@ describe('GET /api/board?action=journey badges', () => {
     fake._seed('cheersent:fw-2026:lewie', 5);
     const res = await get(mintSession('lewie', 'p@e.com'));
     expect(res.statusCode).toBe(200);
-    expect(res.body.badges).toHaveLength(8);
+    expect(res.body.badges).toHaveLength(32);
     const b = Object.fromEntries(res.body.badges.map((x) => [x.id, x]));
     expect(b.dangler).toMatchObject({ count: 10, stars: 1 });
     expect(b.onaheater).toMatchObject({ count: 3, stars: 1 });
     expect(b.hypesquad).toMatchObject({ count: 5, stars: 1 });
-    expect(res.body.badgeStars).toBe(3);
+    // 3 training days also earns First Shift; 10 drills in one week earns Big Week.
+    expect(b.firstshift.stars).toBe(1);
+    expect(b.bigweek.stars).toBe(1);
+    expect(res.body.badgeStars).toBe(5);
   });
 
   it('the goalie sees Net Boss', async () => {
@@ -140,9 +143,9 @@ describe('GET /api/board?action=journey safety', () => {
     expect(res.body.badgeStars).toBe(0);
   });
 
-  it('a player with no history gets all 8 badges at zero', async () => {
+  it('a player with no history gets all 32 badges at zero', async () => {
     const res = await get(mintSession('teddy', 'p@e.com'));
-    expect(res.body.badges).toHaveLength(8);
+    expect(res.body.badges).toHaveLength(32);
     expect(res.body.badges.every((b) => b.count === 0 && b.stars === 0)).toBe(true);
     expect(res.body.badges[1].id).toBe('sniper');
   });
