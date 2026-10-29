@@ -24,12 +24,12 @@ public struct RingStore: Sendable {
         }
     }
 
-    /// The stored snapshot, or empty rings when nothing was saved or the saved
-    /// day is not `today` (a stale yesterday must never show as filled).
+    /// The stored snapshot, or empty rings when nothing was saved or it no
+    /// longer covers `today` (a stale last week must never show as filled).
     public func load(today: String) -> RingSnapshot {
         guard let data = defaults.data(forKey: Self.key),
               let snap = try? JSONDecoder().decode(RingSnapshot.self, from: data),
-              snap.date == today else {
+              snap.isCurrent(today: today) else {
             var empty = RingSnapshot.empty
             empty.date = today
             return empty
@@ -50,5 +50,21 @@ public enum ThwapDay {
         f.timeZone = TimeZone(identifier: "America/Vancouver")
         f.dateFormat = "yyyy-MM-dd"
         return f.string(from: date)
+    }
+
+    /// The Monday ('YYYY-MM-DD') of the week holding `day`, the server's
+    /// Monday-based week (lib/store weekDates). Pure date math on the string,
+    /// no time zone involved. Nil for a malformed day.
+    public static func mondayOf(_ day: String) -> String? {
+        let parts = day.split(separator: "-").compactMap { Int($0) }
+        guard parts.count == 3 else { return nil }
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "UTC")!
+        guard let d = cal.date(from: DateComponents(year: parts[0], month: parts[1], day: parts[2])) else { return nil }
+        let weekday = cal.component(.weekday, from: d) // 1 = Sunday
+        let back = (weekday + 5) % 7                    // days since Monday
+        guard let monday = cal.date(byAdding: .day, value: -back, to: d) else { return nil }
+        let c = cal.dateComponents([.year, .month, .day], from: monday)
+        return String(format: "%04d-%02d-%02d", c.year!, c.month!, c.day!)
     }
 }
