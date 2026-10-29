@@ -74,4 +74,14 @@ unless ws.file_references.any? { |r| r.path == ref_path }
   puts 'added ThwapWatch.xcodeproj to App.xcworkspace'
 end
 
+# 6. Versions must match: App Store Connect rejects a watch app whose
+#    version or build number differs from the iPhone app's.
+%w[MARKETING_VERSION CURRENT_PROJECT_VERSION].each do |key|
+  phone = app_target.build_configurations.map { |c| c.resolve_build_setting(key) }.uniq
+  watch = watch_target.build_configurations.map { |c| c.resolve_build_setting(key) }.uniq
+  next if phone == watch
+  abort "#{key} differs: App #{phone.inspect}, ThwapWatch #{watch.inspect}. " \
+        'Set the same value in ios/ThwapWatch/project.yml and run xcodegen generate.'
+end
+
 puts 'watch embed: ok'
