@@ -61,3 +61,10 @@ describe('2. client token follows the 1-hour server token', () => {
     expect(HTML).toMatch(/uploaded==='expired'[\s\S]{0,200}parentGate\(playerId, slug, true\)/);
   });
 });
+
+describe('6. photo request-code copy does not promise a code was sent', () => {
+  it('shows the on-file wording and drops "We emailed a 6-digit code"', () => {
+    expect(HTML).toContain('If that email is on file with your coach, we sent a 6-digit code.');
+    expect(HTML).not.toContain('We emailed a 6-digit code');
+  });
+});
