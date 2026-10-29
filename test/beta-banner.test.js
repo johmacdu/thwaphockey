@@ -156,25 +156,16 @@ describe('client hide/show date comparison (fail-open)', () => {
   });
 });
 
-describe('index.html banner source guards', () => {
+describe('index.html: the beta banner is retired', () => {
   const __dirname = dirname(fileURLToPath(import.meta.url));
   const html = readFileSync(resolve(__dirname, '../index.html'), 'utf8');
 
-  it('the banner has an id so the auto-hide can target it', () => {
-    expect(html).toMatch(/class='wipnote' id='wipNote'/);
-  });
-
-  it('fetches the public no-auth beta endpoint with no-store', () => {
-    expect(html).toMatch(/fetch\('\/api\/coach\?action=beta',\{cache:'no-store'\}\)/);
-  });
-
-  it('hides only when now is past a real betaUntil', () => {
-    expect(html).toMatch(/Date\.now\(\)>until/);
-    expect(html).toMatch(/!isNaN\(until\)/);
-    expect(html).toMatch(/\.hidden=true/);
-  });
-
-  it('fails open: a fetch error leaves the banner shown (a bare .catch, no hide)', () => {
-    expect(html).toMatch(/\.catch\(function\(\)\{\}\)/);
+  // It rendered by default and was only hidden after /api/coach?action=beta
+  // answered, so it flashed while the page loaded. It is gone for good.
+  it('has no beta welcome banner markup, style or hide script', () => {
+    expect(html).not.toMatch(/wipNote/);
+    expect(html).not.toMatch(/wipnote/);
+    expect(html).not.toMatch(/Welcome to the Thwap beta/);
+    expect(html).not.toMatch(/action=beta/);
   });
 });
