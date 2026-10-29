@@ -25,7 +25,7 @@ describe('goalie Net play wiring (source guards)', () => {
 
   it('exposes a goalie check keyed to the signed-in player', () => {
     expect(html).toMatch(/window\.thwapIsGoalie *= *function/);
-    expect(html).toMatch(/THWAP_GOALIE_NAMES/);
+    expect(html).toMatch(/window\.thwapIsGoalieFor *= *function/);
   });
 
   it('render picks NETPLAY_DAYS for a goalie only when Net play is live, else SHOOT_DAYS', () => {

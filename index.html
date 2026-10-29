@@ -2892,6 +2892,24 @@ window.thwapTrainingToday=function(){
 window.THWAP_ROSTER={alder:{num:'71',pos:'F'},brooklyn:{num:'92',pos:'D'},dawson:{num:'19',pos:'D'},dominic:{num:'98',pos:'F'},eugene:{num:'3',pos:'D'},evan:{num:'13',pos:'F'},greyson:{num:'32',pos:'D'},johnny:{num:'1',pos:'G'},joziah:{num:'59',pos:'F'},lewie:{num:'72',pos:'FD'},liam:{num:'29',pos:'D'},maddux:{num:'18',pos:'F'},oliver:{num:'90',pos:'F'},teddy:{num:'11',pos:'F'},william:{num:'16',pos:'F'},issac:{num:'53',pos:'F'}};
 /* Capitalized-key view of the same data, for the few readers keyed by display name. */
 window.THWAP_ROSTER_CAP=(function(m){var o={};Object.keys(m).forEach(function(k){o[k.charAt(0).toUpperCase()+k.slice(1)]=m[k];});return o;})(window.THWAP_ROSTER);
+/* Goalie by ROSTER POSITION, never by name. One answer for every surface:
+   - the signed-in player gets the same answer as their own page (thwapIsGoalie:
+     the server's member-store flag once known, else their roster position);
+   - a teammate uses the position the caller already resolved (pos, which includes
+     the Demo Team roster), else a cached server flag, else THWAP_ROSTER[slug].pos.
+   Johnny is a goalie because his roster entry says pos:'G'. */
+window.thwapIsGoaliePos=function(pos){ var p=String(pos||'').trim().toLowerCase(); return p==='g'||p==='goalie'||p==='goaltender'||p==='goalkeeper'; };
+window.thwapIsGoalieFor=function(slug,pos){
+  var s=String(slug||'').trim().toLowerCase().replace(/[^a-z]/g,'');
+  try{
+    var me=(window.thwapPlayerId?window.thwapPlayerId():'');
+    if(s && me && s===me && window.thwapIsGoalie) return window.thwapIsGoalie();
+  }catch(e){}
+  if(pos!=null && String(pos).trim()!=='') return window.thwapIsGoaliePos(pos);
+  try{ var f=localStorage.getItem('thwapGoalie|'+s); if(f==='1') return true; if(f==='0') return false; }catch(e){}
+  var r=window.THWAP_ROSTER&&window.THWAP_ROSTER[s];
+  return !!(r && window.thwapIsGoaliePos(r.pos));
+};
 </script><script>
 /* Shared flexible guardian-email list for the coach and player-self edit sheets.
    Any number of emails per player; each one on file receives the sign-in code.
@@ -6217,7 +6235,7 @@ function buildFront(p,slug,photoUrl,themeOverride){
     "</div>";
 }
 function buildBack(p,slug){
-  var isG=(window.THWAP_GOALIE_NAMES&&window.THWAP_GOALIE_NAMES.indexOf(String(slug||'').toLowerCase().replace(/[^a-z]/g,''))>=0);
+  var isG=window.thwapIsGoalieFor(slug, p&&p.pos);
   var stick=cb2Stat(slug,'stick'), shoot=cb2Stat(slug, isG?'netplay':'shoot'), dry=cb2Stat(slug,'dryland');
   var thirdLabel=isG?'Net play':'Shooting';
   var streak=cb2Streak(slug), sessions=stick+shoot+dry;
@@ -6848,9 +6866,8 @@ var POSNAME={F:'Forward',D:'Defense',G:'Goalie',FD:'Forward/Defense'};
    a player id (lowercase first name). Used by the radar, IDP tiles, and card back
    so a goalie's third discipline reads/pulls Net play, a skater's reads Shooting.
    Pass want='plain' for bare labels, 'emoji' for the emoji-prefixed labels. */
-window.THWAP_GOALIE_NAMES = window.THWAP_GOALIE_NAMES || ['johnny'];
-window.thwapDiscsFor = function(slug, want){
-  var g = window.THWAP_GOALIE_NAMES.indexOf(String(slug||'').toLowerCase().replace(/[^a-z]/g,''))>=0;
+window.thwapDiscsFor = function(slug, want, pos){
+  var g = window.thwapIsGoalieFor(slug, pos);
   var third = g ? ['netplay', want==='emoji'?'🥅 Net play':'Net play'] : ['shoot', want==='emoji'?'🥅 Shoot':'Shoot'];
   if(want==='emoji') return [['stick','🏒 Hands'], third, ['dryland','⚡ Dryland']];
   return [['stick','Hands'], third, ['dryland','Dryland']];
@@ -7216,7 +7233,7 @@ function build(){
   if(window.thwapRenderIdp) window.thwapRenderIdp(slug);
   var streak=document.getElementById('plStreak'); if(streak){var _sk=demoStreak(first,tf); if(window.thwapStreakMilestone && slug===(window.thwapPlayerId?window.thwapPlayerId():'')) window.thwapStreakMilestone(_sk); if(_sk>=3){var _tier=_sk>=7?'m7':(_sk>=5?'m5':'m3');var _lab=_sk>=7?" <span class='plfire-lab'>On fire!</span>":"";streak.style.display='';streak.innerHTML="<img class='plflame "+_tier+"' src='login/flame.webp' alt=''> "+_sk+" day streak"+_lab;}else{streak.style.display='none';streak.innerHTML='';}}
   var wrap=document.getElementById('plDisc'); if(!wrap)return;
-  var goalieView=(window.THWAP_GOALIE_NAMES&&window.THWAP_GOALIE_NAMES.indexOf(String(slug||'').toLowerCase().replace(/[^a-z]/g,''))>=0);
+  var goalieView=window.thwapIsGoalieFor(slug, info&&info.pos);
   var thirdDisc=goalieView?'Net play':'Shooting';
   var DCOL={Stickhandling:'#8fd65e',Shooting:'#75B8FF','Net play':'#75B8FF',Dryland:'#FF9D4D',HockeyIQ:'#A98BFF',Passing:'#5CD6C8'};
   var DEMO={Stickhandling:'🏒',Shooting:'🥅','Net play':'🥅',Dryland:'⚡',HockeyIQ:'🧠',Passing:'🎯'};
@@ -7712,8 +7729,8 @@ function loadProg(){try{return JSON.parse(localStorage.getItem(shootKey())||'{}'
 function saveProg(p){try{localStorage.setItem(shootKey(),JSON.stringify(p));}catch(e){}}
 /* A goalie (Johnny) trains Net play instead of Shooting. Same page, same
    plumbing; only the drill source and labels change. The signed-in player is
-   bfPlayer (first name). GOALIE_NAMES mirrors lib/store.js GOALIE_IDS. */
-window.THWAP_GOALIE_NAMES = window.THWAP_GOALIE_NAMES || ['johnny'];
+   bfPlayer (first name). Without a server answer the roster position decides
+   (THWAP_ROSTER[id].pos, Johnny is 'G'), never a list of names. */
 window.thwapIsGoalie = function(){
   try{
     var p=(localStorage.getItem('bfPlayer')||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,'');
@@ -7723,7 +7740,8 @@ window.thwapIsGoalie = function(){
     var pid=(window.thwapPlayerId?window.thwapPlayerId():p);
     var f=localStorage.getItem('thwapGoalie|'+pid); if(f===null) f=localStorage.getItem('thwapGoalie|'+p);
     if(f==='1') return true; if(f==='0') return false;
-    return window.THWAP_GOALIE_NAMES.indexOf(p)>=0;
+    var r=window.THWAP_ROSTER&&(window.THWAP_ROSTER[pid]||window.THWAP_ROSTER[p]);
+    return !!(r && window.thwapIsGoaliePos(r.pos));
   }catch(e){ return false; }
 };
 /* The home hero summary (fill()) runs earlier in the file than this helper, so a
