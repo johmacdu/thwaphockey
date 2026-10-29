@@ -151,6 +151,10 @@ html[data-theme='light'] .stickcell:not(.locked) img{filter:drop-shadow(0 0 .6px
 .png-focus{margin-top:14px;margin-left:64px;background:color-mix(in srgb,var(--lime) 22%,var(--card));border:1px solid color-mix(in srgb,var(--lime) 55%,var(--line));border-radius:12px;padding:11px 13px}
 .png-focus-lab{display:block;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.05em;color:var(--green)}
 .png-focus-goal{display:block;font-family:'Archivo Black',system-ui,sans-serif;font-size:17px;color:var(--text);margin-top:2px;line-height:1.15}
+.png-picks{list-style:none;margin:12px 0 0;padding:0 0 0 64px;display:grid;gap:6px}
+.png-picks[hidden]{display:none}
+.png-picks li{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;color:var(--text);line-height:1.25}
+.png-pick-ico{flex:none;width:22px;text-align:center}
 .png-cta{display:flex;align-items:center;gap:6px;margin-top:16px;padding-left:64px;font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;font-size:15px;letter-spacing:.005em;color:var(--green)}
 .png-cta .chev{font-family:system-ui,sans-serif;font-size:18px;font-weight:700}
 .png-cta-done{color:var(--muted)}
@@ -2842,6 +2846,7 @@ window.thwapTrainingToday=function(){
     <span class='png-count' id='pngCount' hidden><b id='pngDays'></b><span>days</span></span>
   </div>
   <div class='png-meta' id='pngMeta'>Pick your 3 goals for the next game</div>
+  <ul class='png-picks' id='pngPicks' aria-label='Your game goals' hidden></ul>
   <div class='png-focus' id='pngFocus' hidden><span class='png-focus-lab'>Coach wants everyone on</span><span class='png-focus-goal' id='pngFocusGoal'></span></div>
   <div class='png-cta' id='pngCta'>Set your game goals</div>
 </a>
@@ -4106,7 +4111,28 @@ window.addEventListener('hashchange',function(){ if(location.hash===''||location
     return null;
   }
   function gameDoneKey(pid,gid){ return 'thwapGameDone|'+String(pid||'')+'|'+String(gid||''); }
-  window.ThwapGameDay={ vancouverParts:vancouverParts, gameKeepUntilMs:gameKeepUntilMs, KEEP_DAYS:KEEP_DAYS, vancouverToday:vancouverToday, mostRecentPastGame:mostRecentPastGame, pickGameToShow:pickGameToShow, gameDoneKey:gameDoneKey, vancouverWallMs:vancouverWallMs };
+  /* The server's copy of one game's Game Day Goals, from a my-game-goals body.
+     null unless it is an ok body for THIS player and THIS game (a body for a
+     different game or player is ignored, never shown). done means a full plan is
+     saved (picks reach the server's max), the server twin of the goals page's
+     local thwapGameDone mark. */
+  function serverGameState(body,pid,gid){
+    if(!body||!body.ok||!body.game||!gid||String(body.game.id||'')!==String(gid)) return null;
+    if(pid&&body.playerId&&String(body.playerId).toLowerCase()!==String(pid)) return null;
+    var list=Array.isArray(body.goals)?body.goals:[], goals=[], seen={};
+    for(var i=0;i<list.length;i++){
+      var g=list[i]; if(!g||!g.id||!g.title||seen[g.id]) continue;
+      seen[g.id]=1; goals.push({ id:String(g.id), title:String(g.title), emoji:String(g.emoji||'') });
+    }
+    var max=(typeof body.max==='number'&&body.max>0)?body.max:3;
+    return { saved:!!body.saved, goals:goals, done:!!body.saved&&goals.length>=max };
+  }
+  /* Never show less than this browser already knows: a local done mark stays
+     done even when the server has no plan; the server adds picks and done. */
+  function mergeGameState(localDone,srv){
+    return { done:!!localDone||!!(srv&&srv.done), goals:srv&&srv.goals?srv.goals.slice():[] };
+  }
+  window.ThwapGameDay={ serverGameState:serverGameState, mergeGameState:mergeGameState, vancouverParts:vancouverParts, gameKeepUntilMs:gameKeepUntilMs, KEEP_DAYS:KEEP_DAYS, vancouverToday:vancouverToday, mostRecentPastGame:mostRecentPastGame, pickGameToShow:pickGameToShow, gameDoneKey:gameDoneKey, vancouverWallMs:vancouverWallMs };
 })();
 (function(){
   var card=document.getElementById('pNextGame'); if(!card) return;
@@ -4129,19 +4155,33 @@ window.addEventListener('hashchange',function(){ if(location.hash===''||location
   function linkToGame(gid){ try{ card.setAttribute('href','hockey_game_goals.html'+(gid?('?game='+encodeURIComponent(gid)):'')); }catch(e){} }
   var CODE='RANGERS72';
   var set=false;
-  fetch('/api/coach?action=schedule&code='+encodeURIComponent(CODE))
-    .then(function(r){ return r.json(); })
-    .then(function(j){
-      if(!j||!j.ok) return;
-      var sched=j.schedule||{};
-      var pid=playerId();
-      /* Choose the game to surface: a just-passed, not-yet-completed game stays
-         for 10 days after it was played; otherwise the upcoming nextGame. */
-      var pick=GD.pickGameToShow?GD.pickGameToShow({ events:sched.events||[], nextGame:(j.next&&j.next.nextGame)||null, nowMs:Date.now(), isDone:function(gid){ return gameDone(pid,gid); } }):(j.next&&j.next.nextGame?{game:j.next.nextGame,passed:false}:null);
-      if(!pick||!pick.game) return;
-      var g=pick.game, passed=pick.passed;
+  /* Signed in on this device: the thwapAuth cookie plus a chosen player. Signed
+     out, the card never asks the server for picks. */
+  function signedIn(){ var a=false; try{ a=/(?:^|; )thwapAuth=/.test(document.cookie); }catch(e){} return a&&!!playerId(); }
+  /* This player's saved picks for one game from the server (another device or the
+     watch may have set them). null on 401, offline, or a body for another game. */
+  function fetchServerGoals(pid,gid){
+    return fetch('/api/coach?action=my-game-goals&gameId='+encodeURIComponent(gid),{credentials:'include',cache:'no-store'})
+      .then(function(r){ return r&&r.ok?r.json():null; })
+      .then(function(j){ return GD.serverGameState?GD.serverGameState(j,pid,gid):null; })
+      .catch(function(){ return null; });
+  }
+  function renderPicks(goals){
+    var ul=document.getElementById('pngPicks'); if(!ul) return;
+    ul.textContent='';
+    for(var i=0;i<goals.length;i++){
+      var li=document.createElement('li');
+      if(goals[i].emoji){ var ic=document.createElement('span'); ic.className='png-pick-ico'; ic.setAttribute('aria-hidden','true'); ic.textContent=goals[i].emoji; li.appendChild(ic); }
+      li.appendChild(document.createTextNode(goals[i].title));
+      ul.appendChild(li);
+    }
+    ul.hidden=!goals.length;
+  }
+  /* Paint the card (or the far-off tag) for one game. state = { done, goals }.
+     Returns true when the goals card is showing. */
+  function showGame(g,passed,state){
       /* This game's own completion state wins the CTA regardless. */
-      set=gameDone(pid,g.id);
+      set=!!(state&&state.done);
       linkToGame(g.id);
       var days=daysUntil(g.date);
       var hrs=hoursUntil(g);
@@ -4158,7 +4198,7 @@ window.addEventListener('hashchange',function(){ if(location.hash===''||location
           tagText.innerHTML=lead.replace(/[<>&]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c];})+'<b>'+opp+'</b>';
           tag.hidden=false;
         }
-        return;
+        return false;
       }
       if(tag) tag.hidden=true;
       card.hidden=false;
@@ -4166,15 +4206,50 @@ window.addEventListener('hashchange',function(){ if(location.hash===''||location
       var meta=document.getElementById('pngMeta');
       if(meta){ var b=[MON[dt.getMonth()]+' '+dt.getDate()]; if(g.time) b.push(ftime(g.time)); if(g.place) b.push(g.place); meta.textContent=b.join(' | '); }
       var cnt=document.getElementById('pngCount'), dn=document.getElementById('pngDays');
-      if(cnt&&dn&&days>=0){ dn.textContent=days===0?'today':days; if(days===0) cnt.querySelector('span').textContent=''; cnt.hidden=false; }
+      if(cnt&&dn&&days>=0){ dn.textContent=days===0?'today':days; cnt.querySelector('span').textContent=days===0?'':'days'; cnt.hidden=false; }
+      renderPicks((state&&state.goals)||[]);
       /* Within the window: prompt to set goals (or, once the game has passed, to log them).
          Once this game's goals are set, the done-state below wins regardless. */
       var cta=document.getElementById('pngCta');
       if(cta&&!set){
-        if(days>=0){ cta.textContent='Set your game goals'; cta.classList.remove('png-cta-soon'); }
-        else { cta.textContent='How did it go? Log your goals'; cta.classList.remove('png-cta-soon'); }
+        if(days>=0){ cta.textContent='Set your game goals'; cta.classList.remove('png-cta-soon','png-cta-done'); }
+        else { cta.textContent='How did it go? Log your goals'; cta.classList.remove('png-cta-soon','png-cta-done'); }
       }
       if(set){ var ctaDone=document.getElementById('pngCta'); if(ctaDone){ ctaDone.textContent='Your game goals are set'; ctaDone.classList.add('png-cta-done'); ctaDone.classList.remove('png-cta-soon'); } }
+      return true;
+  }
+  function localState(pid,gid){ return GD.mergeGameState?GD.mergeGameState(gameDone(pid,gid),null):{ done:gameDone(pid,gid), goals:[] }; }
+  fetch('/api/coach?action=schedule&code='+encodeURIComponent(CODE))
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      if(!j||!j.ok) return;
+      var sched=j.schedule||{};
+      var pid=playerId();
+      var nextGame=(j.next&&j.next.nextGame)||null;
+      /* Choose the game to surface: a just-passed, not-yet-completed game stays
+         for 10 days after it was played; otherwise the upcoming nextGame. */
+      var pick=GD.pickGameToShow?GD.pickGameToShow({ events:sched.events||[], nextGame:(j.next&&j.next.nextGame)||null, nowMs:Date.now(), isDone:function(gid){ return gameDone(pid,gid); } }):(j.next&&j.next.nextGame?{game:j.next.nextGame,passed:false}:null);
+      if(!pick||!pick.game) return;
+      /* Paint from this browser first, exactly as before. */
+      var shown=showGame(pick.game,pick.passed,localState(pid,pick.game.id));
+      /* Signed in: upgrade from the server copy, merged so nothing this browser
+         knows is lost. Signed out, offline, or 401: the local paint stands. */
+      if(!shown||!signedIn()||!GD.serverGameState) return;
+      var gid=pick.game.id;
+      return fetchServerGoals(pid,gid).then(function(st){
+        if(!st) return;
+        if(pick.passed&&st.done){
+          /* The just-passed game was finished on another device: drop it the way
+             a local done mark would, and move on to the upcoming game. */
+          var nx=GD.pickGameToShow({ events:sched.events||[], nextGame:nextGame, nowMs:Date.now(), isDone:function(id){ return id===gid||gameDone(pid,id); } });
+          if(nx&&nx.game&&nx.game.id!==gid){
+            var gid2=nx.game.id;
+            if(!showGame(nx.game,nx.passed,localState(pid,gid2))) return;
+            return fetchServerGoals(pid,gid2).then(function(st2){ if(st2) showGame(nx.game,nx.passed,GD.mergeGameState(gameDone(pid,gid2),st2)); });
+          }
+        }
+        showGame(pick.game,pick.passed,GD.mergeGameState(gameDone(pid,gid),st));
+      });
     }).catch(function(){});
   /* Coach's team goal (the shared focus) as the card's focus line. */
   fetch('/api/coach?action=team-goal&code='+encodeURIComponent(CODE))
