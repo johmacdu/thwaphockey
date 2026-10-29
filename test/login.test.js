@@ -219,6 +219,21 @@ describe('logout', () => {
     expect(sc).toContain('Max-Age=0');
     expect(tokenFromSetCookie(sc)).toBe('');
   });
+
+  it('a signed-in browser is no longer authed after logout', async () => {
+    const token = mintSession('lewie', 'p@e.com');
+    const before = makeRes();
+    await session(get({ cookie: `${SESSION_COOKIE}=${encodeURIComponent(token)}` }), before);
+    expect(before.body.authed).toBe(true);
+
+    const out = makeRes();
+    await logout(post({}, { cookie: `${SESSION_COOKIE}=${encodeURIComponent(token)}` }), out);
+    expect(out.statusCode).toBe(200);
+    // The browser now carries what the server set: an empty cookie.
+    const after = makeRes();
+    await session(get({ cookie: `${SESSION_COOKIE}=${tokenFromSetCookie(out.headers['Set-Cookie'])}` }), after);
+    expect(after.body.authed).toBe(false);
+  });
 });
 
 // Phase 1: server-verify the SAME jersey+year code the player types today, and

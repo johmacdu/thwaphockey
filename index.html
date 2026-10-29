@@ -5648,9 +5648,13 @@ function registerThwapMenu(){
   function openMenu(){ reg.open(); }
   function closeMenu(){ reg.close(); }
   reg.add(kebab,menu);
-  var out=document.getElementById('menuSignout');
-  if(out) out.addEventListener('click',function(e){
-    e.preventDefault();
+  /* One sign-out for every surface (footer kebab + profile page). The server
+     session lives in the HTTP-only thwapSession cookie, which page JS cannot
+     clear, so we first POST /api/login?action=logout (credentials:'include',
+     like every other session call) so the server clears the cookie. The local
+     clear ALWAYS runs: a failed, offline or hung logout call (capped at 3s)
+     never leaves the user signed in on this device. */
+  function clearLocalAndReload(){
     try{ localStorage.removeItem('thwapCoach'); }catch(_){}
     try{ localStorage.removeItem('thwapAuth'); sessionStorage.removeItem('thwapAuth'); }catch(_){}
     try{ document.cookie='thwapAuth=;path=/;max-age=0'; }catch(_){}
@@ -5659,6 +5663,22 @@ function registerThwapMenu(){
     try{ if(window.THWAP_DEMO) window.THWAP_DEMO.deactivate(); }catch(_){}
     location.hash='';
     location.reload();
+  }
+  var signingOut=false;
+  window.thwapSignOut=function(){
+    if(signingOut) return; signingOut=true;
+    var done=false;
+    function finish(){ if(done) return; done=true; clearLocalAndReload(); }
+    try{
+      setTimeout(finish,3000);
+      fetch('/api/login?action=logout',{method:'POST',credentials:'include'})
+        .then(finish,finish);
+    }catch(_){ finish(); }
+  };
+  var out=document.getElementById('menuSignout');
+  if(out) out.addEventListener('click',function(e){
+    e.preventDefault();
+    window.thwapSignOut();
   });
   var mTerms=document.getElementById('menuTerms'), mPrivacy=document.getElementById('menuPrivacy');
   if(mTerms) mTerms.addEventListener('click',function(e){ e.preventDefault(); closeMenu(); if(window.thwapOpenPolicy) window.thwapOpenPolicy('terms'); });
@@ -11109,6 +11129,7 @@ window.thwapPaywall=function(billing, teamCode){
     var out=document.getElementById('profSignout');
     if(out) out.addEventListener('click',function(e){
       e.preventDefault();
+      if(window.thwapSignOut){ window.thwapSignOut(); return; }
       try{ localStorage.removeItem('thwapCoach'); }catch(_){}
       try{ localStorage.removeItem('thwapAuth'); sessionStorage.removeItem('thwapAuth'); }catch(_){}
       try{ document.cookie='thwapAuth=;path=/;max-age=0'; }catch(_){}
