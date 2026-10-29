@@ -483,10 +483,9 @@ describe('season path: one scene at a time', () => {
     expect(pop.hidden).toBe(true);
   });
 
-  it('no Who skates choice: the kid\'s own player skates, never Sass', async () => {
+  it('Who skates sits on the same row as the scene name', async () => {
     const w = await at20();
-    expect(w.document.querySelector('.whoskates')).toBeNull();
-    expect($(w, 'jStage').querySelector('img[src*="sass"]')).toBeNull();
+    expect($(w, 'h-journey').closest('.scenerow').querySelector('.whoskates')).toBeTruthy();
   });
 
   it('the stage row: done, here, locked', async () => {
@@ -558,4 +557,12 @@ describe('season path: one scene at a time', () => {
     expect($(w, 'jNext').textContent).toBe('Unlocks Legend gloves.');
   });
 
+  it('Who skates: Me or Sass, remembered on the device', async () => {
+    const w = await boot({ api: 401 });
+    const sass = w.document.querySelector('.whoskates [data-who=sass]');
+    tap(w, sass);
+    expect(sass.getAttribute('aria-pressed')).toBe('true');
+    expect($(w, 'jSkater').querySelector('img').getAttribute('src')).toContain('sass');
+    expect(w.localStorage.getItem('thwapJourneySkater')).toBe('sass');
+  });
 });
