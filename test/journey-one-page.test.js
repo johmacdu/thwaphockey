@@ -53,7 +53,8 @@ describe('journey.html', () => {
     expect(JOURNEY).not.toContain('Gray boxes are art slots');
   });
   it('embed mode hides its close button', () => {
-    expect(JOURNEY).toContain('html.embed .glassclose{display:none}');
+    // The page close hides when embedded; the badge modal's close (in-dialog) never does.
+    expect(JOURNEY).toContain('html.embed .glassclose:not(.in-dialog){display:none}');
   });
 });
 

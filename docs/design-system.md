@@ -234,7 +234,9 @@ quick index.
 - `.metrics`/`.metric` and `.pl-tot` stat tiles (tappable = filter).
 - `.board` + `.row` roster rows (rank/name/value grid, position dots).
 - `.idp` monthly-goal editor: free text + tappable skill presets.
-- `.pcard` player card; `.glassclose` page-close X (drill-in pages only).
+- `.pcard` player card; `.glassclose` is the only close X: page close by
+  default, `.in-dialog` in a dialog corner, `.in-row` in a header row.
+- `.jbm`/`.bpop` badge modal (My Season).
 
 ### Rule
 A new page is assembled from these classes and tokens. If a value is not a

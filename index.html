@@ -104,6 +104,8 @@ html[data-theme='light'] .stickcell:not(.locked) img{filter:drop-shadow(0 0 .6px
 
 .glassclose{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);right:max(16px, calc(50vw - 534px));z-index:50;display:inline-grid;place-items:center;width:48px;height:48px;border-radius:50%;font-size:20px;font-weight:700;color:var(--text);cursor:pointer;text-decoration:none;background:color-mix(in srgb,var(--panel) 62%,transparent);border:1px solid color-mix(in srgb,var(--text) 12%,transparent);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);box-shadow:0 6px 20px var(--shadow)}
 .glassclose:hover{background:color-mix(in srgb,var(--panel) 78%,transparent)}.glassclose:active{transform:scale(.94);background:color-mix(in srgb,var(--panel) 88%,transparent)}
+/* Placement modifiers (component-library.md): in-dialog = top-right corner of a dialog/overlay box; in-row = sits in a header row. The glass look never changes. */
+.glassclose.in-dialog{position:absolute;top:12px;right:12px;z-index:3}.glassclose.in-row{position:static}
 .hero{padding:38px 0 19px}.kicker{font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--green);font-weight:950}
 /* Kid-voice home hero: greeting + a tappable Today chip. */
 .hero-hey{font-family:'Archivo Black',system-ui,sans-serif;font-size:clamp(26px,7vw,44px);line-height:1.05;letter-spacing:.005em;margin:8px 0 2px;color:var(--text);white-space:nowrap}
@@ -365,7 +367,8 @@ html[data-theme='light'] .disc-stick{color:#437D22}html[data-theme='light'] .dis
 #switchGate:not([hidden]){opacity:1}
 #switchGate[hidden]{display:none}
 .pgate-box{position:relative;width:100%;max-width:360px;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:24px 20px;box-shadow:0 18px 50px rgba(0,0,0,.5)}
-.pgate-x{position:absolute;top:10px;right:12px;width:44px;height:44px;border:0;border-radius:50%;background:var(--soft);color:var(--text);font-size:18px;cursor:pointer}
+/* Room for the in-dialog glass close (48px at 12px from the corner). */
+.pgate-h,.pgate-h+.pgate-p{padding-right:52px}
 .pgate-h{margin:0 0 6px;font-family:'Archivo Black',system-ui,sans-serif;font-size:20px;color:var(--text)}
 .pgate-p{margin:0 0 14px;font-size:14px;color:var(--muted);line-height:1.4}
 .pgate-in{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:12px;border:1px solid var(--line2);background:var(--card);color:var(--text);font-family:inherit;font-size:16px;margin-bottom:12px}
@@ -374,7 +377,7 @@ html[data-theme='light'] .disc-stick{color:#437D22}html[data-theme='light'] .dis
 .pgate-link{display:block;width:100%;margin-top:10px;background:none;border:0;color:var(--green2);font-family:inherit;font-size:13px;font-weight:800;cursor:pointer;text-align:center}
 .pgate-msg{margin-top:10px;font-size:13px;color:var(--muted);min-height:18px;text-align:center}
 @media (prefers-reduced-motion: reduce){.pgate{transition:none}}
-.cardclose{position:absolute;top:16px;right:16px;width:44px;height:44px;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:200}
+.glassclose.cardclose{position:absolute;top:16px;right:16px;z-index:200}
 .cardscene{perspective:1400px;width:min(380px,94vw);display:flex;flex-direction:column;align-items:center;gap:16px;position:relative;z-index:1}
 .card3d{position:relative;width:100%;aspect-ratio:5/7;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.2,.7,.2,1);will-change:transform;touch-action:none;cursor:grab}
 .card3d.dragging{transition:none;cursor:grabbing}
@@ -1588,8 +1591,6 @@ html[data-theme='dark'] .login-frost{background:linear-gradient(180deg,rgba(120,
 .login-frost::after{content:'';position:absolute;inset:0;box-shadow:inset 0 0 120px rgba(255,255,255,.35),inset 0 0 0 1px rgba(255,255,255,.25);pointer-events:none}
 .login-stage{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
 .login-modal{position:relative;z-index:2;pointer-events:auto;width:100%;max-width:360px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-major);padding:26px 22px 22px;box-shadow:0 24px 70px rgba(9,15,11,.45)}
-.login-x{position:absolute;top:14px;right:14px;z-index:3;display:inline-grid;place-items:center;width:44px;height:44px;border-radius:50%;color:var(--text);font-size:19px;font-weight:700;line-height:1;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent;background:color-mix(in srgb,var(--panel) 62%,transparent);border:1px solid color-mix(in srgb,var(--text) 12%,transparent);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);box-shadow:0 6px 20px var(--shadow);transition:background .12s ease,transform .08s ease}
-.login-x:hover{background:color-mix(in srgb,var(--panel) 78%,transparent)}.login-x:active{transform:scale(.94)}
 .login-h{font-family:'Archivo Black',system-ui,sans-serif;font-weight:600;font-size:26px;line-height:1.05;margin:0;color:var(--text)}
 .login-sub{margin:6px 0 18px;font-size:14px;color:var(--muted)}
 .login-field{display:block;margin-bottom:12px}
@@ -1837,7 +1838,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 </div>
 <div id='loginOverlay' hidden aria-hidden='true'>
   <form class='login-modal' id='loginForm' role='dialog' aria-modal='true' aria-labelledby='loginTitle' novalidate>
-    <button type='button' class='login-x' id='loginClose' aria-label='Close'>&#215;</button>
+    <button type='button' class='glassclose in-dialog login-x' id='loginClose' aria-label='Close'>&#10005;</button>
     <div id='loginSignInView'>
       <h2 class='login-h' id='loginTitle'>Welcome back!</h2>
       <p class='login-sub'>Sign in to your team.</p>
@@ -1920,7 +1921,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
     </div>
   </div>
   <form class='login-modal' id='waitForm' role='dialog' aria-modal='true' aria-labelledby='waitTitle' hidden novalidate>
-    <button type='button' class='login-x' id='waitClose' aria-label='Close'>&#215;</button>
+    <button type='button' class='glassclose in-dialog login-x' id='waitClose' aria-label='Close'>&#10005;</button>
     <h2 class='login-h' id='waitTitle'>Join the waitlist</h2>
     <p class='login-sub' id='waitSub'>Tell us where you play and we will reach out when THWAP opens.</p>
     <div id='waitFields'>
@@ -2165,7 +2166,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 <div class='rsearch-empty' id='rsearchEmpty' hidden></div>
 <div class='pgate' id='switchGate' hidden>
   <form class='pgate-box' id='switchGateForm' novalidate>
-    <button type='button' class='pgate-x' id='switchGateX' aria-label='Close'>&#215;</button>
+    <button type='button' class='glassclose in-dialog pgate-x' id='switchGateX' aria-label='Close'>&#10005;</button>
     <h2 class='pgate-h' id='switchGateTitle'>Switch player</h2>
     <p class='pgate-p'>Ask a parent. Enter their email and the player code.</p>
     <input class='pgate-in' id='switchEmail' type='email' inputmode='email' autocomplete='email' placeholder='parent@email.com' aria-label='Parent email' required>
@@ -2177,7 +2178,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 <div class='sheet' id='playerEditSheet' hidden>
   <div class='sheet-scrim' id='peScrim'></div>
   <form class='sheet-panel' id='playerEditForm' novalidate>
-    <button type='button' class='pgate-x' id='peX' aria-label='Close'>&#215;</button>
+    <button type='button' class='glassclose in-dialog pgate-x' id='peX' aria-label='Close'>&#10005;</button>
     <h2 class='pgate-h'>Edit player</h2>
     <label class='sheet-lab'>First name<input class='pgate-in' id='peFirst' type='text' autocomplete='off' required></label>
     <label class='sheet-lab'>Last name<input class='pgate-in' id='peLast' type='text' autocomplete='off'></label>
@@ -2215,7 +2216,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 <div class='sheet' id='playerSelfSheet' hidden>
   <div class='sheet-scrim' id='psScrim'></div>
   <form class='sheet-panel' id='playerSelfForm' novalidate>
-    <button type='button' class='pgate-x' id='psX' aria-label='Close'>&#215;</button>
+    <button type='button' class='glassclose in-dialog pgate-x' id='psX' aria-label='Close'>&#10005;</button>
     <h2 class='pgate-h'>Edit my details</h2>
     <label class='sheet-lab'>First name<input class='pgate-in' id='psFirst' type='text' autocomplete='off' required></label>
     <label class='sheet-lab'>Last name<input class='pgate-in' id='psLast' type='text' autocomplete='off'></label>
@@ -2229,7 +2230,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 <div class='sheet' id='asstSheet' hidden>
   <div class='sheet-scrim' id='asScrim'></div>
   <form class='sheet-panel' id='asstForm' novalidate>
-    <button type='button' class='pgate-x' id='asX' aria-label='Close'>&#215;</button>
+    <button type='button' class='glassclose in-dialog pgate-x' id='asX' aria-label='Close'>&#10005;</button>
     <h2 class='pgate-h'>Add assistant coach</h2>
     <p class='pgate-p'>They sign in with their email and this password.</p>
     <button type='button' class='cprof-photo' id='asPhoto'>
@@ -2249,7 +2250,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 <div class='sheet' id='coachInfoSheet' hidden>
   <div class='sheet-scrim' id='coachInfoScrim'></div>
   <div class='sheet-panel'>
-    <button type='button' class='pgate-x' id='coachInfoX' aria-label='Close'>&#215;</button>
+    <button type='button' class='glassclose in-dialog pgate-x' id='coachInfoX' aria-label='Close'>&#10005;</button>
     <div class='cinfo-head'>
       <span class='cinfo-av' id='coachInfoAv'></span>
       <div><div class='cinfo-name' id='coachInfoName'>Coach</div><div class='cinfo-role' id='coachInfoRole'></div></div>
@@ -2260,7 +2261,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 <div class='sheet' id='coachProfileGate' hidden>
   <div class='sheet-scrim' id='coachProfileScrim'></div>
   <form class='sheet-panel' id='coachProfileForm' novalidate>
-    <button type='button' class='pgate-x' id='coachProfileX' aria-label='Close'>&#215;</button>
+    <button type='button' class='glassclose in-dialog pgate-x' id='coachProfileX' aria-label='Close'>&#10005;</button>
     <h2 class='pgate-h'>Your coach profile</h2>
     <p class='pgate-p'>Your name and photo help the team know who is coaching.</p>
     <button type='button' class='cprof-photo' id='coachProfilePhoto'>
@@ -2285,7 +2286,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 <div class='sheet' id='schedSheet' hidden>
   <div class='sheet-scrim' id='schedScrim'></div>
   <div class='sheet-panel'>
-    <button type='button' class='pgate-x' id='schedX' aria-label='Close'>&#215;</button>
+    <button type='button' class='glassclose in-dialog pgate-x' id='schedX' aria-label='Close'>&#10005;</button>
     <div class='sched-list' id='schedList'>
       <h2 class='pgate-h'>Schedule</h2>
       <button type='button' class='sched-add' id='schedShowAdd'>+ Add a game</button>
@@ -2323,7 +2324,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 <div class='sheet' id='addplayer' hidden>
 <div class='sheet-scrim' id='apScrim'></div>
 <form class='sheet-panel addform' id='addPlayerForm' novalidate>
-  <button type='button' class='pgate-x' id='apX' aria-label='Close'>&#215;</button>
+  <button type='button' class='glassclose in-dialog pgate-x' id='apX' aria-label='Close'>&#10005;</button>
   <h2 class='pgate-h'>Add a player</h2>
   <p class='sheet-sub'>They will show up on your roster.</p>
   <label class='addfield'><span class='addfield-lab'>First name</span><input class='login-in' id='apFirst' type='text' autocomplete='off' required></label>
@@ -5723,7 +5724,7 @@ function registerThwapMenu(){
   });
 })();</script>
 <div class='cardoverlay' id='cardOverlay' hidden>
-  <button type='button' class='cardclose' id='cardClose' aria-label='Close card'>✕</button>
+  <button type='button' class='glassclose in-dialog cardclose' id='cardClose' aria-label='Close card'>✕</button>
   <div class='cardscene' id='cardScene'>
     <div class='card3d' id='card3d'>
       <div class='cardface cardfront' id='cardFront'></div>
@@ -9412,7 +9413,7 @@ function parentGate(playerId, slug, expired){
     var wrap=document.createElement('div'); wrap.className='pgate';
     wrap.innerHTML=
       "<div class='pgate-box' role='dialog' aria-modal='true' aria-label='Parent check'>"+
-        "<button type='button' class='pgate-x' aria-label='Close'>\u00d7</button>"+
+        "<button type='button' class='glassclose in-dialog pgate-x' aria-label='Close'>\u00d7</button>"+
         "<div class='pgate-step' data-step='email'>"+
           (expired
             ? "<h3 class='pgate-h'>Your photo code ran out</h3>"+

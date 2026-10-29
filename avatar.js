@@ -703,7 +703,7 @@
     return ".lk{position:fixed;inset:0;z-index:9999;background:var(--bg,#F3F7F4);color:var(--text,#15221B);display:flex;flex-direction:column;font-family:inherit;overflow:hidden}.lk>*{min-width:0;flex-shrink:0}.lk>.lk-grid{flex:1 1 auto;min-height:0;align-content:start}"+
       ".lk-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 8px}"+
       ".lk-head h2{margin:0;font-size:22px;font-weight:900}"+
-      ".lk-x{width:48px;height:48px;border-radius:50%;border:1px solid var(--line,#DCE5DE);background:var(--card,#fff);color:var(--text,#15221B);font-size:20px;cursor:pointer}"+
+      ".lk .glassclose.in-row{position:static;flex:none}"+
       ".lk-stagewrap{position:relative;margin:0 16px}"+
       ".lk-play{position:absolute;right:12px;bottom:12px;min-height:48px;padding:0 18px;border-radius:24px;border:0;background:var(--text,#15221B);color:var(--bg,#F3F7F4);font:inherit;font-weight:900;font-size:16px;cursor:pointer}.lk-play[hidden]{display:none}"+
       ".lk-toast .av-word{display:none}"+
@@ -974,7 +974,7 @@
     ensureLockerCss();
     L={ onClose:opts.onClose||null, data:null, look:null, tab:opts.tab||'skin', trying:null, changed:false, me:null, spin:-25, status:'', num:'', build:null };
     var el=document.createElement('div'); el.className='lk'; el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true'); el.setAttribute('aria-label','My Player');
-    el.innerHTML="<div class='lk-head'><h2>My Player</h2><button type='button' class='lk-x' aria-label='Close'>&#10005;</button></div>"+
+    el.innerHTML="<div class='lk-head'><h2>My Player</h2><button type='button' class='glassclose in-row lk-x' aria-label='Close'>&#10005;</button></div>"+
       "<div class='lk-stagewrap'><div class='lk-stage' aria-label='Your player. Drag to spin.'></div><button type='button' class='lk-play' hidden>&#9654; Play</button></div><div class='lk-note' aria-live='polite'></div>"+
       "<div class='lk-tabs' role='tablist' data-lk='tabs'></div><div class='lk-grid'><div class='lk-msg'>Getting your player...</div></div><div class='lk-foot' hidden></div>";
     document.body.appendChild(el);
