@@ -37,16 +37,37 @@ signup, any drill-in page). iOS-style frosted glass circle, 48×48, top-right.
 - **Defined in:** `index.html` (`.glassclose`, `.glassclose:hover`, `.glassclose:active`).
 - **Markup:**
   ```html
-  <button type="button" class="glassclose" aria-label="Close">&#215;</button>
+  <button type="button" class="glassclose" aria-label="Close">&#10005;</button>
   ```
-  Add a page-specific positioning modifier only (e.g. `policy-x`, `cs-x`), never
-  override the glass look (radius, blur, size, colors).
+  Add a positioning modifier only, never override the glass look (radius, blur,
+  size, colors). The base rule is `position:fixed` top-right of the page. Two
+  shared placement modifiers cover everything else:
+  - **`.glassclose.in-dialog`**: top-right corner of a dialog or overlay box
+    (`position:absolute; top:12px; right:12px`). The box must be positioned.
+    Used by the sign-in and waitlist sheets (`login-x`), every parent/coach gate
+    (`pgate-x`), the card viewer (`cardclose`), the badge modal (`bpop-x`) and
+    the About lightbox (`lb-close`).
+    ```html
+    <button type="button" class="glassclose in-dialog" aria-label="Close">&#10005;</button>
+    ```
+  - **`.glassclose.in-row`**: sits in a header row (`position:static`), e.g. the
+    My Player header (`lk-x`).
+  Keep an old class (`pgate-x`, `lk-x`, ...) next to it only as a JS hook. It
+  carries no styles.
+- **Glyph:** `&#10005;` (✕), the same mark as the page closes.
 - **Reuse rule:** circular (`border-radius:50%`), 48×48, `backdrop-filter` blur,
   theme tokens for fill/border/text. If you're on a page that hasn't defined
   `.glassclose`, copy the rule block from `index.html` first.
 - **Do NOT:** use a rounded-square with a solid fill, a bare glyph with no button,
   or a per-page custom close. (Learned: the sign-in sheet close and the About
-  policy close both regressed to non-glass variants and had to be fixed.)
+  policy close both regressed to non-glass variants and had to be fixed. The
+  badge modal later shipped a bare `&#10005;` glyph, and the gates, card viewer,
+  My Player and About lightbox each had their own close; all now use
+  `.glassclose`.)
+- **Embedded pages:** `journey.html` hides its own page close when embedded
+  (`html.embed .glassclose:not(.in-dialog)`), never a dialog's close.
+- **One exception:** `.sugg-close` is an inline dismiss on a coach suggestion
+  card, not a dialog. It is not a close button for a surface.
 
 ### Glass back button: `.glassback`
 Pill-shaped glass "Back" control for drill-in / sub-pages. Plain label **"Back"**,
@@ -133,6 +154,24 @@ A centered dialog card (max-width ~360) for the sign-in / waitlist short forms.
 - **Defined in:** `index.html`.
 - **Reuse rule:** short forms only. If it scrolls or is a whole flow, use a
   full-page overlay instead.
+
+### Badge modal: `.jbm` + `.bpop`
+The pop-up when a kid taps a badge on My Season (`journey.html`): badge art,
+name, tag line, star row, progress meter and one line of copy.
+
+- **Defined in:** `journey.html` (`#jBadgeTpl` markup, `MODAL_CSS` styles). When
+  Journey is embedded in the app, the modal is moved onto the app page
+  (`index.html`) so it centers on the screen, and `MODAL_CSS` is injected there.
+- **Markup:**
+  ```html
+  <div class="jbm" hidden><div class="bpop" role="dialog" aria-modal="true" aria-labelledby="...">
+    <button type="button" class="glassclose in-dialog" aria-label="Close">&#10005;</button>
+    ...
+  </div></div>
+  ```
+- **Reuse rule:** the close is the shared `.glassclose.in-dialog`, which both
+  host pages define. Esc and a tap on the scrim also close it, and focus stays on
+  the close while it is open.
 
 ### Card: `.pcard` (player card) and the "cards rule"
 Player card is the strongest visual expression (front identity / back progress);
@@ -238,7 +277,8 @@ closes whichever menu a click (or Escape) fell outside of.
       `index.html` (not approximate it)?
 - [ ] Is every popover registered with the shared menu manager (no bespoke
       handler, no `stopPropagation`)?
-- [ ] Does the close button use `.glassclose`? Back button plain "Back"?
+- [ ] Does the close button use `.glassclose` (with `.in-dialog` inside a dialog,
+      `.in-row` in a header)? Back button plain "Back"?
 - [ ] Card look only on something interactive that navigates?
 - [ ] No `·`, no `—`/`–`? (`grep -nE "·|—|–"`)
 - [ ] Values are tokens from `design-system.md §16`, not hand-set px?

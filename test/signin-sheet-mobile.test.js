@@ -36,9 +36,10 @@ describe('Sign-in sheet mobile fixes', () => {
     expect(html).toContain("id='loginClose'");
     expect(html).toContain("id='waitClose'");
     // iOS-style glass circular button: round + backdrop blur, not a rounded square with a solid fill
-    expect(html).toMatch(/\.login-x\{position:absolute;[^}]*border-radius:50%/);
-    expect(html).toMatch(/\.login-x\{[^}]*backdrop-filter:saturate\(180%\) blur\(18px\)/);
-    expect(html).not.toMatch(/\.login-x\{position:absolute;top:12px;right:12px;z-index:3;[^}]*border-radius:10px/);
+    // The one glass close (component-library.md), placed in the sheet's corner. No hand-rolled .login-x look.
+    expect(html).toContain("class='glassclose in-dialog login-x' id='loginClose'");
+    expect(html).toContain("class='glassclose in-dialog login-x' id='waitClose'");
+    expect(html).not.toMatch(/\.login-x\{/);
     // the X returns to the frozen splash: it hides the sheet but keeps the frost + login-locked
     expect(html).toContain('function backToSplash()');
     expect(html).not.toContain('function closeOverlay()');

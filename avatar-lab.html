@@ -1,6 +1,11 @@
 <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Thwap character lab</title>
 <style>
+/* Copied from index.html (component-library.md: .glassclose). */
+.glassclose{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);right:16px;z-index:50;display:inline-grid;place-items:center;width:48px;height:48px;border-radius:50%;font-size:20px;font-weight:700;color:var(--text,#15221B);cursor:pointer;text-decoration:none;background:color-mix(in srgb,var(--panel,#fff) 62%,transparent);border:1px solid color-mix(in srgb,var(--text,#15221B) 12%,transparent);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);box-shadow:0 6px 20px var(--shadow,rgba(0,0,0,.18))}
+.glassclose:hover{background:color-mix(in srgb,var(--panel,#fff) 78%,transparent)}.glassclose:active{transform:scale(.94)}
+.glassclose.in-dialog{position:absolute;top:12px;right:12px;z-index:3}.glassclose.in-row{position:static}
+
 body{margin:0;font-family:system-ui,sans-serif;background:#101A14;color:#EAF2EC}
 h1{font-size:18px;margin:16px}
 .row{display:flex;flex-wrap:wrap;gap:16px;padding:0 16px 16px}
