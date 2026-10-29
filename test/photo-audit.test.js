@@ -30,7 +30,7 @@ const { default: upload } = await import('../api/photo/upload.js');
 const { default: remove } = await import('../api/photo/remove.js');
 const { default: getPhoto } = await import('../api/photo/get.js');
 const { default: adminPut } = await import('../api/photo/admin-put.js');
-const { mintToken, getPhoto: readPhoto, getConsent } = await import('../lib/photo_store.js');
+const { mintToken, getPhoto: readPhoto, getPhotoConsent: getConsent, recordPhotoConsent } = await import('../lib/photo_store.js');
 const { getKv } = await import('../lib/photo_common.js');
 const { mintSession } = await import('../lib/session_store.js');
 const { mintWatchToken } = await import('../lib/watch_store.js');
@@ -58,6 +58,11 @@ function lastCode() {
   const c = emailsSent().at(-1);
   const m = c && /code is: (\d{6})/.exec(JSON.parse(c[1].body).text);
   return m ? m[1] : null;
+}
+// A verified parent: the photo consent a code verify writes, plus its token.
+async function parentToken(pid) {
+  await recordPhotoConsent(getKv(), pid, PARENT);
+  return mintToken(pid);
 }
 async function photoKeys() {
   return [...fake.map.keys()].filter((k) => k.startsWith('photo:') && fake.map.get(k));
@@ -258,7 +263,7 @@ describe('upload / remove: token checked first, watch and session tokens refused
     expect(await photoKeys()).toEqual([]);
   });
   it('upload is rate limited per player (11th in an hour is a 429)', async () => {
-    const t = mintToken('lewie');
+    const t = await parentToken('lewie');
     for (let i = 0; i < 10; i++) {
       const r = makeRes();
       await upload(post({ playerId: 'lewie', imageData: JPEG_URL }, bearer(t)), r);
@@ -272,10 +277,10 @@ describe('upload / remove: token checked first, watch and session tokens refused
 });
 
 describe('upload: image validation, EXIF stripped, random key, old blob deleted', () => {
-  const t = () => mintToken('lewie');
+  const t = () => parentToken('lewie');
   it('strips EXIF/GPS and comments from a JPEG', async () => {
     const r = makeRes();
-    await upload(post({ playerId: 'lewie', imageData: JPEG_URL }, bearer(t())), r);
+    await upload(post({ playerId: 'lewie', imageData: JPEG_URL }, bearer(await t())), r);
     expect(r.statusCode).toBe(200);
     const stored = blobPut.mock.calls[0][1];
     expect(stored.includes(Buffer.from(GPS_MARK))).toBe(false);
@@ -285,7 +290,7 @@ describe('upload: image validation, EXIF stripped, random key, old blob deleted'
   });
   it('strips text/eXIf chunks from a PNG', async () => {
     const r = makeRes();
-    await upload(post({ playerId: 'lewie', imageData: PNG_URL }, bearer(t())), r);
+    await upload(post({ playerId: 'lewie', imageData: PNG_URL }, bearer(await t())), r);
     expect(r.statusCode).toBe(200);
     const stored = blobPut.mock.calls[0][1];
     expect(stored.includes(Buffer.from(GPS_MARK))).toBe(false);
@@ -298,21 +303,21 @@ describe('upload: image validation, EXIF stripped, random key, old blob deleted'
       dataUrl('webp', Buffer.from('RIFF0000WEBPVP8 ')),
     ]) {
       const r = makeRes();
-      await upload(post({ playerId: 'lewie', imageData }, bearer(t())), r);
+      await upload(post({ playerId: 'lewie', imageData }, bearer(await t())), r);
       expect(r.statusCode).toBe(400);
     }
     expect(blobPut).not.toHaveBeenCalled();
   });
   it('the storage key carries no player name', async () => {
-    await upload(post({ playerId: 'lewie', imageData: JPEG_URL }, bearer(t())), makeRes());
+    await upload(post({ playerId: 'lewie', imageData: JPEG_URL }, bearer(await t())), makeRes());
     const key = blobPut.mock.calls[0][0];
     expect(key).toMatch(/^photos\/[0-9a-f]{32}\.jpeg$/);
     expect(key).not.toContain('lewie');
   });
   it('replacing a photo deletes the old blob (parent and admin paths)', async () => {
-    await upload(post({ playerId: 'lewie', imageData: JPEG_URL }, bearer(t())), makeRes());
+    await upload(post({ playerId: 'lewie', imageData: JPEG_URL }, bearer(await t())), makeRes());
     const first = (await readPhoto(getKv(), 'lewie')).url;
-    await upload(post({ playerId: 'lewie', imageData: PNG_URL }, bearer(t())), makeRes());
+    await upload(post({ playerId: 'lewie', imageData: PNG_URL }, bearer(await t())), makeRes());
     expect(blobDel).toHaveBeenCalledWith(first, expect.anything());
     const second = (await readPhoto(getKv(), 'lewie')).url;
     await adminPut(post({ playerId: 'lewie', imageData: JPEG_URL, consent: { method: 'text', grantedBy: 'A parent' } }, bearer('admin-test-token')), makeRes());

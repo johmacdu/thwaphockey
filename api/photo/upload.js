@@ -11,10 +11,14 @@
 // The upload token is checked FIRST, so a caller without one cannot learn
 // whether a player exists. Only the photo upload token works here: a web
 // session, coach, admin or watch token is refused.
+//
+// The upload also needs a live PHOTO consent record. Removing a photo withdraws
+// that consent, so a token minted before the removal cannot put a photo back:
+// the parent verifies again (a new code writes new consent).
 
 import { put, del } from '@vercel/blob';
 import { getKv, parseBody, isRosterPlayer, uploadConfigured, cleanImage } from '../../lib/photo_common.js';
-import { verifyToken, putPhoto, getPhoto, randomKey } from '../../lib/photo_store.js';
+import { verifyToken, putPhoto, getPhoto, randomKey, getPhotoConsent, touchPhotoConsent } from '../../lib/photo_store.js';
 import { hit } from '../../lib/rate_limit.js';
 
 export const UPLOAD_LIMIT = 10; // uploads per player per hour
@@ -42,6 +46,8 @@ export default async function handler(req, res) {
   if (!(await isRosterPlayer(pid))) return res.status(401).json({ error: 'not verified' });
 
   const kv = getKv();
+  // Consent withdrawn (photo removed) since the token was minted: verify again.
+  if (!(await getPhotoConsent(kv, pid))) return res.status(401).json({ error: 'not verified' });
   if (!(await hit(kv, 'photo-upload:pid', pid, UPLOAD_LIMIT, UPLOAD_WINDOW_SEC))) {
     return res.status(429).json({ error: 'too many requests, try again later' });
   }
@@ -57,6 +63,7 @@ export default async function handler(req, res) {
   });
   const prev = await getPhoto(kv, pid);
   await putPhoto(kv, pid, blob.url, key);
+  await touchPhotoConsent(kv, pid);
   if (prev && prev.url && prev.url !== blob.url) {
     try { await del(prev.url, { token: process.env.BLOB_READ_WRITE_TOKEN }); } catch { /* already gone */ }
   }

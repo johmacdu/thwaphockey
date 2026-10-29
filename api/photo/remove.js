@@ -1,19 +1,21 @@
 // api/photo/remove.js
 //
-// POST (Authorization: Bearer <uploadToken>) { playerId } -> deletes the photo.
+// POST (Authorization: Bearer <uploadToken>) { playerId } -> deletes the photo
+//   and withdraws its PHOTO consent (photoConsent:<player>). The sign-in consent
+//   record (consent:<player>, api/login.js) is never touched here.
 //
 // POST (admin)  { all: true }                                   -> DRY RUN
 // POST (admin)  { all: true, confirm: 'DELETE ALL PLAYER PHOTOS' } -> deletes
 //   Retires every stored player photo once the character has replaced them
 //   (docs/avatar-roadmap.md). For each player on every team: deletes the blob, the
-//   photo record and the parent-consent record. Without the exact confirm
+//   photo record and the PHOTO consent record (never the sign-in consent). Without the exact confirm
 //   phrase it only reports what WOULD be deleted, so the admin page can show the
 //   list first. Lives in this file (not a new one) to stay under the Vercel
 //   Hobby 12-function cap.
 
 import { del } from '@vercel/blob';
 import { getKv, parseBody, uploadConfigured, adminOk } from '../../lib/photo_common.js';
-import { verifyToken, getPhoto, removePhoto, getConsent, removeConsent } from '../../lib/photo_store.js';
+import { verifyToken, getPhoto, removePhoto, getPhotoConsent, removePhotoConsent } from '../../lib/photo_store.js';
 import { ROSTER } from '../../lib/store.js';
 import { listAllTeamCodes } from '../../lib/teams_store.js';
 import { teamPlayerIds } from '../../lib/team_players.js';
@@ -34,7 +36,7 @@ async function retireAll(req, res, body) {
   const players = [];
   for (const id of await allPlayerIds()) {
     const p = { id };
-    const [photo, consent] = await Promise.all([getPhoto(kv, p.id), getConsent(kv, p.id)]);
+    const [photo, consent] = await Promise.all([getPhoto(kv, p.id), getPhotoConsent(kv, p.id)]);
     const hasPhoto = !!(photo && photo.url);
     const hasConsent = !!consent;
     if (!hasPhoto && !hasConsent) continue;
@@ -44,7 +46,7 @@ async function retireAll(req, res, body) {
       try { await del(photo.url, { token: process.env.BLOB_READ_WRITE_TOKEN }); } catch { /* blob may already be gone */ }
       await removePhoto(kv, p.id);
     }
-    if (hasConsent) await removeConsent(kv, p.id);
+    if (hasConsent) await removePhotoConsent(kv, p.id);
   }
   res.setHeader('Cache-Control', 'no-store');
   return res.status(200).json({ dryRun: !doIt, deleted: doIt ? players.length : 0, players });
@@ -82,6 +84,7 @@ export default async function handler(req, res) {
     try { await del(rec.url, { token: process.env.BLOB_READ_WRITE_TOKEN }); } catch { /* blob may already be gone */ }
   }
   await removePhoto(kv, pid);
+  await removePhotoConsent(kv, pid);
 
   res.setHeader('Cache-Control', 'no-store');
   return res.status(200).json({ ok: true });
