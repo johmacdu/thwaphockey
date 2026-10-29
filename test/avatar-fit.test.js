@@ -1,5 +1,5 @@
 // Card fit: the kid makes their player bigger or smaller on the card front
-// (pinch, wheel or - / + in My Player). Older looks may also carry a move. Server clamps the three numbers;
+// (jersey sizes S to XXL in My Player; pinch and the wheel land on the nearest). Older looks may also carry a move. Server clamps the three numbers;
 // only the card front (.cf2) applies them.
 import { describe, it, expect } from 'vitest';
 import { JSDOM } from 'jsdom';
@@ -77,27 +77,36 @@ async function openLocker(extra = {}) {
   return { w, posts };
 }
 
-// Size and turn live on the card itself (no Size or View tab): pinch, the wheel
-// or the - / + buttons size the player; a drag turns them and the card keeps
-// the nearest side.
+// Size and turn live on the frame of the card (no Size or View tab): five
+// jersey sizes (pinch and the wheel land on the nearest one), and a drag turns
+// the player, with the card keeping the nearest side.
 function ptr(w, el, type, id, x, y = 100) {
   const e = new w.Event(type, { bubbles: true });
   Object.assign(e, { pointerId: id, clientX: x, clientY: y });
   el.dispatchEvent(e);
 }
-const zb = (w, l) => w.document.querySelector(".lk-zbtn[aria-label='" + l + "']");
+const sz = (w, l) => [...w.document.querySelectorAll('.lk-size')].find((b) => b.textContent === l);
+const picked = (w) => w.document.querySelector('.lk-size[aria-checked=true]').textContent;
 
-describe('size and turn on the card', () => {
-  it('the stage is the card front, with - and + buttons and no Size tab', async () => {
+describe('size and turn in the frame', () => {
+  it('the stage is the frame of the card, with five jersey sizes and no Size tab', async () => {
     const { w } = await openLocker();
     expect(w.document.querySelector('[data-tab=fit]')).toBeNull();
-    expect(w.document.querySelector('.lk-stage .lk-fitcard .cf2 .av-wrap')).toBeTruthy();
-    expect([...w.document.querySelectorAll('.lk-zbtn')].map((b) => b.getAttribute('aria-label'))).toEqual(['Smaller', 'Bigger']);
-    expect(w.document.querySelector('.lk-fitbtn')).toBeNull(); // no up/down/left/right
+    expect(w.document.querySelector('.lk-stage .lk-fitcard.lk-frame .cf2 .av-wrap')).toBeTruthy();
+    expect([...w.document.querySelectorAll('.lk-sizes[role=radiogroup] .lk-size[role=radio]')].map((b) => b.textContent)).toEqual(['S', 'M', 'L', 'XL', 'XXL']);
+    expect(picked(w)).toBe('L'); // the default size
+    expect(w.document.querySelector('.lk-zbtn, .lk-fitbtn')).toBeNull(); // no - / + and no move buttons
   });
-  it('+ taps change the card and save once, after the kid stops', async () => {
+  it('the frame is the card with its art off, not the full card', () => {
+    const w = load();
+    const css = w.document.getElementById('lk-css') ? w.document.getElementById('lk-css').textContent : SRC;
+    expect(css).toMatch(/\.lk-frame \.cf2-plate,[^{]*\{display:none\}/);
+    expect(css).toMatch(/\.lk-fitcard\.lk-frame\{background:transparent;border:2px solid/);
+  });
+  it('a size tap changes the frame and saves once, after the kid stops', async () => {
     const { w, posts } = await openLocker();
-    zb(w, 'Bigger').click(); zb(w, 'Bigger').click();
+    sz(w, 'XL').click();
+    expect(picked(w)).toBe('XL');
     expect(w.document.querySelector('.lk-stage').innerHTML).toContain('scale(1.2)');
     expect(posts.length).toBe(0);
     await wait(700);
@@ -106,45 +115,45 @@ describe('size and turn on the card', () => {
   });
   it('sizing re-centers a player that was moved before', async () => {
     const { w, posts } = await openLocker({ fitX: 10, fitY: 5 });
-    zb(w, 'Smaller').click();
+    sz(w, 'M').click();
     await wait(700);
     expect(posts[0].look.fitSize).toBe(90);
     expect(posts[0].look).not.toHaveProperty('fitX');
     expect(posts[0].look).not.toHaveProperty('fitY');
   });
-  it('stops at the limits', async () => {
-    const { w, posts } = await openLocker();
-    for (let i = 0; i < 10; i++) zb(w, 'Bigger').click();
-    await wait(700);
-    expect(posts[0].look.fitSize).toBe(150);
+  it('an old in-between size shows as the nearest jersey size', async () => {
+    const { w } = await openLocker({ fitSize: 108 });
+    expect(picked(w)).toBe('L');
   });
   it('closing with a change still waiting saves it first', async () => {
     const { w, posts } = await openLocker();
-    zb(w, 'Bigger').click();
+    sz(w, 'XXL').click();
     w.document.querySelector('.lk-x').click();
     for (let i = 0; i < 5; i++) await tick();
     expect(posts.length).toBe(1);
-    expect(posts[0].look.fitSize).toBe(110);
+    expect(posts[0].look.fitSize).toBe(140);
   });
-  it('a two-finger pinch sizes the player', async () => {
+  it('a two-finger pinch lands on the nearest jersey size', async () => {
     const { w, posts } = await openLocker();
     const st = w.document.querySelector('.lk-stage');
     ptr(w, st, 'pointerdown', 1, 100); ptr(w, st, 'pointerdown', 2, 200);
-    ptr(w, st, 'pointermove', 2, 230); // 100px apart -> 130px: 130%
-    ptr(w, st, 'pointerup', 2, 230); ptr(w, st, 'pointerup', 1, 100);
+    ptr(w, st, 'pointermove', 2, 220); // 100px apart -> 120px: XL
+    ptr(w, st, 'pointerup', 2, 220); ptr(w, st, 'pointerup', 1, 100);
+    expect(picked(w)).toBe('XL');
     await wait(700);
     expect(posts.length).toBe(1);
-    expect(posts[0].look.fitSize).toBe(130);
+    expect(posts[0].look.fitSize).toBe(120);
     expect(posts[0].look.facing).toBe('facing-left'); // a pinch never turns the player
   });
-  it('the scroll wheel (or a trackpad pinch) sizes the player on desktop', async () => {
+  it('the scroll wheel steps one jersey size at a time on desktop', async () => {
     const { w, posts } = await openLocker();
     const st = w.document.querySelector('.lk-stage');
     const e = new w.Event('wheel', { bubbles: true, cancelable: true }); Object.assign(e, { deltaY: -50, ctrlKey: false });
     st.dispatchEvent(e);
     expect(e.defaultPrevented).toBe(true);
+    expect(picked(w)).toBe('XL');
     await wait(700);
-    expect(posts[0].look.fitSize).toBe(110);
+    expect(posts[0].look.fitSize).toBe(120);
   });
   it('a drag turns the player, and the card keeps the nearest side', async () => {
     const { w, posts } = await openLocker();
@@ -157,7 +166,7 @@ describe('size and turn on the card', () => {
     expect(posts[0].look.facing).toBe('facing-right');
     expect(st.querySelector('.av-scene').style.getPropertyValue('--av-face')).toBe('25deg');
   });
-  it('a tap (no drag) on the card saves nothing', async () => {
+  it('a tap (no drag) on the frame saves nothing', async () => {
     const { w, posts } = await openLocker();
     const st = w.document.querySelector('.lk-stage');
     ptr(w, st, 'pointerdown', 1, 100); ptr(w, st, 'pointerup', 1, 102);

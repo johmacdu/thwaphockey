@@ -79,22 +79,26 @@ A reference screenshot is inspiration, not a source of words.
   All pre-picked, so a kid can tap Done.
 - Then the card reveal: the character lands on the card with the THWAP sound.
 
-### My Player: a Thwap page, five groups, edited on the card
+### My Player: a Thwap page, five groups, the player in the card frame
 - Built like every other Thwap page: glass close top-right, a hero ("My Player"
-  plus one line, "Tap to wear it. Drag to turn. Pinch to size."), the 1100px
-  content column. Not a bespoke pop-up with its own header.
-- The stage is the kid's real card front, so they see exactly what teammates see.
-  It stays in view (sticky) while the list scrolls.
-- Five groups on the shared `.seg` toggle, all visible at once:
+  plus one line, "Tap to wear it. Drag to turn."), the 1100px content column.
+  Not a bespoke pop-up with its own header.
+- The stage is the FRAME of the kid's card: the real card front with its art,
+  tagline, team and position switched off, and the number and name faint. The
+  player stands exactly where they will on the card, without the card art
+  competing with the gear.
+- Five groups as one thin row of text tabs (lime underline on the open one):
   Me (skin, hair, hair color), Jersey (jersey, socks), Helmet (helmet, cage,
   stripe, sticker), Stick (gloves, stick, tape, which way you shoot),
   Moves (moves, cellys). Each part sits under a plain uppercase label over a
   hairline, never a box around the group.
-- No View or Size tab. Drag the card to turn the player; on release they settle
-  on the nearest side (left, front, right) and the card keeps it. Pinch to size
-  on a phone; trackpad pinch or the scroll wheel on desktop; the - / + buttons
-  beside the card always work (the one-finger option a pinch needs). Sizing
-  re-centers the player: there is no move control.
+- Size is a jersey size: S, M, L (default), XL, XXL. One tap; the picked size
+  slaps on in lime. Pinch (phone) and the scroll wheel (desktop) land on the
+  nearest size. Sizing re-centers the player: there is no move control.
+- No View tab: drag the player to turn them; on release they settle on the
+  nearest side (left, front, right) and the card keeps it.
+- Phone: frame and sizes stay in view while the list scrolls. Tablet and up
+  (768px+): two columns, frame and sizes on the left, groups on the right.
 - Tiles at least 48px with 8px spacing.
 - Tap an owned item: it goes on the character and saves. No Save button.
 - Tap a locked item: try it on, with a progress line ("Golden Stick. Train 100 days to unlock.

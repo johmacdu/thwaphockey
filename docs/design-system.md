@@ -237,7 +237,7 @@ quick index.
 - `.pcard` player card; `.glassclose` is the only close X: page close by
   default, `.in-dialog` in a dialog corner, `.in-row` in a header row.
 - `.jbm`/`.bpop` badge modal (My Season).
-- `.lk` My Player page: page close + `.heroCard` + `.seg` groups + `.lk-sec`/`.lk-sech` labelled sections, edited on the card.
+- `.lk` My Player page: page close + `.heroCard`, the card frame (`.lk-frame`), jersey sizes (`.lk-size`), text tabs (`.lk-tab`) and `.lk-sec`/`.lk-sech` labelled sections.
 
 ### Rule
 A new page is assembled from these classes and tokens. If a value is not a

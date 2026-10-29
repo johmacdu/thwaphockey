@@ -160,30 +160,40 @@ The character editor. A full-screen Thwap page built from the shared parts, so i
 reads like every other page.
 
 - **Defined in:** `avatar.js` (`openLocker`, `lockerCss`). Uses `index.html`'s
-  `.glassclose` (page close, no modifier), `.heroCard` + `h1` + `p`, and
-  `.seg` / `.segbtn` for the five groups.
+  `.glassclose` (page close, no modifier) and `.heroCard` + `h1` + `p`.
 - **Markup (shape):**
   ```html
   <div class="lk" role="dialog" aria-modal="true" aria-label="My Player">
     <button type="button" class="glassclose" aria-label="Close">&#10005;</button>
-    <div class="lk-col">                         <!-- the .app column: 1100px, 16px sides -->
-      <div class="heroCard"><h1>My Player</h1><p>Tap to wear it. Drag to turn. Pinch to size.</p></div>
-      <div class="lk-sticky">                    <!-- card + groups stay in view -->
-        <div class="lk-stage">(the card front)</div>
-        <div class="lk-zoom"><button class="lk-zbtn" aria-label="Smaller">&minus;</button><button class="lk-zbtn" aria-label="Bigger">+</button></div>
-        <div class="seg lk-tabs" role="tablist"><button class="segbtn on" role="tab">Me</button>...</div>
+    <div class="lk-col">                              <!-- the .app column: 1100px, 16px sides -->
+      <div class="heroCard"><h1>My Player</h1><p>Tap to wear it. Drag to turn.</p></div>
+      <div class="lk-main">                           <!-- 2 columns from 768px -->
+        <div class="lk-left">                         <!-- sticky -->
+          <div class="lk-stage"><div class="lk-fitcard lk-frame">(card front, art off)</div></div>
+          <div class="lk-sizes" role="radiogroup"><button class="lk-size on" role="radio">L</button>...</div>
+        </div>
+        <div class="lk-right">
+          <div class="lk-tabs" role="tablist"><button class="lk-tab on" role="tab">Me</button>...</div>
+          <section class="lk-sec"><h3 class="lk-sech">Skin</h3><div class="lk-items">(tiles)</div></section>
+        </div>
       </div>
-      <section class="lk-sec"><h3 class="lk-sech">Skin</h3><div class="lk-items">(tiles)</div></section>
     </div>
   </div>
   ```
+- **Card frame `.lk-frame`:** the card front (`buildFront`) with `.cf2-plate`,
+  scrim, tagline, team and position hidden, number and name at 30%. Use it
+  wherever a kid edits what goes ON the card.
+- **Jersey sizes `.lk-size`:** five radio buttons, S M L XL XXL, 52px tall,
+  Archivo Black. The picked one is lime with a -3deg slap (motion only when
+  allowed). Pinch and the wheel snap to the nearest size.
+- **Text tabs `.lk-tab`:** one thin row, 15px / 800, muted; the open tab is text
+  colour with a 3px lime underline. For switching between a few groups inside a
+  page. (`.seg` stays the pill toggle for views like This week / All time.)
 - **Section label `.lk-sech`:** 11px / 900 uppercase muted, over a hairline
-  (`.lk-sec`). This is how a group lists its parts. Never a box around a group.
-- **Size buttons `.lk-zbtn`:** 48px circles beside the card, the one-finger
-  alternative to pinch. Not a close and not a toggle.
+  (`.lk-sec`). Never a box around a group.
 - **Reuse rule:** a new editor or picker page follows this shape (page close,
-  hero, column, `.seg` groups, labelled sections). Do not add a per-page header
-  row with its own title and close.
+  hero, column, text tabs, labelled sections). No per-page header row with its
+  own title and close.
 
 ### Badge modal: `.jbm` + `.bpop`
 The pop-up when a kid taps a badge on My Season (`journey.html`): badge art,

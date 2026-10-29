@@ -35,16 +35,18 @@ async function open({ status = 200, progress = A.progressFrom({ stick: 6 }, 2), 
 }
 
 describe('My Player', () => {
-  it('is a Thwap page: glass close, hero, five groups, the player on their card', async () => {
+  it('is a Thwap page: glass close, hero, five groups, the player in the frame of their card', async () => {
     const { w } = await open();
     const d = w.document;
     expect(d.querySelector('.lk[role=dialog]')).toBeTruthy();
     expect(d.querySelector('.lk .glassclose.lk-x').className).toBe('glassclose lk-x'); // the page close, not a placement variant
     expect(d.querySelector('.lk .lk-col .heroCard h1').textContent).toBe('My Player');
-    expect(d.querySelector('.lk .heroCard p').textContent).toBe('Tap to wear it. Drag to turn. Pinch to size.');
-    expect([...d.querySelectorAll('.lk-tabs.seg .segbtn')].map((b) => b.textContent)).toEqual(['Me', 'Jersey', 'Helmet', 'Stick', 'Moves']);
-    expect(d.querySelector('.lk-tabs .segbtn.on').textContent).toBe('Me');
-    expect(d.querySelector('.lk-stage .lk-fitcard .av-wrap')).toBeTruthy();
+    expect(d.querySelector('.lk .heroCard p').textContent).toBe('Tap to wear it. Drag to turn.');
+    expect([...d.querySelectorAll('.lk-tabs .lk-tab')].map((b) => b.textContent)).toEqual(['Me', 'Jersey', 'Helmet', 'Stick', 'Moves']);
+    expect(d.querySelector('.lk-tabs .lk-tab.on').textContent).toBe('Me');
+    expect(d.querySelector('.lk-tabs.seg')).toBeNull(); // light text tabs, not the big toggle
+    expect(d.querySelector('.lk-stage .lk-fitcard.lk-frame .av-wrap')).toBeTruthy();
+    expect(d.querySelector('.lk-left .lk-stage') && d.querySelector('.lk-right .lk-tabs')).toBeTruthy(); // two columns on wide screens
     expect(d.querySelector('[data-tab=facing]')).toBeNull(); // no View tab
     expect(d.querySelector('[data-tab=fit]')).toBeNull(); // no Size tab
     expect(d.querySelector('.lk-btn')).toBeNull();
@@ -65,11 +67,11 @@ describe('My Player', () => {
     w.document.querySelector('.lk-x').click();
     w.thwapAvatar.openLocker({ tab: 'pose' });
     for (let i = 0; i < 5; i++) await tick();
-    expect(w.document.querySelector('.lk-tabs .segbtn.on').textContent).toBe('Moves');
+    expect(w.document.querySelector('.lk-tabs .lk-tab.on').textContent).toBe('Moves');
     w.document.querySelector('.lk-x').click();
     w.thwapAvatar.openLocker({ tab: 'fit' });
     for (let i = 0; i < 5; i++) await tick();
-    expect(w.document.querySelector('.lk-tabs .segbtn.on').textContent).toBe('Me');
+    expect(w.document.querySelector('.lk-tabs .lk-tab.on').textContent).toBe('Me');
   });
 
   it('Moves tab: 8 stances, each tile drawn in its stance, Ready worn to start', async () => {
