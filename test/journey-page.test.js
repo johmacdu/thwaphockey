@@ -486,6 +486,14 @@ describe('season path: one scene at a time', () => {
     expect(w.document.body.textContent).not.toMatch(/Skip 5 days|lose one/);
   });
 
+  it('no small labels above the headings or the Me | Sass toggle', async () => {
+    const w = await at20();
+    const txt = w.document.body.textContent;
+    for (const t of ['Who skates', 'Where I am', 'Earn stars, level up', 'Month by month', 'My books']) expect(txt).not.toContain(t);
+    // The toggle keeps its name for screen readers.
+    expect(w.document.querySelector('.whoskates').getAttribute('aria-label')).toBe('Who skates in your scene');
+  });
+
   it('Who skates sits on the same row as the scene name', async () => {
     const w = await at20();
     expect($(w, 'h-journey').closest('.scenerow').querySelector('.whoskates')).toBeTruthy();
