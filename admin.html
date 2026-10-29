@@ -58,16 +58,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
 .pbtns{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
 .pbtns button{font:inherit;font-size:13px;font-weight:800;border-radius:10px;padding:8px 14px;cursor:pointer;border:1px solid var(--line2);background:transparent;color:var(--text)}
 .pbtns .save{background:var(--lime);color:var(--ink);border-color:transparent}
-.pbtns .addphoto{background:var(--soft);border-color:transparent}
 .psaved{font-size:12px;font-weight:800;color:var(--green);align-self:center}
-.consent{margin-top:10px;border-top:1px dashed var(--line);padding-top:10px;display:none}
-.consent.open{display:block}
-.consent .note{font-size:12px;color:var(--muted);margin:0 0 8px}
-.consent-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.consent-row .full{grid-column:1 / -1}
-.consent-row label{display:flex;flex-direction:column;gap:3px;font-size:11px;font-weight:800;text-transform:uppercase;color:var(--muted)}
-.consent-row input,.consent-row select{padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit;font-size:14px;background:var(--panel);color:var(--text);font-weight:500}
-.consent .filepick{margin-top:8px;font-size:13px}
 .retire{margin-top:28px;padding-top:16px;border-top:1px solid var(--line)}
 .retire h2{font-size:16px;margin:0 0 4px}
 .retire label{display:block;font-size:13px;margin:12px 0 6px}
@@ -76,14 +67,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
 #retireGo{background:#B3261E;color:#fff;border-color:#B3261E}
 #retireGo:disabled{opacity:.45}
 </style>
-<script type="module">
-  // In-browser background removal (ONNX/WASM). Runs entirely client-side, so a
-  // child's photo is never sent to a third party for processing. Pinned version.
-  import { removeBackground } from 'https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.8/+esm';
-  // Resolve a File -> transparent-PNG Blob. Rejects if the model cannot load.
-  window.thwapRemoveBg = function(file){ return removeBackground(file); };
-  window.thwapRemoveBgReady = true;
-</script>
 </head>
 <body>
 <div class="wrap">
@@ -114,7 +97,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
   <div id="list"></div>
   </div>
   <div id="viewRoster" hidden>
-    <p class="sub">Edit player details, and add a photo with recorded parent consent.</p>
+    <p class="sub">Edit player details. Player photos are retired. Stored photos can only be deleted, below.</p>
     <div id="rmsg" class="msg">Load with your admin key to see the roster.</div>
     <div id="rlist"></div>
     <div class="retire" id="retire">
@@ -244,7 +227,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
     if(up==='F'||up==='D'||up==='G'||up==='FD') return up;
     return {'FORWARD':'F','DEFENSE':'D','GOALIE':'G','FORWARD & DEFENSE':'FD','FORWARD/DEFENSE':'FD','DEFENSE & FORWARD':'FD'}[up]||'';
   }
-  var CONSENT=[['','How was consent given?'],['text','Text message'],['in_person','In person'],['written','Written / signed'],['email','Email']];
   // Flexible guardian-email list: any number of emails per player. Every one on
   // file receives the player's sign-in code.
   function emailRow(val){
@@ -300,7 +282,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
       var av=placeholder(p);
       var curPos=posCode(p.position);
       var posOpts=POS.map(function(o){ return "<option value='"+o[0]+"'"+(curPos===o[0]?" selected":"")+">"+o[1]+"</option>"; }).join('');
-      var conOpts=CONSENT.map(function(c){ return "<option value='"+c[0]+"'>"+esc(c[1])+"</option>"; }).join('');
       return "<div class='pcard' data-i='"+i+"' data-id='"+esc(p.id)+"'>"+
         "<div class='pcard-top'>"+av+"<div><div class='pname'>"+esc(p.name||p.firstName||p.id)+"</div>"+
           "<div class='pteam'>"+esc(p.teamName||p.teamCode||'')+"</div></div></div>"+
@@ -313,26 +294,13 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
         "</div>"+
         "<div class='pbtns'>"+
           "<button class='save'>Save details</button>"+
-          "<button class='addphoto'>Add photo</button>"+
           "<span class='psaved' hidden>Saved</span>"+
-        "</div>"+
-        "<div class='consent'>"+
-          "<p class='note'>A photo of a child needs a parent's OK. Record how that parent gave permission. This is stored with the photo as an honest consent record.</p>"+
-          "<div class='consent-row'>"+
-            "<label>Consent method<select class='c-method'>"+conOpts+"</select></label>"+
-            "<label>Parent name<input class='c-by' placeholder='e.g. Josh Delatoree'></label>"+
-          "</div>"+
-          "<input type='file' accept='image/*' class='c-file filepick'>"+
-          "<label class='c-bgwrap' style='display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text);text-transform:none;margin-top:8px'><input type='checkbox' class='c-bg' checked> Remove background (cutout)</label>"+
-          "<div class='pbtns'><button class='c-upload save'>Upload photo</button></div>"+
         "</div>"+
       "</div>";
     }).join('');
     rlist.querySelectorAll('.pcard').forEach(function(card){
       var pl=players[parseInt(card.getAttribute('data-i'),10)]; if(pl) lookupPhoto(card,pl);
       card.querySelector('.save').addEventListener('click',function(){ savePlayer(card); });
-      card.querySelector('.addphoto').addEventListener('click',function(){ card.querySelector('.consent').classList.toggle('open'); });
-      card.querySelector('.c-upload').addEventListener('click',function(){ uploadPhoto(card); });
       // Guardian-email list: add and remove rows.
       var list=card.querySelector('.email-list');
       if(list){
@@ -366,90 +334,6 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
       .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
       .then(function(res){ if(!res.ok){ alert((res.j&&res.j.error)||'Save failed'); return; } flash(card); })
       .catch(function(){ alert('Save failed'); });
-  }
-  // Draw a source (Image) onto a canvas at <=maxPx longest edge. Returns canvas.
-  function scaleToCanvas(img, maxPx){
-    var w=img.width, h=img.height, sc=Math.min(1, maxPx/Math.max(w,h));
-    var cv=document.createElement('canvas'); cv.width=Math.round(w*sc); cv.height=Math.round(h*sc);
-    cv.getContext('2d').drawImage(img,0,0,cv.width,cv.height);
-    return cv;
-  }
-  // Load a Blob/File into an Image element.
-  function blobToImage(blob){
-    return new Promise(function(resolve,reject){
-      var img=new Image(), url=URL.createObjectURL(blob);
-      img.onload=function(){ URL.revokeObjectURL(url); resolve(img); };
-      img.onerror=function(){ URL.revokeObjectURL(url); reject(new Error('bad image')); };
-      img.src=url;
-    });
-  }
-  // Encode a canvas to a data URL under the 400KB admin-put cap. Transparent
-  // (bg-removed) images must be PNG; opaque ones use JPEG. Shrinks/recompresses
-  // until it fits.
-  function encodeUnderCap(img, transparent){
-    var CAP=380*1024; // stay comfortably under the 400KB endpoint cap
-    var sizes=transparent?[512,448,384,320,256]:[512,448,384];
-    for(var i=0;i<sizes.length;i++){
-      var cv=scaleToCanvas(img,sizes[i]);
-      if(transparent){
-        var png=cv.toDataURL('image/png');
-        if(png.length*0.75<=CAP) return png;
-      } else {
-        for(var q=0.85;q>=0.5;q-=0.15){
-          var jpg=cv.toDataURL('image/jpeg',q);
-          if(jpg.length*0.75<=CAP) return jpg;
-        }
-      }
-    }
-    // last resort: smallest attempt
-    var last=scaleToCanvas(img, transparent?256:384);
-    return transparent? last.toDataURL('image/png') : last.toDataURL('image/jpeg',0.5);
-  }
-  // Process a chosen file: optional background removal, then downscale+encode to
-  // a capped data URL. onStatus(text) updates the button; cb(dataUrl|null).
-  function processImage(file, removeBg, onStatus, cb){
-    function afterBlob(blob, transparent){
-      blobToImage(blob).then(function(img){
-        cb(encodeUnderCap(img, transparent));
-      }).catch(function(){ cb(null); });
-    }
-    if(removeBg){
-      if(!window.thwapRemoveBg){ alert('Background remover is still loading, try again in a moment.'); cb(null); return; }
-      onStatus('Removing background...');
-      window.thwapRemoveBg(file)
-        .then(function(blob){ onStatus('Uploading...'); afterBlob(blob, true); })
-        .catch(function(){ alert('Could not remove the background from that photo. It was NOT uploaded. Try a clearer photo, or uncheck "Remove background" to upload it as-is on purpose.'); cb(null); });
-    } else {
-      onStatus('Uploading...');
-      afterBlob(file, false);
-    }
-  }
-  function uploadPhoto(card){
-    var id=card.getAttribute('data-id');
-    var method=card.querySelector('.c-method').value;
-    var by=card.querySelector('.c-by').value.trim();
-    var file=card.querySelector('.c-file').files[0];
-    var removeBg=card.querySelector('.c-bg').checked;
-    if(!method){ alert('Choose how the parent gave consent.'); return; }
-    if(!by){ alert('Enter the parent\u2019s name who gave consent.'); return; }
-    if(!file){ alert('Choose a photo file.'); return; }
-    var btn=card.querySelector('.c-upload'); btn.disabled=true;
-    function setStatus(t){ btn.textContent=t; }
-    function reset(){ btn.disabled=false; btn.textContent='Upload photo'; }
-    processImage(file, removeBg, setStatus, function(dataUrl){
-      if(!dataUrl){ reset(); return; }
-      fetch('/api/photo/admin-put',
-        {method:'POST',headers:authH(JSONH),
-         body:JSON.stringify({playerId:id,imageData:dataUrl,consent:{method:method,grantedBy:by}})})
-        .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
-        .then(function(res){
-          reset();
-          if(!res.ok){ alert((res.j&&res.j.error)||'Upload failed'); return; }
-          var p=players[parseInt(card.getAttribute('data-i'),10)]; if(p){ photoUrls[p.id]=res.j.url||null; }
-          card.querySelector('.consent').classList.remove('open'); renderRoster();
-        })
-        .catch(function(){ reset(); alert('Upload failed'); });
-    });
   }
   // view nav
   document.getElementById('viewnav').querySelectorAll('button').forEach(function(b){
