@@ -15,14 +15,14 @@ if(/[?&]embed=1\b/.test(location.search))document.documentElement.classList.add(
   --bg:#F3F7F4;--page:#FBFDFB;--card:#FFFFFF;--card2:#E7EEE8;--text:#15221B;--muted:#5F6F64;
   --line:#DCE5DE;--line2:#C9D5CC;--acc:#2F6B41;--lime:#B9F06B;--onlime:#15221B;
   --stick:#2F6B41;--shoot:#2E7BD6;--dry:#D9661A;--sample:#A84B0F;--ph:#E2E8E3;--phtext:#7C8C82;
-  --shadow:rgba(20,40,25,.12);
+  --shadow:rgba(20,40,25,.12);--gold:#D99A00;
   --fs-eyebrow:12px;--fs-support:14px;--fs-body:clamp(15px,4vw,17px);
   --fs-section:clamp(24px,6vw,30px);--fs-title:clamp(34px,9vw,52px);
 }
 html[data-theme='dark']{
   --bg:#0B130E;--page:#101A14;--card:#182420;--card2:#1E2B24;--text:#F3F7F4;--muted:#9DACA2;
   --line:#2A3831;--line2:#3A4A40;--acc:#B9F06B;--stick:#8fd65e;--shoot:#75B8FF;--dry:#FF9D4D;
-  --sample:#FF9D4D;--ph:#1A2620;--phtext:#6E7E74;--shadow:rgba(0,0,0,.4);
+  --sample:#FF9D4D;--ph:#1A2620;--phtext:#6E7E74;--shadow:rgba(0,0,0,.4);--gold:#FFC93D;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--text);font-family:'Nunito Sans',system-ui,sans-serif;font-size:var(--fs-body);line-height:1.4}
@@ -121,12 +121,6 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .detail .dart .art{--ar:1;border-radius:50%}
 .detail h3{font-size:20px;margin:0 0 6px}
 .detail p{margin:0 0 4px;font-size:16px;line-height:1.45}
-.bdetail{grid-column:1/-1;margin:4px 0 8px}
-.bdetail .stars{font-size:18px;margin-bottom:6px}
-.ladder{list-style:none;padding:0;margin:10px 0 0}
-.ladder li{display:grid;grid-template-columns:20px 1fr auto;gap:8px;padding:8px 0;border-top:1px solid var(--line);font-size:15px;align-items:baseline}
-.ladder .st{color:var(--muted)}.ladder li.got .st{color:var(--acc)}
-.ladder em{font-style:normal;font-weight:800;color:var(--muted);white-space:nowrap}.ladder li.got em{color:var(--acc)}
 
 
 /* SEASON PATH: four stacked scenes, one dot per training day. */
@@ -207,6 +201,39 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .stars .off{color:var(--muted)}
 .badge.locked .art{filter:grayscale(1);opacity:.4}
 .badge[aria-pressed="true"]{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
+.badge[hidden]{display:none}
+.bmore{display:block;margin:16px auto 0;min-height:48px;padding:0 24px;border-radius:24px;border:1px solid var(--line2);background:var(--card);color:var(--text);font:inherit;font-weight:800;cursor:pointer}
+.bmore[hidden]{display:none}
+.bmore:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+/* BADGE POP-UP: opens next to the tapped badge (the page sits in a tall frame,
+   so a pop-up centered on the screen would land off screen). */
+.bpop{position:absolute;z-index:30;width:min(340px,calc(100% - 8px));background:var(--card);border:1px solid var(--line2);border-radius:20px;padding:22px 18px 20px;text-align:center;box-shadow:0 22px 44px -14px var(--shadow),0 2px 6px var(--shadow);transform-origin:var(--tip,50%) 0;animation:bpopin 240ms cubic-bezier(.2,1.4,.4,1) both}
+.bpop[hidden]{display:none}
+.bpop-tip{position:absolute;top:-8px;left:var(--tip,50%);width:16px;height:16px;margin-left:-8px;background:var(--card);border-left:1px solid var(--line2);border-top:1px solid var(--line2);transform:rotate(45deg)}
+.bpop-x{position:absolute;top:4px;right:4px;width:48px;height:48px;border:0;background:none;color:var(--muted);font-size:20px;font-weight:700;cursor:pointer;border-radius:50%}
+.bpop-x:hover{color:var(--text)}
+.bpop-x:focus-visible{outline:3px solid var(--acc);outline-offset:-4px}
+.bpop-art{--ar:1;width:128px;margin:0 auto;border-radius:50%;animation:bartpop 320ms cubic-bezier(.2,1.6,.4,1) 60ms both}
+.bpop h3{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:26px;text-transform:uppercase;letter-spacing:.02em;margin:12px 0 2px}
+.bpop-tag{margin:0;color:var(--muted);font-size:15px;font-weight:700}
+.bpop-stars{list-style:none;display:flex;justify-content:center;gap:22px;padding:0;margin:16px 0 0}
+.bpop-stars li{display:flex;flex-direction:column;align-items:center;min-width:44px}
+.bpop-stars .s{font-size:40px;line-height:1;color:var(--line2)}
+.bpop-stars li.got .s{color:var(--gold);text-shadow:0 2px 0 rgba(0,0,0,.12);animation:bstar 300ms cubic-bezier(.2,1.6,.4,1) both;animation-delay:calc(280ms + var(--k) * 140ms)}
+.bpop-stars li.next .s{color:var(--acc)}
+.bpop-stars em{font-style:normal;font-weight:800;font-size:13px;color:var(--muted);margin-top:2px}
+.bpop-stars li.got em{color:var(--text)}
+.bpop-meter{display:flex;align-items:center;gap:12px;margin:18px 4px 0}
+.bpop-meter[hidden]{display:none}
+.bpop-meter b{flex:none;min-width:64px;text-align:right;font-family:'Archivo Black',sans-serif;font-weight:400;font-size:18px;color:var(--text)}
+.bpop-bar{position:relative;flex:1;height:22px;border-radius:14px;background:var(--card2);overflow:hidden;box-shadow:inset 0 2px 3px var(--shadow)}
+.bpop-bar .fill{position:absolute;left:0;top:0;bottom:0;width:var(--p,0%);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,0) 55%),var(--acc);animation:bfill 420ms ease-out 360ms both}
+.bpop-bar.max .fill{background:linear-gradient(180deg,rgba(255,255,255,.4),rgba(255,255,255,0) 55%),var(--gold)}
+.bpop-line{margin:14px 0 0;font-family:'Archivo Black',sans-serif;font-weight:400;font-size:18px;line-height:1.25}
+@keyframes bpopin{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
+@keyframes bartpop{0%{transform:scale(.4);opacity:0}100%{transform:none;opacity:1}}
+@keyframes bstar{0%{transform:scale(.2) rotate(-40deg)}100%{transform:none}}
+@keyframes bfill{from{width:0}}
 
 .specials{display:flex;gap:10px;margin-top:10px}
 .specials .art{--ar:1;width:72px;border-radius:50%}
@@ -248,6 +275,16 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .spine.current{background:var(--card);box-shadow:inset -6px 0 8px rgba(0,0,0,.07),inset 7px 0 7px rgba(255,255,255,.6),0 10px 12px -7px rgba(20,40,25,.28),inset 0 0 0 1px var(--line)}
 .spine.current>span{color:var(--text)}
 .spine.current::before,.spine.current::after{background:rgba(47,107,65,.22)}
+.spine{cursor:default;-webkit-tap-highlight-color:transparent}
+.spine.current{opacity:.82}
+/* A strap and padlock: the book is shut until the season ends. */
+.spine.current .strap{position:absolute;left:-3px;right:-3px;top:48px;height:12px;background:var(--line2);border-radius:2px}
+.spine.current .booklock{position:absolute;left:50%;top:38px;width:32px;height:32px;margin-left:-16px;border-radius:50%;background:var(--text);color:var(--card);display:grid;place-items:center;box-shadow:0 2px 4px var(--shadow)}
+.spine.current .booklock svg{width:18px;height:18px}
+.spine.nope{animation:bookshake 360ms ease-in-out}
+.spine.nope .booklock{animation:lockwiggle 420ms ease-in-out}
+@keyframes bookshake{0%,100%{transform:none}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@keyframes lockwiggle{0%,100%{transform:none}20%{transform:rotate(-18deg)}40%{transform:rotate(16deg)}60%{transform:rotate(-10deg)}80%{transform:rotate(6deg)}}
 .spine.current .ribbon{position:absolute;top:-10px;right:16px;width:9px;height:28px;background:var(--acc);border-radius:1px 1px 0 0;box-shadow:0 2px 3px rgba(0,0,0,.2)}
 /* future season: not a book yet, a faint empty slot */
 .spine.next{background:none;border:2px dashed var(--line2);border-radius:2px 7px 7px 2px;box-shadow:none}
@@ -258,7 +295,7 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
 .glassclose{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);right:max(16px, calc(50vw - 534px));z-index:50;display:inline-grid;place-items:center;width:48px;height:48px;border-radius:50%;font-size:20px;font-weight:700;color:var(--text);cursor:pointer;text-decoration:none;background:color-mix(in srgb,var(--card) 62%,transparent);border:1px solid color-mix(in srgb,var(--text) 12%,transparent);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);box-shadow:0 6px 20px var(--shadow)}
 .glassclose:hover{background:color-mix(in srgb,var(--card) 80%,transparent)}
 .glassclose:active{transform:scale(.94)}
-@media (prefers-reduced-motion:reduce){.badge.stamp .stars .new,.badge.stamp::after,.badge.stamp .newchip,.scene.tierup .scenehead .ic,#jTier.swap{animation:none}.skater.move{transition:none}.jburst{display:none}}
+@media (prefers-reduced-motion:reduce){.bpop,.bpop-art,.bpop-stars li.got .s,.bpop-bar .fill,.spine.nope,.spine.nope .booklock{animation:none}.spine.nope .booklock{background:var(--dry)}.badge.stamp .stars .new,.badge.stamp::after,.badge.stamp .newchip,.scene.tierup .scenehead .ic,#jTier.swap{animation:none}.skater.move{transition:none}.jburst{display:none}}
 </style>
 </head>
 <body>
@@ -293,18 +330,20 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
 <section class="pg" aria-labelledby="h-badges">
   <div class="badgehead">
     <p class="eyebrow">Earn stars, level up</p><h2 id="h-badges">My Badges</h2>
-    <p class="sub">Every badge has 3 stars. Train to earn them. Tap a badge to see how.</p>
+    <p class="sub">Every badge has 3 stars. Tap one to see your next star.</p>
   </div>
-  <div class="badges" id="jBadges">
-    <button type="button" aria-expanded="false" aria-controls="jBadgeInfo" class="badge" data-i="0"><div class="art" data-art="badge-01.webp"><span>01</span></div><b>Dangler</b><div class="stars" aria-label="2 of 3 stars">★★<span class="off">☆</span></div></button>
-    <button type="button" aria-expanded="false" aria-controls="jBadgeInfo" class="badge" data-i="1"><div class="art" data-art="badge-02.webp"><span>02</span></div><b>Sniper</b><div class="stars" aria-label="1 of 3 stars">★<span class="off">☆☆</span></div></button>
-    <button type="button" aria-expanded="false" aria-controls="jBadgeInfo" class="badge" data-i="2"><div class="art" data-art="badge-03.webp"><span>03</span></div><b>Engine</b><div class="stars" aria-label="3 of 3 stars">★★★</div></button>
-    <button type="button" aria-expanded="false" aria-controls="jBadgeInfo" class="badge" data-i="3"><div class="art" data-art="badge-04.webp"><span>04</span></div><b>Tape to Tape</b><div class="stars" aria-label="1 of 3 stars">★<span class="off">☆☆</span></div></button>
-    <button type="button" aria-expanded="false" aria-controls="jBadgeInfo" class="badge locked" data-i="4"><div class="art" data-art="badge-05.webp"><span>05</span></div><b>Hockey Brain</b><div class="stars" aria-label="Not started"><span class="off">☆☆☆</span></div></button>
-    <button type="button" aria-expanded="false" aria-controls="jBadgeInfo" class="badge locked" data-i="5"><div class="art" data-art="badge-06.webp"><span>06</span></div><b>On a Heater</b><div class="stars" aria-label="Not started"><span class="off">☆☆☆</span></div></button>
-    <button type="button" aria-expanded="false" aria-controls="jBadgeInfo" class="badge locked" data-i="6"><div class="art" data-art="badge-07.webp"><span>07</span></div><b>Full Week</b><div class="stars" aria-label="Not started"><span class="off">☆☆☆</span></div></button>
-    <button type="button" aria-expanded="false" aria-controls="jBadgeInfo" class="badge locked" data-i="7"><div class="art" data-art="badge-08.webp"><span>08</span></div><b>Hype Squad</b><div class="stars" aria-label="Not started"><span class="off">☆☆☆</span></div></button>
-    <div class="detail bdetail" id="jBadgeInfo" hidden aria-live="polite"><div class="dart"><div class="art" id="jBadgeArt"></div></div><div class="dtext"><h3 id="jBadgeName"></h3><div class="stars" id="jBadgeStars"></div><p id="jBadgeNote"></p><ul class="ladder" id="jBadgeLadder"></ul></div></div>
+  <div class="badges" id="jBadges"></div>
+  <p class="why" id="jBadgeEmpty" hidden>Your first badge comes with your first drills.</p>
+  <button type="button" class="bmore" id="jBadgeMore" aria-expanded="false" hidden>Show more</button>
+  <div class="bpop" id="jBadgePop" role="dialog" aria-labelledby="jBpName" hidden>
+    <i class="bpop-tip" aria-hidden="true"></i>
+    <button type="button" class="bpop-x" id="jBpClose" aria-label="Close">&#10005;</button>
+    <div class="art bpop-art" id="jBpArt" aria-hidden="true"></div>
+    <h3 id="jBpName"></h3>
+    <p class="bpop-tag" id="jBpTag"></p>
+    <ol class="bpop-stars" id="jBpStars"></ol>
+    <div class="bpop-meter" id="jBpMeter"><div class="bpop-bar" id="jBpBar" role="progressbar" aria-valuemin="0"><div class="fill"></div></div><b id="jBpCount" aria-hidden="true"></b></div>
+    <p class="bpop-line" id="jBpLine"></p>
   </div>
 </section>
 
@@ -342,8 +381,8 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
   <p class="eyebrow">My books</p>
   <h2 id="h-books" style="font-size:22px">Every season, a new book</h2>
   <div class="shelf">
-    <div class="spine current"><span>2026-27</span><i class="ribbon"></i></div>
-    <div class="spine next"><span>2027-28</span></div>
+    <div class="spine current" role="img" aria-label="2026-27 book, locked until the season ends"><span>2026-27</span><i class="ribbon"></i><i class="strap"></i><i class="booklock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><rect x="4.5" y="11" width="15" height="10" rx="2" fill="currentColor" stroke="none"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></svg></i></div>
+    <div class="spine next" role="img" aria-label="2027-28, next season"><span>2027-28</span></div>
   </div>
 </section>
 
@@ -427,10 +466,10 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     sec.querySelector('.scenebox').appendChild(burst);
     var name=document.getElementById('jTier'); name.classList.remove('swap'); void name.offsetWidth; name.classList.add('swap');
   }
+  function badgeEl(id){return document.querySelector('#jBadges .badge[data-id="'+id+'"]');}
   function showNew(pending,fresh){
-    var btns=document.querySelectorAll('#jBadges .badge');
-    BADGES.forEach(function(g,i){
-      var el=btns[i]; if(!el)return;
+    (BADGES||[]).forEach(function(g){
+      var el=badgeEl(g.id); if(!el)return;
       var chip=el.querySelector('.newchip');
       if(pending.indexOf(g.id)>=0){
         if(!chip){chip=document.createElement('span');chip.className='newchip';chip.textContent='New';el.appendChild(chip);}
@@ -448,34 +487,125 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
   }
   function ackBadge(el){
     var chip=el.querySelector('.newchip'); if(!chip)return;
-    chip.remove(); var g=BADGES&&BADGES[Number(el.getAttribute('data-i'))]; var seen=readSeen();
-    if(g&&seen){seen.pending=(seen.pending||[]).filter(function(id){return id!==g.id;});writeSeen(seen);}
+    chip.remove(); var id=el.getAttribute('data-id'), seen=readSeen();
+    if(id&&seen){seen.pending=(seen.pending||[]).filter(function(x){return x!==id;});writeSeen(seen);}
   }
-  // Badges: sample until the API answers. Tapping one says what it counts.
-  var BADGES=null;
+  // Badges: only the ones a kid has earned show, 8 at a time. Signed out (or
+  // until the API answers) the sample stands in.
+  var BADGES=null, SHOW_ALL=false, BADGE_LIMIT=8;
+  var SAMPLE_BADGES=[
+    {id:'dangler',name:'Dangler',art:'badge-01.webp',stars:2},
+    {id:'sniper',name:'Sniper',art:'badge-02.webp',stars:1},
+    {id:'engine',name:'Engine',art:'badge-03.webp',stars:3},
+    {id:'tapetotape',name:'Tape to Tape',art:'badge-04.webp',stars:1}
+  ];
+  // One line of attitude per badge. Cool, not cute.
+  var TAGLINE={dangler:'Hands too quick to follow.',sniper:'Picks corners for fun.',netboss:'Nothing gets past you.',
+    engine:'You never run out of gas.',tapetotape:'Every pass lands on the tape.',hockeybrain:'You see the play before it happens.',
+    onaheater:'Once you start, nobody stops you.',fullweek:'Four days a week, every week.',hypesquad:'The loudest voice on the bench.'};
+  // The short word a kid would say ("5 more drills"), not the full unit.
+  var SHORT={dangler:'drills',sniper:'drills',netboss:'drills',engine:'workouts',tapetotape:'drills',hockeybrain:'sessions',cheers:'cheers',hypesquad:'cheers'};
   function starHtml(n){return '\u2605'.repeat(n)+(n<3?'<span class="off">'+'\u2606'.repeat(3-n)+'</span>':'');}
   function renderBadges(){
-    var btns=document.querySelectorAll('#jBadges .badge');
-    BADGES.forEach(function(g,i){
-      var el=btns[i]; if(!el)return;
-      el.querySelector('b').textContent=g.name;
-      var st=el.querySelector('.stars'); st.innerHTML=starHtml(g.stars);
-      st.setAttribute('aria-label',g.stars?g.stars+' of 3 stars':'Not started');
-      el.classList.toggle('locked',g.stars===0);
+    closePop(false);
+    var list=(BADGES||SAMPLE_BADGES).filter(function(g){return g.stars>0;});
+    var box=document.getElementById('jBadges'); box.innerHTML='';
+    list.forEach(function(g,k){
+      var el=document.createElement('button'); el.type='button'; el.className='badge';
+      el.setAttribute('data-id',g.id); el.setAttribute('aria-haspopup','dialog'); el.setAttribute('aria-expanded','false');
+      var art=document.createElement('div'); art.className='art'; art.setAttribute('data-art',g.art||'');
+      var ph=document.createElement('span'); ph.textContent=String(g.art||'').replace(/\D/g,''); art.appendChild(ph);
+      var nm=document.createElement('b'); nm.textContent=g.name;
+      var st=document.createElement('div'); st.className='stars'; st.innerHTML=starHtml(g.stars); st.setAttribute('aria-label',g.stars+' of 3 stars');
+      el.appendChild(art); el.appendChild(nm); el.appendChild(st);
+      if(k>=BADGE_LIMIT&&!SHOW_ALL) el.hidden=true;
+      box.appendChild(el);
     });
+    document.getElementById('jBadgeEmpty').hidden=list.length>0;
+    var more=document.getElementById('jBadgeMore');
+    more.hidden=list.length<=BADGE_LIMIT;
+    more.textContent=SHOW_ALL?'Show less':'Show more';
+    more.setAttribute('aria-expanded',SHOW_ALL?'true':'false');
+    fillArt(box);
   }
-  function noteFor(g){
-    // The badge name is the heading right above this line, so it isn't repeated.
-    if(g.next==null)return g.count+' '+g.unit+'. All 3 stars!';
-    var left=g.next-g.count;
-    return g.count+' '+g.unit+'. '+left+' more for star '+(g.stars+1)+'.';
+  document.getElementById('jBadgeMore').addEventListener('click',function(){
+    SHOW_ALL=!SHOW_ALL; renderBadges();
+    if(SHOW_ALL){var first=document.querySelectorAll('#jBadges .badge')[BADGE_LIMIT]; if(first) first.focus();}
+  });
+  // What the pop-up says: one sentence, in a kid's words.
+  function lineFor(g){
+    if(g.next==null) return 'Maxed out! All 3 stars.';
+    var left=g.next-g.count, star='star '+(g.stars+1);
+    if(g.id==='onaheater') return 'Train '+g.next+' days in a row for '+star+'!';
+    if(g.id==='fullweek') return left+' more '+(left===1?'week':'weeks')+' with 4 training days to '+star+'!';
+    var w=SHORT[g.id]||'drills'; if(left===1) w=w.replace(/s$/,'');
+    return left+' more '+w+' to '+star+'!';
   }
-  // --- The season path: one dot per training day, four scenes ---------------
-  // Scenes run top to bottom: Locker Room (dots 1-19), Practice Ice (20-43),
-  // Game Ready (44-67), Legend (68-91). The server decides where the kid is
-  // (lib/journey.js pathFor), including slips. Details open in place under a
-  // scene's header (the page sits inside a full-height frame on My Season, so a
-  // pop-up sheet would open off screen).
+  function starNum(g,t){
+    if(g.id==='onaheater') return t+' days';
+    if(g.id==='fullweek') return t+' weeks';
+    return String(t);
+  }
+  var POP_FROM=null, REDUCED=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function countUp(el,to,of){
+    if(REDUCED||!window.requestAnimationFrame){el.textContent=to+(of?' / '+of:'');return;}
+    var t0=null; el.textContent='0'+(of?' / '+of:'');
+    function step(t){ if(t0==null)t0=t+360; var k=Math.max(0,Math.min(1,(t-t0)/420));
+      el.textContent=Math.round(to*k)+(of?' / '+of:''); if(k<1)requestAnimationFrame(step); }
+    requestAnimationFrame(step);
+  }
+  function openPop(el){
+    var id=el.getAttribute('data-id'), g=(BADGES||[]).filter(function(x){return x.id===id;})[0];
+    var sample=!g; if(sample) g=SAMPLE_BADGES.filter(function(x){return x.id===id;})[0];
+    var pop=document.getElementById('jBadgePop');
+    // Replay the pop-in every time it opens.
+    pop.hidden=true; void pop.offsetWidth;
+    var art=document.getElementById('jBpArt'), src=el.querySelector('.art');
+    art.innerHTML=src.innerHTML; art.className='art bpop-art'+(src.classList.contains('has')?' has':'');
+    txt('jBpName',g.name);
+    txt('jBpTag',TAGLINE[g.id]||'');
+    var th=Array.isArray(g.thresholds)?g.thresholds:null;
+    var ol=document.getElementById('jBpStars'); ol.innerHTML='';
+    for(var k=0;k<3;k++){
+      var li=document.createElement('li'), got=k<g.stars;
+      li.className=got?'got':(k===g.stars?'next':''); li.style.setProperty('--k',k);
+      li.innerHTML='<span class="s" aria-hidden="true">'+(got?'\u2605':'\u2606')+'</span>';
+      if(th){var em=document.createElement('em'); em.textContent=starNum(g,th[k]); li.appendChild(em);}
+      li.setAttribute('aria-label','Star '+(k+1)+(got?', earned':', not yet')+(th?', '+th[k]+' '+g.unit:''));
+      ol.appendChild(li);
+    }
+    var bar=document.getElementById('jBpBar'), cnt=document.getElementById('jBpCount');
+    if(sample||!th){ document.getElementById('jBpMeter').hidden=true; txt('jBpLine','Sign in to see your count.'); }
+    else{
+      document.getElementById('jBpMeter').hidden=false;
+      var max=g.next==null, goal=max?th[2]:g.next;
+      bar.classList.toggle('max',max);
+      bar.style.setProperty('--p',Math.min(100,Math.round(100*g.count/goal))+'%');
+      bar.setAttribute('aria-valuenow',g.count); bar.setAttribute('aria-valuemax',goal);
+      bar.setAttribute('aria-label',max?g.unit:g.unit+' toward star '+(g.stars+1));
+      countUp(cnt,g.count,max?0:goal);
+      txt('jBpLine',lineFor(g));
+    }
+    document.querySelectorAll('#jBadges .badge').forEach(function(x){x.setAttribute('aria-expanded',x===el?'true':'false');x.setAttribute('aria-pressed',x===el?'true':'false');});
+    pop.hidden=false; placePop(pop,el); POP_FROM=el;
+    document.getElementById('jBpClose').focus({preventScroll:true});
+    if(pop.scrollIntoView) try{pop.scrollIntoView({block:'nearest',behavior:REDUCED?'auto':'smooth'});}catch(_){}
+  }
+  // Under the badge, centered on it, kept inside the section; the tip points at it.
+  function placePop(pop,el){
+    var sec=pop.parentNode, sr=sec.getBoundingClientRect(), er=el.getBoundingClientRect();
+    var w=pop.offsetWidth||Math.min(340,sr.width), mid=er.left-sr.left+er.width/2;
+    var left=Math.max(4,Math.min(sr.width-w-4,mid-w/2));
+    pop.style.left=left+'px'; pop.style.top=(er.bottom-sr.top+12)+'px';
+    pop.style.setProperty('--tip',Math.max(24,Math.min(w-24,mid-left))+'px');
+  }
+  function closePop(refocus){
+    var pop=document.getElementById('jBadgePop'); if(!pop||pop.hidden)return;
+    pop.hidden=true;
+    document.querySelectorAll('#jBadges .badge').forEach(function(x){x.setAttribute('aria-expanded','false');x.setAttribute('aria-pressed','false');});
+    if(refocus!==false&&POP_FROM&&POP_FROM.isConnected) POP_FROM.focus({preventScroll:true});
+    POP_FROM=null;
+  }
   var BOOK=null;
   var TIER_NAMES=['Locker Room','Practice Ice','Game Ready','Legend'];
   var TIER_STARTS=[0,19,43,67], TOTAL_DOTS=91;
@@ -653,34 +783,28 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
       try{ window.parent.postMessage({thwapJourneyScrollTo:y},location.origin); }catch(_){}
     }else if(sk.scrollIntoView){ try{ sk.scrollIntoView({block:'center'}); }catch(_){} }
   }
-  function closeDetail(panel,btns){ panel.hidden=true; btns.forEach(function(x){x.setAttribute('aria-expanded','false');}); }
-  function ladderHtml(g){
-    return g.thresholds.map(function(t,k){
-      var got=g.count>=t;
-      return '<li class="'+(got?'got':'')+'"><span class="st" aria-hidden="true">'+(got?'\u2605':'\u2606')+'</span>'+
-        '<span>Star '+(k+1)+': '+t+' '+g.unit+'</span><em>'+(got?'\u2713 Done':(t-g.count)+' to go')+'</em></li>';
-    }).join('');
-  }
   document.getElementById('jBadges').addEventListener('click',function(e){
     var el=e.target.closest('.badge'); if(!el)return;
     ackBadge(el);
-    var panel=document.getElementById('jBadgeInfo'), btns=Array.prototype.slice.call(document.querySelectorAll('#jBadges .badge'));
-    if(el.getAttribute('aria-expanded')==='true'){ closeDetail(panel,btns); btns.forEach(function(x){x.setAttribute('aria-pressed','false');}); return; }
-    btns.forEach(function(x){x.setAttribute('aria-pressed',x===el?'true':'false');x.setAttribute('aria-expanded',x===el?'true':'false');});
-    var i=Number(el.getAttribute('data-i')), g=BADGES&&BADGES[i];
-    // Open under the row the badge is in (4 per row).
-    btns[Math.min(btns.length-1,Math.floor(i/4)*4+3)].after(panel);
-    var art=document.getElementById('jBadgeArt'), src=el.querySelector('.art');
-    art.innerHTML=src.innerHTML; art.className=src.className; art.setAttribute('aria-hidden','true');
-    txt('jBadgeName',el.querySelector('b').textContent);
-    var st=document.getElementById('jBadgeStars'); st.innerHTML=el.querySelector('.stars').innerHTML;
-    st.setAttribute('aria-label',el.querySelector('.stars').getAttribute('aria-label'));
-    txt('jBadgeNote',g?noteFor(g):'Sign in to see your count.');
-    document.getElementById('jBadgeLadder').innerHTML=g&&Array.isArray(g.thresholds)?ladderHtml(g):'';
-    panel.hidden=false;
+    if(el.getAttribute('aria-expanded')==='true'){closePop();return;}
+    openPop(el);
+  });
+  document.getElementById('jBpClose').addEventListener('click',function(){closePop();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closePop();});
+  document.addEventListener('click',function(e){
+    var pop=document.getElementById('jBadgePop'); if(pop.hidden)return;
+    if(pop.contains(e.target)||e.target.closest('#jBadges .badge'))return;
+    closePop(false);
+  });
+  window.addEventListener('resize',function(){var pop=document.getElementById('jBadgePop');if(!pop.hidden&&POP_FROM)placePop(pop,POP_FROM);});
+  // The season books aren't tappable yet. Kids tap them anyway, so the lock
+  // wiggles and the book shakes: shut, not broken.
+  document.querySelectorAll('.shelf .spine').forEach(function(sp){
+    sp.addEventListener('click',function(){sp.classList.remove('nope');void sp.offsetWidth;sp.classList.add('nope');
+      setTimeout(function(){sp.classList.remove('nope');},440);});
   });
   // Signed out (or until the API answers): the sample path.
-  paintWho(); renderPath(SAMPLE);
+  renderBadges(); paintWho(); renderPath(SAMPLE);
   fetch('/api/board?action=journey',{credentials:'same-origin',cache:'no-store'})
     .then(function(r){return r.ok?r.json():null;})
     .then(function(b){if(b&&b.season&&Array.isArray(b.months))render(b);})

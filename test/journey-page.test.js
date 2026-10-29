@@ -79,14 +79,15 @@ describe('signed out', () => {
   it('keeps the sample content showing when signed out', async () => {
     const w = await boot({ api: 401 });
     expect($(w, 'jTier').textContent).toBe('Practice Ice'); // static sample stays
+    // Only earned badges show, so the sample shows its four earned ones.
     expect(badgeBtns(w).map((b) => b.querySelector('b').textContent)).toEqual(
-      ['Dangler', 'Sniper', 'Engine', 'Tape to Tape', 'Hockey Brain', 'On a Heater', 'Full Week', 'Hype Squad']);
+      ['Dangler', 'Sniper', 'Engine', 'Tape to Tape']);
   });
 
   it('a network error also leaves the sample in place', async () => {
     const w = await boot({ api: 'throw' });
     expect($(w, 'jTier').textContent).toBe('Practice Ice');
-    expect(badgeBtns(w).length).toBe(8);
+    expect(badgeBtns(w).length).toBe(4);
   });
 
   it('an answer without months is ignored, not half-rendered', async () => {
@@ -97,7 +98,9 @@ describe('signed out', () => {
   it('tapping a badge asks the kid to sign in', async () => {
     const w = await boot({ api: 401 });
     tap(w, badgeBtns(w)[0]);
-    expect($(w, 'jBadgeNote').textContent).toBe('Sign in to see your count.');
+    expect($(w, 'jBadgePop').hidden).toBe(false);
+    expect($(w, 'jBpLine').textContent).toBe('Sign in to see your count.');
+    expect($(w, 'jBpMeter').hidden).toBe(true); // no fake count on the bar
   });
 });
 
@@ -135,48 +138,81 @@ describe('signed in: My Season So Far', () => {
 describe('signed in: badges', () => {
   const events = [...ev('2026-10-01', 'stick', 34), ...ev('2026-10-02', 'iq', 30)];
 
-  it('shows each badge\'s real stars, and grays out badges with none', async () => {
+  it('shows only the badges a kid has earned, with their stars', async () => {
     const w = await boot({ api: book({ events, cheersSent: 5 }) });
     const btns = badgeBtns(w);
+    expect(btns.map((b) => b.getAttribute('data-id'))).toEqual(['dangler', 'hockeybrain', 'hypesquad']);
     const label = (i) => btns[i].querySelector('.stars').getAttribute('aria-label');
     expect(label(0)).toBe('2 of 3 stars'); // Dangler 34
-    expect(label(4)).toBe('3 of 3 stars'); // Hockey Brain 30
-    expect(label(7)).toBe('1 of 3 stars'); // Hype Squad 5
-    expect(label(1)).toBe('Not started');
-    expect(btns[0].classList.contains('locked')).toBe(false);
-    expect(btns[1].classList.contains('locked')).toBe(true);
+    expect(label(1)).toBe('3 of 3 stars'); // Hockey Brain 30
+    expect(label(2)).toBe('1 of 3 stars'); // Hype Squad 5
     // Earned stars are filled, empty ones hollow: never color alone.
     expect(btns[0].querySelector('.stars').textContent).toBe('\u2605\u2605\u2606');
     expect(btns[0].querySelector('.stars .off').textContent).toBe('\u2606');
-    expect(btns[1].querySelector('.stars').textContent).toBe('\u2606\u2606\u2606');
+    expect($(w, 'jBadgeEmpty').hidden).toBe(true);
+    expect($(w, 'jBadgeMore').hidden).toBe(true); // 3 is under the limit of 8
   });
 
-  it('tapping a badge says the count and what the next star needs', async () => {
+  it('a kid with no badges yet gets one line, not an empty row', async () => {
+    const w = await boot({ api: book({}) });
+    expect(badgeBtns(w)).toHaveLength(0);
+    expect($(w, 'jBadgeEmpty').hidden).toBe(false);
+    expect($(w, 'jBadgeEmpty').textContent).toBe('Your first badge comes with your first drills.');
+  });
+
+  it('the pop-up: name, tagline, stars with their numbers, a power bar and one line', async () => {
     const w = await boot({ api: book({ events }) });
     tap(w, badgeBtns(w)[0]);
-    expect($(w, 'jBadgeNote').textContent).toBe('34 Hands drills. 26 more for star 3.');
-    expect(badgeBtns(w)[0].getAttribute('aria-pressed')).toBe('true');
-    expect(badgeBtns(w)[1].getAttribute('aria-pressed')).toBe('false');
+    expect($(w, 'jBadgePop').hidden).toBe(false);
+    expect($(w, 'jBpName').textContent).toBe('Dangler');
+    expect($(w, 'jBpTag').textContent).toBe('Hands too quick to follow.');
+    const stars = Array.from($(w, 'jBpStars').children);
+    expect(stars.map((li) => li.className)).toEqual(['got', 'got', 'next']);
+    expect(stars.map((li) => li.querySelector('em').textContent)).toEqual(['10', '30', '60']);
+    expect(stars[2].getAttribute('aria-label')).toBe('Star 3, not yet, 60 Hands drills');
+    const bar = $(w, 'jBpBar');
+    expect($(w, 'jBpMeter').hidden).toBe(false);
+    expect($(w, 'jBpCount').textContent).toMatch(/\/ 60$/);
+    expect(bar.getAttribute('aria-valuenow')).toBe('34');
+    expect(bar.getAttribute('aria-valuemax')).toBe('60');
+    expect(bar.style.getPropertyValue('--p')).toBe('57%');
+    expect($(w, 'jBpLine').textContent).toBe('26 more drills to star 3!');
+    // The old spreadsheet ladder is gone: no checkbox-looking "Done" rows.
+    expect($(w, 'jBadgePop').textContent).not.toMatch(/Done|to go/);
+    expect(badgeBtns(w)[0].getAttribute('aria-expanded')).toBe('true');
   });
 
-  it('a badge with all 3 stars says so', async () => {
+  it('a badge with all 3 stars is maxed out', async () => {
     const w = await boot({ api: book({ events }) });
-    tap(w, badgeBtns(w)[4]);
-    expect($(w, 'jBadgeNote').textContent).toBe('30 Hockey IQ sessions. All 3 stars!');
+    tap(w, badgeBtns(w)[1]); // Hockey Brain
+    expect($(w, 'jBpLine').textContent).toBe('Maxed out! All 3 stars.');
+    expect($(w, 'jBpBar').classList.contains('max')).toBe(true);
+    expect($(w, 'jBpBar').style.getPropertyValue('--p')).toBe('100%');
   });
 
-  it('tapping the star row inside a badge still counts as tapping the badge', async () => {
+  it('tapping the star row inside a badge still opens it', async () => {
     const w = await boot({ api: book({ events }) });
     tap(w, badgeBtns(w)[0].querySelector('.stars'));
-    expect($(w, 'jBadgeNote').textContent).toBe('34 Hands drills. 26 more for star 3.');
+    expect($(w, 'jBpName').textContent).toBe('Dangler');
   });
 
-  it('the goalie sees Net Boss in the second slot', async () => {
+  it('the goalie sees Net Boss', async () => {
     const w = await boot({ api: book({ goalie: true, events: ev('2026-10-01', 'netplay', 10) }) });
-    const b = badgeBtns(w)[1];
+    const b = badgeBtns(w)[0];
     expect(b.querySelector('b').textContent).toBe('Net Boss');
     tap(w, b);
-    expect($(w, 'jBadgeNote').textContent).toBe('10 Net play drills. 20 more for star 2.');
+    expect($(w, 'jBpTag').textContent).toBe('Nothing gets past you.');
+    expect($(w, 'jBpLine').textContent).toBe('20 more drills to star 2!');
+  });
+
+  it('streak and full-week lines read like a kid would say them', async () => {
+    const days = [...range('2026-10-05', 4), ...range('2026-10-12', 4)];
+    const w = await boot({ api: book({ days }) });
+    const byId = (id) => badgeBtns(w).find((b) => b.getAttribute('data-id') === id);
+    tap(w, byId('onaheater'));
+    expect($(w, 'jBpLine').textContent).toBe('Train 7 days in a row for star 2!');
+    tap(w, byId('fullweek'));
+    expect($(w, 'jBpLine').textContent).toBe('4 more weeks with 4 training days to star 2!');
   });
 
   it('the finale shows the real badge-star total', async () => {
@@ -294,22 +330,69 @@ describe('embedded in the app', () => {
   });
 });
 
-describe('tap a badge to open it', () => {
-  const events = ev('2026-10-01', 'stick', 34);
-  it('opens under its row with the art, stars and each star\'s goal', async () => {
+describe('badge pop-up: open and close', () => {
+  const events = [...ev('2026-10-01', 'stick', 34), ...ev('2026-10-02', 'iq', 30)];
+  it('opens under the tapped badge, and closes with x, Escape, a second tap or a tap outside', async () => {
     const w = await boot({ api: book({ events }) });
-    tap(w, badgeBtns(w)[1]);
-    const panel = $(w, 'jBadgeInfo');
-    expect(panel.hidden).toBe(false);
-    expect(panel.previousElementSibling).toBe(badgeBtns(w)[3]); // after the first row of 4
+    const pop = $(w, 'jBadgePop');
     tap(w, badgeBtns(w)[0]);
-    expect($(w, 'jBadgeName').textContent).toBe('Dangler');
-    const rows = Array.from($(w, 'jBadgeLadder').children).map((li) => li.textContent);
-    expect(rows).toEqual(['\u2605Star 1: 10 Hands drills\u2713 Done', '\u2605Star 2: 30 Hands drills\u2713 Done', '\u2606Star 3: 60 Hands drills26 to go']);
-    tap(w, badgeBtns(w)[5]);
-    expect(panel.previousElementSibling).toBe(badgeBtns(w)[7]); // second row
-    tap(w, badgeBtns(w)[5]);
-    expect(panel.hidden).toBe(true);
+    expect(pop.hidden).toBe(false);
+    expect(pop.getAttribute('role')).toBe('dialog');
+    expect(w.document.activeElement).toBe($(w, 'jBpClose'));
+    tap(w, $(w, 'jBpClose'));
+    expect(pop.hidden).toBe(true);
+    expect(w.document.activeElement).toBe(badgeBtns(w)[0]); // focus goes back to the badge
+    tap(w, badgeBtns(w)[0]);
+    w.document.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(pop.hidden).toBe(true);
+    tap(w, badgeBtns(w)[0]); tap(w, badgeBtns(w)[0]);
+    expect(pop.hidden).toBe(true);
+    tap(w, badgeBtns(w)[0]);
+    tap(w, pop.querySelector('h3')); // a tap inside keeps it open
+    expect(pop.hidden).toBe(false);
+    tap(w, $(w, 'h-books'));
+    expect(pop.hidden).toBe(true);
+  });
+  it('tapping another badge switches the pop-up to it', async () => {
+    const w = await boot({ api: book({ events }) });
+    tap(w, badgeBtns(w)[0]); tap(w, badgeBtns(w)[1]);
+    expect($(w, 'jBpName').textContent).toBe('Hockey Brain');
+    expect(badgeBtns(w).map((b) => b.getAttribute('aria-expanded'))).toEqual(['false', 'true']);
+  });
+});
+
+describe('8 badges, then Show more', () => {
+  it('shows the first 8 earned badges, and Show more reveals the rest', async () => {
+    const b = book({});
+    b.badges = Array.from({ length: 11 }, (_, i) => ({ id: 'b' + i, name: 'Badge ' + i, art: 'badge-01.webp', unit: 'drills', count: 12, stars: 1, thresholds: [10, 30, 60], next: 30 }));
+    b.badges.push({ id: 'none', name: 'Not yet', art: 'badge-02.webp', unit: 'drills', count: 0, stars: 0, thresholds: [10, 30, 60], next: 10 });
+    const w = await boot({ api: b });
+    const shown = () => badgeBtns(w).filter((x) => !x.hidden).length;
+    expect(badgeBtns(w)).toHaveLength(11); // the unearned one never renders
+    expect(shown()).toBe(8);
+    const more = $(w, 'jBadgeMore');
+    expect(more.hidden).toBe(false);
+    expect(more.textContent).toBe('Show more');
+    tap(w, more);
+    expect(shown()).toBe(11);
+    expect($(w, 'jBadgeMore').textContent).toBe('Show less');
+    expect($(w, 'jBadgeMore').getAttribute('aria-expanded')).toBe('true');
+    tap(w, $(w, 'jBadgeMore'));
+    expect(shown()).toBe(8);
+  });
+});
+
+describe('season book is locked', () => {
+  it('shows a padlock, and a tap shakes it instead of doing nothing', async () => {
+    const w = await boot({ api: 401 });
+    const book0 = w.document.querySelector('.spine.current');
+    expect(book0.querySelector('.booklock svg')).not.toBeNull();
+    expect(book0.getAttribute('aria-label')).toBe('2026-27 book, locked until the season ends');
+    expect(book0.tagName).not.toBe('BUTTON');
+    tap(w, book0);
+    expect(book0.classList.contains('nope')).toBe(true);
+    await new Promise((r) => setTimeout(r, 480));
+    expect(book0.classList.contains('nope')).toBe(false);
   });
 });
 
