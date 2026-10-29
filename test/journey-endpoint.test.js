@@ -121,6 +121,13 @@ describe('GET /api/board?action=journey badges', () => {
     const res = await get(mintSession('johnny', 'p@e.com'));
     expect(res.body.badges[1].id).toBe('netboss');
   });
+
+  it('goalie badges follow the roster position, not the name', async () => {
+    fake.map.set('teamMember:gus', { firstName: 'Gus', number: 30, position: 'G' });
+    fake.map.set('teamMember:johnny', { firstName: 'Johnny', number: 1, position: 'F' });
+    expect((await get(mintSession('gus', 'p@e.com'))).body.badges[1].id).toBe('netboss');
+    expect((await get(mintSession('johnny', 'p@e.com'))).body.badges[1].id).not.toBe('netboss');
+  });
 });
 
 describe('GET /api/board?action=journey safety', () => {
