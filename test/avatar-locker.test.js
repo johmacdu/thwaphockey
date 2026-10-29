@@ -35,20 +35,48 @@ async function open({ status = 200, progress = A.progressFrom({ stick: 6 }, 2), 
 }
 
 describe('My Player', () => {
-  it('opens with tabs and a character preview, and adds no floating button', async () => {
+  it('is a Thwap page: glass close, hero, five groups, the player on their card', async () => {
     const { w } = await open();
-    expect(w.document.querySelector('.lk[role=dialog]')).toBeTruthy();
-    expect(w.document.querySelector('.lk h2').textContent).toBe('My Player');
-    expect(w.document.querySelectorAll('.lk-tab').length).toBe(14);
-    expect(w.document.querySelector('.lk-stage .av-wrap')).toBeTruthy();
-    expect(w.document.querySelector('.lk-btn')).toBeNull();
+    const d = w.document;
+    expect(d.querySelector('.lk[role=dialog]')).toBeTruthy();
+    expect(d.querySelector('.lk .glassclose.lk-x').className).toBe('glassclose lk-x'); // the page close, not a placement variant
+    expect(d.querySelector('.lk .lk-col .heroCard h1').textContent).toBe('My Player');
+    expect(d.querySelector('.lk .heroCard p').textContent).toBe('Tap to wear it. Drag to turn. Pinch to size.');
+    expect([...d.querySelectorAll('.lk-tabs.seg .segbtn')].map((b) => b.textContent)).toEqual(['Me', 'Jersey', 'Helmet', 'Stick', 'Moves']);
+    expect(d.querySelector('.lk-tabs .segbtn.on').textContent).toBe('Me');
+    expect(d.querySelector('.lk-stage .lk-fitcard .av-wrap')).toBeTruthy();
+    expect(d.querySelector('[data-tab=facing]')).toBeNull(); // no View tab
+    expect(d.querySelector('[data-tab=fit]')).toBeNull(); // no Size tab
+    expect(d.querySelector('.lk-btn')).toBeNull();
+  });
+  it('each group lists its parts under plain labels, not boxes', async () => {
+    const { w } = await open();
+    const d = w.document;
+    const heads = () => [...d.querySelectorAll('.lk-sec .lk-sech')].map((h) => h.textContent);
+    expect(heads()).toEqual(['Skin', 'Hair', 'Hair color']);
+    d.querySelector('[data-tab=jersey]').click(); expect(heads()).toEqual(['Jersey', 'Socks']);
+    d.querySelector('[data-tab=helmet]').click(); expect(heads()).toEqual(['Helmet', 'Cage', 'Stripe', 'Sticker']);
+    d.querySelector('[data-tab=stick]').click(); expect(heads()).toEqual(['Gloves', 'Stick', 'Tape', 'Which way you shoot']);
+    d.querySelector('[data-tab=moves]').click(); expect(heads()).toEqual(['Moves', 'Cellys']);
+    expect(d.querySelectorAll('[data-slot=facing]').length).toBe(0);
+  });
+  it('an old tab or a slot (from a message link) opens its group at that part', async () => {
+    const { w } = await open();
+    w.document.querySelector('.lk-x').click();
+    w.thwapAvatar.openLocker({ tab: 'pose' });
+    for (let i = 0; i < 5; i++) await tick();
+    expect(w.document.querySelector('.lk-tabs .segbtn.on').textContent).toBe('Moves');
+    w.document.querySelector('.lk-x').click();
+    w.thwapAvatar.openLocker({ tab: 'fit' });
+    for (let i = 0; i < 5; i++) await tick();
+    expect(w.document.querySelector('.lk-tabs .segbtn.on').textContent).toBe('Me');
   });
 
   it('Moves tab: 8 stances, each tile drawn in its stance, Ready worn to start', async () => {
     const { w } = await open();
-    w.document.querySelector('[data-tab=pose]').click();
-    expect(w.document.querySelector('[data-tab=pose]').textContent).toBe('Moves');
-    const tiles = w.document.querySelectorAll('.lk-item');
+    w.document.querySelector('[data-tab=moves]').click();
+    expect(w.document.querySelector('[data-tab=moves]').textContent).toBe('Moves');
+    const tiles = w.document.querySelectorAll('[data-slot=pose] .lk-item');
     expect(tiles.length).toBe(8);
     for (const t of tiles) expect(t.querySelector('.lk-mini.pose .av-wrap')).toBeTruthy();
     expect(w.document.querySelector('[data-id=pose-ready]').getAttribute('aria-pressed')).toBe('true');
@@ -58,7 +86,7 @@ describe('My Player', () => {
 
   it('Moves tab: an earned stance saves; a locked one is try-on only', async () => {
     const { w, posts } = await open({ progress: A.progressFrom({ shoot: 25 }, 2) });
-    w.document.querySelector('[data-tab=pose]').click();
+    w.document.querySelector('[data-tab=moves]').click();
     w.document.querySelector('[data-id=pose-dangle]').click(); // Toe drag: 35 days, locked
     for (let i = 0; i < 3; i++) await tick();
     expect(posts.length).toBe(0);
@@ -76,7 +104,7 @@ describe('My Player', () => {
     let closed = 0;
     w.thwapAvatar.openLocker({ onClose: () => { closed++; } });
     for (let i = 0; i < 5; i++) await tick();
-    w.document.querySelector('[data-tab=gloves]').click();
+    w.document.querySelector('[data-tab=stick]').click();
     w.document.querySelector('[data-id=gloves-red]').click();
     for (let i = 0; i < 5; i++) await tick();
     w.document.querySelector('.lk-x').click();
@@ -86,7 +114,7 @@ describe('My Player', () => {
 
   it('tapping an owned item saves the new look', async () => {
     const { w, posts } = await open();
-    w.document.querySelector('[data-tab=gloves]').click();
+    w.document.querySelector('[data-tab=stick]').click();
     w.document.querySelector('[data-id=gloves-red]').click(); // 5 activities, owned at 6
     for (let i = 0; i < 5; i++) await tick();
     expect(posts.length).toBe(1);
@@ -115,22 +143,21 @@ describe('My Player', () => {
 });
 
 describe('first-run builder', () => {
-  it('a player with no saved look gets six steps (skin, hair, hair color, jersey, shot, facing), and Done saves once', async () => {
+  it('a player with no saved look gets five steps (skin, hair, hair color, jersey, shot), and Done saves once', async () => {
     const { w, posts } = await open({ saved: false });
     const d = w.document;
-    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 1 of 6/);
+    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 1 of 5/);
     d.querySelector('[data-id=skin-s5]').click();
     expect(posts.length).toBe(0); // no save mid-build
     d.querySelector('[data-build=next]').click();
-    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 2 of 6.*hockey hair/i);
+    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 2 of 5.*hockey hair/i);
     d.querySelector('[data-id=hairstyle-short]').click();
     d.querySelector('[data-build=next]').click();
-    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 3 of 6.*hair color/i);
+    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 3 of 5.*hair color/i);
     d.querySelector('[data-build=next]').click(); // -> step 4: jersey
-    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 4 of 6.*jersey/i);
+    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 4 of 5.*jersey/i);
     d.querySelector('[data-build=next]').click(); // -> step 5: shot (handedness)
-    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 5 of 6.*shoot/i);
-    d.querySelector('[data-build=next]').click(); // -> step 6: facing
+    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 5 of 5.*shoot/i);
     const done = d.querySelector('[data-build=next]');
     expect(done.textContent).toBe('Done');
     done.click();
@@ -145,7 +172,7 @@ describe('first-run builder', () => {
     const d = w.document;
     d.querySelector('[data-build=next]').click();
     d.querySelector('[data-build=back]').click();
-    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 1 of 6/);
+    expect(d.querySelector('.lk-step').textContent).toMatch(/Step 1 of 5/);
   });
 });
 
@@ -175,8 +202,7 @@ describe('hair styles', () => {
   });
   it('hair style tiles show a small back view of the player', async () => {
     const { w } = await open();
-    w.document.querySelector('[data-tab=hairstyle]').click();
-    const tiles = w.document.querySelectorAll('.lk-item');
+    const tiles = w.document.querySelectorAll('[data-slot=hairstyle] .lk-item');
     expect(tiles.length).toBe(STYLES.length);
     expect(tiles[0].querySelector('.lk-mini .av-wrap')).toBeTruthy();
   });

@@ -155,6 +155,36 @@ A centered dialog card (max-width ~360) for the sign-in / waitlist short forms.
 - **Reuse rule:** short forms only. If it scrolls or is a whole flow, use a
   full-page overlay instead.
 
+### My Player page: `.lk` (avatar.js)
+The character editor. A full-screen Thwap page built from the shared parts, so it
+reads like every other page.
+
+- **Defined in:** `avatar.js` (`openLocker`, `lockerCss`). Uses `index.html`'s
+  `.glassclose` (page close, no modifier), `.heroCard` + `h1` + `p`, and
+  `.seg` / `.segbtn` for the five groups.
+- **Markup (shape):**
+  ```html
+  <div class="lk" role="dialog" aria-modal="true" aria-label="My Player">
+    <button type="button" class="glassclose" aria-label="Close">&#10005;</button>
+    <div class="lk-col">                         <!-- the .app column: 1100px, 16px sides -->
+      <div class="heroCard"><h1>My Player</h1><p>Tap to wear it. Drag to turn. Pinch to size.</p></div>
+      <div class="lk-sticky">                    <!-- card + groups stay in view -->
+        <div class="lk-stage">(the card front)</div>
+        <div class="lk-zoom"><button class="lk-zbtn" aria-label="Smaller">&minus;</button><button class="lk-zbtn" aria-label="Bigger">+</button></div>
+        <div class="seg lk-tabs" role="tablist"><button class="segbtn on" role="tab">Me</button>...</div>
+      </div>
+      <section class="lk-sec"><h3 class="lk-sech">Skin</h3><div class="lk-items">(tiles)</div></section>
+    </div>
+  </div>
+  ```
+- **Section label `.lk-sech`:** 11px / 900 uppercase muted, over a hairline
+  (`.lk-sec`). This is how a group lists its parts. Never a box around a group.
+- **Size buttons `.lk-zbtn`:** 48px circles beside the card, the one-finger
+  alternative to pinch. Not a close and not a toggle.
+- **Reuse rule:** a new editor or picker page follows this shape (page close,
+  hero, column, `.seg` groups, labelled sections). Do not add a per-page header
+  row with its own title and close.
+
 ### Badge modal: `.jbm` + `.bpop`
 The pop-up when a kid taps a badge on My Season (`journey.html`): badge art,
 name, tag line, star row, progress meter and one line of copy.

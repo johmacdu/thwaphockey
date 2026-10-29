@@ -75,19 +75,30 @@ A reference screenshot is inspiration, not a source of words.
 ## Interaction strategy
 
 ### First run: build your player in under a minute
-- Four steps: skin tone, hockey hair, hair color, jersey. All pre-picked, so a
-  kid can tap Done.
+- Five steps: skin tone, hockey hair, hair color, jersey, which way you shoot.
+  All pre-picked, so a kid can tap Done.
 - Then the card reveal: the character lands on the card with the THWAP sound.
 
-### My Player: one category at a time
-- Big live preview at the top that stays put. Drag to spin.
-- Tabs are the gear types (Skin, Hair, Jersey, Helmet, Stripe, Gloves, Stick),
-  then Poses and Celebrations in Phase 3. Past seasons live in the Sticker Book. One gear type
-  shows at a time, never one endless scroll.
+### My Player: a Thwap page, five groups, edited on the card
+- Built like every other Thwap page: glass close top-right, a hero ("My Player"
+  plus one line, "Tap to wear it. Drag to turn. Pinch to size."), the 1100px
+  content column. Not a bespoke pop-up with its own header.
+- The stage is the kid's real card front, so they see exactly what teammates see.
+  It stays in view (sticky) while the list scrolls.
+- Five groups on the shared `.seg` toggle, all visible at once:
+  Me (skin, hair, hair color), Jersey (jersey, socks), Helmet (helmet, cage,
+  stripe, sticker), Stick (gloves, stick, tape, which way you shoot),
+  Moves (moves, cellys). Each part sits under a plain uppercase label over a
+  hairline, never a box around the group.
+- No View or Size tab. Drag the card to turn the player; on release they settle
+  on the nearest side (left, front, right) and the card keeps it. Pinch to size
+  on a phone; trackpad pinch or the scroll wheel on desktop; the - / + buttons
+  beside the card always work (the one-finger option a pinch needs). Sizing
+  re-centers the player: there is no move control.
 - Tiles at least 48px with 8px spacing.
 - Tap an owned item: it goes on the character and saves. No Save button.
 - Tap a locked item: try it on, with a progress line ("Golden Stick. Train 100 days to unlock.
-  100 training days. You're at 62.").
+  You're at 62.").
 
 ### Unlock moment, where it was earned
 - After marking a drill done: a short "New gear!" moment (200 to 400ms, never
@@ -95,7 +106,7 @@ A reference screenshot is inspiration, not a source of words.
 - A dot on the My Player entry stays until the new item has been seen.
 
 ### Poses and celebrations (Phase 3)
-- Picked in the Poses and Celebrations tabs.
+- Picked in the Moves group (Moves and Cellys).
 - Celebrations play on milestone days and from a Play button, never on a card
   tap (tap flips, double tap spins).
 - Reduced motion shows the final frame, no animation.

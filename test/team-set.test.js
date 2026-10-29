@@ -104,11 +104,11 @@ describe('drawing the team items', () => {
 });
 
 describe('My Player', () => {
-  it('tape sits in the Stick tab, the decal in Helmet, socks in Jersey (no new tabs)', async () => {
+  it('tape sits in the Stick group, the decal in Helmet, socks in Jersey (five groups, no new ones)', async () => {
     const w = boot();
     w.thwapAvatar.openLocker({ tab: 'stick' });
     for (let i = 0; i < 5; i++) await tick();
-    expect(w.document.querySelectorAll('.lk-tab').length).toBe(14); // 13 gear tabs + Size (card fit), no team-set tabs;
+    expect(w.document.querySelectorAll('.lk-tab').length).toBe(5);
     expect(w.document.querySelector('[data-id=tape-rangers]')).toBeTruthy();
     w.document.querySelector('[data-tab=helmet]').click();
     expect(w.document.querySelector('[data-id=decal-rangers]')).toBeTruthy();
