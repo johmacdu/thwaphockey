@@ -137,8 +137,8 @@ describe('The Rangers did it!', () => {
   it('names the team and what this kid added', async () => {
     const w = await unlockTape(12);
     const t = w.document.querySelector('.lk-toast').textContent;
-    expect(t).toMatch(/^The Rangers did it!/);
-    expect(t).toMatch(/New team item: Rangers tape\. You added 12 drills\./);
+    expect(t).toMatch(/^The Rangers did it!Rangers tape/);
+    expect(t).toMatch(/Team stick tape\. You added 12 drills\./);
   });
   it('a kid who added nothing is invited, never told "0 drills"', async () => {
     const w = await unlockTape(0);

@@ -134,13 +134,14 @@ describe('milestone moment', () => {
     w.localStorage.setItem('thwapUnlockSeen', JSON.stringify(unlocked.filter((id) => id !== 'gloves-red')));
     await w.thwapAvatar.checkUnlocks();
     const toast = w.document.querySelector('.lk-toast');
-    expect(toast.textContent).toMatch(/New gear! Rangers Red gloves/);
+    expect(toast.querySelector('.lk-tk').textContent).toBe('New gloves');
+    expect(toast.querySelector('.lk-tt').textContent).toBe('Rangers Red gloves');
     const pic = toast.querySelector('.lk-tcelly');
     expect(pic).toBeTruthy();
     expect(pic.innerHTML).toContain(A.ITEMS && '#C8102E'); // wearing the red gloves
   });
 
-  it('without a celebration worn, the message shows the item as before', async () => {
+  it('without a celebration worn, the message shows the player wearing the item, not a color dot', async () => {
     const w = boot();
     const prog = A.progressFrom({ stick: 6 }, 2);
     await openLocker(w, { progress: prog });
@@ -149,6 +150,7 @@ describe('milestone moment', () => {
     await w.thwapAvatar.checkUnlocks();
     const toast = w.document.querySelector('.lk-toast');
     expect(toast.querySelector('.lk-tcelly')).toBeNull();
-    expect(toast.querySelector('.lk-sw')).toBeTruthy();
+    expect(toast.querySelector('.lk-sw')).toBeNull();
+    expect(toast.querySelector('.lk-mini.pose .av-wrap')).toBeTruthy();
   });
 });

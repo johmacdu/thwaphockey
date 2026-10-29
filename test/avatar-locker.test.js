@@ -221,7 +221,13 @@ describe('unlock moment', () => {
     await w.thwapAvatar.checkUnlocks();
     const toast = w.document.querySelector('.lk-toast');
     expect(toast).toBeTruthy();
-    expect(toast.textContent).toMatch(/New gear! Rangers Red gloves/);
+    expect(toast.querySelector('.lk-tk').textContent).toBe('New gloves');
+    expect(toast.querySelector('.lk-tt').textContent).toBe('Rangers Red gloves');
+    // The reason points back at the work, and the picture is the player, not a color dot.
+    expect(toast.querySelector('small').textContent).toMatch(/^You finished 5 drills\. Tap to try them on\./);
+    expect(toast.querySelector('.lk-mini.pose .av-wrap')).toBeTruthy();
+    expect(toast.querySelector('.lk-sw')).toBeNull();
+    expect(toast.textContent).not.toMatch(/gear/i);
     expect(w.document.querySelector('#cardImageBtn .lk-dot')).toBeTruthy();
     expect(w.document.querySelector('#homePlayer .lk-dot')).toBeNull();
     toast.remove();
@@ -240,7 +246,8 @@ describe('unlock moment', () => {
     await w.thwapAvatar.checkUnlocks();
     const toast = w.document.querySelector('.lk-toast');
     expect(toast).toBeTruthy();
-    expect(toast.textContent).toMatch(/New (celly! Knee slide|move! (Snipe|Toe drag)) and \d+ more/);
+    expect(toast.querySelector('.lk-tk').textContent).toMatch(/^New (celly|move)$/);
+    expect(toast.querySelector('small').textContent).toMatch(/\d+ more in My Player\.$/);
     const seen = JSON.parse(w.localStorage.getItem('thwapUnlockSeen'));
     expect(seen).toContain('pose-shooting');
     expect(seen).toContain('celebration-kneeslide');
@@ -301,5 +308,19 @@ describe('launch switch', () => {
     expect(INDEX).toMatch(/window\.thwapPhotoResolve=function\(playerId, cb\)\{\n  \/\*[^\n]*\*\/\n  try\{ if\(window\.thwapAvatar && window\.thwapAvatar\.on\(\)\)\{ cb\(null\); return; \} \}catch\(_\)\{\}/);
     expect(INDEX).not.toMatch(/window\.thwapPhotoEdit=function/);
     expect(INDEX).toContain("if(avOn){ photo.removeAttribute('src'); photo.alt=''; photo.style.display='none'; }");
+  });
+});
+
+describe('unlock message follows the design system', () => {
+  const SRC2 = fs.readFileSync(path.join(__dirname, '..', 'avatar.js'), 'utf8');
+  it('uses the type ramp: eyebrow 11/900, card title 17/800, supporting 14px (no text below 14px)', () => {
+    expect(SRC2).toMatch(/\.lk-tk\{font-size:11px;font-weight:900/);
+    expect(SRC2).toMatch(/\.lk-tt\{font-size:17px;font-weight:800/);
+    expect(SRC2).toMatch(/\.lk-toast small\{display:block;font-weight:600;font-size:14px/);
+  });
+  it('slaps on only when motion is allowed, and waits for the drill done moment first', () => {
+    expect(SRC2).toMatch(/prefers-reduced-motion:no-preference\)\{[^@]*\.lk-toast\{animation:lkSlap/);
+    expect(SRC2).toMatch(/setTimeout\(checkUnlocks,900\)/);
+    expect(SRC2).toMatch(/TOAST_MS=8000/);
   });
 });
