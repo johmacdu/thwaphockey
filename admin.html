@@ -269,13 +269,35 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
       .catch(function(e){ rmsg.textContent=e.message||'Could not load roster.'; rmsg.className='msg err'; });
   }
   function initial(p){ return esc(((p.firstName||p.name||'?')[0]||'?').toUpperCase()); }
+  /* Roster avatars come from the photo store (/api/photo/get), the same lookup
+     the app uses, never from a field on the member record. One lookup per
+     player, cached by id: a url, or null when there is no photo. The admin
+     session token rides in the Authorization header only. */
+  var photoUrls={};
+  function placeholder(p){ return "<div class='pavatar empty'>"+initial(p)+"</div>"; }
+  function avatarHTML(p){
+    var url=photoUrls[p.id];
+    return url ? "<img class='pavatar' src='"+esc(url)+"' alt=''>" : placeholder(p);
+  }
+  function paintAvatar(card,p){
+    var cur=card.querySelector('.pavatar'); if(!cur) return;
+    cur.outerHTML=avatarHTML(p);
+    var img=card.querySelector('img.pavatar');
+    /* A photo that will not load falls back to the initial, never a broken image. */
+    if(img){ img.addEventListener('error',function(){ photoUrls[p.id]=null; var c=card.querySelector('.pavatar'); if(c) c.outerHTML=placeholder(p); }); }
+  }
+  function lookupPhoto(card,p){
+    if(Object.prototype.hasOwnProperty.call(photoUrls,p.id)){ paintAvatar(card,p); return; }
+    fetch('/api/photo/get?playerId='+encodeURIComponent(p.id),{headers:authH(),cache:'no-store'})
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){ photoUrls[p.id]=(j&&typeof j.url==='string'&&j.url)||null; paintAvatar(card,p); })
+      .catch(function(){ photoUrls[p.id]=null; });
+  }
   function renderRoster(){
     if(!players.length){ rlist.innerHTML=''; rmsg.textContent='No players.'; rmsg.className='msg'; return; }
     rmsg.textContent=''; rmsg.className='msg';
     rlist.innerHTML=players.map(function(p,i){
-      var av=p.photo
-        ? "<img class='pavatar' src='"+esc(p.photo)+"' alt=''>"
-        : "<div class='pavatar empty'>"+initial(p)+"</div>";
+      var av=placeholder(p);
       var curPos=posCode(p.position);
       var posOpts=POS.map(function(o){ return "<option value='"+o[0]+"'"+(curPos===o[0]?" selected":"")+">"+o[1]+"</option>"; }).join('');
       var conOpts=CONSENT.map(function(c){ return "<option value='"+c[0]+"'>"+esc(c[1])+"</option>"; }).join('');
@@ -307,6 +329,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
       "</div>";
     }).join('');
     rlist.querySelectorAll('.pcard').forEach(function(card){
+      var pl=players[parseInt(card.getAttribute('data-i'),10)]; if(pl) lookupPhoto(card,pl);
       card.querySelector('.save').addEventListener('click',function(){ savePlayer(card); });
       card.querySelector('.addphoto').addEventListener('click',function(){ card.querySelector('.consent').classList.toggle('open'); });
       card.querySelector('.c-upload').addEventListener('click',function(){ uploadPhoto(card); });
@@ -422,7 +445,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
         .then(function(res){
           reset();
           if(!res.ok){ alert((res.j&&res.j.error)||'Upload failed'); return; }
-          var p=players[parseInt(card.getAttribute('data-i'),10)]; if(p){ p.photo=res.j.url; }
+          var p=players[parseInt(card.getAttribute('data-i'),10)]; if(p){ photoUrls[p.id]=res.j.url||null; }
           card.querySelector('.consent').classList.remove('open'); renderRoster();
         })
         .catch(function(){ reset(); alert('Upload failed'); });

@@ -694,12 +694,12 @@ describe('add-player: parent email + photo', () => {
     expect(res.statusCode).toBe(400);
   });
 
-  it('stores an optional player photo on add', async () => {
+  it('ignores a player photo on add (player photos go through api/photo/*)', async () => {
     const login = await loginSeedCoach();
     const res = makeRes();
     await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: login.body.token, firstName: 'Photokid', parentEmail: 'p@x.com', photo: 'data:image/jpeg;base64,abc' }), res);
     expect(res.statusCode).toBe(200);
-    expect(res.body.member.photo).toContain('data:image/jpeg');
+    expect(res.body.member).not.toHaveProperty('photo');
   });
 
   it('stores a second parent email on add and rejects an invalid one', async () => {
