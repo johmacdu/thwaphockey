@@ -1,4 +1,4 @@
-<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Oswald:wght@500;600;700&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;0,6..12,800;0,6..12,900&family=Luckiest+Guy&display=swap' rel='stylesheet'><title>Thwap Hockey</title><link rel='icon' type='image/png' href='logo-64.png'><link rel='apple-touch-icon' href='logo-180.png'><style>
+<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1,viewport-fit=cover'><link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin><link href='https://fonts.googleapis.com/css2?family=Anton&family=Archivo+Black&family=Oswald:wght@500;600;700&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;0,6..12,800;0,6..12,900&family=Luckiest+Guy&display=swap' rel='stylesheet'><title>Thwap Hockey</title><script>/* My Season's old address: keep old links and bookmarks working. */(function(){function f(){if(location.hash==='#stickers')location.replace('#myseason');}f();addEventListener('hashchange',f);})();</script><link rel='icon' type='image/png' href='logo-64.png'><link rel='apple-touch-icon' href='logo-180.png'><style>
 /* Keyboard focus ring: visible for keyboard/switch users, invisible to mouse taps.
    Uses a lime core with a dark ink halo so it reads on both light and dark themes. */
 a:focus-visible,button:focus-visible,[tabindex]:focus-visible,.row:focus-visible,.nav:focus-visible,.segbtn:focus-visible,.pl-tot:focus-visible{outline:3px solid var(--lime);outline-offset:2px;box-shadow:0 0 0 5px rgba(21,34,27,.55);border-radius:12px}
@@ -1799,7 +1799,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
   function native(){ try{ return document.documentElement.classList.contains('is-native'); }catch(e){ return false; } }
   /* used by the JS-rendered areas: SVG in the app, the emoji fallback on the web */
   window.thwapGlyph=function(name, fallback){ return (native()&&G[name])?G[name]:(fallback||''); };
-  var TAB={home:'stick',coachhome:'stick',stickers:'star',roster:'people',plan:'clipboard',progress:'trophy',profile:'person'};
+  var TAB={home:'stick',coachhome:'stick',myseason:'star',roster:'people',plan:'clipboard',progress:'trophy',profile:'person'};
   function run(){
     if(!native()) return;
     document.querySelectorAll('.tabbar-btn[data-tab] .tabbar-ico').forEach(function(el){
@@ -2433,7 +2433,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 <div class='note'><strong>How points work</strong><br>Each drill counts once. Extra practice is awesome, but it does not add extra points.</div>
 </section>
 
-<section id='stickers' class='page'>
+<section id='myseason' class='page'>
 <a class='glassclose' href='.' aria-label='Close'>✕</a>
 <div class='hero hero-sticker'><h1>My Season</h1></div>
 <div class='seg' id='seasonSeg' role='tablist' aria-label='My Season'>
@@ -2732,7 +2732,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 <section id='home'>
 <div class='wipnote' id='wipNote'>👋 Welcome to the Thwap beta. We're adding new training videos and features every week.</div>
 <script>(function(){try{fetch('/api/coach?action=beta',{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){if(d&&d.betaUntil){var until=Date.parse(d.betaUntil);if(!isNaN(until)&&Date.now()>until){var n=document.getElementById('wipNote');if(n)n.hidden=true;}}}).catch(function(){});}catch(e){}})();</script>
-<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.webp' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks' aria-label='Quick links'><span class='nav-authed'><a class='link' href='#stickers'>My Season</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a></span><span class='nav-guest'><a class='link' href='/about' id='navAbout'>About Thwap</a><span class='topsep'>|</span><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Explore pages' aria-expanded='false'>Explore</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#stickers'>My Season</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a></span><span class='nav-guest'><a href='/about' id='navAboutK'>About Thwap</a><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
+<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.webp' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks' aria-label='Quick links'><span class='nav-authed'><a class='link' href='#myseason'>My Season</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a></span><span class='nav-guest'><a class='link' href='/about' id='navAbout'>About Thwap</a><span class='topsep'>|</span><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Explore pages' aria-expanded='false'>Explore</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#myseason'>My Season</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a></span><span class='nav-guest'><a href='/about' id='navAboutK'>About Thwap</a><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
 <div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>there</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><script>(function(){try{var authed=/(?:^|; )thwapAuth=/.test(document.cookie);var p=localStorage.getItem('bfPlayer');var b=document.getElementById('homePlayer');if(b){if(p&&authed){b.textContent=p.trim().split(/\s+/)[0];}else{b.classList.add('needpick');}}}catch(e){}
 /* Team plan: hide the category rows the coach turned OFF for today. On any failure
    or unset plan, stick + shoot stay shown (the built-in rotation), and dryland
@@ -2869,7 +2869,7 @@ window.thwapTrainingToday=function(){
 <nav class='tabbar' id='tabbar' aria-label='Main'>
   <span class='tab-player'>
     <a class='tabbar-btn' href='#home' data-tab='home'><span class='tabbar-ico' aria-hidden='true'>🏒</span><span class='tabbar-lab'>Train</span></a>
-    <a class='tabbar-btn' href='#stickers' data-tab='stickers'><span class='tabbar-ico' aria-hidden='true'>📖</span><span class='tabbar-lab'>My Season</span></a>
+    <a class='tabbar-btn' href='#myseason' data-tab='myseason'><span class='tabbar-ico' aria-hidden='true'>📖</span><span class='tabbar-lab'>My Season</span></a>
     <a class='tabbar-btn' href='#roster' data-tab='roster'><span class='tabbar-ico' aria-hidden='true'>👥</span><span class='tabbar-lab'>Team</span></a>
     <a class='tabbar-btn' href='#progress' data-tab='progress'><span class='tabbar-ico' aria-hidden='true'>🏆</span><span class='tabbar-lab'>Standings</span></a>
     <a class='tabbar-btn' href='#profile' data-tab='profile'><span class='tabbar-ico' aria-hidden='true'>👤</span><span class='tabbar-lab'>Profile</span></a>
@@ -11097,7 +11097,7 @@ window.thwapPaywall=function(billing, teamCode){
     if(h==='stick'||h==='shoot'||h==='dryland'||h==='drillpick'||h==='pass'||h==='iq'){
       return document.body.classList.contains('is-coach') ? null : 'home';
     }
-    if(h==='stickers') return 'stickers';
+    if(h==='myseason'||h==='stickers') return 'myseason';
     if(h==='roster') return 'roster';
     if(h==='plan') return 'plan';
     if(h==='progress') return 'progress';

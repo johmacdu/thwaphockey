@@ -111,9 +111,9 @@ describe('View: PLAYER Standings (#progress)', () => {
   });
 });
 
-describe('View: PLAYER Stickers (#stickers)', () => {
+describe('View: PLAYER My Season (#myseason)', () => {
   it('exists with the sticker book + player card deck', () => {
-    sectionWithChildren(idx, 'stickers');
+    sectionWithChildren(idx, 'myseason');
     expect(idx.getElementById('stickerBook'), '#stickerBook').toBeTruthy();
     expect(idx.getElementById('deckWrap'), '#deckWrap (card deck)').toBeTruthy();
   });

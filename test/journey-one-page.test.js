@@ -1,4 +1,4 @@
-// My Season (#stickers): a Journey | Stickers segmented control. The player
+// My Season (#myseason): a Journey | Stickers segmented control. The player
 // card stays with the stickers, since stickers are dragged onto it. The app never opens My Player on its own.
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
@@ -12,7 +12,7 @@ describe('My Season nav', () => {
   it('says My Season, never Stickers or Journey, and home has no separate journey card', () => {
     expect(INDEX).not.toContain("<span class='tabbar-lab'>Stickers</span>");
     expect(INDEX).not.toContain("<a href='#stickers'>Stickers</a>");
-    expect(INDEX).toContain("<a href='#stickers'>My Season</a>");
+    expect(INDEX).toContain("<a href='#myseason'>My Season</a>");
     expect(INDEX).toContain("<span class='tabbar-lab'>My Season</span>");
     expect(INDEX).not.toContain("<a href='#stickers'>Journey</a>");
     expect(INDEX).not.toContain("class='nav nav-journey'");
@@ -20,7 +20,7 @@ describe('My Season nav', () => {
 });
 
 describe('My Season page', () => {
-  const sec = INDEX.slice(INDEX.indexOf("<section id='stickers'"), INDEX.indexOf("<section id='player'"));
+  const sec = INDEX.slice(INDEX.indexOf("<section id='myseason'"), INDEX.indexOf("<section id='player'"));
   it('has a Journey | Stickers segmented control like Standings', () => {
     expect(sec).toContain("<h1>My Season</h1>");
     expect(sec).toMatch(/<div class='seg' id='seasonSeg' role='tablist'/);
@@ -68,5 +68,19 @@ describe('Team page player screen', () => {
   it('shows the character, not a photo', () => {
     expect(INDEX).toContain("<div class='pl-av' id='plAv' hidden></div>");
     expect(INDEX).toMatch(/plAv\.innerHTML=lk\?window\.thwapAvatar\.html\(lk\):''/);
+  });
+});
+
+describe('My Season address', () => {
+  it('lives at #myseason, and an old #stickers link lands there', async () => {
+    const { JSDOM } = await import('jsdom');
+    expect(INDEX).toContain("<section id='myseason' class='page'>");
+    expect(INDEX).toContain("href='#myseason' data-tab='myseason'");
+    const head = INDEX.slice(0, INDEX.indexOf('</head>')) + '</head><body></body></html>';
+    const dom = new JSDOM(head, { runScripts: 'dangerously', url: 'https://thwaphockey.com/#stickers' });
+    expect(dom.window.location.hash).toBe('#myseason');
+    dom.window.location.hash = '#stickers';
+    dom.window.dispatchEvent(new dom.window.HashChangeEvent('hashchange'));
+    expect(dom.window.location.hash).toBe('#myseason');
   });
 });
