@@ -108,7 +108,7 @@ describe('My Player', () => {
     const w = boot();
     w.thwapAvatar.openLocker({ tab: 'stick' });
     for (let i = 0; i < 5; i++) await tick();
-    expect(w.document.querySelectorAll('.lk-tab').length).toBe(13);
+    expect(w.document.querySelectorAll('.lk-tab').length).toBe(14); // 13 gear tabs + Size (card fit), no team-set tabs;
     expect(w.document.querySelector('[data-id=tape-rangers]')).toBeTruthy();
     w.document.querySelector('[data-tab=helmet]').click();
     expect(w.document.querySelector('[data-id=decal-rangers]')).toBeTruthy();

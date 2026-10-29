@@ -39,7 +39,7 @@ describe('My Player', () => {
     const { w } = await open();
     expect(w.document.querySelector('.lk[role=dialog]')).toBeTruthy();
     expect(w.document.querySelector('.lk h2').textContent).toBe('My Player');
-    expect(w.document.querySelectorAll('.lk-tab').length).toBe(13);
+    expect(w.document.querySelectorAll('.lk-tab').length).toBe(14);
     expect(w.document.querySelector('.lk-stage .av-wrap')).toBeTruthy();
     expect(w.document.querySelector('.lk-btn')).toBeNull();
   });
