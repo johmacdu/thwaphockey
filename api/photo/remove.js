@@ -12,7 +12,7 @@
 //   Hobby 12-function cap.
 
 import { del } from '@vercel/blob';
-import { getKv, parseBody, isRosterPlayer, uploadConfigured, adminOk } from '../../lib/photo_common.js';
+import { getKv, parseBody, uploadConfigured, adminOk } from '../../lib/photo_common.js';
 import { verifyToken, getPhoto, removePhoto, getConsent, removeConsent } from '../../lib/photo_store.js';
 import { ROSTER } from '../../lib/store.js';
 import { listAllTeamCodes } from '../../lib/teams_store.js';
@@ -69,20 +69,19 @@ export default async function handler(req, res) {
     return retireAll(req, res, body);
   }
 
-  const { playerId } = body;
-  if (!(await isRosterPlayer(playerId))) return res.status(400).json({ error: 'unknown player' });
-
+  // Token FIRST, so a caller without one cannot learn whether a player exists.
+  const pid = String(body.playerId || '').trim().toLowerCase();
   const tokenPlayer = verifyToken(bearer(req));
-  if (!tokenPlayer || tokenPlayer !== String(playerId).toLowerCase()) {
+  if (!tokenPlayer || !pid || tokenPlayer !== pid) {
     return res.status(401).json({ error: 'not verified' });
   }
 
   const kv = getKv();
-  const rec = await getPhoto(kv, playerId);
+  const rec = await getPhoto(kv, pid);
   if (rec && rec.url) {
     try { await del(rec.url, { token: process.env.BLOB_READ_WRITE_TOKEN }); } catch { /* blob may already be gone */ }
   }
-  await removePhoto(kv, playerId);
+  await removePhoto(kv, pid);
 
   res.setHeader('Cache-Control', 'no-store');
   return res.status(200).json({ ok: true });
