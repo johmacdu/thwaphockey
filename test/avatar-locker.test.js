@@ -241,7 +241,9 @@ describe('card entry point (index.html)', () => {
   const INDEX = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   it('the player card image button becomes Edit player when the character is on', () => {
     expect(INDEX).toMatch(/imageBtn\.innerHTML=avOn\?'\\u270F\\uFE0F Edit player'/);
-    expect(INDEX).toMatch(/if\(window\.thwapAvatar && window\.thwapAvatar\.on\(\)\)\{ window\.thwapAvatar\.openLocker\(\{onClose:function\(\)\{ buildFaces\(\); paint\(\); \}\}\); return; \}/);
+    // Photo upload is retired: the button only ever opens the character locker.
+    expect(INDEX).toMatch(/if\(window\.thwapAvatar\)\{ window\.thwapAvatar\.openLocker\(\{onClose:function\(\)\{ buildFaces\(\); paint\(\); \}\}\); \}/);
+    expect(INDEX).not.toContain('window.thwapPhotoEdit');
   });
   it('closing the card after a look change reloads once so every card updates', () => {
     expect(INDEX).toMatch(/if\(window\.__thwapLookChanged\)\{ window\.__thwapLookChanged=false; location\.reload\(\); return; \}/);
@@ -264,9 +266,9 @@ describe('launch switch', () => {
     dom.window.eval(SRC.replace('var LIVE=false;', 'var LIVE=true;'));
     expect(dom.window.thwapAvatar.on()).toBe(true);
   });
-  it('character on: no player photo is fetched, photo upload opens Edit player, stats photo hides', () => {
+  it('character on: no player photo is fetched, photo upload is gone, stats photo hides', () => {
     expect(INDEX).toMatch(/window\.thwapPhotoResolve=function\(playerId, cb\)\{\n  \/\*[^\n]*\*\/\n  try\{ if\(window\.thwapAvatar && window\.thwapAvatar\.on\(\)\)\{ cb\(null\); return; \} \}catch\(_\)\{\}/);
-    expect(INDEX).toMatch(/window\.thwapPhotoEdit=function\(playerId, hasPhoto, onDone\)\{\n  \/\*[^\n]*\*\/\n  try\{ if\(window\.thwapAvatar && window\.thwapAvatar\.on\(\)\)\{ window\.thwapAvatar\.openLocker\(\{onClose:onDone\}\); return; \} \}catch\(_\)\{\}/);
+    expect(INDEX).not.toMatch(/window\.thwapPhotoEdit=function/);
     expect(INDEX).toContain("if(avOn){ photo.removeAttribute('src'); photo.alt=''; photo.style.display='none'; }");
   });
 });

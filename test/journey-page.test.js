@@ -98,7 +98,7 @@ describe('signed out', () => {
   it('tapping a badge asks the kid to sign in', async () => {
     const w = await boot({ api: 401 });
     tap(w, badgeBtns(w)[0]);
-    expect($(w, 'jBadgePop').hidden).toBe(false);
+    expect($(w, 'jBadgeModal').hidden).toBe(false);
     expect($(w, 'jBpLine').textContent).toBe('Sign in to see your count.');
     expect($(w, 'jBpMeter').hidden).toBe(true); // no fake count on the bar
   });
@@ -108,7 +108,7 @@ describe('signed in: header', () => {
   it('shows the season label and title in the header', async () => {
     const w = await boot({ api: book() });
     expect($(w, 'jSeason').textContent).toBe('Season 2026-27');
-    expect(w.document.querySelector('.jhead h1').textContent).toBe('My Season Journey');
+    expect(w.document.querySelector('.jhead h1').textContent).toBe('My Journey');
   });
 
   it('hides every Sample tag once real data loads', async () => {
@@ -165,7 +165,7 @@ describe('signed in: badges', () => {
   it('the pop-up: name, tagline, stars with their numbers, a power bar and one line', async () => {
     const w = await boot({ api: book({ events }) });
     tap(w, badgeBtns(w)[0]);
-    expect($(w, 'jBadgePop').hidden).toBe(false);
+    expect($(w, 'jBadgeModal').hidden).toBe(false);
     expect($(w, 'jBpName').textContent).toBe('Dangler');
     expect($(w, 'jBpTag').textContent).toBe('Hands too quick to follow.');
     const stars = Array.from($(w, 'jBpStars').children);
@@ -269,11 +269,13 @@ describe('art slots', () => {
   it('Practice Ice falls back to the rink art turned on its side until its scene exists', async () => {
     const w = await boot({ api: 401, missingArt: ['scene-practice.webp', 'scene-locker.webp'] });
     await new Promise((r) => setTimeout(r, 20));
-    const practice = w.document.querySelector('.scene.s1 .sceneart');
+    const practice = w.document.querySelector('#jStage.s1 .sceneart');
     expect(practice.querySelector('img.rot').src).toContain('rink-path.webp');
     // No fallback for the others: a plain tinted surface, never a gray box.
-    expect(w.document.querySelector('.scene.s0 .sceneart img')).toBeNull();
-    expect(w.document.querySelector('.scene.s0 .sceneart').textContent).toBe('');
+    w.document.querySelector('#jTiers .tierbtn[data-t="0"]').dispatchEvent(new w.Event('click', { bubbles: true }));
+    await new Promise((r) => setTimeout(r, 20));
+    expect(w.document.querySelector('#jStage.s0 .sceneart img')).toBeNull();
+    expect(w.document.querySelector('#jStage.s0 .sceneart').textContent).toBe('');
   });
 
   it('keep the gray placeholder when a file is missing', async () => {
@@ -333,36 +335,64 @@ describe('embedded in the app', () => {
   });
 });
 
-describe('badge pop-up: open and close', () => {
+describe('badge modal: open and close', () => {
   const events = [...ev('2026-10-01', 'stick', 34), ...ev('2026-10-02', 'iq', 30)];
-  it('opens under the tapped badge, and closes with x, Escape, a second tap or a tap outside', async () => {
+  it('is a centered modal over a dimmed backdrop that closes with x, Escape or a tap on the backdrop', async () => {
     const w = await boot({ api: book({ events }) });
-    const pop = $(w, 'jBadgePop');
     tap(w, badgeBtns(w)[0]);
-    expect(pop.hidden).toBe(false);
-    expect(pop.getAttribute('role')).toBe('dialog');
+    const modal = $(w, 'jBadgeModal');
+    expect(modal.hidden).toBe(false);
+    expect(modal.parentNode).toBe(w.document.body); // not inside the badge section
+    expect($(w, 'jBadgePop').getAttribute('role')).toBe('dialog');
+    expect($(w, 'jBadgePop').getAttribute('aria-modal')).toBe('true');
+    expect(w.document.documentElement.style.overflow).toBe('hidden'); // the page behind doesn't scroll
     expect(w.document.activeElement).toBe($(w, 'jBpClose'));
     tap(w, $(w, 'jBpClose'));
-    expect(pop.hidden).toBe(true);
+    expect(modal.hidden).toBe(true);
+    expect(w.document.documentElement.style.overflow).toBe('');
     expect(w.document.activeElement).toBe(badgeBtns(w)[0]); // focus goes back to the badge
     tap(w, badgeBtns(w)[0]);
     w.document.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-    expect(pop.hidden).toBe(true);
-    tap(w, badgeBtns(w)[0]); tap(w, badgeBtns(w)[0]);
-    expect(pop.hidden).toBe(true);
+    expect(modal.hidden).toBe(true);
     tap(w, badgeBtns(w)[0]);
-    tap(w, pop.querySelector('h3')); // a tap inside keeps it open
-    expect(pop.hidden).toBe(false);
-    tap(w, $(w, 'h-books'));
-    expect(pop.hidden).toBe(true);
+    tap(w, $(w, 'jBpName')); // a tap on the card keeps it open
+    expect(modal.hidden).toBe(false);
+    tap(w, modal); // the backdrop
+    expect(modal.hidden).toBe(true);
   });
-  it('tapping another badge switches the pop-up to it', async () => {
+  it('opening another badge shows that badge', async () => {
     const w = await boot({ api: book({ events }) });
-    tap(w, badgeBtns(w)[0]); tap(w, badgeBtns(w)[1]);
+    tap(w, badgeBtns(w)[0]); tap(w, $(w, 'jBpClose')); tap(w, badgeBtns(w)[1]);
     expect($(w, 'jBpName').textContent).toBe('Hockey Brain');
     const expanded = badgeBtns(w).map((b) => b.getAttribute('aria-expanded'));
     expect(expanded[1]).toBe('true'); // the second badge is now open
     expect(expanded.filter((x) => x === 'true')).toHaveLength(1); // and only it
+  });
+  it('embedded in My Season, the modal opens on the app page so it centers on the screen', async () => {
+    const parent = new JSDOM('<!doctype html><html><head></head><body><iframe id="jyFrame"></iframe></body></html>', { url: 'https://thwaphockey.com/' });
+    const dom = new JSDOM(html, {
+      runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://thwaphockey.com/journey.html?embed=1',
+      beforeParse(win) {
+        win.scrollTo = () => {};
+        Object.defineProperty(win, 'parent', { value: parent.window });
+        Object.defineProperty(win, 'frameElement', { value: parent.window.document.getElementById('jyFrame') });
+        win.fetch = () => Promise.resolve({ ok: true, status: 200, json: () => Promise.resolve(book({ events })) });
+      },
+    });
+    await new Promise((r) => setTimeout(r, 40));
+    const w = dom.window;
+    tap(w, badgeBtns(w)[0]);
+    const pdoc = parent.window.document;
+    expect(w.document.getElementById('jBadgeModal')).toBeNull();
+    const modal = pdoc.getElementById('jBadgeModal');
+    expect(modal.parentNode).toBe(pdoc.body);
+    expect(modal.hidden).toBe(false);
+    expect(pdoc.getElementById('jbmStyle')).not.toBeNull();
+    expect(pdoc.getElementById('jBpName').textContent).toBe('Dangler');
+    expect(pdoc.documentElement.style.overflow).toBe('hidden');
+    pdoc.getElementById('jBpClose').dispatchEvent(new parent.window.Event('click', { bubbles: true }));
+    expect(modal.hidden).toBe(true);
+    expect(pdoc.documentElement.style.overflow).toBe('');
   });
 });
 
@@ -408,93 +438,123 @@ describe('breathing room', () => {
   });
 });
 
-describe('season path', () => {
-  const scenes = (w) => Array.from(w.document.querySelectorAll('#jPath .scene'));
-  const dotsIn = (w, i) => Array.from(scenes(w)[i].querySelectorAll('.dot'));
-  const head = (w, i) => w.document.querySelectorAll('#jPath .scenehead')[i];
-  const info = (w, i) => Array.from($(w, 'jTierInfo' + i).querySelectorAll('h3,p')).map((e) => e.textContent);
+describe('season path: one scene at a time', () => {
+  const pips = (w) => Array.from(w.document.querySelectorAll('#jPips i'));
+  const on = (w) => pips(w).filter((i) => i.classList.contains('on')).length;
+  const tiers = (w) => Array.from(w.document.querySelectorAll('#jTiers .tierbtn'));
+  const day20 = { days: range('2026-09-01', 20), today: '2026-09-21' };
+  const at20 = () => boot({ api: book(day20), now: '2026-09-21T19:00:00Z' });
 
-  it('draws 91 dots across four scenes, one per training day', async () => {
-    const w = await boot({ api: book({ days: range('2026-09-01', 20), today: '2026-09-21' }), now: '2026-09-21T19:00:00Z' });
-    expect(scenes(w).map((s) => s.querySelector('.scenehead b').textContent)).toEqual(['Locker Room', 'Practice Ice', 'Game Ready', 'Legend']);
-    expect(scenes(w).map((s, i) => dotsIn(w, i).length)).toEqual([19, 24, 24, 24]);
-    expect(dotsIn(w, 3).at(-1).textContent).toBe('91');
-    const on = Array.from(w.document.querySelectorAll('#jPath .dot.on')).map((d) => d.textContent);
-    expect(on.length).toBe(20);
-    expect(w.document.querySelector('#jPath .dot.next').textContent).toBe('21');
-    expect($(w, 'jDotLine').textContent).toBe('Dot 20 of 91');
+  it('shows the kid\'s own scene with one pip per training day in it', async () => {
+    const w = await at20();
     expect($(w, 'jTier').textContent).toBe('Practice Ice');
-    expect($(w, 'jNext').textContent).toBe('23 more training days to Game Ready');
+    expect($(w, 'jStage').className).toBe('stage s1');
+    expect($(w, 'jStage').querySelector('.sceneart').getAttribute('data-art')).toBe('scene-practice.webp');
+    expect(pips(w)).toHaveLength(24); // Practice Ice runs from day 20 to 43
+    expect(on(w)).toBe(1);
+    expect(pips(w)[1].className).toBe('next');
+    expect($(w, 'jPips').getAttribute('aria-label')).toBe('1 of 24 dots in Practice Ice');
+    expect($(w, 'jNext').textContent).toBe('23 training days to Game Ready');
+    expect($(w, 'jSub').textContent).toBe('Next up: Game Ready helmet.');
+    expect($(w, 'jStage').querySelector('.stagetag')).toBeNull(); // the heading already names it
+    expect($(w, 'jSkater')).toBeTruthy();
   });
 
-  it('marks scenes done, here and locked, and puts the skater in the current one', async () => {
-    const w = await boot({ api: book({ days: range('2026-09-01', 20), today: '2026-09-21' }), now: '2026-09-21T19:00:00Z' });
-    expect(scenes(w).map((s) => ['done', 'here', 'locked'].find((c) => s.classList.contains(c)))).toEqual(['done', 'here', 'locked', 'locked']);
-    expect(scenes(w)[1].querySelector('#jSkater')).toBeTruthy();
-    expect(scenes(w)[2].querySelector('.lock').textContent).toContain('Reach Game Ready at 43 training days');
-    expect(Array.from(w.document.querySelectorAll('#jPath .tnote')).map((n) => n.textContent)).toEqual(['Done', 'You are here', 'Next stop', 'Later']);
+  it('the simpler words: no dot count, no dot ranges, a one-line rule', async () => {
+    const w = await at20();
+    const txt = w.document.querySelector('section[aria-labelledby="h-journey"]').textContent;
+    expect(txt).not.toMatch(/Dot \d+ of 91|Dots \d|never drop out/);
+    expect(txt).not.toContain('Skip 5 days'); // the rule lives behind the i, not on the page
   });
 
-  it('a new player starts at the Locker Room entry, singular days', async () => {
+  it('the rule is tucked behind an i next to the title', async () => {
+    const w = await at20();
+    const btn = $(w, 'jRuleBtn'), pop = $(w, 'jRule');
+    expect(btn.getAttribute('aria-label')).toBe('How the dots work');
+    expect(pop.hidden).toBe(true);
+    tap(w, btn);
+    expect(pop.hidden).toBe(false);
+    expect(btn.getAttribute('aria-expanded')).toBe('true');
+    expect(pop.textContent).toBe('Every training day fills a dot. Skip 5 days in a row and you lose one.');
+    tap(w, $(w, 'h-badges')); // a tap anywhere else closes it
+    expect(pop.hidden).toBe(true);
+    tap(w, btn);
+    w.document.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    expect(pop.hidden).toBe(true);
+  });
+
+  it('Who skates sits on the same row as the scene name', async () => {
+    const w = await at20();
+    expect($(w, 'h-journey').closest('.scenerow').querySelector('.whoskates')).toBeTruthy();
+  });
+
+  it('the stage row: done, here, locked', async () => {
+    const w = await at20();
+    expect(tiers(w).map((t) => t.querySelector('b').textContent)).toEqual(['Locker Room', 'Practice Ice', 'Game Ready', 'Legend']);
+    expect(tiers(w).map((t) => t.querySelector('.tnote').textContent)).toEqual(['Done', 'You\u2019re here', '\uD83D\uDD12 Locked', '\uD83D\uDD12 Locked']);
+    expect(tiers(w).map((t) => t.getAttribute('aria-pressed'))).toEqual(['false', 'true', 'false', 'false']);
+  });
+
+  it('tap a locked stage: its scene, blurred, with the lock and the gear it unlocks', async () => {
+    const w = await at20();
+    tap(w, tiers(w)[2]);
+    expect($(w, 'jStage').className).toBe('stage s2 locked');
+    expect($(w, 'jStage').querySelector('.lock').textContent).toContain('Get here at 43 training days');
+    expect($(w, 'jStage').querySelector('.stagetag').textContent).toContain('Game Ready');
+    expect($(w, 'jSkater')).toBeNull();
+    expect(on(w)).toBe(0);
+    expect($(w, 'jNext').textContent).toBe('Unlocks Game Ready helmet.');
+    expect($(w, 'jTier').textContent).toBe('Practice Ice'); // the heading stays where the kid is
+    expect(tiers(w)[2].getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('tap a done stage: full, clear, and when it was cleared', async () => {
+    const w = await at20();
+    tap(w, tiers(w)[0]);
+    expect($(w, 'jStage').classList.contains('locked')).toBe(false);
+    expect(pips(w)).toHaveLength(19);
+    expect(on(w)).toBe(19);
+    expect($(w, 'jNext').textContent).toBe('Done! You cleared it on Sep 19.');
+    tap(w, tiers(w)[1]); // back home
+    expect($(w, 'jSkater')).toBeTruthy();
+    expect($(w, 'jNext').textContent).toBe('23 training days to Game Ready');
+  });
+
+  it('a new player starts in the Locker Room, singular days', async () => {
     const w = await boot({ api: book() });
-    expect($(w, 'jDotLine').textContent).toBe('Dot 0 of 91');
-    expect($(w, 'jNext').textContent).toBe('19 more training days to Practice Ice');
-    expect(scenes(w)[0].querySelector('#jSkater')).toBeTruthy();
+    expect($(w, 'jTier').textContent).toBe('Locker Room');
+    expect(pips(w)).toHaveLength(19);
+    expect(on(w)).toBe(0);
+    expect($(w, 'jNext').textContent).toBe('19 training days to Practice Ice');
     const w2 = await boot({ api: book({ days: range('2026-09-01', 18), today: '2026-09-19' }), now: '2026-09-19T19:00:00Z' });
-    expect($(w2, 'jNext').textContent).toBe('1 more training day to Practice Ice');
-  });
-
-  it('rewards sit between scenes and show when unlocked', async () => {
-    const w = await boot({ api: book({ days: range('2026-09-01', 20), today: '2026-09-21' }), now: '2026-09-21T19:00:00Z' });
-    const r = Array.from(w.document.querySelectorAll('#jPath .reward'));
-    expect(r.map((x) => x.querySelector('b').textContent)).toEqual([
-      'Unlocked: Practice Ice tape', 'Reach Game Ready to unlock: Game Ready helmet', 'Reach Legend to unlock: Legend gloves']);
-    expect(r[0].classList.contains('got')).toBe(true);
-    expect(r[0].nextElementSibling.classList.contains('s1')).toBe(true);
+    expect($(w2, 'jNext').textContent).toBe('1 training day to Practice Ice');
   });
 
   it('a finished path says so', async () => {
     const w = await boot({ api: book({ days: range('2026-09-01', 95), today: '2027-01-10' }), now: '2027-01-10T19:00:00Z' });
     expect($(w, 'jTier').textContent).toBe('Legend');
-    expect($(w, 'jNext').textContent).toBe('You finished the whole path. Legend.');
-    expect(w.document.querySelectorAll('#jPath .dot.on').length).toBe(91);
+    expect($(w, 'jNext').textContent).toBe('You finished the whole path. Legend!');
+    expect(on(w)).toBe(24);
+    expect($(w, 'jSkater')).toBeTruthy();
   });
 
   it('warns before a slip, and says so after one', async () => {
-    // Trained Sep 1-10, today Sep 14: 3 missed days, 2 left before a slip.
     const w = await boot({ api: book({ days: range('2026-09-01', 10), today: '2026-09-14' }), now: '2026-09-14T19:00:00Z' });
     expect($(w, 'jSlip').hidden).toBe(false);
-    expect($(w, 'jSlip').textContent).toBe('You haven\u2019t trained in 3 days. Train in the next 2 days so you don\u2019t slip back a dot.');
+    expect($(w, 'jSlip').textContent).toBe('You haven\u2019t trained in 3 days. Train in the next 2 days so you don\u2019t lose a dot.');
     const w2 = await boot({ api: book({ days: range('2026-09-01', 10), today: '2026-09-20' }), now: '2026-09-20T19:00:00Z' });
-    expect($(w2, 'jDotLine').textContent).toBe('Dot 9 of 91');
+    expect(on(w2)).toBe(9);
     expect($(w2, 'jSlip').textContent).toBe('You slipped back a dot. Train today to start moving again.');
     const w3 = await boot({ api: book({ days: range('2026-09-01', 10), today: '2026-09-11' }), now: '2026-09-11T19:00:00Z' });
     expect($(w3, 'jSlip').hidden).toBe(true);
   });
 
-  it('tap a done scene: when the kid got there and cleared it', async () => {
-    const w = await boot({ api: book({ days: range('2026-09-01', 20), today: '2026-09-21' }), now: '2026-09-21T19:00:00Z' });
-    tap(w, head(w, 0));
-    expect(info(w, 0)).toEqual(['Locker Room', 'Done!', 'You started here and cleared it on Sep 19.', '19 dots, one for every training day.']);
-    expect(head(w, 0).getAttribute('aria-expanded')).toBe('true');
-  });
-
-  it('tap the current scene and a locked one', async () => {
-    const w = await boot({ api: book({ days: range('2026-09-01', 20), today: '2026-09-21' }), now: '2026-09-21T19:00:00Z' });
-    tap(w, head(w, 1));
-    expect(info(w, 1)).toEqual(['Practice Ice', 'You are here, on dot 20.', 'You got here on Sep 19. 23 more training days to clear it.']);
-    tap(w, head(w, 2));
-    expect($(w, 'jTierInfo1').hidden).toBe(true);
-    expect(info(w, 2)).toEqual(['Game Ready', 'Next stop.', 'You get here at dot 43. You\u2019re at 20, so 23 to go.', 'Reaching it unlocks Game Ready helmet for your player.']);
-    tap(w, head(w, 2));
-    expect($(w, 'jTierInfo2').hidden).toBe(true);
-  });
-
   it('works signed out on the sample', async () => {
     const w = await boot({ api: 401 });
-    expect($(w, 'jDotLine').textContent).toBe('Dot 30 of 91');
-    tap(w, head(w, 3));
-    expect(info(w, 3)[0]).toBe('Legend');
+    expect($(w, 'jTier').textContent).toBe('Practice Ice');
+    expect(on(w)).toBe(11);
+    tap(w, tiers(w)[3]);
+    expect($(w, 'jNext').textContent).toBe('Unlocks Legend gloves.');
   });
 
   it('Who skates: Me or Sass, remembered on the device', async () => {

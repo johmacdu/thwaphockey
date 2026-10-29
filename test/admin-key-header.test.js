@@ -8,7 +8,6 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { FakeRedis } from './fakeRedis.js';
-import { JPEG_URL } from './fixtures/photo_images.js';
 
 const fake = new FakeRedis();
 vi.mock('@upstash/redis', () => ({ Redis: class { constructor() { return fake; } } }));
@@ -36,9 +35,7 @@ const { default: coach, _handlers: coachH, _seed } = await import('../api/coach.
 const { _handlers: pushH } = await import('../api/push.js');
 const { default: waitlist } = await import('../api/waitlist.js');
 const { default: photoGet } = await import('../api/photo/get.js');
-const { default: photoAdminPut } = await import('../api/photo/admin-put.js');
 const { default: photoRemove } = await import('../api/photo/remove.js');
-const { putPhoto } = await import('../lib/photo_store.js');
 const { getKv } = await import('../lib/photo_common.js');
 const { sharedKeyOk, bearerFrom } = await import('../lib/admin_auth.js');
 
@@ -64,7 +61,6 @@ const ACTIONS = [
   { name: 'push status', method: 'GET', run: (r, s) => pushH.status(r, s) },
   { name: 'waitlist read-back', method: 'GET', run: (r, s) => waitlist(r, s) },
   { name: 'photo get (admin read)', method: 'GET', run: (r, s) => photoGet(r, s), query: { playerId: 'lewie' } },
-  { name: 'photo admin-put', method: 'POST', run: (r, s) => photoAdminPut(r, s), body: { playerId: 'lewie', imageData: JPEG_URL, consent: { method: 'text', grantedBy: 'A parent' } } },
   { name: 'photo retire-all (dry run)', method: 'POST', run: (r, s) => photoRemove(r, s), body: { all: true } },
   { name: 'photo orphan sweep (dry run)', method: 'POST', run: (r, s) => photoRemove(r, s), body: { orphans: true } },
 ];
@@ -88,7 +84,8 @@ beforeEach(async () => {
   if (fake.ttls) fake.ttls.clear();
   setEnv();
   await _seed.ensureSeed();
-  await putPhoto(getKv(), 'lewie', 'https://blob.example/photos/a.jpeg', 'photos/a.jpeg');
+  // Uploads are retired; seed a stored photo record directly.
+  await getKv().set('photo:lewie', { url: 'https://blob.example/photos/a.jpeg', key: 'photos/a.jpeg', updatedAt: Date.now() });
 });
 
 describe('lib/admin_auth: the shared key only counts from the Authorization header', () => {
@@ -168,7 +165,7 @@ describe('callers send the admin credential in a header', () => {
     expect(html).not.toMatch(/tokenQS|adminToken=|[?&]key=/);
     expect(html).toContain("'Authorization':'Bearer '+token");
     // every admin fetch passes the auth headers
-    for (const path of ['review-suggestions', 'resolve-suggestion', 'admin-roster', 'admin-update-player', '/api/photo/admin-put', '/api/photo/remove']) {
+    for (const path of ['review-suggestions', 'resolve-suggestion', 'admin-roster', 'admin-update-player', '/api/photo/remove']) {
       const i = html.indexOf(path);
       expect(i, path).toBeGreaterThan(-1);
       expect(html.slice(i, i + 160), path).toMatch(/authH\(/);

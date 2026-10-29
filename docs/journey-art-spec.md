@@ -1,7 +1,7 @@
-# My Season Journey: art spec
+# My Journey: art spec
 
 The art for `journey.html`, the player's season book. The book has three pages
-(My Season Journey, My Badges, My Season So Far), a cover, a Season Complete page
+(My Journey, My Badges, My Season So Far), a cover, a Season Complete page
 that only appears after the season ends in March, and a shelf of past books.
 
 Generate each file below, save it to `journey/art/` with the exact file name, and
@@ -39,7 +39,7 @@ with the file name.
 | # | File (`journey/art/`) | Final size | Generate at | Bg | Where | Starter prompt (after the anchor) |
 |---|---|---|---|---|---|---|
 | 1 | `cover.webp` | 1200x1600 | 1024x1536 | Opaque | Book cover | A hardcover season book cover, deep forest green with a worn lime stripe along the bottom and faint ice-scratch texture. Sass bursting forward on skates in the center throwing ice spray. Keep the top third empty for a title. |
-| 2 | `rink-path.webp` | 1600x700 | 1536x1024 | Transparent | My Season Journey | Top-down hockey rink in the same bold outline style: boards, center red line, two blue lines, faceoff circles. Light and open so markers can sit on top. No path, no dots. |
+| 2 | `rink-path.webp` | 1600x700 | 1536x1024 | Transparent | My Journey | Top-down hockey rink in the same bold outline style: boards, center red line, two blue lines, faceoff circles. Light and open so markers can sit on top. No path, no dots. |
 | 3 | `tier-1.webp` to `tier-4.webp` | 256x256 each | 1024x1024 | Transparent | Tier stops on the rink | Four round icons drawn as one set, same line weight and size: (1) a hockey bag, (2) two practice cones, (3) a hockey net, (4) a trophy with a star. Generate together in one image, then cut apart. |
 | 4 | `badge-01.webp` to `badge-08.webp` | 320x320 each | 1024x1024 | Transparent | My Badges | Eight round badge icons drawn as one set, each a single bold symbol in a circular ring. Symbols follow Woody's badge list. Only draw the earned look; the page grays out unearned ones. |
 | 5 | `finale.webp` | 1600x1000 | 1536x1024 | Opaque | Season Complete (March only) | A rink at night after the last game: empty ice under arena lights, a hockey bag and stick resting by the bench door. A warm "you did it" feeling. |
