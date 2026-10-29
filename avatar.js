@@ -46,13 +46,13 @@
     warmup:{ body:'#5B6670', stripe:'#C8102E', trim:'#111111', num:'#FFFFFF' },
     tournament:{ body:'#C8102E', stripe:'#D4A72C', trim:'#111111', num:'#D4A72C' } // red with gold trim
   };
-  var GLOVES={ black:'#141414', red:'#C8102E', white:'#EDEDED', ice:'#BFE6F2',
+  var GLOVES={ black:'#141414', red:'#C8102E', white:'#EDEDED', ice:'#BFE6F2', gold:'#D4A72C',
     rangers:'linear-gradient(0deg,#C8102E 0 34%,#141414 34% 100%)' }; // team set: red cuffs
   // Team set (Phase 4): stick tape, helmet decal and socks.
-  var TAPE={ white:'#E8E8E8', rangers:'repeating-linear-gradient(90deg,#C8102E 0 .35em,#111111 .35em .7em)' };
+  var TAPE={ white:'#E8E8E8', ice:'#7FD0F2', rangers:'repeating-linear-gradient(90deg,#C8102E 0 .35em,#111111 .35em .7em)' };
   var SOCKS_RANGERS='repeating-linear-gradient(0deg,#111111 0 18%,#F2F2F2 18% 22%,#C8102E 22% 40%,#F2F2F2 40% 44%)'; // bold hoops
   var STICK={ classic:'#2B2B2B', wood:'#B07A45', red:'#C8102E', gold:'#D4A72C' };
-  var HELMET={ chrome:'#B8C2CC', red:'#C8102E' };
+  var HELMET={ chrome:'#B8C2CC', red:'#C8102E', arena:'#3E4C59' };
   var CAGE={ steel:'#C9CED3', black:'#1A1A1A' };
   // hand/facing are free preference slots (server catalog: hand-*, facing-*).
   // grip is how the stick is held (oneHand/twoHand) -- a render default, not a
@@ -621,6 +621,7 @@
     if(r.type==='coach') return 'From your coach';
     if(r.type==='team') return r.n===1?'1 team goal week':r.n+' team goal weeks';
     if(r.type==='tournament') return 'Train '+r.n+' days in a tournament week';
+    if(r.type==='journey') return 'Reach '+(['Locker Room','Practice Ice','Game Ready','Legend'][r.n]||'the next scene')+' on your Journey';
     return '';
   }
   function have(it){
@@ -631,6 +632,7 @@
     if(r.type==='window') return (p.windows||{})[it.id]||0;
     if(r.type==='team') return p.teamHits||0;
     if(r.type==='tournament') return p.tournament||0;
+    if(r.type==='journey') return p.journeyTier||0;
     return 0;
   }
   function owned(id){ return !!(L.data && L.data.unlocked.indexOf(id)>=0); }

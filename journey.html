@@ -128,6 +128,54 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .ladder .st{color:var(--muted)}.ladder li.got .st{color:var(--acc)}
 .ladder em{font-style:normal;font-weight:800;color:var(--muted);white-space:nowrap}.ladder li.got em{color:var(--acc)}
 
+
+/* SEASON PATH: four stacked scenes, one dot per training day. */
+.dotline{margin:8px 0 0;font-family:'Archivo Black',sans-serif;font-size:20px;color:var(--acc)}
+.slipwarn{margin:12px 0 0;padding:4px 0 4px 12px;border-left:3px solid var(--dry);font-weight:800;line-height:1.4}
+.slipwarn[hidden]{display:none}
+.whoskates{display:flex;align-items:center;gap:8px;margin:18px 0 0;font-size:var(--fs-support);color:var(--muted);font-weight:700}
+.whoskates button{min-height:44px;min-width:64px;padding:0 16px;border-radius:22px;border:1px solid var(--line2);background:var(--card);color:var(--text);font:inherit;font-weight:800;cursor:pointer}
+.whoskates button[aria-pressed="true"]{background:var(--text);color:var(--page);border-color:var(--text)}
+.whoskates button:focus-visible,.scenehead:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.path{margin-top:24px}
+.scene{margin:0 -6px}
+@media (min-width:600px){.scenebox{max-width:520px;margin-left:auto;margin-right:auto}}
+.scenehead{display:grid;grid-template-columns:52px 1fr auto;gap:12px;align-items:center;width:100%;min-height:56px;padding:8px 6px;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer;border-radius:14px}
+.scenehead[aria-expanded="true"]{background:var(--card2)}
+.scenehead .ic{display:block;width:52px}.scenehead .ic .art{--ar:1;border-radius:50%;border:0;background:none}
+.scenehead b{display:block;font-family:'Oswald',sans-serif;font-weight:600;font-size:18px;letter-spacing:.04em;text-transform:uppercase}
+.scenehead .tnote{display:block;font-size:var(--fs-support);color:var(--muted)}
+.scene.here .scenehead b{color:var(--acc)}
+.scenehead .range{font-size:12px;color:var(--muted);font-weight:700;white-space:nowrap}
+.scene .detail{grid-template-columns:1fr;margin:4px 6px 8px}
+.scenebox{position:relative;margin:8px 0 0;border-radius:18px;overflow:hidden;aspect-ratio:5/8;background:var(--scene-bg,var(--card2))}
+.scene.s0{--scene-bg:#2E3A44}.scene.s1{--scene-bg:#DCEBF2}.scene.s2{--scene-bg:#1E2A33}.scene.s3{--scene-bg:#3A2F12}
+.sceneart{position:absolute;inset:0;border:0;border-radius:0;aspect-ratio:auto;background:none}
+.sceneart>img{object-fit:cover}
+/* The rink art is horizontal: turned on its side it fills a tall scene. */
+.sceneart>img.rot{width:160%;height:62.5%;left:-30%;top:18.75%;transform:rotate(90deg);object-fit:contain}
+.scene.locked .sceneart,.scene.locked .dots{filter:blur(6px) grayscale(.6);opacity:.55}
+.dots{position:absolute;inset:0}
+.dots svg{position:absolute;inset:0;width:100%;height:100%}
+.dots path{fill:none;stroke:rgba(255,255,255,.75);stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1 12;vector-effect:non-scaling-stroke}
+.dot{position:absolute;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;display:grid;place-items:center;font:800 12px 'Nunito Sans',system-ui,sans-serif;background:var(--card);color:var(--muted);border:2px solid var(--line2);box-shadow:0 2px 4px rgba(0,0,0,.25)}
+.dot.on{background:var(--lime);color:var(--onlime);border-color:var(--lime)}
+.dot.next{border:3px dashed var(--acc);color:var(--text)}
+.skater{position:absolute;z-index:2;width:76px;height:96px;margin:-90px 0 0 -38px;pointer-events:none;filter:drop-shadow(0 4px 6px rgba(0,0,0,.4))}
+.skater img{width:100%;height:100%;object-fit:contain}
+.skater .me{position:absolute;inset:0}.skater .me .av-wrap{font-size:.21rem;perspective:none} /* the character's own scale (all em), not text */
+.skater.move{transition:left 700ms cubic-bezier(.5,0,.3,1),top 700ms cubic-bezier(.5,0,.3,1)}
+.lock{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:6px;width:76%;padding:16px;text-align:center;font-weight:800;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.lock span{font-size:30px}
+.reward{display:grid;grid-template-columns:40px 1fr;gap:12px;align-items:center;margin:20px 0;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.reward .rw{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-size:18px;font-weight:900;background:var(--card2);color:var(--muted)}
+.reward.got .rw{background:var(--lime);color:var(--onlime)}
+.reward b{display:block;font-weight:800}
+.reward small{display:block;color:var(--muted);font-size:var(--fs-support)}
+.scene .jburst{left:50%;top:40%}
+.scene.tierup .jburst{animation:burst 1500ms ease-out 400ms both}
+.scene.tierup .scenehead .ic{animation:tierpop 380ms cubic-bezier(.2,1.6,.4,1) 300ms both}
+
 /* LOCKER */
 .lockerwrap{position:relative;display:grid;grid-template-columns:1.25fr 1fr;align-items:end;gap:6px;margin:14px 0 6px}
 .lockerwrap .lk{position:relative}
@@ -210,7 +258,7 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
 .glassclose{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);right:max(16px, calc(50vw - 534px));z-index:50;display:inline-grid;place-items:center;width:48px;height:48px;border-radius:50%;font-size:20px;font-weight:700;color:var(--text);cursor:pointer;text-decoration:none;background:color-mix(in srgb,var(--card) 62%,transparent);border:1px solid color-mix(in srgb,var(--text) 12%,transparent);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);box-shadow:0 6px 20px var(--shadow)}
 .glassclose:hover{background:color-mix(in srgb,var(--card) 80%,transparent)}
 .glassclose:active{transform:scale(.94)}
-@media (prefers-reduced-motion:reduce){.rinkwrap .sassp,.rinkwrap.tierup .sassp,.badge.stamp .stars .new,.badge.stamp::after,.badge.stamp .newchip,.tiers .pop .ic,#jTier.swap{animation:none}.jburst{display:none}}
+@media (prefers-reduced-motion:reduce){.badge.stamp .stars .new,.badge.stamp::after,.badge.stamp .newchip,.scene.tierup .scenehead .ic,#jTier.swap{animation:none}.skater.move{transition:none}.jburst{display:none}}
 </style>
 </head>
 <body>
@@ -224,37 +272,21 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
   <h1>My Season Journey</h1>
 </header>
 
-<!-- 2 MY JOURNEY -->
+<!-- 2 MY JOURNEY: the season path, one dot per training day, four scenes -->
 <section class="pg" aria-labelledby="h-journey">
   <p class="eyebrow">Where I am</p>
   <h2 id="h-journey"><span id="jTier">Practice Ice</span></h2>
-  <p class="sub">Climb from Locker Room to Legend. Tap a stop to see it.</p>
-
-  <div class="rinkwrap" id="jRink" style="--x:43%">
-    <div class="art" data-art="rink-path.webp"><span>rink-path.webp 1600x700</span></div>
-    <svg viewBox="0 0 400 175" aria-hidden="true">
-      <path d="M48 128 C 110 128, 120 70, 175 82" fill="none" stroke="var(--acc)" stroke-width="5" stroke-linecap="round"/>
-      <path d="M175 82 C 230 96, 250 48, 290 62 S 340 112, 356 92" fill="none" stroke="var(--muted)" stroke-width="4" stroke-dasharray="2 10" stroke-linecap="round"/>
-      <circle cx="48" cy="128" r="10" fill="var(--lime)"/><circle cx="135" cy="96" r="10" fill="var(--lime)"/>
-      <circle cx="245" cy="68" r="10" fill="var(--card2)" stroke="var(--muted)" stroke-width="3"/>
-      <circle cx="356" cy="92" r="10" fill="var(--card2)" stroke="var(--muted)" stroke-width="3"/>
-    </svg>
-    <div class="sassp"><div class="art has"><img src="login/sass-stride-m.webp" alt=""></div></div>
-    <div class="jburst" aria-hidden="true">THWAP!</div>
+  <p class="dotline" id="jDotLine">Dot 30 of 91</p>
+  <p class="nextup" id="jNext">13 more training days to Game Ready</p>
+  <p class="slipwarn" id="jSlip" role="status" hidden></p>
+  <p class="why">Every training day moves you one dot. Miss more than 4 days in a row and you slip back a dot. You never drop out of a scene you've reached.</p>
+  <div class="whoskates" role="group" aria-label="Who skates on your path">
+    <span>Who skates</span>
+    <button type="button" data-who="me" aria-pressed="true">Me</button>
+    <button type="button" data-who="sass" aria-pressed="false">Sass</button>
   </div>
   <p class="vh" id="jCheer" role="status" aria-live="polite"></p>
-  <div class="tiers" id="jTiers" role="list" aria-label="Four tiers">
-    <div class="on" role="listitem"><button type="button" class="tierbtn" data-t="0" aria-expanded="false" aria-controls="jTierInfo"><div class="ic"><div class="art" data-art="tier-1.webp"><span>tier-1</span></div></div><b>Locker Room</b><span class="tnote">Done</span></button></div>
-    <div class="on" role="listitem"><button type="button" class="tierbtn" data-t="1" aria-expanded="false" aria-controls="jTierInfo"><div class="ic"><div class="art" data-art="tier-2.webp"><span>tier-2</span></div></div><b>Practice Ice</b><span class="tnote">You are here</span></button></div>
-    <div class="off" role="listitem"><button type="button" class="tierbtn" data-t="2" aria-expanded="false" aria-controls="jTierInfo"><div class="ic"><div class="art" data-art="tier-3.webp"><span>tier-3</span></div></div><b>Game Ready</b><span class="tnote">Next stop</span></button></div>
-    <div class="off" role="listitem"><button type="button" class="tierbtn" data-t="3" aria-expanded="false" aria-controls="jTierInfo"><div class="ic"><div class="art" data-art="tier-4.webp"><span>tier-4</span></div></div><b>Legend</b><span class="tnote">Later</span></button></div>
-  </div>
-  <div class="detail" id="jTierInfo" hidden aria-live="polite"></div>
-  <div class="pips" id="jPips" role="progressbar" aria-valuemin="0" aria-valuemax="12" aria-valuenow="4" aria-label="Step 4 of 12 this season">
-    <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="now"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-  </div>
-  <p class="nextup" id="jNext">5 more training days to step 3</p>
-  <p class="why">Do a drill any day to move up. Miss more than 4 days in a row and you slip back a step.</p>
+  <div class="path" id="jPath"></div>
 </section>
 
 <!-- 4 MY BADGES -->
@@ -317,6 +349,7 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
 
 </main>
 
+<script src="avatar.js"></script>
 <script>
 // Season Complete appears only once the season is over (end of March). ?finale previews it.
   // Between seasons (Apr to Aug) the book is closed, matching lib/journey.js.
@@ -329,26 +362,10 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
   var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   // Subtle "what's ahead" line per upcoming month (calendar-anchored, not a promise).
   var AHEAD={11:'Keep stacking training days.',12:'Winter break. A great time to train.',1:'New year, keep climbing.',2:'Push before the season ends.'};
-  var STOP=[[0,12],[3,34],[6,61],[9,89],[12,89]]; // stepsDone -> % across the rink
-  function xFor(n){for(var i=1;i<STOP.length;i++){var a=STOP[i-1],b=STOP[i];if(n<=b[0])return a[1]+(b[1]-a[1])*(n-a[0])/(b[0]-a[0]);}return 89;}
   function txt(id,v){var el=document.getElementById(id);if(el)el.textContent=v;}
   function render(b){
     BOOK=b;
     txt('jSeason','Season '+b.season.label);
-    txt('jTier',b.tier);
-    document.getElementById('jRink').style.setProperty('--x',xFor(b.stepsDone)+'%');
-    var tiers=document.getElementById('jTiers').children;
-    for(var i=0;i<tiers.length;i++){
-      var t=tiers[i]; t.className=i<=b.tierIndex?'on':'off';
-      var note=i<b.tierIndex||(b.complete&&i===b.tierIndex)?'Done':i===b.tierIndex?'You are here':i===b.tierIndex+1?'Next stop':'Later';
-      t.querySelector('.tnote').textContent=note;
-    }
-    var pips=document.getElementById('jPips'),ps=pips.children;
-    for(var k=0;k<ps.length;k++){ps[k].className=k<b.stepsDone?'on':(k===b.stepsDone?'now':'');}
-    pips.setAttribute('aria-valuenow',b.stepsDone);
-    pips.setAttribute('aria-label','Step '+b.stepsDone+' of 12 this season');
-    var d=b.daysToNextStep;
-    txt('jNext',b.complete?'You finished the whole book. Legend.':d+' more training day'+(d===1?'':'s')+' to the next step');
     var ul=document.getElementById('jMonths');ul.innerHTML='';
     b.months.forEach(function(m){
       var li=document.createElement('li'),bb=document.createElement('b'),pp=document.createElement('p');
@@ -369,34 +386,45 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     if(Array.isArray(b.badges)){BADGES=b.badges;renderBadges();txt('jFinStars',b.badgeStars);}
     document.getElementById('finale').hidden=!(PREVIEW_FINALE||b.seasonOver);
     document.querySelectorAll('[data-sample]').forEach(function(el){el.hidden=true;});
-    celebrate(b);
+    var fromDot=celebrate(b);
+    renderPath(b,{fromDot:fromDot});
+    if(fromDot!=null&&b.tierIndex>(PREV_TIER||0)) tierUp(b.tierIndex);
+    scrollToMe();
   }
   // Celebrations: compare the book against what this device last saw. The first
   // visit (or a new season) only records, so a kid never gets a pile of stamps.
   var SEEN_KEY='thwapBookSeen';
   function readSeen(){try{return JSON.parse(localStorage.getItem(SEEN_KEY)||'null');}catch(e){return null;}}
   function writeSeen(v){try{localStorage.setItem(SEEN_KEY,JSON.stringify(v));}catch(e){}}
+  // Returns the dot this device last saw when the kid has moved on since, so the
+  // skater can glide from there; null on a first visit or with nothing new.
+  var PREV_TIER=0;
   function celebrate(b){
-    if(!Array.isArray(b.badges)) return;
+    if(!Array.isArray(b.badges)) return null;
     var key=b.season&&b.season.key, seen=readSeen();
     var stars={}; b.badges.forEach(function(g){stars[g.id]=g.stars;});
-    if(!seen||seen.season!==key){writeSeen({season:key,tierIndex:b.tierIndex,stepsDone:b.stepsDone,stars:stars,pending:[]});return;}
+    var rec={season:key,tierIndex:b.tierIndex,dots:b.dots,stars:stars,pending:[]};
+    if(!seen||seen.season!==key){writeSeen(rec);return null;}
     var fresh=b.badges.filter(function(g){return g.stars>((seen.stars||{})[g.id]||0);}).map(function(g){return g.id;});
     var pending=(seen.pending||[]).filter(function(id){return stars[id]>0;});
     fresh.forEach(function(id){if(pending.indexOf(id)<0)pending.push(id);});
-    var tierUp=b.tierIndex>(seen.tierIndex||0);
+    PREV_TIER=seen.tierIndex||0;
+    var moved=typeof seen.dots==='number'&&b.dots>seen.dots;
     var msgs=[];
-    if(tierUp){tierUpFrom(seen.stepsDone||0,b.tierIndex);msgs.push('New tier: '+b.tier+'.');}
+    if(b.tierIndex>PREV_TIER) msgs.push('New scene: '+b.tier+'.'+(REWARDS[b.tierIndex]?' You unlocked '+REWARDS[b.tierIndex].label+'.':''));
+    else if(moved) msgs.push('You moved to dot '+b.dots+'.');
     showNew(pending,fresh);
     fresh.forEach(function(id){var g=b.badges.filter(function(x){return x.id===id;})[0];if(g)msgs.push('New star: '+g.name+', '+g.stars+' of 3.');});
     if(msgs.length)txt('jCheer',msgs.join(' '));
-    writeSeen({season:key,tierIndex:Math.max(b.tierIndex,seen.tierIndex||0),stepsDone:b.stepsDone,stars:stars,pending:pending});
+    rec.tierIndex=Math.max(b.tierIndex,PREV_TIER); rec.pending=pending;
+    writeSeen(rec);
+    return moved?seen.dots:(b.tierIndex>PREV_TIER?starts(b)[b.tierIndex]:null);
   }
-  function tierUpFrom(prevSteps,tierIndex){
-    var rink=document.getElementById('jRink');
-    rink.style.setProperty('--from',xFor(prevSteps)+'%');
-    rink.classList.remove('tierup'); void rink.offsetWidth; rink.classList.add('tierup');
-    var t=document.getElementById('jTiers').children[tierIndex]; if(t)t.classList.add('pop');
+  function tierUp(i){
+    var sec=document.querySelector('#jPath .scene.s'+i); if(!sec)return;
+    sec.classList.add('tierup');
+    var burst=document.createElement('div'); burst.className='jburst'; burst.setAttribute('aria-hidden','true'); burst.textContent='THWAP!';
+    sec.querySelector('.scenebox').appendChild(burst);
     var name=document.getElementById('jTier'); name.classList.remove('swap'); void name.offsetWidth; name.classList.add('swap');
   }
   function showNew(pending,fresh){
@@ -442,52 +470,160 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     var left=g.next-g.count;
     return g.count+' '+g.unit+'. '+left+' more for star '+(g.stars+1)+'.';
   }
-  // --- Tap a tier or a badge to see it ---------------------------------------
-  // Details open in place, under the row that was tapped (the page sits inside
-  // a full-height frame on My Season, so a pop-up sheet would open off screen).
+  // --- The season path: one dot per training day, four scenes ---------------
+  // Scenes run top to bottom: Locker Room (dots 1-19), Practice Ice (20-43),
+  // Game Ready (44-67), Legend (68-91). The server decides where the kid is
+  // (lib/journey.js pathFor), including slips. Details open in place under a
+  // scene's header (the page sits inside a full-height frame on My Season, so a
+  // pop-up sheet would open off screen).
   var BOOK=null;
   var TIER_NAMES=['Locker Room','Practice Ice','Game Ready','Legend'];
-  // Signed out: the same sample the page shows (Practice Ice, 4 steps, 5 days to go).
-  var SAMPLE={tierIndex:1,stepsDone:4,trainingDays:30,daysToNextStep:5,complete:false,stepDates:[]};
-  function thresholds(b){ if(b&&Array.isArray(b.stepThresholds))return b.stepThresholds; var t=[];for(var i=0;i<12;i++)t.push(3+i*8);return t; }
+  var TIER_STARTS=[0,19,43,67], TOTAL_DOTS=91;
+  // Scene art (journey/art/<file>, from Woody). Practice Ice uses the rink art
+  // turned on its side until its own scene exists. Spec: docs/journey-scenes.md.
+  var SCENE_ART=['scene-locker.webp','scene-practice.webp','scene-gameready.webp','scene-legend.webp'];
+  // Reaching a scene unlocks this gear in My Player (lib/avatar_items.js).
+  var REWARDS=[null,{id:'tape-ice',label:'Practice Ice tape'},{id:'helmet-arena',label:'Game Ready helmet'},{id:'gloves-gold',label:'Legend gloves'}];
+  // Signed out: a sample kid on dot 30, in Practice Ice.
+  var SAMPLE={dots:30,bestDot:30,totalDots:91,tierStarts:TIER_STARTS,tierIndex:1,highestTier:1,tier:'Practice Ice',complete:false,
+    trainingDays:30,dotsToNextTier:13,tierDates:[null,null,null,null],missedInARow:0,daysUntilSlip:5,slippedNow:false};
+  function starts(b){ return Array.isArray(b.tierStarts)?b.tierStarts:TIER_STARTS; }
+  function total(b){ return b.totalDots||TOTAL_DOTS; }
+  function sceneEnd(b,i){ var st=starts(b); return i+1<st.length?st[i+1]:total(b); }
   function dayName(d){ if(!d)return ''; var m=Number(d.slice(5,7)),dd=Number(d.slice(8,10)); return MON[m-1]+' '+dd; }
   function plural(n,w){ return n+' '+w+(n===1?'':'s'); }
+  function sceneState(b,i){
+    if(b.complete||i<b.tierIndex) return 'done';
+    if(i===b.tierIndex) return 'here';
+    return i<=b.highestTier?'here':'locked';
+  }
+  // Dot k of a scene sits on a winding line down the scene (as % of the box),
+  // spaced evenly along the line. Point 0 is the scene's entry.
+  function pointsFor(n){
+    var N=400, pts=[], len=[0];
+    function at(t){ return [50+27*Math.sin(t*Math.PI*3.2), 6+t*88]; }
+    for(var i=0;i<=N;i++){ pts.push(at(i/N)); if(i){ var a=pts[i-1],c=pts[i]; len.push(len[i-1]+Math.hypot(c[0]-a[0],(c[1]-a[1])*1.6)); } }
+    var out=[], j=0;
+    for(var k=0;k<=n;k++){ var want=len[N]*k/n; while(j<N&&len[j]<want) j++; out.push(pts[j]); }
+    return out;
+  }
+  function skaterHtml(){
+    var who=WHO==='sass'||!window.thwapAvatar?'sass':'me', id=BOOK&&BOOK.id||myId();
+    if(who==='me'&&id){
+      try{ var look=window.thwapAvatar.lookFor({num:''},id); return '<span class="me">'+window.thwapAvatar.html(look)+'</span>'; }catch(_){}
+    }
+    return '<img src="login/sass-stride-m.webp" alt="">';
+  }
+  function myId(){ try{ return (localStorage.getItem('bfPlayer')||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,''); }catch(e){ return ''; } }
+  var WHO=(function(){ try{ return localStorage.getItem('thwapJourneySkater')||'me'; }catch(e){ return 'me'; } })();
+  function renderPath(b,opts){
+    opts=opts||{};
+    var root=document.getElementById('jPath'); root.innerHTML='';
+    var pos=b.complete?total(b):b.dots;
+    txt('jTier',b.tier);
+    txt('jDotLine','Dot '+pos+' of '+total(b));
+    txt('jNext',b.complete?'You finished the whole path. Legend.'
+      :plural(b.dotsToNextTier,'more training day')+' to '+(TIER_NAMES[b.tierIndex+1]||'the end'));
+    var warn=document.getElementById('jSlip');
+    if(b.slippedNow){ warn.hidden=false; warn.textContent='You slipped back a dot. Train today to start moving again.'; }
+    else if(b.daysUntilSlip!=null&&b.daysUntilSlip<=2&&pos>0){ warn.hidden=false;
+      warn.textContent='You haven\u2019t trained in '+plural(b.missedInARow,'day')+'. Train '+(b.daysUntilSlip===1?'today':'in the next 2 days')+' so you don\u2019t slip back a dot.'; }
+    else warn.hidden=true;
+    TIER_NAMES.forEach(function(name,i){
+      if(i>0) root.appendChild(rewardEl(b,i));
+      var st=sceneState(b,i), from=starts(b)[i], to=sceneEnd(b,i), n=to-from;
+      var sec=document.createElement('section'); sec.className='scene s'+i+' '+st; sec.setAttribute('data-scene',i);
+      sec.setAttribute('aria-label',name+', dots '+(from+1)+' to '+to);
+      var note=st==='done'?'Done':st==='here'?'You are here':i===b.tierIndex+1?'Next stop':'Later';
+      sec.innerHTML='<button type="button" class="scenehead" data-t="'+i+'" aria-expanded="false" aria-controls="jTierInfo'+i+'">'+
+          '<span class="ic"><span class="art" data-art="tier-'+(i+1)+'.webp"></span></span>'+
+          '<span class="sh"><b>'+name+'</b><span class="tnote">'+note+'</span></span>'+
+          '<span class="range">Dots '+(from+1)+'\u2013'+to+'</span></button>'+
+        '<div class="detail" id="jTierInfo'+i+'" hidden aria-live="polite"></div>'+
+        '<div class="scenebox"><div class="art fill sceneart" data-art="'+SCENE_ART[i]+'"'+(i===1?' data-fallback="rink-path.webp"':'')+'></div><div class="dots"></div>'+
+          (st==='locked'?'<div class="lock"><span aria-hidden="true">&#128274;</span>Reach '+name+' at '+plural(from,'training day')+'</div>':'')+
+        '</div>';
+      var dots=sec.querySelector('.dots'), pts=pointsFor(n);
+      var d='M'+pts.map(function(p){return p[0].toFixed(1)+' '+p[1].toFixed(1);}).join(' L');
+      dots.innerHTML='<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="'+d+'"/></svg>';
+      for(var k=1;k<=n;k++){
+        var num=from+k, el=document.createElement('span');
+        el.className='dot'+(num<=pos?' on':'')+(num===pos+1&&!b.complete?' next':'');
+        el.style.left=pts[k][0]+'%'; el.style.top=pts[k][1]+'%'; el.textContent=num; el.setAttribute('aria-hidden','true');
+        dots.appendChild(el);
+      }
+      if(i===b.tierIndex){
+        var at=b.complete?n:Math.max(0,Math.min(n,pos-from));
+        var sk=document.createElement('span'); sk.className='skater'; sk.id='jSkater'; sk.setAttribute('aria-hidden','true');
+        var from0=opts.fromDot!=null&&opts.fromDot>=from&&opts.fromDot<pos?opts.fromDot-from:null;
+        var p0=pts[from0!=null?from0:at];
+        sk.style.left=p0[0]+'%'; sk.style.top=p0[1]+'%'; sk.innerHTML=skaterHtml();
+        dots.appendChild(sk);
+        if(from0!=null){ requestAnimationFrame(function(){ requestAnimationFrame(function(){ sk.classList.add('move'); sk.style.left=pts[at][0]+'%'; sk.style.top=pts[at][1]+'%'; }); }); }
+        sec.querySelector('.scenebox').setAttribute('aria-label','You are on dot '+pos+' of '+total(b));
+      }
+      root.appendChild(sec);
+    });
+    fillArt(root);
+  }
+  function rewardEl(b,i){
+    var r=REWARDS[i], got=b.highestTier>=i||b.complete, el=document.createElement('div');
+    el.className='reward'+(got?' got':'');
+    el.innerHTML='<span class="rw" aria-hidden="true">'+(got?'\u2713':'\u2605')+'</span><span><b>'+(got?'Unlocked: ':'Reach '+TIER_NAMES[i]+' to unlock: ')+r.label+'</b>'+
+      '<small>'+(got?'It\u2019s in My Player.':'New gear for your player.')+'</small></span>';
+    return el;
+  }
   function tierLines(i,b){
-    var thr=thresholds(b), dates=b.stepDates||[];
-    var startDays=i===0?0:thr[i*3-1], endDays=thr[i*3+2];
-    var reached=i===0?null:dates[i*3-1], cleared=dates[i*3+2];
-    var done=i<b.tierIndex||(b.complete&&i===b.tierIndex);
-    if(done){
+    var from=starts(b)[i], to=sceneEnd(b,i), st=sceneState(b,i), dates=b.tierDates||[], pos=b.complete?total(b):b.dots;
+    var reached=dates[i], next=dates[i+1];
+    if(st==='done'){
       var l=['Done!'];
-      if(i===0) l.push(cleared?'You started here and cleared it on '+dayName(cleared)+'.':'You started here and cleared it.');
-      else l.push((reached?'You got here on '+dayName(reached):'You got here')+(cleared?' and cleared it on '+dayName(cleared)+'.':' and cleared it.'));
-      l.push('It took '+plural(endDays-startDays,'training day')+'.');
+      if(i===0) l.push(next?'You started here and cleared it on '+dayName(next)+'.':'You started here and cleared it.');
+      else l.push((reached?'You got here on '+dayName(reached):'You got here')+(next?' and cleared it on '+dayName(next)+'.':' and cleared it.'));
+      l.push(plural(to-from,'dot')+', one for every training day.');
       return l;
     }
-    if(i===b.tierIndex){
-      var step=(b.stepsDone%3)+1;
-      return ['You are here. Step '+step+' of 3.',
-        (i>0&&reached?'You got here on '+dayName(reached)+'. ':'')+plural(b.daysToNextStep,'more training day')+' to the next step.'];
+    if(st==='here'){
+      return ['You are here, on dot '+pos+'.',
+        (i>0&&reached?'You got here on '+dayName(reached)+'. ':'')+plural(Math.max(0,to-pos),'more training day')+' to clear it.'];
     }
-    var left=Math.max(0,startDays-b.trainingDays);
+    var left=Math.max(0,from-pos);
     return [i===b.tierIndex+1?'Next stop.':'Later this season.',
-      'You get here at '+plural(startDays,'training day')+'. You\u2019re at '+b.trainingDays+', so '+left+' to go.'];
+      'You get here at dot '+from+'. You\u2019re at '+pos+', so '+left+' to go.',
+      REWARDS[i]?'Reaching it unlocks '+REWARDS[i].label+' for your player.':''].filter(Boolean);
   }
-  function closeDetail(panel,btns){ panel.hidden=true; btns.forEach(function(x){x.setAttribute('aria-expanded','false');}); }
-  document.getElementById('jTiers').addEventListener('click',function(e){
-    var btn=e.target.closest('.tierbtn'); if(!btn)return;
-    var panel=document.getElementById('jTierInfo'), btns=Array.prototype.slice.call(document.querySelectorAll('#jTiers .tierbtn'));
-    if(btn.getAttribute('aria-expanded')==='true'){ closeDetail(panel,btns); return; }
-    var i=Number(btn.getAttribute('data-t')), b=BOOK||SAMPLE;
-    var art=btn.querySelector('.art').cloneNode(true);
+  document.getElementById('jPath').addEventListener('click',function(e){
+    var btn=e.target.closest('.scenehead'); if(!btn)return;
+    var i=Number(btn.getAttribute('data-t')), panel=document.getElementById('jTierInfo'+i);
+    var open=btn.getAttribute('aria-expanded')==='true';
+    document.querySelectorAll('#jPath .scenehead').forEach(function(x){x.setAttribute('aria-expanded','false');});
+    document.querySelectorAll('#jPath .detail').forEach(function(x){x.hidden=true;});
+    if(open) return;
+    var b=BOOK||SAMPLE;
     panel.innerHTML='';
-    var da=document.createElement('div'); da.className='dart'; da.appendChild(art);
     var dt=document.createElement('div'); dt.className='dtext';
     var h=document.createElement('h3'); h.textContent=TIER_NAMES[i]; dt.appendChild(h);
     tierLines(i,b).forEach(function(line){ var pp=document.createElement('p'); pp.textContent=line; dt.appendChild(pp); });
-    panel.appendChild(da); panel.appendChild(dt); panel.hidden=false;
-    btns.forEach(function(x){x.setAttribute('aria-expanded',x===btn?'true':'false');});
+    panel.appendChild(dt); panel.hidden=false; btn.setAttribute('aria-expanded','true');
   });
+  document.querySelector('.whoskates').addEventListener('click',function(e){
+    var b=e.target.closest('[data-who]'); if(!b)return;
+    WHO=b.getAttribute('data-who'); try{ localStorage.setItem('thwapJourneySkater',WHO); }catch(_){}
+    document.querySelectorAll('.whoskates [data-who]').forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false');});
+    var sk=document.getElementById('jSkater'); if(sk) sk.innerHTML=skaterHtml();
+  });
+  function paintWho(){ document.querySelectorAll('.whoskates [data-who]').forEach(function(x){x.setAttribute('aria-pressed',x.getAttribute('data-who')===WHO?'true':'false');}); }
+  // Bring the kid's own dot into view once, the first time the path draws.
+  var scrolled=false;
+  function scrollToMe(){
+    if(scrolled) return; scrolled=true;
+    var sk=document.getElementById('jSkater'); if(!sk) return;
+    var y=sk.getBoundingClientRect().top+(window.scrollY||0);
+    if(document.documentElement.classList.contains('embed')&&window.parent!==window){
+      try{ window.parent.postMessage({thwapJourneyScrollTo:y},location.origin); }catch(_){}
+    }else if(sk.scrollIntoView){ try{ sk.scrollIntoView({block:'center'}); }catch(_){} }
+  }
+  function closeDetail(panel,btns){ panel.hidden=true; btns.forEach(function(x){x.setAttribute('aria-expanded','false');}); }
   function ladderHtml(g){
     return g.thresholds.map(function(t,k){
       var got=g.count>=t;
@@ -513,18 +649,28 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     document.getElementById('jBadgeLadder').innerHTML=g&&Array.isArray(g.thresholds)?ladderHtml(g):'';
     panel.hidden=false;
   });
+  // Signed out (or until the API answers): the sample path.
+  paintWho(); renderPath(SAMPLE);
   fetch('/api/board?action=journey',{credentials:'same-origin',cache:'no-store'})
     .then(function(r){return r.ok?r.json():null;})
     .then(function(b){if(b&&b.season&&Array.isArray(b.months))render(b);})
     .catch(function(){});
-  // Fill each art slot with journey/art/<file> when it exists; otherwise keep the gray box.
-(function(){
-  document.querySelectorAll('.art[data-art]').forEach(function(slot){
-    var img=new Image(); img.alt='';
-    img.onload=function(){ slot.insertBefore(img,slot.firstChild); slot.classList.add('has'); };
-    img.src='journey/art/'+slot.getAttribute('data-art');
+  // Fill each art slot with journey/art/<file> when it exists. A scene with no
+  // art yet tries its fallback (Practice Ice: the rink turned on its side), then
+  // keeps its plain tinted surface: never a gray placeholder box on the live site.
+function fillArt(scope){
+  (scope||document).querySelectorAll('.art[data-art]').forEach(function(slot){
+    if(slot.getAttribute('data-filled')) return; slot.setAttribute('data-filled','1');
+    function load(file,cls){
+      var img=new Image(); img.alt='';
+      img.onload=function(){ if(cls) img.className=cls; slot.insertBefore(img,slot.firstChild); slot.classList.add('has'); };
+      img.onerror=function(){ var fb=slot.getAttribute('data-fallback'); if(fb&&!cls) load(fb,'rot'); };
+      img.src='journey/art/'+file;
+    }
+    load(slot.getAttribute('data-art'));
   });
-})();
+}
+fillArt(document);
 // Embedded: tell the Journey page our height so it scrolls as one page.
 (function(){
   if(!document.documentElement.classList.contains('embed')||window.parent===window) return;
