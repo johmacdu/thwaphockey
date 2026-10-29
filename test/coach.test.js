@@ -31,8 +31,9 @@ function makeRes() {
     setHeader(k, v) { this.headers[k] = v; },
   };
 }
-const post = (body, query = {}) => ({ method: 'POST', body, query, headers: {} });
-const get = (query = {}) => ({ method: 'GET', query, headers: {} });
+const post = (body, query = {}, headers = {}) => ({ method: 'POST', body, query, headers });
+const auth = (t) => ({ authorization: `Bearer ${t}` });
+const get = (query = {}, headers = {}) => ({ method: 'GET', query, headers });
 
 async function loginSeedCoach() {
   const res = makeRes();
@@ -862,14 +863,14 @@ describe('Thwap admin: drill-suggestion review', () => {
     const id = add.body.suggestion.id;
 
     const listRes = makeRes();
-    await _handlers.reviewSuggestions(get({ key: 'admin-test-token' }), listRes);
+    await _handlers.reviewSuggestions(get({}, auth('admin-test-token')), listRes);
     expect(listRes.statusCode).toBe(200);
     const found = listRes.body.suggestions.find((s) => s.id === id);
     expect(found).toBeTruthy();
     expect(found.teamCode).toBe(_seed.SEED_TEAM_CODE);
 
     const resolveRes = makeRes();
-    await _handlers.resolveSuggestion(post({ code: _seed.SEED_TEAM_CODE, id, status: 'accepted' }, { key: 'admin-test-token' }), resolveRes);
+    await _handlers.resolveSuggestion(post({ code: _seed.SEED_TEAM_CODE, id, status: 'accepted' }, {}, auth('admin-test-token')), resolveRes);
     expect(resolveRes.statusCode).toBe(200);
     expect(resolveRes.body.suggestion.status).toBe('accepted');
   });
@@ -879,7 +880,7 @@ describe('Thwap admin: drill-suggestion review', () => {
     await _handlers.resolveSuggestion(post({ code: _seed.SEED_TEAM_CODE, id: 'x', status: 'accepted' }, {}), noKey);
     expect(noKey.statusCode).toBe(401);
     const badStatus = makeRes();
-    await _handlers.resolveSuggestion(post({ code: _seed.SEED_TEAM_CODE, id: 'nope', status: 'banana' }, { key: 'admin-test-token' }), badStatus);
+    await _handlers.resolveSuggestion(post({ code: _seed.SEED_TEAM_CODE, id: 'nope', status: 'banana' }, {}, auth('admin-test-token')), badStatus);
     expect(badStatus.statusCode).toBe(404);
   });
 });
@@ -899,7 +900,7 @@ describe('Thwap admin: roster editor', () => {
 
   it('lists all players with the admin key', async () => {
     const res = makeRes();
-    await _handlers.adminRoster(get({ key: KEY }), res);
+    await _handlers.adminRoster(get({}, auth(KEY)), res);
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body.players)).toBe(true);
     expect(res.body.players.length).toBeGreaterThan(0);
@@ -918,7 +919,8 @@ describe('Thwap admin: roster editor', () => {
     const res = makeRes();
     await _handlers.adminUpdatePlayer(post(
       { playerId: 'lewie', number: '77', parentEmail: 'dad@x.com', parentEmail2: 'mom@x.com' },
-      { key: KEY },
+      {},
+      auth(KEY),
     ), res);
     expect(res.statusCode).toBe(200);
     expect(String(res.body.member.number)).toBe('77');
@@ -928,16 +930,16 @@ describe('Thwap admin: roster editor', () => {
 
   it('rejects a blank first name and a bad email', async () => {
     const blank = makeRes();
-    await _handlers.adminUpdatePlayer(post({ playerId: 'lewie', firstName: '' }, { key: KEY }), blank);
+    await _handlers.adminUpdatePlayer(post({ playerId: 'lewie', firstName: '' }, {}, auth(KEY)), blank);
     expect(blank.statusCode).toBe(400);
     const bad = makeRes();
-    await _handlers.adminUpdatePlayer(post({ playerId: 'lewie', parentEmail: 'not-an-email' }, { key: KEY }), bad);
+    await _handlers.adminUpdatePlayer(post({ playerId: 'lewie', parentEmail: 'not-an-email' }, {}, auth(KEY)), bad);
     expect(bad.statusCode).toBe(400);
   });
 
   it('404s an unknown player', async () => {
     const res = makeRes();
-    await _handlers.adminUpdatePlayer(post({ playerId: 'nobody', number: '5' }, { key: KEY }), res);
+    await _handlers.adminUpdatePlayer(post({ playerId: 'nobody', number: '5' }, {}, auth(KEY)), res);
     expect(res.statusCode).toBe(404);
   });
 });
@@ -995,14 +997,14 @@ describe('Thwap admin: email + password login', () => {
     const token = login.body.token;
 
     const res = makeRes();
-    await _handlers.adminRoster(get({ adminToken: token }), res);
+    await _handlers.adminRoster(get({}, auth(token)), res);
     expect(res.statusCode).toBe(200);
     expect(res.body.players.length).toBeGreaterThan(0);
 
     // a coach token must NOT authorize an admin action
     const coachLogin = await loginSeedCoach();
     const bad = makeRes();
-    await _handlers.adminRoster(get({ adminToken: coachLogin.body.token }), bad);
+    await _handlers.adminRoster(get({}, auth(coachLogin.body.token)), bad);
     expect(bad.statusCode).toBe(401);
   });
 });
@@ -1018,7 +1020,7 @@ describe('Thwap admin: roster index backfill', () => {
 
     // adminRoster calls ensureSeed, which backfills the index via ensureTeamIndexed.
     const res = makeRes();
-    await _handlers.adminRoster(get({ key: KEY }), res);
+    await _handlers.adminRoster(get({}, auth(KEY)), res);
     expect(res.statusCode).toBe(200);
     expect(res.body.players.length).toBeGreaterThan(0);
     expect(res.body.players.find((p) => p.id === 'lewie')).toBeTruthy();
@@ -1036,7 +1038,7 @@ describe('Thwap admin: Drills view accepts the admin session token', () => {
     const token = login.body.token;
 
     const res = makeRes();
-    await _handlers.reviewSuggestions(get({ adminToken: token }), res);
+    await _handlers.reviewSuggestions(get({}, auth(token)), res);
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body.suggestions)).toBe(true);
 
@@ -1111,7 +1113,7 @@ describe('multiple guardian emails per player', () => {
     const token = (await loginSeedCoach()).body.token;
     await _handlers.addPlayer(post({ code: _seed.SEED_TEAM_CODE, coachToken: token, firstName: 'Emmy', number: 77, parentEmail: 'old@x.com' }), makeRes());
     const res = makeRes();
-    await _handlers.adminUpdatePlayer(post({ playerId: 'emmy', parentEmails: ['a@x.com', 'b@x.com', 'c@x.com', 'd@x.com'] }, { key: 'admin-test-token' }), res);
+    await _handlers.adminUpdatePlayer(post({ playerId: 'emmy', parentEmails: ['a@x.com', 'b@x.com', 'c@x.com', 'd@x.com'] }, {}, auth('admin-test-token')), res);
     expect(res.statusCode).toBe(200);
     expect(res.body.member.parentEmails).toEqual(['a@x.com', 'b@x.com', 'c@x.com', 'd@x.com']);
   });
@@ -1156,7 +1158,7 @@ describe('Thwap admin: adjust-counts corrects iq/pass (not just stick/shoot/dryl
     // correct down to 2 via the admin endpoint (previously impossible: iq was not
     // in the handler's destructure, so the delta was silently dropped)
     const res = makeRes();
-    await _handlers.adjustCounts(post({ playerId: pid, iq: -1 }, { key: KEY }), res);
+    await _handlers.adjustCounts(post({ playerId: pid, iq: -1 }, {}, auth(KEY)), res);
     expect(res.statusCode).toBe(200);
     expect(Number(res.body.player.iq)).toBe(2);
     p = await store.getPlayer(pid);
@@ -1174,7 +1176,7 @@ describe('Thwap admin: adjust-counts corrects iq/pass (not just stick/shoot/dryl
     await store.bumpPlayer(pid, 'pass');
     await store.bumpPlayer(pid, 'pass');
     const res = makeRes();
-    await _handlers.adjustCounts(post({ playerId: pid, pass: -1 }, { key: KEY }), res);
+    await _handlers.adjustCounts(post({ playerId: pid, pass: -1 }, {}, auth(KEY)), res);
     expect(res.statusCode).toBe(200);
     expect(Number(res.body.player.pass)).toBe(2);
   });

@@ -149,7 +149,9 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
   var emailEl=document.getElementById('email'), pwEl=document.getElementById('pw'),
       loginbar=document.getElementById('loginbar'), setpwbar=document.getElementById('setpwbar');
   function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
-  function tokenQS(){ return 'adminToken='+encodeURIComponent(token); }
+  /* The admin session token rides in the Authorization header, never the URL. */
+  function authH(extra){ var h={'Authorization':'Bearer '+token}; for(var k in (extra||{})) h[k]=extra[k]; return h; }
+  var JSONH={'Content-Type':'application/json'};
   var CAT={stick:'Hands',shoot:'Shoot',dryland:'Dryland'};
   function render(){
     var rows=all.filter(function(s){ return filter==='all'?true:(s.status||'new')===filter; });
@@ -173,7 +175,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
   }
   function afterAuth(){
     document.getElementById('viewnav').hidden=false;
-    fetch('/api/coach?action=review-suggestions&'+tokenQS())
+    fetch('/api/coach?action=review-suggestions',{headers:authH()})
       .then(function(r){ if(r.status===401){ throw new Error('Session expired, sign in again.'); } return r.json(); })
       .then(function(j){ all=(j&&j.suggestions)||[]; seg.hidden=false; render(); })
       .catch(function(e){ msg.textContent=e.message||'Could not load.'; msg.className='msg err'; });
@@ -214,8 +216,8 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
       .catch(function(){ msg.textContent='Could not set password.'; msg.className='msg err'; });
   }
   function resolve(code,id,status){
-    fetch('/api/coach?action=resolve-suggestion&'+tokenQS(),
-      {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code,id:id,status:status})})
+    fetch('/api/coach?action=resolve-suggestion',
+      {method:'POST',headers:authH(JSONH),body:JSON.stringify({code:code,id:id,status:status})})
       .then(function(r){ return r.json(); })
       .then(function(j){ if(j&&j.ok){ all.forEach(function(s){ if(s.id===id&&s.teamCode===code) s.status=status; }); render(); } })
       .catch(function(){});
@@ -261,7 +263,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
   }
   function loadRoster(){
     rmsg.textContent='Loading roster...'; rmsg.className='msg';
-    fetch('/api/coach?action=admin-roster&'+tokenQS())
+    fetch('/api/coach?action=admin-roster',{headers:authH()})
       .then(function(r){ if(r.status===401){ throw new Error('Bad admin key.'); } return r.json(); })
       .then(function(j){ players=(j&&j.players)||[]; renderRoster(); })
       .catch(function(e){ rmsg.textContent=e.message||'Could not load roster.'; rmsg.className='msg err'; });
@@ -336,8 +338,8 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
       number:card.querySelector('.f-num').value.trim(),
       position:card.querySelector('.f-pos').value,
       parentEmails:emails };
-    fetch('/api/coach?action=admin-update-player&'+tokenQS(),
-      {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    fetch('/api/coach?action=admin-update-player',
+      {method:'POST',headers:authH(JSONH),body:JSON.stringify(body)})
       .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
       .then(function(res){ if(!res.ok){ alert((res.j&&res.j.error)||'Save failed'); return; } flash(card); })
       .catch(function(){ alert('Save failed'); });
@@ -413,8 +415,8 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
     function reset(){ btn.disabled=false; btn.textContent='Upload photo'; }
     processImage(file, removeBg, setStatus, function(dataUrl){
       if(!dataUrl){ reset(); return; }
-      fetch('/api/photo/admin-put?'+tokenQS(),
-        {method:'POST',headers:{'Content-Type':'application/json'},
+      fetch('/api/photo/admin-put',
+        {method:'POST',headers:authH(JSONH),
          body:JSON.stringify({playerId:id,imageData:dataUrl,consent:{method:method,grantedBy:by}})})
         .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
         .then(function(res){
@@ -444,7 +446,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
       rConfirm=document.getElementById('retireConfirm'), rPhrase=document.getElementById('retirePhrase'),
       rGo=document.getElementById('retireGo');
   function retireCall(body){
-    return fetch('/api/photo/remove?'+tokenQS(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    return fetch('/api/photo/remove',{method:'POST',headers:authH(JSONH),body:JSON.stringify(body)})
       .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,status:r.status,j:j}; }); });
   }
   function retireList(players){

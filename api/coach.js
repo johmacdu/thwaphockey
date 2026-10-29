@@ -35,6 +35,7 @@
 
 import crypto from 'crypto';
 import { parseBody } from '../lib/photo_common.js';
+import { sharedKeyOk, adminTokenFrom } from '../lib/admin_auth.js';
 import { mintSession, verifySession, readSessionCookie } from '../lib/session_store.js';
 import { sessionClaims } from '../lib/watch_store.js';
 import { ROSTER, weekBoard, monthTrend, adjustPlayer, getGrants, setGrants } from '../lib/store.js';
@@ -258,10 +259,7 @@ async function coachFromReq(req) {
 }
 // Is this an admin request (admin session token or the shared admin key)?
 async function isAdminReq(req) {
-  const { adminToken } = parseBody(req);
-  const auth = (req.headers && req.headers.authorization) ? String(req.headers.authorization) : '';
-  const bearer = auth.indexOf('Bearer ') === 0 ? auth.slice(7) : '';
-  const a = adminFromToken(adminToken || (req.query && req.query.adminToken) || bearer || '');
+  const a = adminFromToken(adminTokenFrom(req, parseBody(req)));
   if (a && (await getAdmin(a.email))) return true;
   return adminOk(req);
 }
@@ -343,16 +341,12 @@ function adminFromToken(token) {
   try { return { email: hexDecode(String(claims.playerId).slice('admin:'.length)) }; }
   catch { return null; }
 }
-// Authorize an admin request. Accepts the new admin session token (adminToken in
-// body or query, or Bearer), and still accepts the legacy shared admin key so
-// nothing that already used it breaks. Returns the admin record, or null (after
-// writing a 401) when neither path authorizes.
+// Authorize an admin request. Accepts the admin session token (adminToken in the
+// body, or Bearer), and still accepts the legacy shared admin key in the
+// Authorization: Bearer header. Neither is read from the URL. Returns the admin
+// record, or null (after writing a 401) when neither path authorizes.
 async function requireAdmin(req, res) {
-  const { adminToken } = parseBody(req);
-  const auth = (req.headers && req.headers.authorization) ? String(req.headers.authorization) : '';
-  const bearer = auth.indexOf('Bearer ') === 0 ? auth.slice(7) : '';
-  const token = adminToken || (req.query && req.query.adminToken) || bearer || '';
-  const a = adminFromToken(token);
+  const a = adminFromToken(adminTokenFrom(req, parseBody(req)));
   if (a) {
     const rec = await getAdmin(a.email);
     if (rec) return rec;
@@ -928,15 +922,10 @@ async function drillSuggestions(req, res) {
   return res.status(200).json({ ok: true, suggestions: await listDrillSuggestions(code) });
 }
 
-// Thwap-admin auth: a bearer or ?key= secret, matching the waitlist admin pattern.
-// Disabled (all calls 401) when the env secret is unset, so it is never open by default.
+// Thwap-admin auth: the shared secret in the Authorization: Bearer header only
+// (never ?key= in the URL). Disabled (all calls 401) when the env secret is unset.
 function adminOk(req) {
-  const secret = process.env.THWAP_ADMIN_TOKEN || process.env.WAITLIST_ADMIN_TOKEN || '';
-  if (!secret) return false;
-  const auth = (req.headers && req.headers.authorization) ? String(req.headers.authorization) : '';
-  const bearer = auth.indexOf('Bearer ') === 0 ? auth.slice(7) : '';
-  const q = (req.query && (req.query.key || req.query.token)) || '';
-  return bearer === secret || String(q) === secret;
+  return sharedKeyOk(req);
 }
 
 // GET all coach drill suggestions across every team (Thwap review backlog). Admin-only.

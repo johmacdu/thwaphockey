@@ -1,6 +1,6 @@
 // api/photo/admin-put.js
 //
-// POST (admin key via Bearer or ?key=)  { playerId, imageData, consent }
+// POST (admin: Authorization: Bearer <key or admin session>)  { playerId, imageData, consent }
 //   consent = { method: 'text'|'in_person'|'written'|'email', grantedBy: '<parent name>' }
 //
 // The admin-assisted path for when a parent gave permission out of band (e.g.
