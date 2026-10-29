@@ -51,6 +51,9 @@ describe('My Player', () => {
     expect(d.querySelector('[data-tab=fit]')).toBeNull(); // no Size tab
     expect(d.querySelector('.lk-btn')).toBeNull();
   });
+  it('tiles sit at most 4 to a row', () => {
+    expect(SRC).toContain('.lk-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(max(92px,calc((100% - 24px) / 4)),1fr))');
+  });
   it('each group lists its parts under plain labels, not boxes', async () => {
     const { w } = await open();
     const d = w.document;

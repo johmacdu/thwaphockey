@@ -191,6 +191,8 @@ reads like every other page.
   page. (`.seg` stays the pill toggle for views like This week / All time.)
 - **Section label `.lk-sech`:** 11px / 900 uppercase muted, over a hairline
   (`.lk-sec`). Never a box around a group.
+- **Tile grid `.lk-items`:** at most 4 tiles per row (3 on a phone), so each
+  item stays big enough to read and tap.
 - **Reuse rule:** a new editor or picker page follows this shape (page close,
   hero, column, text tabs, labelled sections). No per-page header row with its
   own title and close.

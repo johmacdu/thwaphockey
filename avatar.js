@@ -745,7 +745,7 @@
       ".lk-stage .av-wrap{font-size:min(9px,2.2vw,1.1vh)}"+
       ".lk-note{min-height:22px;margin:8px 0 0;font-size:14px;color:var(--muted,#5F6F64);text-align:center}"+
       ".lk-fitcard{position:absolute;left:50%;top:50%;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.25);cursor:grab}"+
-      ".lk-grid{padding:8px 0 24px}.lk-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}"+
+      ".lk-grid{padding:8px 0 24px}.lk-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(max(92px,calc((100% - 24px) / 4)),1fr));gap:8px} /* at most 4 per row; 3 on a phone */"+
       // Sections: a plain uppercase label over a hairline, never a box around the group.
       ".lk-sec{border-top:1px solid var(--line,#DCE5DE);padding-top:16px;margin-top:16px}.lk-sec:first-child{border-top:0;margin-top:4px;padding-top:4px}"+
       ".lk-sech{margin:0 0 10px;font-family:inherit;font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--muted,#5F6F64)}"+
