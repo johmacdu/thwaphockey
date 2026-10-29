@@ -51,3 +51,46 @@ mountains, snowflake, pizza reward, recover/sleep, THWAP wordmark.
 - Card sticker slots: 2-3 on the player-card back.
 - Earn motion (design-system.md §12): sticker "slaps" onto the card with ~5deg
   rotation, ~500-800ms, reduced-motion aware.
+
+## Next: 100 more stickers, then sharing (planned Oct 28 2026)
+
+Status: planned, nothing built. Three steps, in this order.
+
+### Step 1: 100 new stickers (Woody, OpenAI image API, other laptop)
+- One transparent PNG per sticker in `stickers/`, the same format as the 96
+  already there (`a_00.png` and on). No contact-sheet grids.
+- Add each file name to the END of `stickers/stickers.json`. That list is the
+  unlock order (sticker N unlocks when the kid has earned N), so new stickers
+  unlock after the current 96 and nobody's earned set changes.
+- Run every new sticker through the curation list above before it ships
+  (for example, never GOONING).
+- The Sticker Book count will read "N of 196 earned" with no code change.
+
+### Step 2: save stickers on the server (code, before sharing)
+Today stickers live only on the phone:
+- Earned count: `localStorage` `thwapEarned:<player>` (index.html, `earnedCount()`).
+- Placements on the card: `localStorage` `thwapPlaced:<player>:<surface>`
+  (index.html, `window.thwapPlaced`).
+- Chosen stickers: `localStorage` `thwapStickers`.
+
+So a kid who switches phones loses them, and the server cannot see what anyone
+owns, which sharing needs. Move the owned set and the placements to the server
+(per player, like looks in `lib/look_api.js`), keep the current earn rule and the
+3 starter stickers, and copy each device's existing local data up once on first
+load so nothing a kid already has is lost.
+
+### Step 3: "Give a sticker"
+- The kid picks one of their own stickers and a teammate. The teammate gets a
+  COPY; the giver keeps theirs. Giving is never losing, so there is no trading
+  pressure.
+- One gift a day, and only on a day the kid trained, so giving stays part of
+  training.
+- The teammate sees "Alder sent you TOP SHELF." No typing anywhere: no chat, and
+  no way to send something mean.
+- The picker grays out stickers the teammate already has, which nudges kids to
+  look at what a friend is missing.
+- A gifted sticker remembers who sent it ("From Alder").
+- Gifts count toward the Hype Squad badge alongside cheers (lib/journey.js).
+- The coach can turn gifting off for the team.
+- Same team only (`teamForRequest`), and the server checks the giver owns the
+  sticker and has not already given today.
