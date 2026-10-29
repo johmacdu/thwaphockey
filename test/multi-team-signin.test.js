@@ -3,8 +3,8 @@
 // Sign-in across every team (lib/signin_players.js + api/login.js). Covers: a
 // player on a non-Rangers team signing in with their jersey code and the email
 // OTP path, all 16 original Jr. Rangers 10U players still signing in (with and
-// without member records in the store), wrong codes and wrong teams rejected,
-// and the public team-players action returning only safe fields.
+// without member records in the store), and wrong codes and wrong teams
+// rejected. (The public team-players list was removed: test/watch-signin-team-code.test.js.)
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { FakeRedis } from './fakeRedis.js';
@@ -22,8 +22,8 @@ function setEnv() {
 }
 setEnv();
 
-const { default: handler, _handlers } = await import('../api/login.js');
-const { codeSignin, requestCode, verify, session, teamPlayers } = _handlers;
+const { _handlers } = await import('../api/login.js');
+const { codeSignin, requestCode, verify, session } = _handlers;
 const { verifySession, SESSION_COOKIE } = await import('../lib/session_store.js');
 const { ROSTER } = await import('../lib/store.js');
 const { setTeam, addMember, updateMember, removeMember } = await import('../lib/teams_store.js');
@@ -189,59 +189,5 @@ describe('the 16 Jr. Rangers 10U players still sign in', () => {
     await codeSignin(post({ playerId: 'nova', code: '62026' }), res);
     expect(res.statusCode).toBe(200);
     expect(res.body.player.name).toBe('Nova');
-  });
-});
-
-describe('team-players', () => {
-  const get = (query) => ({ method: 'GET', headers: {}, query });
-
-  it('returns only id, firstName and number', async () => {
-    await seedFlyers();
-    const res = makeRes();
-    await teamPlayers(get({ code: 'flyers10' }), res);
-    expect(res.statusCode).toBe(200);
-    expect(res.body).toEqual({
-      ok: true,
-      team: { name: 'Flyers 9U' },
-      players: [
-        { id: 'zara', firstName: 'Zara', number: 44 },
-        { id: 'milo', firstName: 'Milo', number: 8 },
-      ],
-    });
-    const raw = JSON.stringify(res.body);
-    expect(raw).not.toMatch(/@|Quinn|Park|data:image|parentEmail|lastName|photo/);
-  });
-
-  it('routes through the handler on GET ?action=team-players', async () => {
-    await seedRangers();
-    const res = makeRes();
-    await handler({ method: 'GET', headers: {}, query: { action: 'team-players', code: 'RANGERS72' } }, res);
-    expect(res.statusCode).toBe(200);
-    expect(res.body.players).toHaveLength(16);
-    expect(JSON.stringify(res.body)).not.toMatch(/@|Reese/);
-    for (const p of res.body.players) expect(Object.keys(p).sort()).toEqual(['firstName', 'id', 'number']);
-  });
-
-  it('falls back to ROSTER for RANGERS72 before the team is seeded', async () => {
-    const res = makeRes();
-    await teamPlayers(get({ code: 'RANGERS72' }), res);
-    expect(res.statusCode).toBe(200);
-    expect(res.body.team).toEqual({ name: 'Jr Rangers 10U' });
-    expect(res.body.players).toHaveLength(16);
-  });
-
-  it('unknown team -> 404', async () => {
-    const res = makeRes();
-    await teamPlayers(get({ code: 'NOPE99' }), res);
-    expect(res.statusCode).toBe(404);
-  });
-
-  it('missing code -> 400, wrong method -> 405', async () => {
-    const r1 = makeRes();
-    await teamPlayers(get({}), r1);
-    expect(r1.statusCode).toBe(400);
-    const r2 = makeRes();
-    await teamPlayers({ method: 'POST', headers: {}, query: { code: 'RANGERS72' } }, r2);
-    expect(r2.statusCode).toBe(405);
   });
 });

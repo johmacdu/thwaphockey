@@ -11,9 +11,6 @@
 //                                          jersey+season code (the existing sign-in) and sets
 //                                          the HTTP-only cookie. Same UX as today, now server-checked.
 //   GET  /api/login?action=session                                   -> { authed, player }
-//   GET  /api/login?action=team-players&code=<TEAMCODE>              -> { ok, team:{name},
-//                                          players:[{id, firstName, number}] } for a name
-//                                          picker (no last names, emails or photos)
 //
 // Players resolve from the multi-team members store (lib/signin_players.js), so
 // a player on any team can sign in. The 16 original Jr. Rangers 10U players
@@ -25,10 +22,15 @@
 //
 // Apple Watch parent approval (docs/apple-watch-design.md section 6, Option B;
 // storage and tokens in lib/watch_store.js):
-//   POST /api/login?action=watch-request { playerId, code, teamCode?, deviceLabel }
+//   POST /api/login?action=watch-request { teamCode, code, deviceLabel }
+//                                          (older shape { playerId, code, teamCode?,
+//                                          deviceLabel } still accepted)
 //                                          -> { ok, requestId, sent } and emails each
-//                                          parent on file an Approve link. 401 on a bad
-//                                          jersey code (or an unknown player, same answer)
+//                                          parent on file an Approve link. The team +
+//                                          code shape finds the ONE player on that team
+//                                          whose jersey code matches. 401 'bad code' for
+//                                          a wrong code, an unknown team or player, or two
+//                                          players sharing that number (never picks one)
 //   GET  /api/login?action=watch-status&requestId=
 //                                          -> { status: pending|approved|denied|expired,
 //                                          token?, exp?, player? }; the token is handed
@@ -42,8 +44,12 @@
 //   POST /api/login?action=watch-revoke { t: <manage link>, deviceId }  -> { ok, removed }
 //
 // Rate limits (lib/rate_limit.js): request-code and watch-request each allow 3
-// per player per 15 minutes and 10 per IP per hour, counted before the player is
-// looked up so a 429 says nothing about whether a player exists.
+// per player per 15 minutes and 10 per IP per hour; watch-request also allows 20
+// per team code per hour. IP, team and (when sent) player id are counted before
+// the player is looked up, so a 429 says nothing about whether a player exists.
+//
+// There is no public team player list: team codes are not secret, so a list
+// keyed only by a team code would hand anyone first names and jersey numbers.
 //
 // Behavior is identical to the previous api/login/<action>.js files; only the
 // packaging changed. Reuses the photo flow's OTP + rate-limit + mail + consent
@@ -57,9 +63,9 @@ import {
   mintSession, verifySession, sessionCookie, clearSessionCookie,
   readSessionCookie, sessionConfigured,
 } from '../lib/session_store.js';
-import { resolveSigninPlayer, listTeamPlayersPublic } from '../lib/signin_players.js';
+import { resolveSigninPlayer, findPlayerByTeamCode, codeMatches } from '../lib/signin_players.js';
 import { getMember, parentEmailList } from '../lib/teams_store.js';
-import { allowEmailAction } from '../lib/rate_limit.js';
+import { allowEmailAction, allowWatchRequest, allowWatchRequestPlayer } from '../lib/rate_limit.js';
 import { sha256 } from '../lib/photo_store.js';
 import {
   sessionClaims, cleanLabel, createWatchRequest, pollWatchRequest, peekApproval,
@@ -69,7 +75,7 @@ import {
 
 // The player sign-in code is the jersey number followed by a season year. Both
 // the current (2026-27) and prior year are accepted, mirroring the client check.
-const CODE_SEASONS = ['2026', '2027'];
+// CODE_SEASONS and codeMatches live in lib/signin_players.js.
 
 // Email a one-time SIGN-IN code (distinct copy from the photo-consent code).
 async function sendLoginCode(email, code, playerName) {
@@ -214,9 +220,7 @@ async function codeSignin(req, res) {
   const player = await resolveSigninPlayer(pid, teamCode);
   if (!player) return res.status(400).json({ error: 'unknown player' });
 
-  const c = String(code || '').trim();
-  const ok = player.numbers.some((n) => CODE_SEASONS.some((y) => c === `${n}${y}`));
-  if (!ok) return res.status(401).json({ error: 'bad code' });
+  if (!codeMatches(player, code)) return res.status(401).json({ error: 'bad code' });
 
   const token = mintSession(pid, String(email || '').toLowerCase());
   if (!token) return res.status(503).json({ error: 'sessions not configured' });
@@ -238,18 +242,6 @@ async function session(req, res) {
   });
 }
 
-// GET ?code=<TEAMCODE> -> the team's players for a name picker. Public (only a
-// team code is needed), so it returns first name + jersey number ONLY.
-async function teamPlayers(req, res) {
-  if (req.method !== 'GET') { res.setHeader('Allow', 'GET'); return res.status(405).json({ error: 'method not allowed' }); }
-  res.setHeader('Cache-Control', 'no-store');
-  const code = String((req.query && req.query.code) || '').trim();
-  if (!code) return res.status(400).json({ error: 'team code required' });
-  const out = await listTeamPlayersPublic(code);
-  if (!out) return res.status(404).json({ error: 'unknown team' });
-  return res.status(200).json({ ok: true, team: out.team, players: out.players });
-}
-
 async function logout(req, res) {
   if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).json({ error: 'method not allowed' }); }
   res.setHeader('Cache-Control', 'no-store');
@@ -269,23 +261,33 @@ async function logout(req, res) {
 
 const publicPlayer = (p) => ({ id: p.id, name: p.name, number: p.number });
 
-// POST { playerId, code, teamCode?, deviceLabel } from the watch.
+// POST { teamCode, code, deviceLabel } from the watch (or the older
+// { playerId, code, teamCode?, deviceLabel }).
 async function watchRequest(req, res) {
   if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).json({ error: 'method not allowed' }); }
   res.setHeader('Cache-Control', 'no-store');
   if (!emailConfigured() || !sessionConfigured()) return res.status(503).json({ error: 'login not configured' });
 
   const { playerId, code, teamCode, deviceLabel } = parseBody(req);
-  const pid = String(playerId || '').trim().toLowerCase();
+  const asked = String(playerId || '').trim().toLowerCase();
+  const team = String(teamCode || '').trim().toUpperCase();
   const kv = getKv();
-  // Before the jersey code check, so the limit also caps code guessing.
-  if (!(await allowEmailAction(kv, 'watch-request', pid, req))) return tooMany(res);
+  // Before the jersey code check, so the limits also cap code guessing.
+  if (!(await allowWatchRequest(kv, { playerId: asked, teamCode: team }, req))) return tooMany(res);
 
-  const player = await resolveSigninPlayer(pid, teamCode);
-  const c = String(code || '').trim();
-  const codeOk = !!player && player.numbers.some((n) => CODE_SEASONS.some((y) => c === `${n}${y}`));
-  // An unknown player and a wrong code get the same answer.
-  if (!codeOk) return res.status(401).json({ error: 'bad code' });
+  let player = null;
+  if (asked) {
+    const p = await resolveSigninPlayer(asked, team || undefined);
+    player = codeMatches(p, code) ? p : null;
+  } else if (team) {
+    player = await findPlayerByTeamCode(team, code);
+  }
+  // A wrong code, an unknown team or player, and two players sharing a number
+  // all get the same answer.
+  if (!player) return res.status(401).json({ error: 'bad code' });
+  // The team + code shape had no player id to count before the lookup.
+  if (!asked && !(await allowWatchRequestPlayer(kv, player.id))) return tooMany(res);
+  const pid = player.id;
 
   const member = await getMember(pid);
   const emails = member ? parentEmailList(member) : [];
@@ -406,7 +408,6 @@ export default async function handler(req, res) {
   if (action === 'code-signin') return codeSignin(req, res);
   if (action === 'session') return session(req, res);
   if (action === 'logout') return logout(req, res);
-  if (action === 'team-players') return teamPlayers(req, res);
   if (action === 'watch-request') return watchRequest(req, res);
   if (action === 'watch-status') return watchStatus(req, res);
   if (action === 'watch-approve') return watchApprove(req, res);
@@ -417,6 +418,6 @@ export default async function handler(req, res) {
 
 // Exported for unit tests (call the sub-handlers directly with a query.action-free req).
 export const _handlers = {
-  requestCode, verify, codeSignin, session, logout, teamPlayers,
+  requestCode, verify, codeSignin, session, logout,
   watchRequest, watchStatus, watchApprove, watchList, watchRevoke,
 };

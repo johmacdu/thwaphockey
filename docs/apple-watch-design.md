@@ -74,8 +74,8 @@ Two facts that shape the watch design:
 ### 5.2 Watch sign-in flow (PROPOSED)
 
 1. **Team code.** The kid enters the team code their coach shared. Typing letters on a watch is hard, so the field accepts Scribble (drawing letters with a finger) and dictation, and is not case sensitive (the server upper-cases team codes, `codeNorm` in `lib/schedule_store.js`).
-2. **Pick your name.** The watch shows the team's players as first name plus jersey number. Large rows, one tap.
-3. **Your code.** The kid types their jersey code on a number pad.
+2. **Your code.** The kid types their jersey code (jersey number plus season year) on a number pad. There is no name picker: the server finds the one player on that team whose code matches (`findPlayerByTeamCode` in `lib/signin_players.js`). Team codes are not secret, so a public list of a team's players would hand anyone first names and jersey numbers; the `team-players` action that did this was removed.
+3. **No match is one answer.** A wrong code, an unknown team, or two players on the team wearing the same number all return the same `401 bad code`. The server never picks one of two matching players; those kids ask their coach to change a number.
 4. **Ask a parent.** The watch says "We emailed your parent. Ask them to approve this watch." and waits. See section 6.
 5. **Signed in.** A welcome THWAP and the Today screen.
 
@@ -129,15 +129,14 @@ Everything below was read from the files named. The project is at Vercel's 12-fu
 | Team schedule | `GET /api/coach?action=schedule&code=` | Exists | `code` | `200 { ok, schedule: { practices, events: [ { id, kind: 'game', date, time, home, opponent, place } ] }, next }` |
 | Coach's weekly plan | `GET /api/coach?action=get-plan&code=` | Exists | `code` | `200 { ok, plan, billing }` |
 | Coach's team goal | `GET /api/coach?action=team-goal&code=` | Exists | `code` | `200 { ok, teamGoal }` |
-| Team player list for the name picker | `GET /api/login?action=team-players&code=` | **New (PROPOSED)** | `code` | `200 { ok, team: { name }, players: [ { id, firstName, number } ] }`. No last names, no emails |
-| Ask a parent to approve a watch | `POST /api/login?action=watch-request` | **New (PROPOSED)** | `{ playerId, code, deviceLabel }` | `200 { ok, requestId, sent }`. Checks the jersey code first; `401` on a bad code |
+| Ask a parent to approve a watch | `POST /api/login?action=watch-request` | Built | `{ teamCode, code, deviceLabel }` (the older `{ playerId, code, teamCode?, deviceLabel }` still works) | `200 { ok, requestId, sent }`. Finds the one player on the team whose jersey code matches. `401 { error: 'bad code' }` for a wrong code, unknown team or player, or two players sharing the number. `429` past 10 per IP per hour, 20 per team code per hour, or 3 per player per 15 minutes (IP and team counted before the lookup) |
 | Wait for approval | `GET /api/login?action=watch-status&requestId=` | **New (PROPOSED)** | `requestId` | `200 { status: 'pending' \| 'approved' \| 'expired', token?, exp?, player? }`. The token is returned once, then the request is deleted |
 | Parent approves from email | `GET /api/login?action=watch-approve&t=` | **New (PROPOSED)** | one-time link token | A plain web page: "Approved. Lewie's watch is signed in." Records consent |
 | Parent removes a watch | `POST /api/login?action=watch-revoke` | **New (PROPOSED)** | `{ t }` from the email link, or a parent web session | `200 { ok }` |
 | Today's drill list with timer scripts | `GET /api/done?view=today` | Built (lib/drills.js) | none (session) | `200 { ok, date, restDay, drills: [ { id: 'dryland:0', discipline: 'dryland', name, dose, cue, steps, timer: { type, sets, workSeconds, restSeconds } \| null, done } ] }` |
 | My rings for the complication | `GET /api/done?view=rings` | Built (goal = player view per-discipline count) | none (session) | `200 { ok, week: { start, end }, rings: { stick: { done, goal }, shoot: { done, goal }, dryland: { done, goal } } }` (`netplay` replaces `shoot` for goalies, per `disciplinesFor` in `lib/store.js`) |
 | Save game day picks | `POST /api/coach?action=save-game-goals` | **New (PROPOSED)** | `{ gameId, goalIds }`, session gated | `200 { ok }`. Called by the web Game Day Goals page, not the watch |
-| My game day goals | `GET /api/coach?action=my-game-goals` | **New (PROPOSED)** | none (session) | `200 { ok, gameDay, game: { id, date, time, opponent, home, place } \| null, goals: [ { id, title } ], teamGoal }` |
+| My game day goals | `GET /api/coach?action=my-game-goals` | Built | none (web session or approved watch session, via `sessionClaims` in `lib/watch_store.js`; a removed watch gets `401`) | `200 { ok, gameDay, game: { id, date, time, opponent, home, place } \| null, goals: [ { id, title } ], teamGoal }` |
 
 ### 7.2 Why "today's drills" needs a new endpoint
 
@@ -223,7 +222,7 @@ Thwap's players are under 13, so the Children's Online Privacy Protection Act (C
 
 - **Stored on the watch:** the player id (a first name, which the app already uses as the id), jersey number, the session token in the Keychain, today's drill list, the ring numbers, and the offline queue. Nothing else.
 - **Not collected:** no HealthKit data (heart rate, workouts), no location, no microphone, no contacts, no analytics, no ads, no third-party code libraries. Apple's App Store privacy label for the watch app should read "Data not collected" apart from the sign-in itself.
-- **Parent emails never reach the watch.** The new `team-players` action returns first names and jersey numbers only.
+- **Parent emails never reach the watch.** The watch never receives a team's player list; it learns only its own player after a parent approves.
 - **Consent is recorded the same way as today,** through `recordConsent` at the moment a parent approves.
 - **Sign out wipes everything** on the watch.
 - **The session token holds no email,** only a hash of it (`lib/session_store.js`), so a lost watch does not leak a parent's address.
@@ -257,7 +256,7 @@ These are worth fixing before the watch launches, because a watch app makes team
 
 ## 14. Suggested build order (PROPOSED)
 
-1. Server: `team-players`, the shared drill module, `GET /api/done?view=today`, and `view=rings`. Unit tests for each, alongside the existing tests in `test/`.
+1. Server: the shared drill module, `GET /api/done?view=today`, and `view=rings`. Unit tests for each, alongside the existing tests in `test/`.
 2. Server: parent approval (Option A works with no server change if B is not chosen yet).
 3. Install the watchOS simulator runtime. Watch app: sign in, Today list, check-off with the offline queue.
 4. Timer and haptics, tested on a real watch.
