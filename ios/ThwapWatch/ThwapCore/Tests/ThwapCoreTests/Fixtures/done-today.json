@@ -1,0 +1,307 @@
+{
+  "ok": true,
+  "date": "2026-10-28",
+  "restDay": false,
+  "goalie": false,
+  "drills": [
+    {
+      "id": "stick:0",
+      "discipline": "stick",
+      "name": "The Triangle Drill",
+      "dose": "Multi-Directional",
+      "cue": "Move the puck in a big triangle around your feet.",
+      "steps": [
+        "Shape: Picture a big triangle around your feet.",
+        "Trace it: Move the puck from point to point.",
+        "Control: Go slow and clean before you try fast."
+      ],
+      "timer": {
+        "type": "reps",
+        "sets": 4,
+        "workSeconds": 40,
+        "restSeconds": 15,
+        "totalSeconds": 242,
+        "script": {
+          "type": "reps",
+          "reps": 10,
+          "perRep": 2,
+          "sides": 2,
+          "sideLabels": [
+            "One way",
+            "Reverse"
+          ],
+          "sets": 4,
+          "restSeconds": 15
+        }
+      },
+      "done": true
+    },
+    {
+      "id": "stick:1",
+      "discipline": "stick",
+      "name": "The Diamond Matrix",
+      "dose": "Multi-Directional",
+      "cue": "Four cones in a diamond, weave the puck around each point.",
+      "steps": [
+        "Set up: 4 cones in a diamond shape.",
+        "Weave: Take the puck around each point.",
+        "Head up: Glance up between points."
+      ],
+      "timer": {
+        "type": "reps",
+        "sets": 4,
+        "workSeconds": 40,
+        "restSeconds": 15,
+        "totalSeconds": 242,
+        "script": {
+          "type": "reps",
+          "reps": 10,
+          "perRep": 2,
+          "sides": 2,
+          "sideLabels": [
+            "One way",
+            "Reverse"
+          ],
+          "sets": 4,
+          "restSeconds": 15
+        }
+      },
+      "done": false
+    },
+    {
+      "id": "stick:2",
+      "discipline": "stick",
+      "name": "Z-Pattern Slalom",
+      "dose": "Multi-Directional",
+      "cue": "Move the puck in a zig-zag, forward-left, then forward-right.",
+      "steps": [
+        "Zig: Push the puck forward-left, then forward-right.",
+        "Zig-zag: Keep the Z going down the floor.",
+        "Quick feet: Move with the puck."
+      ],
+      "timer": {
+        "type": "reps",
+        "sets": 4,
+        "workSeconds": 32,
+        "restSeconds": 15,
+        "totalSeconds": 210,
+        "script": {
+          "type": "reps",
+          "reps": 8,
+          "perRep": 2,
+          "sides": 2,
+          "sideLabels": [
+            "One way",
+            "Reverse"
+          ],
+          "sets": 4,
+          "restSeconds": 15
+        }
+      },
+      "done": false
+    },
+    {
+      "id": "shoot:0",
+      "discipline": "shoot",
+      "name": "Quick Hands",
+      "dose": "Tight space",
+      "cue": "Control the puck close to the net without needing lots of room.",
+      "steps": [
+        "Start close: A few feet from the net. Keep the puck near your body.",
+        "Quick moves: Two or three quick stickhandles.",
+        "Outside: Move the puck outside your feet.",
+        "Shoot: Shoot right away.",
+        "Switch: Reset on the other side and do it again."
+      ],
+      "timer": {
+        "type": "session",
+        "sets": 1,
+        "workSeconds": 150,
+        "restSeconds": 0,
+        "totalSeconds": 164,
+        "script": {
+          "type": "session",
+          "seconds": 150
+        }
+      },
+      "done": false
+    },
+    {
+      "id": "shoot:1",
+      "discipline": "shoot",
+      "name": "Catch and Release",
+      "dose": "One touch",
+      "cue": "Get a pass near the net and release it before the goalie can reset.",
+      "steps": [
+        "Ready: Start near the net with your stick ready.",
+        "Get: Get a pass from the side. Catch it soft on your blade.",
+        "No extras: Don't add extra stickhandles.",
+        "Fire: Shoot right away.",
+        "Mix it up: Change where the passes come from each time."
+      ],
+      "timer": {
+        "type": "session",
+        "sets": 1,
+        "workSeconds": 150,
+        "restSeconds": 0,
+        "totalSeconds": 164,
+        "script": {
+          "type": "session",
+          "seconds": 150
+        }
+      },
+      "done": false
+    },
+    {
+      "id": "shoot:2",
+      "discipline": "shoot",
+      "name": "Pull Across",
+      "dose": "Move goalie",
+      "cue": "Pull the puck across your body before finishing from the new angle.",
+      "steps": [
+        "Come in: Start a few feet from the net with the puck on one side.",
+        "Sell it: Fake the shot from that side.",
+        "Pull: Pull the puck across your body. Keep your hands away from your feet.",
+        "Shoot: Shoot as soon as you create the new angle.",
+        "Switch: Switch directions each time."
+      ],
+      "timer": {
+        "type": "session",
+        "sets": 1,
+        "workSeconds": 150,
+        "restSeconds": 0,
+        "totalSeconds": 164,
+        "script": {
+          "type": "session",
+          "seconds": 150
+        }
+      },
+      "done": false
+    },
+    {
+      "id": "dryland:0",
+      "discipline": "dryland",
+      "name": "Will's Squares (4-sq Drill)",
+      "dose": "4 sets of 30",
+      "cue": "Quick, light hops through the square. Head up. 20 seconds each.",
+      "steps": [
+        "Set up: Mark a square on the floor. Number the corners 1, 2, 3, 4. Stay low.",
+        "Both feet: Hop 1-2, then 1-3, then 1-4. Do each for 20 seconds.",
+        "Right foot only: Same patterns. Hop 1-2, 1-3, 1-4. 20 seconds each.",
+        "Left foot only: Same thing. Hop 1-2, 1-3, 1-4. 20 seconds each.",
+        "Both feet, long patterns: 1-2-3, 1-4-2, 1-2-4-3 and more. 20 seconds each. Push hard, land light, head up."
+      ],
+      "timer": {
+        "type": "reps",
+        "sets": 4,
+        "workSeconds": 30,
+        "restSeconds": 15,
+        "totalSeconds": 190,
+        "script": {
+          "type": "reps",
+          "reps": 30,
+          "perRep": 1,
+          "sides": 1,
+          "sets": 4,
+          "restSeconds": 15
+        }
+      },
+      "done": false
+    },
+    {
+      "id": "dryland:1",
+      "discipline": "dryland",
+      "name": "Skater Jumps",
+      "dose": "4 sets of 20",
+      "cue": "Jump sideways, stick the landing.",
+      "steps": [
+        "Start: One leg, knee bent, like a skater push-off.",
+        "Jump: Jump sideways and land soft on the other leg.",
+        "Stick it: Bend the knee. Hold your balance for one second.",
+        "Back: Jump back the other way. Control matters more than distance."
+      ],
+      "timer": {
+        "type": "reps",
+        "sets": 4,
+        "workSeconds": 30,
+        "restSeconds": 15,
+        "totalSeconds": 202,
+        "script": {
+          "type": "reps",
+          "reps": 10,
+          "perRep": 1.5,
+          "sides": 2,
+          "sideLabels": [
+            "Right",
+            "Left"
+          ],
+          "sets": 4,
+          "restSeconds": 15
+        }
+      },
+      "done": true
+    },
+    {
+      "id": "dryland:2",
+      "discipline": "dryland",
+      "name": "Single-Leg RDL",
+      "dose": "4 sets of 8 per leg",
+      "cue": "Balance on one leg. Tip forward like a seesaw.",
+      "steps": [
+        "Balance: Stand on one leg with a soft bend in that knee.",
+        "Tip: Bend at the hips. Reach toward the floor as your back leg lifts behind you.",
+        "Stay level: Keep your back flat and hips level, like a seesaw tipping.",
+        "Stand up: Squeeze the standing leg to stand back up tall. Do all reps, then switch legs."
+      ],
+      "timer": {
+        "type": "reps",
+        "sets": 4,
+        "workSeconds": 40,
+        "restSeconds": 15,
+        "totalSeconds": 242,
+        "script": {
+          "type": "reps",
+          "reps": 8,
+          "perRep": 2.5,
+          "sides": 2,
+          "sideLabels": [
+            "Right leg",
+            "Left leg"
+          ],
+          "sets": 4,
+          "restSeconds": 15
+        }
+      },
+      "done": false
+    },
+    {
+      "id": "dryland:3",
+      "discipline": "dryland",
+      "name": "Sit-ups",
+      "dose": "4 sets of 15",
+      "cue": "Curl up with your belly, not your neck.",
+      "steps": [
+        "Down: Lie on your back, knees bent, feet flat on the floor.",
+        "Arms: Cross your arms or reach your hands toward your knees.",
+        "Curl: Curl up slowly using your belly, not your neck.",
+        "Lower: Lower back down with control. Breathe out on the way up."
+      ],
+      "timer": {
+        "type": "reps",
+        "sets": 4,
+        "workSeconds": 30,
+        "restSeconds": 15,
+        "totalSeconds": 190,
+        "script": {
+          "type": "reps",
+          "reps": 15,
+          "perRep": 2,
+          "sides": 1,
+          "sets": 4,
+          "restSeconds": 15
+        }
+      },
+      "done": false
+    }
+  ]
+}

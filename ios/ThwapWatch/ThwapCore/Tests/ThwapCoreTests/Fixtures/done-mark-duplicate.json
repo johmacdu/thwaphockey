@@ -1,0 +1,20 @@
+{
+  "player": {
+    "id": "lewie",
+    "stick": 1,
+    "shoot": 0,
+    "dryland": 0,
+    "netplay": 0,
+    "iq": 0,
+    "pass": 0,
+    "streak": 0,
+    "stickers": 0,
+    "updatedAt": "2026-10-28T19:00:00.000Z"
+  },
+  "ok": true,
+  "duplicate": true,
+  "drills": [
+    "stick:0",
+    "stick#the-triangle-drill"
+  ]
+}

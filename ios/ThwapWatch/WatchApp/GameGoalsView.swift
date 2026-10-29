@@ -24,12 +24,15 @@ struct GameGoalsView: View {
                 ForEach(Array(goals.enumerated()), id: \.element.id) { i, goal in
                     if i > 0 { Divider().overlay(ThwapTheme.line) }
                     VStack(alignment: .leading, spacing: 1) {
-                        Text(goal.title)
+                        Text([goal.emoji, goal.title].compactMap { $0 }.joined(separator: " "))
                             .font(.system(.body, design: .rounded).weight(.heavy))
                             .fixedSize(horizontal: false, vertical: true)
-                        Text(goal.tag.uppercased())
-                            .font(.caption2.weight(.bold))
-                            .foregroundStyle(ThwapTheme.muted)
+                        if let cue = goal.cue, !cue.isEmpty {
+                            Text(cue)
+                                .font(.caption2.weight(.bold))
+                                .foregroundStyle(ThwapTheme.muted)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
                     }
                     .padding(.vertical, 8)
                     .frame(maxWidth: .infinity, alignment: .leading)

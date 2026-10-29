@@ -1,0 +1,33 @@
+{
+  "ok": true,
+  "playerId": "alder",
+  "gameDay": false,
+  "game": {
+    "id": "g-1031",
+    "kind": "game",
+    "date": "2026-10-31",
+    "endDate": null,
+    "time": "16:00",
+    "opponent": "Tacoma Rockets",
+    "home": true,
+    "place": "Home"
+  },
+  "goals": [
+    {
+      "id": "g1",
+      "title": "Scan Twice",
+      "emoji": "👀",
+      "cue": "Have a picture before you get it."
+    },
+    {
+      "id": "g7",
+      "title": "Teach Dad and Mom",
+      "emoji": "🎓",
+      "cue": "Be the hockey detective."
+    }
+  ],
+  "saved": true,
+  "savedAt": "2026-10-29T19:00:00.000Z",
+  "teamGoal": null,
+  "max": 3
+}

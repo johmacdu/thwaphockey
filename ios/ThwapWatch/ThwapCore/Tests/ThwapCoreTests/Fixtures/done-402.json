@@ -1,0 +1,7 @@
+{
+  "status": 402,
+  "body": {
+    "error": "season not active",
+    "gated": true
+  }
+}

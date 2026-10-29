@@ -22,14 +22,38 @@ public struct RingProgress: Codable, Equatable, Sendable {
     public var isClosed: Bool { total > 0 && done >= total }
 }
 
-/// The ring snapshot shared by app and complication.
+/// The ring snapshot shared by app and complication. The complication shows
+/// this WEEK's rings from `GET /api/done?view=rings`, so a snapshot carries the
+/// Monday it belongs to (`weekStart`) and stays valid all week; a snapshot
+/// without one is a single day's and is valid on `date` only.
 public struct RingSnapshot: Codable, Equatable, Sendable {
     public var date: String
     public var rings: [RingProgress]
+    public var weekStart: String?
 
-    public init(date: String, rings: [RingProgress]) {
+    public init(date: String, rings: [RingProgress], weekStart: String? = nil) {
         self.date = date
         self.rings = rings
+        self.weekStart = weekStart
+    }
+
+    /// True when this snapshot still describes `today`.
+    public func isCurrent(today: String) -> Bool {
+        if let start = weekStart {
+            return ThwapDay.mondayOf(today) == start
+        }
+        return date == today
+    }
+
+    /// Optimistic local bump after a check-off, before the server confirms.
+    /// A goalie's netplay check-off fills the shoot/netplay slot.
+    public func bumped(_ discipline: Discipline) -> RingSnapshot {
+        var copy = self
+        let target = RingMath.slot(for: discipline)
+        if let i = copy.rings.firstIndex(where: { RingMath.slot(for: $0.discipline) == target }) {
+            copy.rings[i].done += 1
+        }
+        return copy
     }
 
     public static let empty = RingSnapshot(date: "", rings: RingMath.order.map { RingProgress(discipline: $0, done: 0, total: 0) })

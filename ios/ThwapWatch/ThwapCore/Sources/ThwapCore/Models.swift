@@ -57,16 +57,19 @@ public struct Drill: Codable, Identifiable, Equatable, Sendable {
 }
 
 /// A Game Day Goal the kid picked on the web (hockey_game_goals.html). Read-only
-/// on the watch.
+/// on the watch. Mirrors `GET /api/coach?action=my-game-goals` goals[]:
+/// `{ id, title, emoji, cue }`.
 public struct GameGoal: Codable, Identifiable, Equatable, Sendable {
     public var id: String
     public var title: String
-    public var tag: String
+    public var emoji: String?
+    public var cue: String?
 
-    public init(id: String, title: String, tag: String) {
+    public init(id: String, title: String, emoji: String? = nil, cue: String? = nil) {
         self.id = id
         self.title = title
-        self.tag = tag
+        self.emoji = emoji
+        self.cue = cue
     }
 }
 
@@ -78,14 +81,19 @@ public struct GameEvent: Codable, Equatable, Sendable {
     public var endDate: String?
     public var time: String?
     public var opponent: String?
+    public var home: Bool?
+    public var place: String?
 
-    public init(id: String, kind: String, date: String, endDate: String? = nil, time: String? = nil, opponent: String? = nil) {
+    public init(id: String, kind: String, date: String, endDate: String? = nil, time: String? = nil,
+                opponent: String? = nil, home: Bool? = nil, place: String? = nil) {
         self.id = id
         self.kind = kind
         self.date = date
         self.endDate = endDate
         self.time = time
         self.opponent = opponent
+        self.home = home
+        self.place = place
     }
 
     /// True when `day` ('YYYY-MM-DD') is this event's date or inside a
@@ -105,6 +113,12 @@ public struct SessionResponse: Codable, Equatable, Sendable {
         public var id: String
         public var name: String?
         public var number: Int?
+
+        public init(id: String, name: String? = nil, number: Int? = nil) {
+            self.id = id
+            self.name = name
+            self.number = number
+        }
     }
     public var authed: Bool
     public var player: Player?
@@ -119,19 +133,43 @@ public struct DoneResponse: Codable, Equatable, Sendable {
     public var disciplines: [String: Bool]
 }
 
-/// `POST /api/done` body for a mark: `{ player, discipline, drillId, drillName? }`.
+/// `POST /api/done` body for a mark: `{ player, discipline, drillId, drillName?, date? }`.
+/// `date` is only sent for a check-off made on an earlier day (offline at the
+/// rink, synced the next morning); the server accepts up to 7 days back.
 public struct MarkDoneRequest: Codable, Equatable, Hashable, Sendable {
     public var player: String
     public var discipline: String
     public var drillId: String
     public var drillName: String?
+    public var date: String?
 
-    public init(player: String, discipline: String, drillId: String, drillName: String?) {
+    public init(player: String, discipline: String, drillId: String, drillName: String?, date: String? = nil) {
         self.player = player
         self.discipline = discipline
         self.drillId = drillId
         self.drillName = drillName
+        self.date = date
     }
+}
+
+/// `POST /api/done` body for an undo: `{ player, drillId, undo: true }`. The
+/// server undo always acts on today and never lowers the earned count.
+public struct UndoDoneRequest: Codable, Equatable, Sendable {
+    public var player: String
+    public var drillId: String
+    public var undo: Bool = true
+
+    public init(player: String, drillId: String) {
+        self.player = player
+        self.drillId = drillId
+    }
+}
+
+/// `POST /api/done` undo response: `{ ok, undo: true, drills }`.
+public struct UndoDoneResponse: Codable, Equatable, Sendable {
+    public var ok: Bool
+    public var undo: Bool?
+    public var drills: [String]?
 }
 
 /// `POST /api/done` mark response: `{ player?, ok?, duplicate?, drills? }`.
@@ -151,16 +189,23 @@ public struct TodayPlan: Equatable, Sendable {
     public var drills: [Drill]
     public var game: GameEvent?
     public var gameGoals: [GameGoal]
+    public var restDay: Bool
+    /// The server's own game-day verdict (`my-game-goals` gameDay). When nil
+    /// (stub, or the goals read failed) the game's date decides.
+    public var serverGameDay: Bool?
 
-    public init(date: String, playerId: String, firstName: String, drills: [Drill], game: GameEvent?, gameGoals: [GameGoal]) {
+    public init(date: String, playerId: String, firstName: String, drills: [Drill], game: GameEvent?,
+                gameGoals: [GameGoal], restDay: Bool = false, serverGameDay: Bool? = nil) {
         self.date = date
         self.playerId = playerId
         self.firstName = firstName
         self.drills = drills
         self.game = game
         self.gameGoals = gameGoals
+        self.restDay = restDay
+        self.serverGameDay = serverGameDay
     }
 
     /// Game Day Goals show only when a game or tournament covers today.
-    public var isGameDay: Bool { game?.covers(day: date) ?? false }
+    public var isGameDay: Bool { serverGameDay ?? (game?.covers(day: date) ?? false) }
 }

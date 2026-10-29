@@ -1,0 +1,22 @@
+{
+  "ok": true,
+  "week": {
+    "start": "2026-10-26",
+    "end": "2026-10-28"
+  },
+  "goalie": false,
+  "rings": {
+    "stick": {
+      "done": 1,
+      "goal": 19
+    },
+    "shoot": {
+      "done": 0,
+      "goal": 19
+    },
+    "dryland": {
+      "done": 1,
+      "goal": 18
+    }
+  }
+}

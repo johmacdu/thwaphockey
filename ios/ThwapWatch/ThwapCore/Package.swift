@@ -11,6 +11,8 @@ let package = Package(
     products: [.library(name: "ThwapCore", targets: ["ThwapCore"])],
     targets: [
         .target(name: "ThwapCore"),
-        .testTarget(name: "ThwapCoreTests", dependencies: ["ThwapCore"]),
+        // Fixtures are read from the source tree via #filePath (works for both
+        // `swift test` and the watch simulator test bundle), not bundled.
+        .testTarget(name: "ThwapCoreTests", dependencies: ["ThwapCore"], exclude: ["Fixtures"]),
     ]
 )
