@@ -4206,7 +4206,7 @@ window.addEventListener('hashchange',function(){ if(location.hash===''||location
       var meta=document.getElementById('pngMeta');
       if(meta){ var b=[MON[dt.getMonth()]+' '+dt.getDate()]; if(g.time) b.push(ftime(g.time)); if(g.place) b.push(g.place); meta.textContent=b.join(' | '); }
       var cnt=document.getElementById('pngCount'), dn=document.getElementById('pngDays');
-      if(cnt&&dn&&days>=0){ dn.textContent=days===0?'today':days; cnt.querySelector('span').textContent=days===0?'':'days'; cnt.hidden=false; }
+      if(cnt&&dn&&days>=0){ dn.textContent=days===0?'today':days; cnt.querySelector('span').textContent=days===0?'':(days===1?'day':'days'); cnt.hidden=false; }
       renderPicks((state&&state.goals)||[]);
       /* Within the window: prompt to set goals (or, once the game has passed, to log them).
          Once this game's goals are set, the done-state below wins regardless. */
@@ -5080,7 +5080,7 @@ function voicePickerHTML(){
     if(isUnlocked(v)){
       return "<button type=\"button\" class=\"vopt"+(v.code===curV.code?' on':'')+"\" data-voice=\""+v.code+"\" role=\"menuitemradio\">"+(v.emoji?"<span class=\"vopt-emoji\">"+v.emoji+"</span> ":'')+esc(v.label)+"</button>";
     }
-    return "<span class=\"vopt locked\">\uD83D\uDD12 "+esc(v.label)+", unlocks in "+thwapDaysToUnlock(v)+" days</span>";
+    return "<span class=\"vopt locked\">\uD83D\uDD12 "+esc(v.label)+", unlocks in "+thwapDaysToUnlock(v)+(thwapDaysToUnlock(v)===1?" day":" days")+"</span>";
   }).join('');
   return "<div class='vpick'>"+
     "<p class='vmadlib'>Sass talks with a <button type=\"button\" class=\"pos-word vword\" aria-haspopup=\"true\" aria-expanded=\"false\">"+esc(curV.label)+"</button> accent.</p>"+
@@ -6305,7 +6305,7 @@ function buildThemePicker(){
         b.addEventListener('click',function(e){ e.stopPropagation(); if(t===cb2Theme(slug)) return; cb2SetTheme(slug,t); dirty=true; setSave(); buildFaces(); renderSwatches(); });
       } else {
         /* locked: show the milestone so a kid knows how to earn it */
-        b.setAttribute('aria-label', t+', locked. Earn '+(need||'?')+' stickers to unlock');
+        b.setAttribute('aria-label', t+', locked. Earn '+(need||'?')+(need===1?' sticker':' stickers')+' to unlock');
         if(need){ var lab=document.createElement('span'); lab.className='cardsw-need'; lab.textContent=need+'\u2B50'; b.appendChild(lab); }
         b.addEventListener('click',function(e){ e.stopPropagation(); });
       }
@@ -6354,7 +6354,7 @@ function wirePhotoButton(slug){
 }
 function disc(icon,label,days,top){  return "<div class='cb-disc'>"+
     "<div class='cb-disc-top'><span class='cb-disc-name'>"+icon+" "+label+"</span>"+
-    "<span class='cb-disc-days'><img class='cb-fire' src='login/flame.webp' alt=''> "+days+" days</span></div>"+
+    "<span class='cb-disc-days'><img class='cb-fire' src='login/flame.webp' alt=''> "+days+(Number(days)===1?" day":" days")+"</span></div>"+
     "<div class='cb-disc-most'>Most: "+top+"</div></div>";
 }
 function stickerStrip(){
@@ -9362,7 +9362,8 @@ window.thwapStartTrayDrag=function(file, startEvent){
    A parent adds/edits the player's card photo. Flow: enter a parent email, get a
    one-time code by email, enter it, then pick a photo. The photo uploads to the
    server and syncs to every device. A verified parent stays verified on this
-   device for 30 days (token cached locally), so editing later does not re-code.
+   device for 1 hour (token cached locally). After that, or after the photo is
+   removed, the next edit asks a parent for a new code with plain copy.
 
    Graceful fallback: if the photo service is not configured on the server (503)
    or unreachable, we fall back to storing the photo LOCALLY on this device only,
@@ -9375,9 +9376,14 @@ function getToken(slug){
   try{ var raw=localStorage.getItem(tokKey(slug)); if(!raw) return null;
     var t=JSON.parse(raw); return (t && t.exp>Date.now())? t.token : null; }catch(e){ return null; }
 }
+/* The upload token carries its own expiry (<player>.<exp>.<sig>, 1 hour), so the
+   device forgets it exactly when the server stops accepting it. */
 function saveToken(slug, token){
-  try{ localStorage.setItem(tokKey(slug), JSON.stringify({token:token, exp:Date.now()+30*24*60*60*1000})); }catch(e){}
+  var exp=Number(String(token||'').split('.')[1]);
+  if(!(exp>Date.now())) exp=Date.now()+60*60*1000;
+  try{ localStorage.setItem(tokKey(slug), JSON.stringify({token:token, exp:exp})); }catch(e){}
 }
+function clearToken(slug){ try{ localStorage.removeItem(tokKey(slug)); }catch(e){} }
 
 /* Crop + downscale a File to the card portrait, then remove the background ON-DEVICE
    so only the player shows over the card art. Returns a transparent PNG data URL.
@@ -9461,35 +9467,40 @@ function saveLocal(slug, dataUrl){
   catch(e){ window.alert('That photo is too big to save on this device. Try a smaller one.'); return false; }
 }
 
-/* Try to upload to the server with a verified token. Returns a promise of true
-   (uploaded) or false (fall back to local). */
+/* Try to upload to the server with a verified token. Resolves to true (uploaded),
+   'expired' (the 1-hour token ran out or consent was withdrawn: a parent needs a
+   new code) or false (server unreachable: fall back to local). */
 function uploadToServer(playerId, slug, dataUrl){
   var token=getToken(slug);
   if(!token) return Promise.resolve(false);
   return fetch('/api/photo/upload',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
     body:JSON.stringify({playerId:playerId, imageData:dataUrl})})
-    .then(function(r){ return r.ok; }).catch(function(){ return false; });
+    .then(function(r){ if(r.status===401){ clearToken(slug); return 'expired'; } return r.ok; })
+    .catch(function(){ return false; });
 }
 
 /* Run the parent email-OTP gate. Resolves to true if verified (token cached).
    Uses an in-page modal (not window.prompt) so the parent can switch to their
    email tab to read the code and come back without the dialog vanishing. */
-function parentGate(playerId, slug){
+function parentGate(playerId, slug, expired){
   return new Promise(function(resolve){
     var wrap=document.createElement('div'); wrap.className='pgate';
     wrap.innerHTML=
       "<div class='pgate-box' role='dialog' aria-modal='true' aria-label='Add a photo'>"+
         "<button type='button' class='pgate-x' aria-label='Close'>\u00d7</button>"+
         "<div class='pgate-step' data-step='email'>"+
-          "<h3 class='pgate-h'>A parent adds the photo</h3>"+
-          "<p class='pgate-p'>Enter a parent email. We send a one-time code.</p>"+
+          (expired
+            ? "<h3 class='pgate-h'>Your photo code ran out</h3>"+
+              "<p class='pgate-p'>A code works for 1 hour. Enter a parent email to get a new one and finish.</p>"
+            : "<h3 class='pgate-h'>A parent adds the photo</h3>"+
+              "<p class='pgate-p'>Enter a parent email. We send a one-time code.</p>")+
           "<input class='pgate-in' type='email' inputmode='email' autocomplete='email' placeholder='parent@email.com'>"+
           "<button type='button' class='pgate-go' data-act='send'>Send code</button>"+
           "<div class='pgate-msg' aria-live='polite'></div>"+
         "</div>"+
         "<div class='pgate-step' data-step='code' hidden>"+
           "<h3 class='pgate-h'>Enter your code</h3>"+
-          "<p class='pgate-p'>We emailed a 6-digit code. Check your email, then type it here. It lasts 10 minutes.</p>"+
+          "<p class='pgate-p'>If that email is on file with your coach, we sent a 6-digit code. Check your email, then type it here. It lasts 10 minutes.</p>"+
           "<input class='pgate-in' type='text' inputmode='numeric' autocomplete='one-time-code' maxlength='6' placeholder='123456'>"+
           "<button type='button' class='pgate-go' data-act='verify'>Verify</button>"+
           "<button type='button' class='pgate-link' data-act='resend'>Send a new code</button>"+
@@ -9547,6 +9558,18 @@ window.thwapPhotoEdit=function(playerId, hasPhoto, onDone){
   function afterPick(dataUrl){
     if(!dataUrl) return;
     uploadToServer(playerId, slug, dataUrl).then(function(uploaded){
+      if(uploaded==='expired'){
+        /* The 1-hour token ran out mid-edit: ask for a new code, then send the
+           SAME photo (no re-pick). Closing the gate saves nothing. */
+        parentGate(playerId, slug, true).then(function(ok){
+          if(ok!==true) return;
+          uploadToServer(playerId, slug, dataUrl).then(function(again){
+            if(again!==true) saveLocal(slug, dataUrl);
+            if(onDone) onDone();
+          });
+        });
+        return;
+      }
       if(!uploaded) saveLocal(slug, dataUrl);   /* fallback: local only */
       if(onDone) onDone();
     });
@@ -9570,8 +9593,18 @@ window.thwapPhotoRemove=function(playerId, onDone){
   try{ localStorage.removeItem(localKey(slug)); }catch(e){}
   var token=getToken(slug);
   var done=function(){ if(onDone) onDone(); };
-  if(token){ fetch('/api/photo/remove',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
-      body:JSON.stringify({playerId:playerId})}).then(done).catch(done); }
+  function send(t){ return fetch('/api/photo/remove',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+t},
+      body:JSON.stringify({playerId:playerId})}); }
+  if(token){ send(token).then(function(r){
+      if(r.status!==401){ clearToken(slug); done(); return; }
+      /* Token ran out: a parent gets a new code, then the remove goes through. */
+      clearToken(slug);
+      parentGate(playerId, slug, true).then(function(ok){
+        var t2=ok===true&&getToken(slug);
+        if(!t2){ done(); return; }
+        send(t2).then(function(){ clearToken(slug); done(); }).catch(done);
+      });
+    }).catch(done); }
   else done();
 };
 

@@ -33,7 +33,7 @@ const { default: upload } = await import('../api/photo/upload.js');
 const { default: remove } = await import('../api/photo/remove.js');
 const { default: getPhoto } = await import('../api/photo/get.js');
 const { default: adminPut } = await import('../api/photo/admin-put.js');
-const { getConsent } = await import('../lib/photo_store.js');
+const { getPhotoConsent: getConsent } = await import('../lib/photo_store.js');
 const { getKv } = await import('../lib/photo_common.js');
 const { mintSession } = await import('../lib/session_store.js');
 

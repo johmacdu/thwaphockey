@@ -1,7 +1,7 @@
 // api/waitlist.js
 //
 // POST { association, ageLevel, email }  -> records a waitlist signup (public).
-// GET  (admin token)                     -> lists/exports signups (JSON or CSV).
+// GET  (Authorization: Bearer <token>)   -> lists/exports signups (JSON or CSV).
 //
 // First-party waitlist for THWAP. Each signup is stored in Upstash Redis (the
 // same store the rest of the app uses), so the data stays private with no third
@@ -14,6 +14,7 @@
 //   RESEND_API_KEY, PHOTO_FROM_EMAIL      reused from the photo flow to send mail
 
 import { getKv, parseBody } from '../lib/photo_common.js';
+import { sharedKeyOk } from '../lib/admin_auth.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -93,11 +94,9 @@ async function handleGet(req, res) {
   return res.status(200).json({ count: entries.length, entries });
 }
 
+// The read-back key in the Authorization: Bearer header only (never ?key=).
 function adminOk(req, secret) {
-  const auth = req.headers && req.headers.authorization ? String(req.headers.authorization) : '';
-  const bearer = auth.indexOf('Bearer ') === 0 ? auth.slice(7) : '';
-  const q = (req.query && (req.query.key || req.query.token)) || '';
-  return bearer === secret || String(q) === secret;
+  return sharedKeyOk(req, secret);
 }
 
 function safeParse(s) {
