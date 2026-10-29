@@ -25,6 +25,7 @@
 //   POST ?action=save-game-goals { gameId?, goalIds }             -> save the signed-in player's own
 //                                 Game Day Goals picks for a game (thwapSession only; no gameId = next game)
 //   GET  ?action=my-game-goals  { gameId?, playerId?, coachToken? } -> { gameDay, game, goals, teamGoal }
+//                                  (web session or an approved Apple Watch session)
 //                                 for the signed-in player, or a player on a team the coach runs
 //
 // Coach auth: a coach session token (reuses lib/session_store's HMAC mint/verify,
@@ -35,6 +36,7 @@
 import crypto from 'crypto';
 import { parseBody } from '../lib/photo_common.js';
 import { mintSession, verifySession, readSessionCookie } from '../lib/session_store.js';
+import { sessionClaims } from '../lib/watch_store.js';
 import { ROSTER, weekBoard, monthTrend, adjustPlayer, getGrants, setGrants } from '../lib/store.js';
 import { LETTERS, MAX_A, letterFromGrants, withLetter } from '../lib/avatar_items.js';
 import {
@@ -1223,12 +1225,16 @@ async function saveGameGoals(req, res) {
 // GET ?action=my-game-goals [&gameId=] [&playerId=&coachToken=]
 //   -> { ok, playerId, gameDay, game, goals:[{id,title,emoji,cue}], teamGoal,
 //        savedAt, max }
-// The signed-in player reads their own. A coach who runs the player's team may
+// The signed-in player reads their own, from the web session OR an approved
+// Apple Watch (lib/watch_store.js sessionClaims, the same check api/done.js
+// uses; a removed watch is refused). A coach who runs the player's team may
 // read a player by playerId. gameDay is true only on the game's Vancouver date.
+// save-game-goals stays web-session only.
 async function myGameGoals(req, res) {
   if (!methodGuard(req, res, 'GET')) return;
   const q = req.query || {};
-  const selfId = sessionPlayerId(req);
+  const claims = await sessionClaims(req);
+  const selfId = claims ? String(claims.playerId || '').toLowerCase() : '';
   const asked = String(q.playerId || '').trim().toLowerCase();
   let pid = '';
   if (selfId && (!asked || asked === selfId)) {
