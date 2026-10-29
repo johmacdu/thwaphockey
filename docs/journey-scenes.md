@@ -13,10 +13,10 @@ placeholder box). Practice Ice falls back to the rink art.
 
 | File | Stage | Training days | Shows | Status |
 |---|---|---|---|---|
-| `journey/art/scene-locker.webp` | Locker Room | 1 to 19 | A team locker room with stalls and a tunnel out to the ice. | **Needs a landscape version** |
+| `journey/art/scene-locker.webp` | Locker Room | 1 to 19 | A team locker room with stalls and a tunnel out to the ice, team crest on the floor. | Landscape (Oct 29) |
 | `journey/art/scene-practice.webp` | Practice Ice | 20 to 43 | An empty practice rink from above. | Landscape (rotated Oct 29) |
 | `journey/art/scene-gameready.webp` | Game Ready | 44 to 67 | A game arena: rink from above, crowd, lights. | Landscape (rotated Oct 29) |
-| `journey/art/scene-legend.webp` | Legend | 68 to 91 | A championship arena: banners, a trophy, spotlights. | **Needs a landscape version** |
+| `journey/art/scene-legend.webp` | Legend | 68 to 91 | A championship arena: banners, a trophy, spotlights. | Landscape (Oct 29) |
 
 The rinks were drawn portrait for the old stacked path and rotated 90 degrees,
 which works because a rink seen from above has no up or down. The locker room
