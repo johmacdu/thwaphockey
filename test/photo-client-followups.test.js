@@ -2,7 +2,8 @@
 //
 // Client side of the photo audit follow-ups (index.html):
 //   2. The cached upload token expires when the server's 1-hour token does,
-//      and a token that ran out mid-edit asks a parent for a new code.
+//      and a token that ran out asks a parent for a new code (remove path;
+//      uploads were retired on 2026-10-29).
 
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -53,12 +54,17 @@ describe('2. client token follows the 1-hour server token', () => {
     expect(HTML).not.toMatch(/exp:Date\.now\(\)\+30\*24\*60\*60\*1000/);
   });
 
-  it('a 401 on upload clears the token and asks a parent for a new code with clear copy', () => {
-    const up = fnSource('uploadToServer');
-    expect(up).toMatch(/r\.status===401\)\{ clearToken\(slug\); return 'expired'; \}/);
+  it('a 401 on remove clears the token and asks a parent for a new code with clear copy', () => {
+    // Uploads are retired (2026-10-29); the remove path is the one that still
+    // uses the token, so it is the one that must handle the 1-hour expiry.
+    expect(HTML).not.toContain('function uploadToServer(');
+    const start = HTML.indexOf('window.thwapPhotoRemove=function(');
+    expect(start).toBeGreaterThan(-1);
+    const rm = HTML.slice(start, HTML.indexOf('\n};', start));
+    expect(rm).toMatch(/if\(r\.status!==401\)\{ clearToken\(slug\); done\(\); return; \}/);
+    expect(rm).toMatch(/clearToken\(slug\);\s*parentGate\(playerId, slug, true\)/);
     expect(HTML).toContain("Your photo code ran out");
     expect(HTML).toContain('A code works for 1 hour. Enter a parent email to get a new one and finish.');
-    expect(HTML).toMatch(/uploaded==='expired'[\s\S]{0,200}parentGate\(playerId, slug, true\)/);
   });
 });
 

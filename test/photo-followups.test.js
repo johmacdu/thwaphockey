@@ -2,20 +2,18 @@
 //
 // Follow-ups to the photo endpoint audit (PR #488):
 //   1. Removing a photo withdraws its PHOTO consent, never the sign-in consent.
-//   2. The photo upload token lives 1 hour, not 30 days.
+//   2. The parent photo token lives 1 hour, not 30 days.
+// Uploads were retired on 2026-10-29: stored photos are seeded directly here.
 //   3. Admin sweep of orphaned blobs under photos/ (dry run by default).
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { FakeRedis } from './fakeRedis.js';
-import { JPEG_URL } from './fixtures/photo_images.js';
 
 const fake = new FakeRedis();
 vi.mock('@upstash/redis', () => ({ Redis: class { constructor() { return fake; } } }));
-const blobPut = vi.fn(async (key) => ({ url: `https://blob.example/${key}` }));
 const blobDel = vi.fn(async () => {});
 const blobList = vi.fn(async () => ({ blobs: [], hasMore: false }));
 vi.mock('@vercel/blob', () => ({
-  put: (...a) => blobPut(...a),
   del: (...a) => blobDel(...a),
   list: (...a) => blobList(...a),
 }));
@@ -33,12 +31,13 @@ setEnv();
 
 const { default: requestCode } = await import('../api/photo/request-code.js');
 const { default: verify } = await import('../api/photo/verify.js');
-const { default: upload } = await import('../api/photo/upload.js');
 const { default: remove } = await import('../api/photo/remove.js');
 const store = await import('../lib/photo_store.js');
 const { getKv } = await import('../lib/photo_common.js');
 
 const PARENT = 'parent@family.example';
+const seedPhoto = (pid = 'lewie') =>
+  getKv().set(`photo:${pid}`, { url: `https://blob.example/photos/${pid}.png`, key: `photos/${pid}.png`, updatedAt: 1 });
 
 function makeRes() {
   return {
@@ -69,7 +68,6 @@ beforeEach(() => {
   if (fake.ttls) fake.ttls.clear();
   setEnv();
   vi.useRealTimers();
-  blobPut.mockClear();
   blobDel.mockClear();
   blobList.mockReset();
   blobList.mockImplementation(async () => ({ blobs: [], hasMore: false }));
@@ -89,12 +87,10 @@ describe('1. removing a photo withdraws its photo consent, not sign-in consent',
   it('remove deletes the photo consent but keeps the sign-in consent', async () => {
     await store.recordConsent(getKv(), 'lewie', PARENT);
     const t = await verifiedToken('lewie');
-    let res = makeRes();
-    await upload(post({ playerId: 'lewie', imageData: JPEG_URL }, bearer(t)), res);
-    expect(res.statusCode).toBe(200);
+    await seedPhoto('lewie');
     expect(await store.getPhotoConsent(getKv(), 'lewie')).toBeTruthy();
 
-    res = makeRes();
+    const res = makeRes();
     await remove(post({ playerId: 'lewie' }, bearer(t)), res);
     expect(res.statusCode).toBe(200);
     expect(await store.getPhoto(getKv(), 'lewie')).toBeNull();
@@ -104,22 +100,10 @@ describe('1. removing a photo withdraws its photo consent, not sign-in consent',
     expect(signIn.method).toBe('email');
   });
 
-  it('after a remove, the old token cannot put a photo back (consent was withdrawn)', async () => {
-    const t = await verifiedToken('lewie');
-    await upload(post({ playerId: 'lewie', imageData: JPEG_URL }, bearer(t)), makeRes());
-    await remove(post({ playerId: 'lewie' }, bearer(t)), makeRes());
-    blobPut.mockClear();
-    const res = makeRes();
-    await upload(post({ playerId: 'lewie', imageData: JPEG_URL }, bearer(t)), res);
-    expect(res.statusCode).toBe(401);
-    expect(blobPut).not.toHaveBeenCalled();
-    expect(await store.getPhoto(getKv(), 'lewie')).toBeNull();
-  });
-
   it('the admin retire sweep deletes photo consent and keeps sign-in consent', async () => {
     await store.recordConsent(getKv(), 'lewie', PARENT);
-    const t = await verifiedToken('lewie');
-    await upload(post({ playerId: 'lewie', imageData: JPEG_URL }, bearer(t)), makeRes());
+    await verifiedToken('lewie');
+    await seedPhoto('lewie');
     const res = makeRes();
     await remove(post({ all: true, confirm: 'DELETE ALL PLAYER PHOTOS' }, bearer('admin-test-token')), res);
     expect(res.statusCode).toBe(200);
@@ -128,7 +112,7 @@ describe('1. removing a photo withdraws its photo consent, not sign-in consent',
   });
 });
 
-describe('2. the photo upload token lives 1 hour', () => {
+describe('2. the parent photo token lives 1 hour', () => {
   it('TOKEN_TTL_MS is one hour', () => {
     expect(store.TOKEN_TTL_MS).toBe(60 * 60 * 1000);
   });
@@ -141,18 +125,21 @@ describe('2. the photo upload token lives 1 hour', () => {
     expect(store.verifyToken(t, t0 + 24 * 60 * 60 * 1000)).toBeNull();
   });
 
-  it('upload takes the token at 59 minutes and refuses it after 1 hour', async () => {
+  it('remove takes the token at 59 minutes and refuses it after 1 hour', async () => {
     vi.useFakeTimers({ toFake: ['Date'] });
     vi.setSystemTime(Date.UTC(2026, 9, 1, 12, 0, 0));
     const t = await verifiedToken('lewie');
-    vi.setSystemTime(Date.UTC(2026, 9, 1, 12, 59, 0));
-    let res = makeRes();
-    await upload(post({ playerId: 'lewie', imageData: JPEG_URL }, bearer(t)), res);
-    expect(res.statusCode).toBe(200);
     vi.setSystemTime(Date.UTC(2026, 9, 1, 13, 0, 1));
-    res = makeRes();
-    await upload(post({ playerId: 'lewie', imageData: JPEG_URL }, bearer(t)), res);
+    let res = makeRes();
+    await remove(post({ playerId: 'lewie' }, bearer(t)), res);
     expect(res.statusCode).toBe(401);
+    const t2 = await verifiedToken('lewie');
+    await seedPhoto('lewie');
+    vi.setSystemTime(Date.UTC(2026, 9, 1, 13, 59, 0));
+    res = makeRes();
+    await remove(post({ playerId: 'lewie' }, bearer(t2)), res);
+    expect(res.statusCode).toBe(200);
+    expect(await store.getPhoto(getKv(), 'lewie')).toBeNull();
     res = makeRes();
     await remove(post({ playerId: 'lewie' }, bearer(t)), res);
     expect(res.statusCode).toBe(401);

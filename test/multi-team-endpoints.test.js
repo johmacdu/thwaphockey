@@ -5,19 +5,18 @@
 //   - api/done.js     record a drill, read today and this week
 //   - api/board.js    leaderboard, cheers, fires, givers, looks: own team ONLY
 //   - api/push.js     register a device, admin send/status
-//   - api/photo/*     get, request-code, verify, upload, admin-put
+//   - api/photo/*     get, request-code, verify, remove (uploads retired 2026-10-29)
 //   - lib/look_api.js own look read/write
 // The 16 Rangers keep working with no member records, and an unknown player
 // (or one removed from their team's members list) is refused.
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { FakeRedis } from './fakeRedis.js';
-import { JPEG_URL } from './fixtures/photo_images.js';
 
 const fake = new FakeRedis();
 vi.mock('@upstash/redis', () => ({ Redis: class { constructor() { return fake; } } }));
-const blobPut = vi.fn(async (key) => ({ url: `https://blob.example/${key}` }));
-vi.mock('@vercel/blob', () => ({ put: (...a) => blobPut(...a), del: vi.fn(async () => {}) }));
+const blobDel = vi.fn(async () => {});
+vi.mock('@vercel/blob', () => ({ del: (...a) => blobDel(...a), list: vi.fn(async () => ({ blobs: [], hasMore: false })) }));
 
 function setEnv() {
   process.env.KV_REST_API_URL = 'https://fake';
@@ -38,8 +37,7 @@ const { _handlers: push } = await import('../api/push.js');
 const { default: photoGet } = await import('../api/photo/get.js');
 const { default: photoRequest } = await import('../api/photo/request-code.js');
 const { default: photoVerify } = await import('../api/photo/verify.js');
-const { default: photoUpload } = await import('../api/photo/upload.js');
-const { default: photoAdminPut } = await import('../api/photo/admin-put.js');
+const { default: photoRemove } = await import('../api/photo/remove.js');
 const { mintSession } = await import('../lib/session_store.js');
 const { mintToken } = await import('../lib/photo_store.js');
 const { ROSTER } = await import('../lib/store.js');
@@ -57,8 +55,6 @@ function makeRes() {
 const cookie = (pid) => ({ cookie: `thwapSession=${mintSession(pid, 'parent@example.com')}` });
 const postAs = (pid, body, query = {}) => ({ method: 'POST', query, body, headers: pid ? cookie(pid) : {} });
 const getAs = (pid, query = {}) => ({ method: 'GET', query, headers: pid ? cookie(pid) : {} });
-// A structurally real JPEG: the photo endpoints check magic bytes and strip EXIF.
-const IMG = JPEG_URL;
 const ROSTER_IDS = ROSTER.map((p) => p.id);
 
 async function seedFlyers() {
@@ -70,7 +66,7 @@ async function seedFlyers() {
 beforeEach(async () => {
   fake.map.clear();
   setEnv();
-  blobPut.mockClear();
+  blobDel.mockClear();
   global.fetch = vi.fn(async () => ({ ok: true, status: 200, json: async () => ({}) }));
   vi.useFakeTimers();
   vi.setSystemTime(new Date('2026-01-14T20:00:00.000Z')); // Wed, Vancouver
@@ -272,7 +268,7 @@ describe('api/push.js on any team', () => {
 });
 
 describe('api/photo/* on any team', () => {
-  it('get, request-code, verify, upload and admin-put accept a non-Rangers player', async () => {
+  it('get, request-code, verify and remove accept a non-Rangers player', async () => {
     // The photo code only goes to a parent email on file for the player.
     fake.map.set('teamMember:zara', { ...fake.map.get('teamMember:zara'), parentEmails: ['parent@example.com'], parentEmail: 'parent@example.com' });
     // Photo reads need a signed-in player on the same team (milo is a Flyer).
@@ -292,16 +288,19 @@ describe('api/photo/* on any team', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body.uploadToken).toBeTruthy();
 
-    res = makeRes();
-    await photoUpload({ method: 'POST', body: { playerId: 'zara', imageData: IMG }, headers: { authorization: `Bearer ${mintToken('zara')}` } }, res);
-    expect(res.statusCode).toBe(200);
+    // Uploads are retired: seed a stored photo, then the parent deletes it.
+    fake.map.set('photo:zara', { url: 'https://blob.example/photos/z.png', key: 'photos/z.png', updatedAt: 1 });
     res = makeRes();
     await photoGet(getAs('milo', { playerId: 'zara' }), res);
     expect(res.statusCode).toBe(200);
 
     res = makeRes();
-    await photoAdminPut({ method: 'POST', query: {}, body: { playerId: 'milo', imageData: IMG, consent: { method: 'in_person', grantedBy: 'Parent' } }, headers: { authorization: 'Bearer admin-test-token' } }, res);
+    await photoRemove({ method: 'POST', query: {}, body: { playerId: 'zara' }, headers: { authorization: `Bearer ${mintToken('zara')}` } }, res);
     expect(res.statusCode).toBe(200);
+    expect(blobDel).toHaveBeenCalledWith('https://blob.example/photos/z.png', expect.anything());
+    res = makeRes();
+    await photoGet(getAs('milo', { playerId: 'zara' }), res);
+    expect(res.statusCode).toBe(404);
   });
 
   it('refuses an unknown player on every photo endpoint (without saying so); Rangers still accepted', async () => {
@@ -316,8 +315,8 @@ describe('api/photo/* on any team', () => {
     await photoVerify({ method: 'POST', body: { email: 'p@example.com', playerId: 'ghost', code: '123456' }, headers: {} }, res);
     expect(res.statusCode).toBe(401);
     res = makeRes();
-    await photoUpload({ method: 'POST', body: { playerId: 'ghost', imageData: IMG }, headers: { authorization: `Bearer ${mintToken('ghost')}` } }, res);
-    expect(res.statusCode).toBe(401);
+    await photoRemove({ method: 'POST', query: {}, body: { playerId: 'ghost' }, headers: { authorization: `Bearer ${mintToken('zara')}` } }, res);
+    expect(res.statusCode).toBe(401); // a token for one player cannot delete another
     res = makeRes();
     await photoGet(getAs('teddy', { playerId: 'lewie' }), res);
     expect(res.statusCode).toBe(404);
