@@ -6,6 +6,7 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { FakeRedis } from './fakeRedis.js';
+import { JPEG_URL } from './fixtures/photo_images.js';
 
 const fake = new FakeRedis();
 vi.mock('@upstash/redis', () => ({ Redis: class { constructor() { return fake; } } }));
@@ -34,6 +35,7 @@ const { default: getPhoto } = await import('../api/photo/get.js');
 const { default: adminPut } = await import('../api/photo/admin-put.js');
 const { getConsent } = await import('../lib/photo_store.js');
 const { getKv } = await import('../lib/photo_common.js');
+const { mintSession } = await import('../lib/session_store.js');
 
 function makeRes() {
   return {
@@ -43,14 +45,18 @@ function makeRes() {
     setHeader(k, v) { this.headers[k] = v; },
   };
 }
-const post = (body, headers = {}) => ({ method: 'POST', body, headers });
-const get = (query) => ({ method: 'GET', query });
+let ipSeq = 0;
+const post = (body, headers = {}) => ({ method: 'POST', body, headers: { 'x-real-ip': `10.1.0.${(ipSeq++ % 250) + 1}`, ...headers } });
+// Photo reads need a signed-in teammate (teddy is on lewie's team).
+const get = (query) => ({ method: 'GET', query, headers: { cookie: `thwapSession=${mintSession('teddy', 'p@x.com')}` } });
 
 beforeEach(() => {
   fake.map.clear();
   setEnv();
   blobPut.mockClear();
   blobDel.mockClear();
+  // lewie's parent email on file: the photo code only goes there.
+  fake.map.set('teamMember:lewie', { parentEmails: ['p@x.com'], parentEmail: 'p@x.com', firstName: 'Lewie', number: 72 });
   // Resend send -> ok
   global.fetch = vi.fn(async () => ({ ok: true, status: 200, json: async () => ({}) }));
 });
@@ -72,10 +78,12 @@ describe('request-code', () => {
     await requestCode({ method: 'GET' }, res);
     expect(res.statusCode).toBe(405);
   });
-  it('rejects unknown player', async () => {
+  it('unknown player: same ok answer, no email sent', async () => {
     const res = makeRes();
     await requestCode(post({ email: 'p@x.com', playerId: 'nobody' }), res);
-    expect(res.statusCode).toBe(400);
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual({ ok: true });
+    expect(global.fetch).not.toHaveBeenCalled();
   });
   it('rejects bad email', async () => {
     const res = makeRes();
@@ -89,10 +97,10 @@ describe('request-code', () => {
     expect(res.body.ok).toBe(true);
     expect(codeFromLastEmail()).toMatch(/^\d{6}$/);
   });
-  it('rate-limits after 5 requests in the hour', async () => {
+  it('rate-limits one email after 5 requests in the hour (any player ids)', async () => {
     for (let i = 0; i < 5; i++) {
       const r = makeRes();
-      await requestCode(post({ email: 'p@x.com', playerId: 'lewie' }), r);
+      await requestCode(post({ email: 'p@x.com', playerId: `kid${i}` }), r);
       expect(r.statusCode).toBe(200);
     }
     const r6 = makeRes();
@@ -132,10 +140,11 @@ describe('verify', () => {
     for (let i = 0; i < 5; i++) {
       await verify(post({ email: 'p@x.com', playerId: 'lewie', code: '111111' }), makeRes());
     }
+    // Locked: even the right code no longer works, and the answer says nothing more.
     const res = makeRes();
-    await verify(post({ email: 'p@x.com', playerId: 'lewie', code: '111111' }), res);
+    await verify(post({ email: 'p@x.com', playerId: 'lewie', code: codeFromLastEmail() }), res);
     expect(res.statusCode).toBe(401);
-    expect(res.body.reason).toBe('locked');
+    expect(res.body).toEqual({ error: 'bad code' });
   });
   it('rejects bad input', async () => {
     const res = makeRes();
@@ -144,7 +153,7 @@ describe('verify', () => {
   });
 });
 
-const IMG = 'data:image/jpeg;base64,' + Buffer.from('hello-jpeg-bytes').toString('base64');
+const IMG = JPEG_URL;
 
 describe('upload', () => {
   it('stores a photo with a valid token', async () => {

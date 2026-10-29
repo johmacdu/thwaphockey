@@ -1,16 +1,24 @@
 // api/photo/upload.js
 //
 // POST (Authorization: Bearer <uploadToken>) { playerId, imageData }
-//   imageData is a data URL (data:image/...;base64,...), already cropped and
-//   downscaled by the client. Stored to Vercel Blob under an unguessable key.
+//   imageData is a data URL (data:image/jpeg|png;base64,...), already cropped
+//   and downscaled by the client. The server checks it really is a JPEG/PNG,
+//   strips EXIF/GPS/text metadata, and stores it to Vercel Blob under a random
+//   key that carries no name. The previous blob (if any) is deleted so a
+//   replaced photo does not stay reachable.
 // -> { url }
+//
+// The upload token is checked FIRST, so a caller without one cannot learn
+// whether a player exists. Only the photo upload token works here: a web
+// session, coach, admin or watch token is refused.
 
-import { put } from '@vercel/blob';
-import { getKv, parseBody, isRosterPlayer, uploadConfigured } from '../../lib/photo_common.js';
-import { verifyToken, putPhoto, randomKey } from '../../lib/photo_store.js';
+import { put, del } from '@vercel/blob';
+import { getKv, parseBody, isRosterPlayer, uploadConfigured, cleanImage } from '../../lib/photo_common.js';
+import { verifyToken, putPhoto, getPhoto, randomKey } from '../../lib/photo_store.js';
+import { hit } from '../../lib/rate_limit.js';
 
-const MAX_BYTES = 400 * 1024; // ~400KB cap on the already-downscaled image
-const DATA_URL_RE = /^data:image\/(png|jpeg|jpg|webp);base64,([a-zA-Z0-9+/]+=*)$/;
+export const UPLOAD_LIMIT = 10; // uploads per player per hour
+const UPLOAD_WINDOW_SEC = 60 * 60;
 
 function bearer(req) {
   const h = req.headers && (req.headers.authorization || req.headers.Authorization);
@@ -23,31 +31,35 @@ export default async function handler(req, res) {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'method not allowed' });
   }
+  res.setHeader('Cache-Control', 'no-store');
   if (!uploadConfigured()) return res.status(503).json({ error: 'photo service not configured' });
 
   const { playerId, imageData } = parseBody(req);
-  if (!(await isRosterPlayer(playerId))) return res.status(400).json({ error: 'unknown player' });
-
+  const pid = String(playerId || '').trim().toLowerCase();
   const tokenPlayer = verifyToken(bearer(req));
-  if (!tokenPlayer || tokenPlayer !== String(playerId).toLowerCase()) {
-    return res.status(401).json({ error: 'not verified' });
-  }
-
-  const m = DATA_URL_RE.exec(String(imageData || ''));
-  if (!m) return res.status(400).json({ error: 'bad image' });
-  const ext = m[1] === 'jpg' ? 'jpeg' : m[1];
-  const buf = Buffer.from(m[2], 'base64');
-  if (buf.length === 0 || buf.length > MAX_BYTES) return res.status(400).json({ error: 'image too big' });
+  if (!tokenPlayer || !pid || tokenPlayer !== pid) return res.status(401).json({ error: 'not verified' });
+  // A player removed from every team after the token was minted.
+  if (!(await isRosterPlayer(pid))) return res.status(401).json({ error: 'not verified' });
 
   const kv = getKv();
-  const key = `photos/${String(playerId).toLowerCase()}-${randomKey()}.${ext}`;
-  const blob = await put(key, buf, {
+  if (!(await hit(kv, 'photo-upload:pid', pid, UPLOAD_LIMIT, UPLOAD_WINDOW_SEC))) {
+    return res.status(429).json({ error: 'too many requests, try again later' });
+  }
+
+  const img = cleanImage(imageData);
+  if (img.error) return res.status(400).json({ error: img.error });
+
+  const key = `photos/${randomKey()}.${img.ext}`;
+  const blob = await put(key, img.buf, {
     access: 'public',
-    contentType: `image/${ext}`,
+    contentType: `image/${img.ext}`,
     token: process.env.BLOB_READ_WRITE_TOKEN,
   });
-  await putPhoto(kv, playerId, blob.url, key);
+  const prev = await getPhoto(kv, pid);
+  await putPhoto(kv, pid, blob.url, key);
+  if (prev && prev.url && prev.url !== blob.url) {
+    try { await del(prev.url, { token: process.env.BLOB_READ_WRITE_TOKEN }); } catch { /* already gone */ }
+  }
 
-  res.setHeader('Cache-Control', 'no-store');
   return res.status(200).json({ url: blob.url });
 }

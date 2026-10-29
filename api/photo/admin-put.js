@@ -8,16 +8,13 @@
 // NOT fake a verified-email consent: it records HOW consent was given, WHO gave
 // it, and WHICH admin recorded it, so the stored consent record is truthful.
 //
-// imageData is a data URL (data:image/...;base64,...), already cropped/downscaled
+// imageData is a data URL (data:image/jpeg|png;base64,...), already cropped/downscaled
 // by the client. Stored to Vercel Blob under an unguessable key.
 // -> { url }
 
-import { put } from '@vercel/blob';
-import { getKv, parseBody, isRosterPlayer, uploadConfigured, adminOk } from '../../lib/photo_common.js';
-import { putPhoto, recordAdminConsent, randomKey, CONSENT_METHODS } from '../../lib/photo_store.js';
-
-const MAX_BYTES = 400 * 1024; // ~400KB cap on the already-downscaled image
-const DATA_URL_RE = /^data:image\/(png|jpeg|jpg|webp);base64,([a-zA-Z0-9+/]+=*)$/;
+import { put, del } from '@vercel/blob';
+import { getKv, parseBody, isRosterPlayer, uploadConfigured, adminOk, cleanImage } from '../../lib/photo_common.js';
+import { putPhoto, getPhoto, recordAdminConsent, randomKey, CONSENT_METHODS } from '../../lib/photo_store.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -41,21 +38,24 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'consent grantedBy (parent name) required' });
   }
 
-  const m = DATA_URL_RE.exec(String(imageData || ''));
-  if (!m) return res.status(400).json({ error: 'bad image' });
-  const ext = m[1] === 'jpg' ? 'jpeg' : m[1];
-  const buf = Buffer.from(m[2], 'base64');
-  if (buf.length === 0 || buf.length > MAX_BYTES) return res.status(400).json({ error: 'image too big' });
+  // Same checks as the parent upload: real JPEG/PNG only, metadata stripped,
+  // a random key with no name in it, and the replaced blob deleted.
+  const img = cleanImage(imageData);
+  if (img.error) return res.status(400).json({ error: img.error });
 
   const kv = getKv();
-  const key = `photos/${String(playerId).toLowerCase()}-${randomKey()}.${ext}`;
-  const blob = await put(key, buf, {
+  const key = `photos/${randomKey()}.${img.ext}`;
+  const blob = await put(key, img.buf, {
     access: 'public',
-    contentType: `image/${ext}`,
+    contentType: `image/${img.ext}`,
     token: process.env.BLOB_READ_WRITE_TOKEN,
   });
+  const prev = await getPhoto(kv, playerId);
   await recordAdminConsent(kv, playerId, { method, grantedBy, recordedBy: 'admin' });
   await putPhoto(kv, playerId, blob.url, key);
+  if (prev && prev.url && prev.url !== blob.url) {
+    try { await del(prev.url, { token: process.env.BLOB_READ_WRITE_TOKEN }); } catch { /* already gone */ }
+  }
 
   res.setHeader('Cache-Control', 'no-store');
   return res.status(200).json({ ok: true, url: blob.url });

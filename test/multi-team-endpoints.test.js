@@ -12,6 +12,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { FakeRedis } from './fakeRedis.js';
+import { JPEG_URL } from './fixtures/photo_images.js';
 
 const fake = new FakeRedis();
 vi.mock('@upstash/redis', () => ({ Redis: class { constructor() { return fake; } } }));
@@ -56,7 +57,8 @@ function makeRes() {
 const cookie = (pid) => ({ cookie: `thwapSession=${mintSession(pid, 'parent@example.com')}` });
 const postAs = (pid, body, query = {}) => ({ method: 'POST', query, body, headers: pid ? cookie(pid) : {} });
 const getAs = (pid, query = {}) => ({ method: 'GET', query, headers: pid ? cookie(pid) : {} });
-const IMG = 'data:image/jpeg;base64,' + Buffer.from('hello-jpeg-bytes').toString('base64');
+// A structurally real JPEG: the photo endpoints check magic bytes and strip EXIF.
+const IMG = JPEG_URL;
 const ROSTER_IDS = ROSTER.map((p) => p.id);
 
 async function seedFlyers() {
@@ -271,8 +273,11 @@ describe('api/push.js on any team', () => {
 
 describe('api/photo/* on any team', () => {
   it('get, request-code, verify, upload and admin-put accept a non-Rangers player', async () => {
+    // The photo code only goes to a parent email on file for the player.
+    fake.map.set('teamMember:zara', { ...fake.map.get('teamMember:zara'), parentEmails: ['parent@example.com'], parentEmail: 'parent@example.com' });
+    // Photo reads need a signed-in player on the same team (milo is a Flyer).
     let res = makeRes();
-    await photoGet({ method: 'GET', query: { playerId: 'zara' } }, res);
+    await photoGet(getAs('milo', { playerId: 'zara' }), res);
     expect(res.statusCode).toBe(404); // known player, no photo yet
 
     res = makeRes();
@@ -291,7 +296,7 @@ describe('api/photo/* on any team', () => {
     await photoUpload({ method: 'POST', body: { playerId: 'zara', imageData: IMG }, headers: { authorization: `Bearer ${mintToken('zara')}` } }, res);
     expect(res.statusCode).toBe(200);
     res = makeRes();
-    await photoGet({ method: 'GET', query: { playerId: 'zara' } }, res);
+    await photoGet(getAs('milo', { playerId: 'zara' }), res);
     expect(res.statusCode).toBe(200);
 
     res = makeRes();
@@ -299,21 +304,22 @@ describe('api/photo/* on any team', () => {
     expect(res.statusCode).toBe(200);
   });
 
-  it('refuses an unknown player on every photo endpoint; Rangers still accepted', async () => {
+  it('refuses an unknown player on every photo endpoint (without saying so); Rangers still accepted', async () => {
     let res = makeRes();
-    await photoGet({ method: 'GET', query: { playerId: 'ghost' } }, res);
-    expect(res.statusCode).toBe(400);
+    await photoGet(getAs('milo', { playerId: 'ghost' }), res);
+    expect(res.statusCode).toBe(404);
     res = makeRes();
     await photoRequest({ method: 'POST', body: { email: 'p@example.com', playerId: 'ghost' }, headers: {} }, res);
-    expect(res.statusCode).toBe(400);
+    expect(res.statusCode).toBe(200); // same answer as a known player; nothing sent
+    expect(global.fetch).not.toHaveBeenCalled();
     res = makeRes();
     await photoVerify({ method: 'POST', body: { email: 'p@example.com', playerId: 'ghost', code: '123456' }, headers: {} }, res);
-    expect(res.statusCode).toBe(400);
+    expect(res.statusCode).toBe(401);
     res = makeRes();
     await photoUpload({ method: 'POST', body: { playerId: 'ghost', imageData: IMG }, headers: { authorization: `Bearer ${mintToken('ghost')}` } }, res);
-    expect(res.statusCode).toBe(400);
+    expect(res.statusCode).toBe(401);
     res = makeRes();
-    await photoGet({ method: 'GET', query: { playerId: 'lewie' } }, res);
+    await photoGet(getAs('teddy', { playerId: 'lewie' }), res);
     expect(res.statusCode).toBe(404);
   });
 });
