@@ -84,7 +84,8 @@ struct RootView: View {
         }
         .onChange(of: scenePhase) { _, phase in
             // Foreground: flush anything queued and re-read the server.
-            if phase == .active, model.auth == .signedIn { Task { await model.load() } }
+            // Scripted screenshot screens skip it so their seeded state holds.
+            if phase == .active, model.auth == .signedIn, launch.screen == nil { Task { await model.load() } }
         }
     }
 

@@ -63,13 +63,18 @@ public struct KeychainTokenStore: TokenStore {
         return try? JSONDecoder().decode(WatchCredential.self, from: data)
     }
 
-    public func save(_ credential: WatchCredential) {
-        guard let data = try? JSONEncoder().encode(credential) else { return }
+    public func save(_ credential: WatchCredential) { _ = store(credential) }
+
+    /// Saves and returns the Keychain status. errSecMissingEntitlement
+    /// (-34018) means an unsigned build; a signed build returns errSecSuccess.
+    @discardableResult
+    public func store(_ credential: WatchCredential) -> OSStatus {
+        guard let data = try? JSONEncoder().encode(credential) else { return errSecParam }
         SecItemDelete(query as CFDictionary)
         var add = query
         add[kSecValueData as String] = data
         add[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
-        SecItemAdd(add as CFDictionary, nil)
+        return SecItemAdd(add as CFDictionary, nil)
     }
 
     public func clear() {

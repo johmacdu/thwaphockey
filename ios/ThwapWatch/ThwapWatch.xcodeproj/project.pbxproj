@@ -19,6 +19,7 @@
 		6BEB1B718A6AB4DF9ADF5561 /* ThwapComplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961E38393044273D9D229F33 /* ThwapComplication.swift */; };
 		855F0CD721C102D2EC23E0DB /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C210049F7B56FF7C3019D1 /* TodayView.swift */; };
 		9E324F6F1FA0B45CF9F5A651 /* ConcentricRings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CE46A8D5FCEE98C74DECC02 /* ConcentricRings.swift */; };
+		A513F2B288CC747A4F577768 /* KeychainTokenStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FBB550E0A817B7846EC6950 /* KeychainTokenStoreTests.swift */; };
 		A7E58776A15D1101495DF170 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50E5A406EFBE6328FE9F74EB /* SwiftUI.framework */; };
 		A9420BE41C526B9684241F18 /* ThwapTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0311EE25B53F422A355CF6 /* ThwapTheme.swift */; };
 		AB1DF5CC116468E1979DA80F /* ThwapWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D648FB3593CFA98B069DA4 /* ThwapWatchApp.swift */; };
@@ -69,6 +70,7 @@
 /* Begin PBXFileReference section */
 		1CC8630CEE00B2FA594AE2DA /* TestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestSupport.swift; sourceTree = "<group>"; };
 		226CEC61006F47B5C58D4976 /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
+		2FBB550E0A817B7846EC6950 /* KeychainTokenStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainTokenStoreTests.swift; sourceTree = "<group>"; };
 		35618CC02FDB0FAF717A55F7 /* ThwapComplication.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ThwapComplication.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		396EE9BC2B0839B251C1443E /* StampView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StampView.swift; sourceTree = "<group>"; };
 		44E03232F555C48205201B3C /* ThwapCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ThwapCore; path = ThwapCore; sourceTree = SOURCE_ROOT; };
@@ -223,6 +225,7 @@
 				F1BD4451CA31A781C351D4E5 /* ApprovalPollerTests.swift */,
 				E24F16316302965DDD731C70 /* CheckOffQueueTests.swift */,
 				46A21DF73C4AB3DDDDC15685 /* DrillTimerTests.swift */,
+				2FBB550E0A817B7846EC6950 /* KeychainTokenStoreTests.swift */,
 				7B3DBABBA276DB7F601BFAAF /* LiveQueueTests.swift */,
 				B836D0C3976B84A0B53594DC /* LiveThwapAPITests.swift */,
 				C69F865D2DA8844CDC0B4295 /* RingMathTests.swift */,
@@ -366,6 +369,7 @@
 				B7B861C8893AD2FCEFB7512C /* ApprovalPollerTests.swift in Sources */,
 				F5F09D61F14258A6BE2D66B5 /* CheckOffQueueTests.swift in Sources */,
 				D53E02DD2399B7C5DF3D1089 /* DrillTimerTests.swift in Sources */,
+				A513F2B288CC747A4F577768 /* KeychainTokenStoreTests.swift in Sources */,
 				B29759C53B76609678579139 /* LiveQueueTests.swift in Sources */,
 				6B3A765E1D78029F8D3096BD /* LiveThwapAPITests.swift in Sources */,
 				3A8D21B480C2053AC26E0739 /* RingMathTests.swift in Sources */,

@@ -1,6 +1,6 @@
 # Thwap for Apple Watch (scaffold)
 
-A standalone watchOS app plus a WidgetKit complication. It runs against stub data for now. Networking and sign-in come from the watch design doc.
+A standalone watchOS app plus a WidgetKit complication. It talks to https://thwaphockey.com through `LiveThwapAPI` (design doc `docs/apple-watch-design.md`, sections 5, 6, 8 and 9). `StubThwapAPI` stays for previews, UI tests and screenshots.
 
 ## Why a sibling project
 
@@ -17,8 +17,8 @@ cd ios/ThwapWatch && xcodegen generate
 
 | Path | What |
 |---|---|
-| `ThwapCore/` | Swift package with the pure logic: models that mirror the real JSON (`/api/done`, `/api/login?action=session`), the `ThwapAPI` protocol, `StubThwapAPI` fixtures, `CheckOffQueue`, `RingMath`, `DrillTimer`, `RingStore` (App Group). No UI. |
-| `WatchApp/` | SwiftUI screens: Today, drill running, THWAP stamp, Game Day Goals. Plus `Haptics`. |
+| `ThwapCore/` | Swift package with the pure logic: wire models that mirror the server JSON, the `ThwapAPI` protocol, `LiveThwapAPI` (URLSession behind an injectable `HTTPTransport`), `KeychainTokenStore`, `ApprovalPoller`, `StubThwapAPI` fixtures, `CheckOffQueue`, `RingMath`, `DrillTimer`, `RingStore` (App Group). No UI. |
+| `WatchApp/` | SwiftUI screens: Sign in, Ask a parent (waiting), Today (with undo confirm and sign out), drill running, THWAP stamp, Game Day Goals. Plus `Haptics`. |
 | `Complication/` | WidgetKit complication: circular (3 concentric rings) and rectangular. |
 | `Shared/` | Theme tokens and the ring view, compiled into both the app and the complication. |
 
@@ -38,18 +38,45 @@ Drill names, cues and timings come from `index.html` (`DRILLS`, `SHOOT_DAYS` day
 
 The simulator plays no haptics. Judge these on a real watch.
 
+## Talking to the server
+
+| Call | Endpoint | Notes |
+|---|---|---|
+| Sign in | `POST /api/login?action=watch-request { teamCode, code, deviceLabel }` | `code` is the player code. 401 is a wrong code (never clears a token). 429 shows "Too many tries." |
+| Wait for a parent | `GET /api/login?action=watch-status&requestId=` | `ApprovalPoller`: every 3 s for the first minute, then backs off to every 10 s, gives up at 15 minutes (the server request lifetime). Network errors back off and keep waiting. `approved` stores the token once; `denied` and `expired` end the wait. |
+| Session check | `GET /api/login?action=session` | Once per launch. `authed: false` signs out. |
+| Today | `GET /api/done?view=today` + `GET /api/done` | The server list wins; this watch's unsent taps are laid on top. |
+| Game Day Goals | `GET /api/coach?action=my-game-goals` | Shown only when `gameDay` is true. A failure hides the goals and never blocks the drill list. |
+| Check off / undo | `POST /api/done` via `CheckOffQueue` | Flushed on launch, on foreground and after every tap. |
+| Rings | `GET /api/done?view=rings` | This week's done/goal, written to the App Group, then `WidgetCenter.reloadAllTimelines()`. A check-off bumps the ring straight away. |
+| Sign out | `POST /api/login?action=logout` | Then clears the Keychain item, the queue and the rings. Warns first when drills have not synced. |
+
+The token sits in the Keychain (generic password, `kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly`, never synced) together with the player it belongs to. Every signed-in call sends it as `Cookie: thwapSession=<token>`; URLSession's cookie jar is off, so the Keychain is the only source. Any 401 on a signed-in call clears it and returns to sign-in. The queue is kept, so it all goes once a parent approves again.
+
+Queue rules: offline, 5xx, 429 and 401 keep the entry and stop the flush so order is kept. 400 and 402 (season not active) and 403 drop it. An entry leaves only on a 2xx or a drop. A mark from an earlier day carries its `date`; today's mark lets the server's clock decide. An undo of an unsent mark just cancels it locally; an undo whose day has passed is dropped (the server undo is today only). Queue files from the scaffold (version 1, marks only) still load.
+
+Base URL: `https://thwaphockey.com`, overridable with `-thwapBaseURL <https url>` or an Info.plist `ThwapBaseURL` key.
+
 ## Build and test
 
 ```sh
 cd ios/ThwapWatch
+# Ad-hoc signed, so the Keychain test can run (an unsigned build has no
+# Keychain entitlement, and that one test skips itself):
 xcodebuild -project ThwapWatch.xcodeproj -scheme ThwapWatch \
-  -destination 'platform=watchOS Simulator,name=Apple Watch Series 11 (46mm)' test
+  -destination 'platform=watchOS Simulator,name=Apple Watch Series 11 (46mm)' \
+  CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual test
 # logic only, on the Mac:
 cd ThwapCore && swift test
 ```
 
-Launch arguments put any screen on glass for screenshots: `-thwapScreen today|run|stamp|goals`, `-thwapGameDay`, `-thwapElapsed <seconds>`.
+Endpoint tests replay JSON fixtures in `ThwapCore/Tests/ThwapCoreTests/Fixtures/`, captured from the server handlers. They are read from the source tree via `#filePath`, not bundled.
 
-## Swapping in the real client
+Launch arguments (stub data, no network): `-thwapStub`, `-thwapScreen signin|waiting|denied|expired|today|run|stamp|goals` (implies `-thwapStub`), `-thwapGameDay`, `-thwapElapsed <seconds>`. Without them the app uses the real client.
 
-Implement `ThwapAPI` against the real endpoints and replace `StubThwapAPI(...)` in `WatchApp/ThwapWatchApp.swift`. `CheckOffQueue` persists to `checkoff-queue.json` in the App Group container (`group.com.thwaphockey.app`, Application Support as a fallback), so an offline check-off survives the app being killed. It loads on launch, flushes before the first server read, and drops an entry only after `markDone` confirms it.
+## Only checkable live
+
+- The parent email, the Approve page and token pickup end to end.
+- That watch-request takes `{ teamCode, code, deviceLabel }` and my-game-goals takes the watch token (parallel server change).
+- Keychain and App Group on a signed device build (the App Group needs registering on the developer account).
+- The complication refresh after a check-off, and haptics.
