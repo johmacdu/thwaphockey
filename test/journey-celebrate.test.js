@@ -114,8 +114,9 @@ describe('new scene and new dots', () => {
 
   it('a new scene bursts THWAP, fades in its name and names the gear it unlocked', async () => {
     const w = await boot(practiceIce, seenFrom(lockerRoom));
-    expect(w.document.querySelector('#jPath .scene.s1').classList.contains('tierup')).toBe(true);
-    expect(w.document.querySelector('#jPath .scene.s1 .jburst').textContent).toBe('THWAP!');
+    expect(w.document.getElementById('jStage').classList.contains('tierup')).toBe(true);
+    expect(w.document.querySelector('#jStage .jburst').textContent).toBe('THWAP!');
+    expect(w.document.querySelectorAll('#jTiers > div')[1].classList.contains('pop')).toBe(true);
     expect(w.document.getElementById('jTier').classList.contains('swap')).toBe(true);
     expect(w.document.getElementById('jTier').textContent).toBe('Practice Ice');
     // 20 days in a row also earns On a Heater stars, so both are announced, scene first.
@@ -126,7 +127,9 @@ describe('new scene and new dots', () => {
 
   it('new dots inside the same scene glide the skater, no burst', async () => {
     const w = await boot(lockerRoom, seenFrom(book({ days: range('2026-09-01', 4) })));
-    expect(w.document.querySelectorAll('#jPath .scene.tierup')).toHaveLength(0);
+    expect(w.document.querySelectorAll('#jStage.tierup')).toHaveLength(0);
+    // The new dots fill in one after another.
+    expect(w.document.querySelectorAll('#jPips i.fresh')).toHaveLength(8);
     await new Promise((r) => setTimeout(r, 60));
     expect(w.document.getElementById('jSkater').classList.contains('move')).toBe(true);
     expect(w.document.getElementById('jCheer').textContent).toMatch(/^You moved to dot \d+\./);
@@ -151,7 +154,7 @@ describe('new season', () => {
 describe('reduced motion', () => {
   it('turns every celebration animation off and hides the burst', () => {
     const rm = /@media \(prefers-reduced-motion:reduce\)\{([^@]*)\}\}/.exec(html)[1];
-    for (const sel of ['.badge.stamp .stars .new', '.badge.stamp::after', '.badge.stamp .newchip', '.scene.tierup .scenehead .ic', '#jTier.swap', '.skater.move{transition:none}']) {
+    for (const sel of ['.badge.stamp .stars .new', '.badge.stamp::after', '.badge.stamp .newchip', '.scpips i.fresh', '.tiers .pop .ic', '#jTier.swap', '.skater.move{transition:none}']) {
       expect(rm).toContain(sel);
     }
     expect(rm).toContain('.jburst{display:none}');
