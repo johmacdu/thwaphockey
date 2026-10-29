@@ -129,7 +129,7 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .dotline{margin:8px 0 0;font-family:'Archivo Black',sans-serif;font-size:20px;color:var(--acc)}
 .slipwarn{margin:12px 0 0;padding:4px 0 4px 12px;border-left:3px solid var(--dry);font-weight:800;line-height:1.4}
 .slipwarn[hidden]{display:none}
-.scenerow{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.scenerow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .scenerow h2{margin-bottom:0}
 .whoskates{display:flex;flex-direction:column;align-items:flex-end;gap:4px;margin:0 0 2px auto;font-size:12px;color:var(--muted);font-weight:700}
 .whoskates .ws{display:flex;gap:4px}
@@ -286,10 +286,8 @@ html.embed .glassclose:not(.in-dialog){display:none}html.embed .book{padding:0 0
 <!-- 2 MY JOURNEY: the season path, one dot per training day, four scenes -->
 <section class="pg" aria-labelledby="h-journey">
   <div class="scenerow">
-    <div><p class="eyebrow">Where I am</p>
-    <h2 id="h-journey"><span id="jTier">Practice Ice</span></h2></div>
+    <h2 id="h-journey"><span id="jTier">Practice Ice</span></h2>
     <div class="whoskates" role="group" aria-label="Who skates in your scene">
-      <span>Who skates</span>
       <div class="ws"><button type="button" data-who="me" aria-pressed="true">Me</button><button type="button" data-who="sass" aria-pressed="false">Sass</button></div>
     </div>
   </div>
@@ -305,7 +303,7 @@ html.embed .glassclose:not(.in-dialog){display:none}html.embed .book{padding:0 0
 <!-- 4 MY BADGES -->
 <section class="pg" aria-labelledby="h-badges">
   <div class="badgehead">
-    <p class="eyebrow">Earn stars, level up</p><h2 id="h-badges">My Badges</h2>
+    <h2 id="h-badges">My Badges</h2>
     <p class="sub">Earn stars as you train. Tap one to see what&rsquo;s next.</p>
   </div>
   <div class="badges" id="jBadges"></div>
@@ -315,7 +313,6 @@ html.embed .glassclose:not(.in-dialog){display:none}html.embed .book{padding:0 0
 
 <!-- 6 SEASON SO FAR -->
 <section class="pg seasonfar" aria-labelledby="h-season">
-  <p class="eyebrow">Month by month</p>
   <h2 id="h-season">My Season So Far</h2>
   <ul class="tl" id="jMonths">
     <li><b>Sep</b><p>11 training days. Reached Locker Room. 3 badge stars.</p></li>
@@ -344,7 +341,6 @@ html.embed .glassclose:not(.in-dialog){display:none}html.embed .book{padding:0 0
 
 <!-- MY BOOKS -->
 <section aria-labelledby="h-books" style="padding:48px 4px 16px">
-  <p class="eyebrow">My books</p>
   <h2 id="h-books" style="font-size:22px">Every season, a new book</h2>
   <div class="shelf">
     <div class="spine current" role="img" aria-label="2026-27 book, locked until the season ends"><span>2026-27</span><i class="ribbon"></i><i class="strap"></i><i class="booklock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><rect x="4.5" y="11" width="15" height="10" rx="2" fill="currentColor" stroke="none"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></svg></i></div>
