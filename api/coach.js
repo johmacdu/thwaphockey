@@ -50,7 +50,7 @@ import {
   getAdmin, setAdmin, ensureTeamIndexed,
   listTeamCoaches, ensureHeadCoach, addAssistantCoach, removeAssistantCoach, MAX_ASSISTANTS,
   backfillSeedBeta, getBetaUntil,
-  savePushToken,
+  savePushToken, withoutLegacyPhoto,
 } from '../lib/teams_store.js';
 import { ensureSchedule, getSchedule, addEvent as addScheduleEvent, nextEvent, localDateStr } from '../lib/schedule_store.js';
 import { resolveSigninPlayer, RANGERS_TEAM_CODE } from '../lib/signin_players.js';
@@ -440,7 +440,8 @@ async function createTeam(req, res) {
 async function addPlayer(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
   const coach = await requireCoach(req, res); if (!coach) return;
-  const { code, firstName, lastName, number, position, parentEmail, parentEmail2, parentEmails, photo } = parseBody(req);
+  // A `photo` in the body is ignored: player photos go through api/photo/*.
+  const { code, firstName, lastName, number, position, parentEmail, parentEmail2, parentEmails } = parseBody(req);
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
   if (!(await coachRunsTeam(coach, code))) return res.status(403).json({ error: 'not your team' });
   if (!String(firstName || '').trim()) return res.status(400).json({ error: 'first name required' });
@@ -450,8 +451,8 @@ async function addPlayer(req, res) {
   if (!pe.emails.length) return res.status(400).json({ error: 'a parent email is required' });
   // id = lowercase first name (same id space as player:<id>).
   const playerId = String(firstName).trim().toLowerCase();
-  const rec = await addMember(code, { playerId, firstName, lastName, number, position, parentEmails: pe.emails, photo, status: 'active' });
-  return res.status(200).json({ ok: true, member: rec });
+  const rec = await addMember(code, { playerId, firstName, lastName, number, position, parentEmails: pe.emails, status: 'active' });
+  return res.status(200).json({ ok: true, member: withoutLegacyPhoto(rec) });
 }
 
 async function removePlayer(req, res) {
@@ -465,11 +466,12 @@ async function removePlayer(req, res) {
   return res.status(200).json({ ok: true, ...out });
 }
 
-// POST edit an existing player's fields (name / number / position / photo). Coach-only.
+// POST edit an existing player's fields (name / number / position / emails). Coach-only.
+// A `photo` in the body is ignored: player photos go through api/photo/*.
 async function updatePlayer(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
   const coach = await requireCoach(req, res); if (!coach) return;
-  const { code, playerId, firstName, lastName, number, position, photo, parentEmail, parentEmail2, parentEmails } = parseBody(req);
+  const { code, playerId, firstName, lastName, number, position, parentEmail, parentEmail2, parentEmails } = parseBody(req);
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
   if (!(await coachRunsTeam(coach, code))) return res.status(403).json({ error: 'not your team' });
   if (!(await playerOnTeam(code, playerId))) return res.status(404).json({ error: 'player is not on this team' });
@@ -478,9 +480,9 @@ async function updatePlayer(req, res) {
   }
   const emailFields = parentEmailFields(parentEmails, parentEmail, parentEmail2);
   if (emailFields.error) return res.status(400).json({ error: emailFields.error });
-  const rec = await updateMember(playerId, { firstName, lastName, number, position, photo, ...emailFields.fields });
+  const rec = await updateMember(playerId, { firstName, lastName, number, position, ...emailFields.fields });
   if (!rec) return res.status(404).json({ error: 'unknown player' });
-  return res.status(200).json({ ok: true, member: rec });
+  return res.status(200).json({ ok: true, member: withoutLegacyPhoto(rec) });
 }
 
 // POST ?action=self-update-player { code (team), playerId, playerCode, firstName,
@@ -512,7 +514,7 @@ async function selfUpdatePlayer(req, res) {
   if (emailFields.error) return res.status(400).json({ error: emailFields.error });
   const rec = await updateMember(pid, { firstName, lastName, number, ...emailFields.fields });
   if (!rec) return res.status(404).json({ error: 'unknown player' });
-  return res.status(200).json({ ok: true, member: rec });
+  return res.status(200).json({ ok: true, member: withoutLegacyPhoto(rec) });
 }
 
 // GET (admin key) full roster across all teams, for the admin roster editor.
@@ -527,7 +529,7 @@ async function adminRoster(req, res) {
     const ids = await listMembers(code);
     for (const pid of ids) {
       const m = await getMember(pid);
-      if (m) out.push({ ...m, id: pid, parentEmails: parentEmailList(m), name: [m.firstName, m.lastName].filter(Boolean).join(' ') || m.firstName || pid, teamCode: code, teamName: (team && team.name) || code });
+      if (m) out.push({ ...withoutLegacyPhoto(m), id: pid, parentEmails: parentEmailList(m), name: [m.firstName, m.lastName].filter(Boolean).join(' ') || m.firstName || pid, teamCode: code, teamName: (team && team.name) || code });
     }
   }
   out.sort((a, b) => String(a.teamName || '').localeCompare(String(b.teamName || '')) || Number(a.number || 0) - Number(b.number || 0));
@@ -549,7 +551,7 @@ async function adminUpdatePlayer(req, res) {
   if (emailFields.error) return res.status(400).json({ error: emailFields.error });
   const rec = await updateMember(playerId, { firstName, lastName, number, position, ...emailFields.fields });
   if (!rec) return res.status(404).json({ error: 'unknown player' });
-  return res.status(200).json({ ok: true, member: rec });
+  return res.status(200).json({ ok: true, member: withoutLegacyPhoto(rec) });
 }
 
 // GET whether the admin account exists and whether a password has been set yet.
@@ -754,7 +756,7 @@ async function playerRollup(req, res) {
   const trend = await monthTrend(pid, 4);
   // The public game-day page reads member.position/gamePosition here, so the
   // record stays readable, minus parent emails unless the caller may see them.
-  const member = m ? ((await canSeeParentEmails(req, m.teamCode, pid)) ? m : withoutParentEmails(m)) : null;
+  const member = m ? withoutLegacyPhoto((await canSeeParentEmails(req, m.teamCode, pid)) ? m : withoutParentEmails(m)) : null;
   res.setHeader('Cache-Control', 'no-store');
   return res.status(200).json({
     ok: true, playerId: pid,
@@ -776,7 +778,7 @@ async function join(req, res) {
   if (!members.includes(pid)) return res.status(404).json({ error: 'player not on this team' });
   const m = await getMember(pid);
   // join needs only a team code, so it must not hand back parent emails.
-  const player = (await canSeeParentEmails(req, team.code, pid)) ? m : withoutParentEmails(m);
+  const player = withoutLegacyPhoto((await canSeeParentEmails(req, team.code, pid)) ? m : withoutParentEmails(m));
   res.setHeader('Cache-Control', 'no-store');
   return res.status(200).json({ ok: true, team: { code: team.code, name: team.name }, player });
 }
