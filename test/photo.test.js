@@ -1,20 +1,19 @@
 // test/photo.test.js
 //
-// Tests for the parent-gated photo endpoints. Redis is faked, Vercel Blob is
+// Tests for the parent-gated photo endpoints (uploads retired 2026-10-29, so
+// stored photos are seeded straight into the fake store). Redis is faked, Vercel Blob is
 // mocked, and fetch (Resend) is stubbed. Env vars are set so the "configured"
 // gate passes; a separate test clears them to prove the 503 fail-closed path.
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { FakeRedis } from './fakeRedis.js';
-import { JPEG_URL } from './fixtures/photo_images.js';
 
 const fake = new FakeRedis();
 vi.mock('@upstash/redis', () => ({ Redis: class { constructor() { return fake; } } }));
 
-// Mock Vercel Blob put/del.
-const blobPut = vi.fn(async (key) => ({ url: `https://blob.example/${key}` }));
+// Mock Vercel Blob del (nothing in the app can put a photo any more).
 const blobDel = vi.fn(async () => {});
-vi.mock('@vercel/blob', () => ({ put: (...a) => blobPut(...a), del: (...a) => blobDel(...a) }));
+vi.mock('@vercel/blob', () => ({ del: (...a) => blobDel(...a) }));
 
 function setEnv() {
   process.env.KV_REST_API_URL = 'https://fake';
@@ -29,10 +28,8 @@ setEnv();
 
 const { default: requestCode } = await import('../api/photo/request-code.js');
 const { default: verify } = await import('../api/photo/verify.js');
-const { default: upload } = await import('../api/photo/upload.js');
 const { default: remove } = await import('../api/photo/remove.js');
 const { default: getPhoto } = await import('../api/photo/get.js');
-const { default: adminPut } = await import('../api/photo/admin-put.js');
 const { getPhotoConsent: getConsent } = await import('../lib/photo_store.js');
 const { getKv } = await import('../lib/photo_common.js');
 const { mintSession } = await import('../lib/session_store.js');
@@ -53,7 +50,6 @@ const get = (query) => ({ method: 'GET', query, headers: { cookie: `thwapSession
 beforeEach(() => {
   fake.map.clear();
   setEnv();
-  blobPut.mockClear();
   blobDel.mockClear();
   // lewie's parent email on file: the photo code only goes there.
   fake.map.set('teamMember:lewie', { parentEmails: ['p@x.com'], parentEmail: 'p@x.com', firstName: 'Lewie', number: 72 });
@@ -153,42 +149,11 @@ describe('verify', () => {
   });
 });
 
-const IMG = JPEG_URL;
-
-describe('upload', () => {
-  it('stores a photo with a valid token', async () => {
-    const { token } = await getVerifiedToken();
-    const res = makeRes();
-    await upload(post({ playerId: 'lewie', imageData: IMG }, { authorization: `Bearer ${token}` }), res);
-    expect(res.statusCode).toBe(200);
-    expect(res.body.url).toContain('blob.example');
-    expect(blobPut).toHaveBeenCalledOnce();
-  });
-  it('401 without a token', async () => {
-    const res = makeRes();
-    await upload(post({ playerId: 'lewie', imageData: IMG }), res);
-    expect(res.statusCode).toBe(401);
-  });
-  it('401 with a token for a different player', async () => {
-    const { token } = await getVerifiedToken('p@x.com', 'lewie');
-    const res = makeRes();
-    await upload(post({ playerId: 'teddy', imageData: IMG }, { authorization: `Bearer ${token}` }), res);
-    expect(res.statusCode).toBe(401);
-  });
-  it('rejects a non-image payload', async () => {
-    const { token } = await getVerifiedToken();
-    const res = makeRes();
-    await upload(post({ playerId: 'lewie', imageData: 'data:text/plain;base64,aGk=' }, { authorization: `Bearer ${token}` }), res);
-    expect(res.statusCode).toBe(400);
-  });
-  it('rejects an oversize image', async () => {
-    const { token } = await getVerifiedToken();
-    const big = 'data:image/jpeg;base64,' + 'A'.repeat(600 * 1024);
-    const res = makeRes();
-    await upload(post({ playerId: 'lewie', imageData: big }, { authorization: `Bearer ${token}` }), res);
-    expect(res.statusCode).toBe(400);
-  });
-});
+// A stored photo (and optionally its photo consent) as an earlier upload left it.
+async function seedPhoto(id, { consent = false } = {}) {
+  await getKv().set(`photo:${id}`, { url: `https://blob.example/photos/${id}.png`, key: `photos/${id}.png`, updatedAt: 1 });
+  if (consent) await getKv().set(`photoConsent:${id}`, { method: 'text', grantedBy: 'A parent', adminRecorded: true, grantedAt: 1 });
+}
 
 describe('get and remove', () => {
   it('404 when no photo', async () => {
@@ -196,9 +161,9 @@ describe('get and remove', () => {
     await getPhoto(get({ playerId: 'lewie' }), res);
     expect(res.statusCode).toBe(404);
   });
-  it('returns the url after upload, and remove deletes it', async () => {
+  it('returns the stored url, and a verified parent remove deletes it', async () => {
     const { token } = await getVerifiedToken();
-    await upload(post({ playerId: 'lewie', imageData: IMG }, { authorization: `Bearer ${token}` }), makeRes());
+    await seedPhoto('lewie');
 
     const g1 = makeRes();
     await getPhoto(get({ playerId: 'lewie' }), g1);
@@ -214,73 +179,22 @@ describe('get and remove', () => {
     await getPhoto(get({ playerId: 'lewie' }), g2);
     expect(g2.statusCode).toBe(404);
   });
-});
-
-describe('admin-put (admin-recorded consent)', () => {
-  const adminHdr = { authorization: 'Bearer admin-test-token' };
-  const goodConsent = { method: 'text', grantedBy: 'Josh Delatoree' };
-
-  it('rejects without the admin key', async () => {
-    const res = makeRes();
-    await adminPut(post({ playerId: 'lewie', imageData: IMG, consent: goodConsent }), res);
-    expect(res.statusCode).toBe(401);
-  });
-
-  it('rejects an unknown player', async () => {
-    const res = makeRes();
-    await adminPut(post({ playerId: 'nobody', imageData: IMG, consent: goodConsent }, adminHdr), res);
-    expect(res.statusCode).toBe(400);
-  });
-
-  it('requires a consent method', async () => {
-    const res = makeRes();
-    await adminPut(post({ playerId: 'lewie', imageData: IMG, consent: { grantedBy: 'Josh' } }, adminHdr), res);
-    expect(res.statusCode).toBe(400);
-    expect(res.body.error).toMatch(/consent method/);
-  });
-
-  it('requires who granted consent', async () => {
-    const res = makeRes();
-    await adminPut(post({ playerId: 'lewie', imageData: IMG, consent: { method: 'text' } }, adminHdr), res);
-    expect(res.statusCode).toBe(400);
-    expect(res.body.error).toMatch(/grantedBy/);
-  });
-
-  it('rejects a bad consent method', async () => {
-    const res = makeRes();
-    await adminPut(post({ playerId: 'lewie', imageData: IMG, consent: { method: 'because-i-said-so', grantedBy: 'Josh' } }, adminHdr), res);
-    expect(res.statusCode).toBe(400);
-  });
-
-  it('stores the photo AND a truthful recorded-consent record (not a fake email)', async () => {
-    const res = makeRes();
-    await adminPut(post({ playerId: 'lewie', imageData: IMG, consent: goodConsent }, adminHdr), res);
-    expect(res.statusCode).toBe(200);
-    expect(res.body.url).toContain('blob.example');
-
-    // photo is retrievable
-    const g = makeRes();
-    await getPhoto(get({ playerId: 'lewie' }), g);
-    expect(g.statusCode).toBe(200);
-
-    // consent record is honest: method text, names the parent, flags admin-recorded,
-    // and does NOT masquerade as a verified email (no emailHash).
-    const consent = await getConsent(getKv(), 'lewie');
-    expect(consent.method).toBe('text');
-    expect(consent.grantedBy).toBe('Josh Delatoree');
-    expect(consent.adminRecorded).toBe(true);
-    expect(consent.recordedBy).toBe('admin');
-    expect(consent.emailHash).toBeUndefined();
+  it('remove refuses no token and a token for a different player, and deletes nothing', async () => {
+    await seedPhoto('teddy');
+    const { token } = await getVerifiedToken('p@x.com', 'lewie');
+    for (const headers of [{}, { authorization: `Bearer ${token}` }]) {
+      const r = makeRes();
+      await remove(post({ playerId: 'teddy' }, headers), r);
+      expect(r.statusCode).toBe(401);
+    }
+    expect(blobDel).not.toHaveBeenCalled();
   });
 });
 
 describe('admin photo retirement (POST /api/photo/remove { all })', () => {
   const adminHdr = { authorization: 'Bearer admin-test-token' };
-  const goodConsent = { method: 'text', grantedBy: 'A parent' };
   async function seed() {
-    for (const id of ['lewie', 'teddy']) {
-      await adminPut(post({ playerId: id, imageData: IMG, consent: goodConsent }, adminHdr), makeRes());
-    }
+    for (const id of ['lewie', 'teddy']) await seedPhoto(id, { consent: true });
   }
   it('refuses without the admin login', async () => {
     await seed();

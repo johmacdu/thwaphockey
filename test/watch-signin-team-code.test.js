@@ -35,7 +35,7 @@ const { default: loginHandler, _handlers: login } = await import('../api/login.j
 const { default: coachHandler, _handlers: coach } = await import('../api/coach.js');
 const { default: boardHandler } = await import('../api/board.js');
 const { default: pushHandler } = await import('../api/push.js');
-const { default: photoUpload } = await import('../api/photo/upload.js');
+const { default: photoRemove } = await import('../api/photo/remove.js');
 const { mintSession, SESSION_COOKIE } = await import('../lib/session_store.js');
 const { setTeam, addMember } = await import('../lib/teams_store.js');
 const { findPlayerByTeamCode } = await import('../lib/signin_players.js');
@@ -346,10 +346,10 @@ describe('the watch token is refused everywhere else', () => {
     expect(viaCoach.statusCode).toBe(401);
   });
 
-  it('photo: a watch token is not an upload token', async () => {
-    const r = await run(photoUpload, {
+  it('photo: a watch token is not a parent photo token', async () => {
+    const r = await run(photoRemove, {
       method: 'POST', query: {},
-      body: { playerId: 'lewie', imageData: 'data:image/png;base64,AAAA' },
+      body: { playerId: 'lewie' },
       headers: { ...cookie(token), authorization: `Bearer ${token}` },
     });
     expect(r.statusCode).toBe(401);
