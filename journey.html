@@ -497,11 +497,41 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     if(i===b.tierIndex) return 'here';
     return i<=b.highestTier?'here':'locked';
   }
-  // Dot k of a scene sits on a winding line down the scene (as % of the box),
-  // spaced evenly along the line. Point 0 is the scene's entry.
-  function pointsFor(n){
-    var N=400, pts=[], len=[0];
-    function at(t){ return [50+27*Math.sin(t*Math.PI*3.2), 6+t*88]; }
+  // Each scene's dots trace a different on-ice pattern instead of one repeated
+  // S-curve: Locker Room skates a warm-up lap around the center crest (never
+  // over it), Practice Ice weaves the cones, Game Ready runs a breakout rush,
+  // Legend takes a victory lap that spirals in. All read top-to-bottom so the
+  // dots stay in training-day order down the scene.
+  function sceneCurve(i){
+    if(i===0) return function(t){                 // lap around the crest, clearing it
+      var a=-Math.PI/2+t*Math.PI*2*0.92;          // start at top, ~330deg clockwise
+      return [50+31*Math.cos(a), 46+37*Math.sin(a)];
+    };
+    if(i===1) return function(t){                 // weave the cones
+      return [50+32*Math.sin(t*Math.PI*3.4), 7+t*84];
+    };
+    if(i===2) return polyline([[50,8],[82,22],[79,43],[21,55],[24,74],[55,91]]); // breakout rush
+    return function(t){                           // victory lap, spiralling in
+      var a=-Math.PI/2+t*Math.PI*2*1.55, r=40-24*t;
+      return [50+r*0.82*Math.cos(a), 50+r*Math.sin(a)];
+    };
+  }
+  // Trace a run of straight legs (for the angular breakout), parametrised 0..1.
+  function polyline(w){
+    var seg=[],tot=0,i;
+    for(i=1;i<w.length;i++){ var d=Math.hypot(w[i][0]-w[i-1][0],(w[i][1]-w[i-1][1])*1.6); seg.push(d); tot+=d; }
+    return function(t){
+      var dist=t*tot,k=0;
+      while(k<seg.length&&dist>seg[k]){ dist-=seg[k]; k++; }
+      if(k>=seg.length) return w[w.length-1].slice();
+      var f=seg[k]?dist/seg[k]:0;
+      return [w[k][0]+(w[k+1][0]-w[k][0])*f, w[k][1]+(w[k+1][1]-w[k][1])*f];
+    };
+  }
+  // Dot k of a scene sits evenly along that scene's curve (as % of the box).
+  // Point 0 is the scene's entry; distance is weighted 1.6x in y for the box.
+  function pointsFor(n,scene){
+    var N=400, at=sceneCurve(scene||0), pts=[], len=[0];
     for(var i=0;i<=N;i++){ pts.push(at(i/N)); if(i){ var a=pts[i-1],c=pts[i]; len.push(len[i-1]+Math.hypot(c[0]-a[0],(c[1]-a[1])*1.6)); } }
     var out=[], j=0;
     for(var k=0;k<=n;k++){ var want=len[N]*k/n; while(j<N&&len[j]<want) j++; out.push(pts[j]); }
@@ -543,7 +573,7 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
         '<div class="scenebox"><div class="art fill sceneart" data-art="'+SCENE_ART[i]+'"'+(i===1?' data-fallback="rink-path.webp"':'')+'></div><div class="dots"></div>'+
           (st==='locked'?'<div class="lock"><span aria-hidden="true">&#128274;</span>Reach '+name+' at '+plural(from,'training day')+'</div>':'')+
         '</div>';
-      var dots=sec.querySelector('.dots'), pts=pointsFor(n);
+      var dots=sec.querySelector('.dots'), pts=pointsFor(n,i);
       var d='M'+pts.map(function(p){return p[0].toFixed(1)+' '+p[1].toFixed(1);}).join(' L');
       dots.innerHTML='<svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="'+d+'"/></svg>';
       for(var k=1;k<=n;k++){
