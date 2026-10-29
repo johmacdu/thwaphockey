@@ -65,7 +65,7 @@ describe('color contrast (WCAG AA, 4.5:1 for text)', () => {
 
 describe('not color alone', () => {
   it('empty stars render as a hollow star, in markup and in the live render', () => {
-    expect(html).toMatch(/<span class="off">\u2606+<\/span>/);
+    // Badges render from data now, so the live renderer is where hollow stars come from.
     expect(html).not.toMatch(/<span class="off">\u2605/);
     expect(html).toContain("'\\u2606'.repeat(3-n)");
   });

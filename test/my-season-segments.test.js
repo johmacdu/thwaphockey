@@ -119,12 +119,12 @@ describe('Season Book iframe height', () => {
     expect(height(w)).toBe('2400px');
   });
 
-  it('clamps to between 200 and 8000 px', async () => {
+  it('clamps to between 200 and 16000 px (the season path is tall)', async () => {
     const w = await boot();
     send(w, { thwapJourneyHeight: 10 });
     expect(height(w)).toBe('200px');
     send(w, { thwapJourneyHeight: 99999 });
-    expect(height(w)).toBe('8000px');
+    expect(height(w)).toBe('16000px');
   });
 
   it('ignores other origins and malformed messages', async () => {

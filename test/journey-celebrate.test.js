@@ -1,8 +1,8 @@
 // test/journey-celebrate.test.js
 //
 // Season Book celebrations: a new badge star stamps onto its badge (with a New
-// chip until the kid taps it), and a new tier slides Sass from the old tier to
-// the new one with a THWAP burst. Both play once, are remembered per device in
+// chip until the kid taps it), new dots glide the skater forward from the dot
+// this device last saw, and a new scene gets a THWAP burst. Both play once, are remembered per device in
 // localStorage (thwapBookSeen), and the first visit only records.
 
 import { describe, it, expect } from 'vitest';
@@ -27,7 +27,7 @@ function book({ days = [], events = [] } = {}) {
 }
 function seenFrom(b, extra = {}) {
   const stars = {}; b.badges.forEach((g) => { stars[g.id] = g.stars; });
-  return { season: b.season.key, tierIndex: b.tierIndex, stepsDone: b.stepsDone, stars, pending: [], ...extra };
+  return { season: b.season.key, tierIndex: b.tierIndex, dots: b.dots, stars, pending: [], ...extra };
 }
 
 async function boot(api, seen) {
@@ -61,7 +61,8 @@ describe('first visit', () => {
   it('records what the kid has, celebrates nothing', async () => {
     const w = await boot(after);
     expect(w.document.querySelectorAll('.badge.stamp, .newchip')).toHaveLength(0);
-    expect(w.document.getElementById('jRink').classList.contains('tierup')).toBe(false);
+    expect(w.document.querySelectorAll('#jPath .scene.tierup')).toHaveLength(0);
+    expect(w.document.getElementById('jSkater').classList.contains('move')).toBe(false);
     expect(seenOf(w)).toMatchObject({ season: 'fw-2026', tierIndex: after.tierIndex, pending: [] });
     expect(seenOf(w).stars.dangler).toBe(2);
   });
@@ -106,34 +107,35 @@ describe('new star (stamp)', () => {
   });
 });
 
-describe('new tier (rink)', () => {
-  // Steps complete at 3, 11, 19 training days. 12 days = 2 steps (Locker Room);
-  // 20 days = 3 steps, which is the first step of Practice Ice.
+describe('new scene and new dots', () => {
+  // Practice Ice starts at dot 19. 12 days = Locker Room; 20 days = Practice Ice.
   const lockerRoom = book({ days: range('2026-09-01', 12) });
   const practiceIce = book({ days: range('2026-09-01', 20) });
 
-  it('slides Sass from the old tier, pops the new tier icon and fades in its name', async () => {
+  it('a new scene bursts THWAP, fades in its name and names the gear it unlocked', async () => {
     const w = await boot(practiceIce, seenFrom(lockerRoom));
-    const rink = w.document.getElementById('jRink');
-    expect(rink.classList.contains('tierup')).toBe(true);
-    expect(parseFloat(rink.style.getPropertyValue('--from'))).toBeLessThan(parseFloat(rink.style.getPropertyValue('--x')));
-    expect(w.document.getElementById('jTiers').children[1].classList.contains('pop')).toBe(true);
+    expect(w.document.querySelector('#jPath .scene.s1').classList.contains('tierup')).toBe(true);
+    expect(w.document.querySelector('#jPath .scene.s1 .jburst').textContent).toBe('THWAP!');
     expect(w.document.getElementById('jTier').classList.contains('swap')).toBe(true);
     expect(w.document.getElementById('jTier').textContent).toBe('Practice Ice');
-    // 20 days in a row also earns On a Heater stars, so both are announced, tier first.
-    expect(w.document.getElementById('jCheer').textContent).toMatch(/^New tier: Practice Ice\. New star: On a Heater/);
+    // 20 days in a row also earns On a Heater stars, so both are announced, scene first.
+    expect(w.document.getElementById('jCheer').textContent).toMatch(/^New scene: Practice Ice\. You unlocked Practice Ice tape\. New star: On a Heater/);
     expect(seenOf(w).tierIndex).toBe(1);
+    expect(seenOf(w).dots).toBe(practiceIce.dots);
   });
 
-  it('a new step inside the same tier is not a tier-up', async () => {
+  it('new dots inside the same scene glide the skater, no burst', async () => {
     const w = await boot(lockerRoom, seenFrom(book({ days: range('2026-09-01', 4) })));
-    expect(w.document.getElementById('jRink').classList.contains('tierup')).toBe(false);
+    expect(w.document.querySelectorAll('#jPath .scene.tierup')).toHaveLength(0);
+    await new Promise((r) => setTimeout(r, 60));
+    expect(w.document.getElementById('jSkater').classList.contains('move')).toBe(true);
+    expect(w.document.getElementById('jCheer').textContent).toMatch(/^You moved to dot \d+\./);
   });
 
   it('plays once', async () => {
     const w1 = await boot(practiceIce, seenFrom(lockerRoom));
     const w2 = await boot(practiceIce, seenOf(w1));
-    expect(w2.document.getElementById('jRink').classList.contains('tierup')).toBe(false);
+    expect(w2.document.querySelectorAll('#jPath .scene.tierup')).toHaveLength(0);
   });
 });
 
@@ -141,7 +143,7 @@ describe('new season', () => {
   it('a record from last season is replaced without celebrating', async () => {
     const w = await boot(after, { ...seenFrom(before), season: 'fw-2025', tierIndex: 3, stars: {} });
     expect(w.document.querySelectorAll('.badge.stamp, .newchip')).toHaveLength(0);
-    expect(w.document.getElementById('jRink').classList.contains('tierup')).toBe(false);
+    expect(w.document.querySelectorAll('#jPath .scene.tierup')).toHaveLength(0);
     expect(seenOf(w).season).toBe('fw-2026');
   });
 });
@@ -149,7 +151,7 @@ describe('new season', () => {
 describe('reduced motion', () => {
   it('turns every celebration animation off and hides the burst', () => {
     const rm = /@media \(prefers-reduced-motion:reduce\)\{([^@]*)\}\}/.exec(html)[1];
-    for (const sel of ['.rinkwrap.tierup .sassp', '.badge.stamp .stars .new', '.badge.stamp::after', '.badge.stamp .newchip', '.tiers .pop .ic', '#jTier.swap']) {
+    for (const sel of ['.badge.stamp .stars .new', '.badge.stamp::after', '.badge.stamp .newchip', '.scene.tierup .scenehead .ic', '#jTier.swap', '.skater.move{transition:none}']) {
       expect(rm).toContain(sel);
     }
     expect(rm).toContain('.jburst{display:none}');
