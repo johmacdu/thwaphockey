@@ -31,14 +31,6 @@ body{margin:0;background:var(--bg);color:var(--text);font-family:'Nunito Sans',s
 .jhead h1{margin:2px 0 0}
 .titlerow{position:relative}
 .titlerow h1{display:inline}
-.titlerow .infobtn{display:inline-grid;vertical-align:middle;margin:-6px -8px 0 -2px}
-.infobtn{flex:none;width:48px;height:48px;border:0;background:none;padding:0;display:grid;place-items:center;cursor:pointer;color:var(--muted);font:italic 800 17px/1 Georgia,serif}
-.infobtn::before{content:'';position:absolute;width:28px;height:28px;border-radius:50%;border:2px solid currentColor}
-.infobtn{position:relative}
-.infobtn:hover,.infobtn[aria-expanded="true"]{color:var(--text)}
-.infobtn:focus-visible{outline:3px solid var(--acc);outline-offset:-6px;border-radius:50%}
-.rulepop{position:absolute;left:0;right:0;top:100%;z-index:20;max-width:360px;margin:4px 0 0;padding:14px 16px;border-radius:14px;background:var(--text);color:var(--page);font-weight:700;font-size:16px;line-height:1.4;box-shadow:0 10px 24px -8px var(--shadow)}
-.rulepop[hidden]{display:none}
 .jhead .who{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:20px;margin:10px 0 0;color:var(--text)}
 .jhead .who b{color:var(--acc)}
 .jhead .who .meta{display:block;font-family:'Nunito Sans',sans-serif;font-weight:700;font-size:var(--fs-support);color:var(--muted);margin-top:3px}
@@ -167,6 +159,8 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .scpips i{height:12px;border-radius:999px;background:var(--card2)}
 .scpips i.on{background:var(--lime)}
 .scpips i.next{background:none;box-shadow:inset 0 0 0 2px var(--acc)}
+/* A frozen dot keeps its place: icy blue with a white frost edge, so it reads as frozen without relying on color alone. */
+.scpips i.frozen{background:linear-gradient(135deg,#DFF4FF 0 35%,#9AD8F5 35% 60%,#DFF4FF 60%);box-shadow:inset 0 0 0 2px #fff,0 0 0 1px #6BBFE6}
 .scpips i.fresh{animation:pipfill 300ms cubic-bezier(.2,1.6,.4,1) both;animation-delay:calc(300ms + var(--k) * 90ms)}
 @keyframes pipfill{0%{transform:scaleY(.2);background:var(--card2)}100%{transform:none}}
 .stagesub{margin:4px 0 0;color:var(--muted);font-size:var(--fs-support);font-weight:700}
@@ -203,7 +197,9 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .stars{color:var(--acc);font-size:12px;letter-spacing:1px}
 /* Empty stars are a hollow shape AND a passing color, so earned vs not never rides on color alone. */
 .stars .off{color:var(--muted)}
+.badge.locked{background:none;border:2px dashed var(--line2)}
 .badge.locked .art{filter:grayscale(1);opacity:.4}
+.badge.locked b{color:var(--muted)}
 .badge[aria-pressed="true"]{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc)}
 .badge[hidden]{display:none}
 .bmore{display:block;margin:16px auto 0;min-height:48px;padding:0 24px;border-radius:24px;border:1px solid var(--line2);background:var(--card);color:var(--text);font:inherit;font-weight:800;cursor:pointer}
@@ -284,8 +280,6 @@ html.embed .glassclose:not(.in-dialog){display:none}html.embed .book{padding:0 0
   <p class="eyebrow" id="jSeason">Season 2026-27</p>
   <div class="titlerow">
     <h1>My Journey</h1>
-    <button type="button" class="infobtn" id="jRuleBtn" aria-expanded="false" aria-controls="jRule" aria-label="How the dots work">i</button>
-    <p class="rulepop" id="jRule" role="status" hidden>Every training day fills a dot. Skip 5 days in a row and you lose one.</p>
   </div>
 </header>
 
@@ -475,14 +469,16 @@ html.embed .glassclose:not(.in-dialog){display:none}html.embed .book{padding:0 0
     chip.remove(); var id=el.getAttribute('data-id'), seen=readSeen();
     if(id&&seen){seen.pending=(seen.pending||[]).filter(function(x){return x!==id;});writeSeen(seen);}
   }
-  // Badges: only the ones a kid has earned show, 8 at a time. Signed out (or
+  // Badges: earned ones first, then the ones still to earn as outlines, 8 at a
+  // time. Signed out (or
   // until the API answers) the sample stands in.
   var BADGES=null, SHOW_ALL=false, BADGE_LIMIT=8;
   var SAMPLE_BADGES=[
     {id:'dangler',name:'Dangler',art:'badge-01.webp',stars:2},
     {id:'sniper',name:'Sniper',art:'badge-02.webp',stars:1},
     {id:'engine',name:'Engine',art:'badge-03.webp',stars:3},
-    {id:'tapetotape',name:'Tape to Tape',art:'badge-04.webp',stars:1}
+    {id:'tapetotape',name:'Tape to Tape',art:'badge-04.webp',stars:1},
+    {id:'hockeybrain',name:'Hockey Brain',art:'badge-05.webp',stars:0,count:0,next:5,thresholds:[5,15,30],unit:'Hockey IQ sessions',short:'sessions'}
   ];
   // One line of attitude per badge (keyed by id, incl. goalie swaps). Cool, not cute.
   var TAGLINE={dangler:'Hands too quick to follow.',sniper:'Picks corners for fun.',netboss:'Nothing gets past you.',
@@ -500,16 +496,17 @@ html.embed .glassclose:not(.in-dialog){display:none}html.embed .book{padding:0 0
   function starHtml(n,max){max=max||3;return '\u2605'.repeat(n)+(n<max?'<span class="off">'+'\u2606'.repeat(max-n)+'</span>':'');}
   function renderBadges(){
     closePop(false);
-    var list=(BADGES||SAMPLE_BADGES).filter(function(g){return g.stars>0;});
+    var all=BADGES||SAMPLE_BADGES;
+    var list=all.filter(function(g){return g.stars>0;}).concat(all.filter(function(g){return !(g.stars>0);}));
     var box=document.getElementById('jBadges'); box.innerHTML='';
     list.forEach(function(g,k){
-      var el=document.createElement('button'); el.type='button'; el.className='badge';
+      var el=document.createElement('button'); el.type='button'; el.className='badge'+(g.stars>0?'':' locked');
       el.setAttribute('data-id',g.id); el.setAttribute('aria-haspopup','dialog'); el.setAttribute('aria-expanded','false');
       var art=document.createElement('div'); art.className='art'; art.setAttribute('data-art',g.art||'');
       var ph=document.createElement('span'); ph.textContent=String(g.art||'').replace(/\D/g,''); art.appendChild(ph);
       var nm=document.createElement('b'); nm.textContent=g.name;
       var mx=(g.thresholds&&g.thresholds.length)||3;
-      var st=document.createElement('div'); st.className='stars'; st.innerHTML=starHtml(g.stars,mx); st.setAttribute('aria-label',g.stars+' of '+mx+' star'+(mx===1?'':'s'));
+      var st=document.createElement('div'); st.className='stars'; st.innerHTML=starHtml(g.stars,mx); st.setAttribute('aria-label',g.stars>0?g.stars+' of '+mx+' star'+(mx===1?'':'s'):'not earned yet');
       el.appendChild(art); el.appendChild(nm); el.appendChild(st);
       if(k>=BADGE_LIMIT&&!SHOW_ALL) el.hidden=true;
       box.appendChild(el);
@@ -656,7 +653,7 @@ html.embed .glassclose:not(.in-dialog){display:none}html.embed .book{padding:0 0
   var REWARDS=[null,{id:'tape-ice',label:'Practice Ice tape'},{id:'helmet-arena',label:'Game Ready helmet'},{id:'gloves-gold',label:'Legend gloves'}];
   // Signed out: a sample kid on dot 30, in Practice Ice.
   var SAMPLE={dots:30,bestDot:30,totalDots:91,tierStarts:TIER_STARTS,tierIndex:1,highestTier:1,tier:'Practice Ice',complete:false,
-    trainingDays:30,dotsToNextTier:13,tierDates:[null,null,null,null],missedInARow:0,daysUntilSlip:5,slippedNow:false};
+    trainingDays:30,dotsToNextTier:13,tierDates:[null,null,null,null],missedInARow:0,daysUntilFreeze:5,frozen:false};
   function starts(b){ return Array.isArray(b.tierStarts)?b.tierStarts:TIER_STARTS; }
   function total(b){ return b.totalDots||TOTAL_DOTS; }
   function sceneEnd(b,i){ var st=starts(b); return i+1<st.length?st[i+1]:total(b); }
@@ -685,9 +682,9 @@ html.embed .glassclose:not(.in-dialog){display:none}html.embed .book{padding:0 0
     var pos=b.complete?total(b):b.dots;
     txt('jTier',b.tier);
     var warn=document.getElementById('jSlip');
-    if(b.slippedNow){ warn.hidden=false; warn.textContent='You slipped back a dot. Train today to start moving again.'; }
-    else if(b.daysUntilSlip!=null&&b.daysUntilSlip<=2&&pos>0){ warn.hidden=false;
-      warn.textContent='You haven\u2019t trained in '+plural(b.missedInARow,'day')+'. Train '+(b.daysUntilSlip===1?'today':'in the next 2 days')+' so you don\u2019t lose a dot.'; }
+    if(b.frozen&&pos>0){ warn.hidden=false; warn.textContent='\u2744\uFE0F Your last dot froze. Train today to thaw it.'; }
+    else if(b.daysUntilFreeze!=null&&b.daysUntilFreeze<=2&&pos>0){ warn.hidden=false;
+      warn.textContent='You haven\u2019t trained in '+plural(b.missedInARow,'day')+'. Train '+(b.daysUntilFreeze===1?'today':'in the next 2 days')+' so your dot doesn\u2019t freeze.'; }
     else warn.hidden=true;
     var tiers=document.getElementById('jTiers'); tiers.innerHTML='';
     var shown=VIEW==null?(b.complete?TIER_NAMES.length-1:b.tierIndex):VIEW;
@@ -724,11 +721,12 @@ html.embed .glassclose:not(.in-dialog){display:none}html.embed .book{padding:0 0
     var freshFrom=mine&&opts.fromDot!=null?Math.max(0,opts.fromDot-from):null;
     for(var k=0;k<n;k++){
       var pi=document.createElement('i');
-      if(k<filled){ pi.className='on'; if(freshFrom!=null&&k>=freshFrom){ pi.className='on fresh'; pi.style.setProperty('--k',k-freshFrom); } }
+      if(k<filled){ pi.className='on'; if(freshFrom!=null&&k>=freshFrom){ pi.className='on fresh'; pi.style.setProperty('--k',k-freshFrom); }
+        if(mine&&b.frozen&&k===filled-1) pi.className+=' frozen'; }
       else if(k===filled&&mine) pi.className='next';
       pips.appendChild(pi);
     }
-    pips.setAttribute('aria-label',filled+' of '+n+' dots in '+name);
+    pips.setAttribute('aria-label',filled+' of '+n+' dots in '+name+(mine&&b.frozen&&filled>0?', last dot frozen':''));
     var main,sub='';
     if(st==='locked'){ main=REWARDS[i]?'Unlocks '+REWARDS[i].label+'.':'Locked for now.'; } // the lock on the scene says when
     else if(mine){ main=plural(Math.max(0,to-pos),'training day')+' to '+(TIER_NAMES[i+1]||'the end');
@@ -738,13 +736,6 @@ html.embed .glassclose:not(.in-dialog){display:none}html.embed .book{padding:0 0
     txt('jNext',main); txt('jSub',sub);
     fillArt(stage); fillArt(document.getElementById('jTiers'));
   }
-  (function(){
-    var btn=document.getElementById('jRuleBtn'), pop=document.getElementById('jRule');
-    function set(open){ pop.hidden=!open; btn.setAttribute('aria-expanded',open?'true':'false'); }
-    btn.addEventListener('click',function(){ set(pop.hidden); });
-    document.addEventListener('click',function(e){ if(!pop.hidden&&e.target!==btn&&!pop.contains(e.target)) set(false); });
-    document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!pop.hidden){ set(false); btn.focus(); } });
-  })();
   document.getElementById('jTiers').addEventListener('click',function(e){
     var btn=e.target.closest('.tierbtn'); if(!btn)return;
     var b=BOOK||SAMPLE, i=Number(btn.getAttribute('data-t'));

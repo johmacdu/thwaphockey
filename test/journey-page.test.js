@@ -79,15 +79,16 @@ describe('signed out', () => {
   it('keeps the sample content showing when signed out', async () => {
     const w = await boot({ api: 401 });
     expect($(w, 'jTier').textContent).toBe('Practice Ice'); // static sample stays
-    // Only earned badges show, so the sample shows its four earned ones.
+    // Earned badges first, then the ones still to earn as outlines.
     expect(badgeBtns(w).map((b) => b.querySelector('b').textContent)).toEqual(
-      ['Dangler', 'Sniper', 'Engine', 'Tape to Tape']);
+      ['Dangler', 'Sniper', 'Engine', 'Tape to Tape', 'Hockey Brain']);
+    expect(badgeBtns(w)[4].classList.contains('locked')).toBe(true);
   });
 
   it('a network error also leaves the sample in place', async () => {
     const w = await boot({ api: 'throw' });
     expect($(w, 'jTier').textContent).toBe('Practice Ice');
-    expect(badgeBtns(w).length).toBe(4);
+    expect(badgeBtns(w).length).toBe(5);
   });
 
   it('an answer without months is ignored, not half-rendered', async () => {
@@ -138,11 +139,17 @@ describe('signed in: My Season So Far', () => {
 describe('signed in: badges', () => {
   const events = [...ev('2026-10-01', 'stick', 34), ...ev('2026-10-02', 'iq', 30)];
 
-  it('shows only the badges a kid has earned, with their stars', async () => {
+  it('shows earned badges first, then the rest as outlines', async () => {
     const w = await boot({ api: book({ events, cheersSent: 5 }) });
     const btns = badgeBtns(w);
     // 34 stick + 30 iq in one week also earns Big Week (most drills in a week).
-    expect(btns.map((b) => b.getAttribute('data-id'))).toEqual(['dangler', 'hockeybrain', 'hypesquad', 'bigweek']);
+    expect(btns.slice(0, 4).map((b) => b.getAttribute('data-id'))).toEqual(['dangler', 'hockeybrain', 'hypesquad', 'bigweek']);
+    expect(btns.slice(0, 4).some((b) => b.classList.contains('locked'))).toBe(false);
+    // Every badge still to earn follows as a dashed outline, its stars all hollow.
+    const rest = btns.slice(4);
+    expect(rest.length).toBeGreaterThan(0);
+    expect(rest.every((b) => b.classList.contains('locked'))).toBe(true);
+    expect(rest[0].querySelector('.stars').getAttribute('aria-label')).toBe('not earned yet');
     const label = (i) => btns[i].querySelector('.stars').getAttribute('aria-label');
     expect(label(0)).toBe('2 of 3 stars'); // Dangler 34
     expect(label(1)).toBe('3 of 3 stars'); // Hockey Brain 30
@@ -152,14 +159,18 @@ describe('signed in: badges', () => {
     expect(btns[0].querySelector('.stars').textContent).toBe('\u2605\u2605\u2606');
     expect(btns[0].querySelector('.stars .off').textContent).toBe('\u2606');
     expect($(w, 'jBadgeEmpty').hidden).toBe(true);
-    expect($(w, 'jBadgeMore').hidden).toBe(true); // 3 is under the limit of 8
   });
 
-  it('a kid with no badges yet gets one line, not an empty row', async () => {
+  it('a kid with no badges yet sees every badge as an outline to reach for', async () => {
     const w = await boot({ api: book({}) });
-    expect(badgeBtns(w)).toHaveLength(0);
-    expect($(w, 'jBadgeEmpty').hidden).toBe(false);
-    expect($(w, 'jBadgeEmpty').textContent).toBe('Your first badge comes with your first drills.');
+    const btns = badgeBtns(w);
+    expect(btns.length).toBeGreaterThan(8);
+    expect(btns.every((b) => b.classList.contains('locked'))).toBe(true);
+    expect(btns.filter((x) => !x.hidden)).toHaveLength(8);
+    expect($(w, 'jBadgeEmpty').hidden).toBe(true);
+    // Tapping an outline opens the same modal with what it takes.
+    tap(w, btns[0]);
+    expect($(w, 'jBadgeModal').hidden).toBe(false);
   });
 
   it('the pop-up: name, tagline, stars with their numbers, a power bar and one line', async () => {
@@ -397,19 +408,20 @@ describe('badge modal: open and close', () => {
 });
 
 describe('8 badges, then Show more', () => {
-  it('shows the first 8 earned badges, and Show more reveals the rest', async () => {
+  it('shows 8 badges, earned first, and Show more reveals the rest', async () => {
     const b = book({});
     b.badges = Array.from({ length: 11 }, (_, i) => ({ id: 'b' + i, name: 'Badge ' + i, art: 'badge-01.webp', unit: 'drills', count: 12, stars: 1, thresholds: [10, 30, 60], next: 30 }));
     b.badges.push({ id: 'none', name: 'Not yet', art: 'badge-02.webp', unit: 'drills', count: 0, stars: 0, thresholds: [10, 30, 60], next: 10 });
     const w = await boot({ api: b });
     const shown = () => badgeBtns(w).filter((x) => !x.hidden).length;
-    expect(badgeBtns(w)).toHaveLength(11); // the unearned one never renders
+    expect(badgeBtns(w)).toHaveLength(12);
+    expect(badgeBtns(w)[11].getAttribute('data-id')).toBe('none'); // the one still to earn comes last
     expect(shown()).toBe(8);
     const more = $(w, 'jBadgeMore');
     expect(more.hidden).toBe(false);
     expect(more.textContent).toBe('Show more');
     tap(w, more);
-    expect(shown()).toBe(11);
+    expect(shown()).toBe(12);
     expect($(w, 'jBadgeMore').textContent).toBe('Show less');
     expect($(w, 'jBadgeMore').getAttribute('aria-expanded')).toBe('true');
     tap(w, $(w, 'jBadgeMore'));
@@ -464,23 +476,14 @@ describe('season path: one scene at a time', () => {
     const w = await at20();
     const txt = w.document.querySelector('section[aria-labelledby="h-journey"]').textContent;
     expect(txt).not.toMatch(/Dot \d+ of 91|Dots \d|never drop out/);
-    expect(txt).not.toContain('Skip 5 days'); // the rule lives behind the i, not on the page
+    expect(txt).not.toContain('Skip 5 days');
   });
 
-  it('the rule is tucked behind an i next to the title', async () => {
+  it('no i button and no rule text on the page', async () => {
     const w = await at20();
-    const btn = $(w, 'jRuleBtn'), pop = $(w, 'jRule');
-    expect(btn.getAttribute('aria-label')).toBe('How the dots work');
-    expect(pop.hidden).toBe(true);
-    tap(w, btn);
-    expect(pop.hidden).toBe(false);
-    expect(btn.getAttribute('aria-expanded')).toBe('true');
-    expect(pop.textContent).toBe('Every training day fills a dot. Skip 5 days in a row and you lose one.');
-    tap(w, $(w, 'h-badges')); // a tap anywhere else closes it
-    expect(pop.hidden).toBe(true);
-    tap(w, btn);
-    w.document.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-    expect(pop.hidden).toBe(true);
+    expect($(w, 'jRuleBtn')).toBeNull();
+    expect($(w, 'jRule')).toBeNull();
+    expect(w.document.body.textContent).not.toMatch(/Skip 5 days|lose one/);
   });
 
   it('Who skates sits on the same row as the scene name', async () => {
@@ -538,13 +541,17 @@ describe('season path: one scene at a time', () => {
     expect($(w, 'jSkater')).toBeTruthy();
   });
 
-  it('warns before a slip, and says so after one', async () => {
+  it('warns before a dot freezes, then shows it frozen without taking it away', async () => {
     const w = await boot({ api: book({ days: range('2026-09-01', 10), today: '2026-09-14' }), now: '2026-09-14T19:00:00Z' });
     expect($(w, 'jSlip').hidden).toBe(false);
-    expect($(w, 'jSlip').textContent).toBe('You haven\u2019t trained in 3 days. Train in the next 2 days so you don\u2019t lose a dot.');
+    expect($(w, 'jSlip').textContent).toBe('You haven\u2019t trained in 3 days. Train in the next 2 days so your dot doesn\u2019t freeze.');
     const w2 = await boot({ api: book({ days: range('2026-09-01', 10), today: '2026-09-20' }), now: '2026-09-20T19:00:00Z' });
-    expect(on(w2)).toBe(9);
-    expect($(w2, 'jSlip').textContent).toBe('You slipped back a dot. Train today to start moving again.');
+    expect(on(w2)).toBe(10);
+    expect($(w2, 'jSlip').textContent).toBe('\u2744\uFE0F Your last dot froze. Train today to thaw it.');
+    const frozen = w2.document.querySelectorAll('#jPips i.frozen');
+    expect(frozen).toHaveLength(1);
+    expect(Array.from(w2.document.querySelectorAll('#jPips i.on')).pop()).toBe(frozen[0]); // the newest dot
+    expect($(w2, 'jPips').getAttribute('aria-label')).toMatch(/last dot frozen$/);
     const w3 = await boot({ api: book({ days: range('2026-09-01', 10), today: '2026-09-11' }), now: '2026-09-11T19:00:00Z' });
     expect($(w3, 'jSlip').hidden).toBe(true);
   });
