@@ -495,13 +495,26 @@
     // Facing: left 3/4 is the default; right mirrors it, center faces head-on. Set
     // as a CSS var so the builder's spin and the mini previews still win.
     var faceY=(look.facing==='right')?25:((look.facing==='center')?0:-25);
-    return "<div class='av-wrap' aria-hidden='true'><div class='av-scene' style='--av-face:"+faceY+"deg'>"+parts.join('')+"</div></div>";
+    var fit=fitTf(look);
+    return "<div class='av-wrap' aria-hidden='true'"+(fit?" style='--av-fit:"+fit+"'":"")+"><div class='av-scene' style='--av-face:"+faceY+"deg'>"+parts.join('')+"</div></div>";
+  }
+
+  // Card fit (the Size tab): size is a percent, x/y move by a percent of the card,
+  // right and up positive. Same limits as the server (lib/avatar_items.js FIT).
+  // Only the card front applies it (.cf2 .av-wrap), so My Player's small pictures,
+  // the stats-page tile and the coach rows keep the normal framing.
+  var FIT={ fitSize:[80,150,100], fitX:[-30,30,0], fitY:[-20,30,0] };
+  function fitVal(look,k){ var r=FIT[k], n=Number(look&&look[k]); if(!isFinite(n)||look[k]==null||look[k]==='') n=r[2]; return Math.round(Math.min(r[1],Math.max(r[0],n))); }
+  function fitTf(look){
+    var s=fitVal(look,'fitSize'), x=fitVal(look,'fitX'), y=fitVal(look,'fitY');
+    if(s===100 && !x && !y) return '';
+    return 'translate('+x+'%,'+(-y)+'%) scale('+(s/100)+')';
   }
 
   // Look for a player. Order: the server roster looks (fetched below, cached on
   // the device so the next load paints right away), then this device's saved
   // look, then the default. The number always comes from the roster.
-  var teamLooks=null, teamLetters={};
+  var teamLooks=null, teamLetters={}, previewLook=null;
   try{ teamLooks=JSON.parse(localStorage.getItem('thwapLooksCache')||'null'); }catch(_){}
   try{ teamLetters=JSON.parse(localStorage.getItem('thwapLettersCache')||'{}')||{}; }catch(_){}
   function letterOf(id){ return teamLetters[String(id||'').toLowerCase()]||null; }
@@ -523,7 +536,9 @@
     var look={}; for(var k in DEFAULT_LOOK) look[k]=DEFAULT_LOOK[k];
     var id=String(slug||'').toLowerCase();
     var src=null;
-    if(teamLooks && teamLooks[id]) src=norm(teamLooks[id]);
+    // My Player's Size tab draws the real card front with the look being edited.
+    if(previewLook && previewLook.id===id) src=norm(previewLook.look);
+    if(!src && teamLooks && teamLooks[id]) src=norm(teamLooks[id]);
     if(!src){ try{ src=(JSON.parse(localStorage.getItem('thwapLooks')||'{}'))[id]||null; }catch(_){} }
     if(!src) src=starterLook(id);
     for(var m in src) if(m!=='num' && m!=='letter') look[m]=src[m];
@@ -568,6 +583,8 @@
       "filter:drop-shadow(0 0 1px rgba(255,255,255,.85)) drop-shadow(0 0 1px rgba(255,255,255,.55))}"+
     ".av-scene{position:absolute;left:50%;bottom:9%;width:0;height:0;transform-style:preserve-3d;"+
       "transform:rotateX(-10deg) rotateY(var(--av-face,-25deg))}"+
+    // The kid's size and spot, on card fronts only. Scales from the skates.
+    ".cf2 .av-wrap{transform:var(--av-fit,none);transform-origin:50% 91%}"+
     ".av-b{position:absolute;left:0;top:0;width:0;height:0;transform-style:preserve-3d}"+
     ".av-f{position:absolute;left:0;top:0;backface-visibility:hidden;box-shadow:inset 0 0 0 .06em rgba(0,0,0,.35);background-size:100% 100%;image-rendering:pixelated}"+
     ".av-top{filter:brightness(1.18)}.av-right,.av-left{filter:brightness(.78)}.av-back{filter:brightness(.88)}.av-bottom{filter:brightness(.6)}"+
@@ -594,7 +611,7 @@
   // Opens from the My Player button on the player's own card. Tap an owned item: it goes on the
   // character and saves to the server. Tap a locked item: try it on, with the
   // progress line; nothing is saved. Unlocks come from the server only.
-  var GEAR_TABS=[['skin','Skin'],['hairstyle','Hair'],['hair','Hair color'],['jersey','Jersey',['jersey','socks']],['helmet','Helmet',['helmet','decal']],['cage','Cage'],['stripe','Stripe'],['gloves','Gloves'],['stick','Stick',['stick','tape']],['pose','Moves'],['celebration','Cellys'],['hand','Shot'],['facing','View']];
+  var GEAR_TABS=[['skin','Skin'],['hairstyle','Hair'],['hair','Hair color'],['jersey','Jersey',['jersey','socks']],['helmet','Helmet',['helmet','decal']],['cage','Cage'],['stripe','Stripe'],['gloves','Gloves'],['stick','Stick',['stick','tape']],['pose','Moves'],['celebration','Cellys'],['hand','Shot'],['facing','View'],['fit','Size']];
   var TIER_LABEL={ common:'', rare:'Pro', epic:'All-Star', legendary:'Legend', team:'Team' };
   // A tab can hold more than one slot (Stick holds the tape, Helmet the decal,
   // Jersey the socks), so the team-set slots need no tabs of their own.
@@ -694,6 +711,13 @@
       ".lk-tabs{display:flex;gap:8px;overflow-x:auto;padding:12px 16px 4px;scrollbar-width:none}"+
       ".lk-tab{flex:none;min-height:48px;padding:0 16px;border-radius:24px;border:1px solid var(--line,#DCE5DE);background:var(--card,#fff);color:var(--text,#15221B);font-weight:800;font-size:15px;cursor:pointer}"+
       ".lk-tab[aria-selected=true]{background:var(--text,#15221B);color:var(--bg,#F3F7F4);border-color:var(--text,#15221B)}"+
+      ".lk-fitcard{position:absolute;left:50%;top:50%;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.25);cursor:grab}"+
+      ".lk-fit{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;gap:10px}"+
+      ".lk-fitsize{margin:0;font-size:15px;font-weight:800;color:var(--muted,#5F6F64)}.lk-fitsize b{color:var(--text,#15221B)}"+
+      ".lk-fitrow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}"+
+      ".lk-fitbtn{min-width:72px;min-height:56px;padding:4px 10px;border-radius:14px;border:1px solid var(--line,#DCE5DE);background:var(--card,#fff);color:var(--text,#15221B);font:inherit;font-size:13px;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}"+
+      ".lk-fitbtn span{font-size:20px;line-height:1}"+
+      ".lk-fitreset{min-height:48px;padding:0 20px;border:0;background:none;color:var(--text,#15221B);font:inherit;font-weight:800;text-decoration:underline;cursor:pointer}"+
       ".lk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;padding:8px 16px 24px;overflow-y:auto}"+
       ".lk-item{position:relative;min-height:96px;border-radius:14px;border:2px solid var(--line,#DCE5DE);background:var(--card,#fff);color:var(--text,#15221B);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px;cursor:pointer;font:inherit}"+
       ".lk-item[aria-pressed=true]{border-color:var(--linesel,#8FD65E);box-shadow:0 0 0 2px var(--linesel,#8FD65E) inset}"+
@@ -749,7 +773,8 @@
     var play=document.querySelector('.lk-play');
     if(play) play.hidden=!(L.build==null && L.tab==='celebration' && stageCelly());
     // A celebration is playing: let it finish (it repaints when done); only the note updates.
-    if(!L.playing){
+    if(L.tab==='fit' && L.build==null && !L.playing){ paintFitCard(st); }
+    else if(!L.playing){
       var look=L.trying?L.trying.look:L.look;
       var r=norm(look); r.num=L.num||''; r.letter=(L.data&&L.data.letter)||null;
       st.innerHTML=html(r);
@@ -785,6 +810,7 @@
   }
   function paintGrid(){
     var g=document.querySelector('.lk-grid'); if(!g||!L.data) return;
+    if(L.tab==='fit' && L.build==null){ g.innerHTML=fitControls(); return; }
     var tabSlots=slotsOf(L.tab);
     var items=L.data.items.filter(function(it){ return tabSlots.indexOf(it.slot)>=0; });
     g.innerHTML=items.map(function(it){
@@ -799,6 +825,56 @@
     }).join('');
   }
 
+  // --- Size tab: how big the player is on the card and where it stands --------
+  var FIT_STEP={ fitSize:10, fitX:5, fitY:5 };
+  function fitControls(){
+    var s=fitVal(L.look,'fitSize');
+    function b(k,d,lbl,ico){ return "<button type='button' class='lk-fitbtn' data-fit='"+k+"' data-d='"+d+"' aria-label='"+lbl+"'><span aria-hidden='true'>"+ico+"</span>"+lbl+"</button>"; }
+    return "<div class='lk-fit'>"+
+      "<p class='lk-fitsize'>Size <b>"+s+"%</b></p>"+
+      "<div class='lk-fitrow'>"+b('fitSize',-1,'Smaller','&minus;')+b('fitSize',1,'Bigger','+')+"</div>"+
+      "<div class='lk-fitrow'>"+b('fitX',-1,'Left','&larr;')+b('fitY',1,'Up','&uarr;')+b('fitY',-1,'Down','&darr;')+b('fitX',1,'Right','&rarr;')+"</div>"+
+      "<button type='button' class='lk-fitreset' data-fit='reset'>Reset</button>"+
+    "</div>";
+  }
+  // The real card front at its real size, scaled down to fit the stage, so what
+  // the kid sees here is exactly what the card shows.
+  function paintFitCard(st){
+    var W=Math.min(380,Math.round(window.innerWidth*0.94)), H=Math.round(W*1.4);
+    var r=norm(L.look); r.num=L.num||''; r.letter=(L.data&&L.data.letter)||null;
+    var face='';
+    try{
+      var p=window.thwapCurrentPlayer && window.thwapCurrentPlayer();
+      if(window.buildFront && p){ previewLook={id:String(L.me||'').toLowerCase(),look:L.look}; face=window.buildFront(p,L.me); }
+    }catch(_){ face=''; }
+    previewLook=null;
+    if(!face) face="<div class='cf2' style='background:#15221B'>"+html(r)+"</div>";
+    st.innerHTML="<div class='lk-fitcard' style='width:"+W+"px;height:"+H+"px'>"+face+"</div>";
+    var k=Math.min(1,(st.clientHeight-16)/H,(st.clientWidth-16)/W)||1;
+    var card=st.firstChild; card.style.transform='translate(-50%,-50%) scale('+k+')';
+    L.fitScale=W*k;
+  }
+  function fitSet(changes){
+    if(!L.fitPrev){ L.fitPrev={}; for(var k in L.look) L.fitPrev[k]=L.look[k]; }
+    var next={}; for(var k2 in L.look) next[k2]=L.look[k2];
+    for(var c in changes) next[c]=changes[c];
+    for(var f in FIT){ var v=fitVal(next,f); if(v===FIT[f][2]) delete next[f]; else next[f]=v; }
+    L.look=next; L.status=''; paintStage();
+    // Update the number only: rebuilding the buttons would drop keyboard focus
+    // and swallow quick repeat taps.
+    var sz=document.querySelector('.lk-fitsize b'); if(sz) sz.textContent=fitVal(next,'fitSize')+'%';
+    // One save when the kid stops tapping or dragging, not one per nudge.
+    clearTimeout(L.fitTimer);
+    L.fitTimer=setTimeout(function(){ var prev=L.fitPrev; L.fitPrev=null; save(prev); },600);
+  }
+  function onFit(btn){
+    var k=btn.getAttribute('data-fit'), ch={};
+    if(k==='reset'){ ch.fitSize=100; ch.fitX=0; ch.fitY=0; }
+    else ch[k]=fitVal(L.look,k)+Number(btn.getAttribute('data-d'))*FIT_STEP[k];
+    fitSet(ch);
+    try{ if(window.thwapHaptic) window.thwapHaptic('tap'); }catch(_){}
+  }
+
   function save(prev){
     L.status='Saving...'; paintStage();
     return fetch('/api/board?action=look',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({look:L.look})})
@@ -807,7 +883,7 @@
         if(!x.ok) throw new Error((x.j&&x.j.error)||'save failed');
         L.look=x.j.look; L.changed=true; L.status='Saved.';
         try{ var c=JSON.parse(localStorage.getItem('thwapLooksCache')||'{}')||{}; c[L.me]=L.look; localStorage.setItem('thwapLooksCache',JSON.stringify(c)); teamLooks=c; }catch(_){}
-        paintStage(); paintGrid();
+        paintStage(); if(L.tab!=='fit') paintGrid(); // keep the Size buttons (and focus) in place
       })
       .catch(function(){ L.look=prev; L.status='That didn\u2019t save. Try again.'; paintStage(); paintGrid(); });
   }
@@ -821,8 +897,11 @@
       L.tab=BUILD_STEPS[L.build][0]; L.trying=null; L.spin=spinFor(L.tab); paintTabs(); paintGrid(); paintStage(); return;
     }
     var tab=e.target.closest('.lk-tab');
-    if(tab){ if(L.playing){ L.playing(); L.playing=null; } L.tab=tab.getAttribute('data-tab'); L.trying=null; L.spin=spinFor(L.tab); paintTabs(); paintGrid(); paintStage(); return; }
+    if(tab){ if(L.playing){ L.playing(); L.playing=null; } L.tab=tab.getAttribute('data-tab'); L.trying=null; L.spin=spinFor(L.tab);
+      if(L.tab==='fit') L.status='Drag your player to move it.';
+      paintTabs(); paintGrid(); paintStage(); return; }
     if(e.target.closest('.lk-play')){ playOnStage(stageCelly()); return; }
+    var fb=e.target.closest('[data-fit]'); if(fb && L.data){ onFit(fb); return; }
     var b=e.target.closest('.lk-item'); if(!b||!L.data) return;
     var id=b.getAttribute('data-id'), it=null;
     for(var i=0;i<L.data.items.length;i++) if(L.data.items[i].id===id) it=L.data.items[i];
@@ -847,11 +926,17 @@
   }
 
   function bindSpin(st){
-    var x0=null, s0=0;
-    st.addEventListener('pointerdown',function(e){ x0=e.clientX; s0=L.spin; try{ st.setPointerCapture(e.pointerId); }catch(_){} });
-    st.addEventListener('pointermove',function(e){ if(x0==null) return; L.spin=s0+(e.clientX-x0)*0.8;
+    var x0=null, y0=0, s0=0, f0=null;
+    st.addEventListener('pointerdown',function(e){ x0=e.clientX; y0=e.clientY; s0=L.spin;
+      // Size tab: dragging moves the player on the card instead of spinning it.
+      f0=(L.tab==='fit' && L.build==null && L.data)?{x:fitVal(L.look,'fitX'),y:fitVal(L.look,'fitY')}:null;
+      try{ st.setPointerCapture(e.pointerId); }catch(_){} });
+    st.addEventListener('pointermove',function(e){ if(x0==null) return;
+      if(f0){ var w=L.fitScale||300;
+        fitSet({ fitX:f0.x+Math.round((e.clientX-x0)/w*100), fitY:f0.y-Math.round((e.clientY-y0)/(w*1.4)*100) }); return; }
+      L.spin=s0+(e.clientX-x0)*0.8;
       var sc=st.querySelector('.av-scene'); if(sc) sc.style.transform='rotateX(-10deg) rotateY('+L.spin+'deg)'; });
-    function up(){ x0=null; }
+    function up(){ x0=null; f0=null; }
     st.addEventListener('pointerup',up); st.addEventListener('pointercancel',up);
   }
 
@@ -865,6 +950,8 @@
   }
 
   function closeLocker(){
+    // A size or spot change still waiting to save: save it, then close.
+    if(L.fitPrev){ clearTimeout(L.fitTimer); var fp=L.fitPrev; L.fitPrev=null; save(fp).then(closeLocker); return; }
     if(L.playing){ L.playing(); L.playing=null; }
     var el=document.querySelector('.lk'); if(el) el.remove();
     document.removeEventListener('keydown',onKey);
