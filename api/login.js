@@ -7,9 +7,18 @@
 //   POST /api/login?action=request-code  { playerId }               -> emails a 6-digit code to the
 //                                          parent email(s) ON FILE for that player (never a typed one)
 //   POST /api/login?action=verify        { playerId, code, keep }    -> checks the code, sets the cookie
-//   POST /api/login?action=code-signin   { playerId, code, email, keep } -> verifies the
-//                                          jersey+season code (the existing sign-in) and sets
-//                                          the HTTP-only cookie. Same UX as today, now server-checked.
+//   POST /api/login?action=code-signin   { playerId, code, email, keep, teamCode?, quiet? }
+//                                          -> checks the jersey+season code. A browser the parent
+//                                          already approved (remembered-device cookie) or one that
+//                                          already holds a valid session for this player gets the
+//                                          HTTP-only session cookie. A NEW browser does not: the
+//                                          server emails the parent(s) on file a one-time code and
+//                                          answers { needsParentCode: true, sent }; the client then
+//                                          calls verify with that code. quiet=true (the silent
+//                                          self-heal) never emails. A matching code with no parent
+//                                          email on file answers { needsParentEmail: true }.
+//                                          Every failure (unknown player, wrong code, missing field)
+//                                          is the same 401 { error: 'bad code' }.
 //   GET  /api/login?action=session                                   -> { authed, player }
 //
 // Players resolve from the multi-team members store (lib/signin_players.js), so
@@ -43,9 +52,10 @@
 //   GET  /api/login?action=watch-list&t=<manage link>  -> { ok, player, watches }
 //   POST /api/login?action=watch-revoke { t: <manage link>, deviceId }  -> { ok, removed }
 //
-// Rate limits (lib/rate_limit.js): request-code and watch-request each allow 3
-// per player per 15 minutes and 10 per IP per hour; watch-request also allows 20
-// per team code per hour. IP, team and (when sent) player id are counted before
+// Rate limits (lib/rate_limit.js): request-code, watch-request and code-signin
+// each allow 3 per player per 15 minutes and 10 per IP per hour; watch-request
+// and code-signin also allow 20 per team code per hour (code-signin counts a
+// request with no team code against the Jr. Rangers 10U bucket). IP, team and (when sent) player id are counted before
 // the player is looked up, so a 429 says nothing about whether a player exists.
 //
 // There is no public team player list: team codes are not secret, so a list
@@ -61,11 +71,16 @@ import { getKv, parseBody, emailConfigured } from '../lib/photo_common.js';
 import { checkAndBumpRate, putOtp, randomCode, checkOtp, recordConsent } from '../lib/photo_store.js';
 import {
   mintSession, verifySession, sessionCookie, clearSessionCookie,
-  readSessionCookie, sessionConfigured,
+  readSessionCookie, sessionConfigured, refreshSession,
+  mintDeviceToken, deviceCookie, deviceRemembered,
 } from '../lib/session_store.js';
-import { resolveSigninPlayer, findPlayerByTeamCode, codeMatches } from '../lib/signin_players.js';
+import {
+  resolveSigninPlayer, findPlayerByTeamCode, codeMatches, RANGERS_TEAM_CODE,
+} from '../lib/signin_players.js';
 import { getMember, parentEmailList } from '../lib/teams_store.js';
-import { allowEmailAction, allowWatchRequest, allowWatchRequestPlayer } from '../lib/rate_limit.js';
+import {
+  allowEmailAction, allowWatchRequest, allowWatchRequestPlayer, allowCodeSignin,
+} from '../lib/rate_limit.js';
 import { sha256 } from '../lib/photo_store.js';
 import {
   sessionClaims, cleanLabel, createWatchRequest, pollWatchRequest, peekApproval,
@@ -77,8 +92,20 @@ import {
 // the current (2026-27) and prior year are accepted, mirroring the client check.
 // CODE_SEASONS and codeMatches live in lib/signin_players.js.
 
+// The parent email for a NEW browser (code-signin with a correct player code on
+// a device the parent has not approved). Plain text, no em-dashes or middots.
+export function newDeviceEmailText({ name, code }) {
+  return (
+    `${name} is signing in to Thwap Hockey on a new device.\n\n` +
+    `To let them in, enter this one-time code on the sign-in screen. Your one-time code is: ${code}\n\n` +
+    `It works once and expires in 10 minutes. If Keep me signed in is on, that device will not ask again for 30 days.\n\n` +
+    `If you did not expect this, ignore this email. Nobody can sign in as ${name} on that device without this code.\n`
+  );
+}
+
 // Email a one-time SIGN-IN code (distinct copy from the photo-consent code).
-async function sendLoginCode(email, code, playerName) {
+// newDevice picks the new-device copy above; otherwise the plain sign-in code.
+async function sendLoginCode(email, code, playerName, { newDevice = false } = {}) {
   const from = process.env.PHOTO_FROM_EMAIL;
   const key = process.env.RESEND_API_KEY;
   if (!from || !key) return false;
@@ -88,11 +115,14 @@ async function sendLoginCode(email, code, playerName) {
       headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         from, to: [email],
-        subject: 'Your Thwap Hockey sign-in code',
-        text:
-          `Here is the sign-in code for ${playerName} on Thwap Hockey.\n\n` +
-          `Your one-time code is: ${code}\n\n` +
-          `It expires in 10 minutes. If you did not ask to sign in, you can ignore this email.`,
+        subject: newDevice
+          ? `${playerName} is signing in on a new device`
+          : 'Your Thwap Hockey sign-in code',
+        text: newDevice
+          ? newDeviceEmailText({ name: playerName, code })
+          : `Here is the sign-in code for ${playerName} on Thwap Hockey.\n\n` +
+            `Your one-time code is: ${code}\n\n` +
+            `It expires in 10 minutes. If you did not ask to sign in, you can ignore this email.`,
       }),
     });
     return resp.ok;
@@ -184,13 +214,13 @@ async function verify(req, res) {
 
   const { playerId, code, keep, teamCode } = parseBody(req);
   const pid = String(playerId || '').toLowerCase();
-  const player = await resolveSigninPlayer(pid, teamCode);
-  if (!player || !/^\d{6}$/.test(String(code || ''))) {
-    return res.status(400).json({ error: 'bad input' });
-  }
+  res.setHeader('Cache-Control', 'no-store');
+  // An unknown player and a malformed code look exactly like a player with no
+  // code pending, so verify cannot be used to probe the roster either.
+  const player = /^\d{6}$/.test(String(code || '')) ? await resolveSigninPlayer(pid, teamCode) : null;
+  if (!player) return res.status(401).json({ error: 'bad code', reason: 'none' });
 
   const kv = getKv();
-  res.setHeader('Cache-Control', 'no-store');
   const result = await checkOtp(kv, 'pid:' + pid, String(code));
   if (result !== 'ok') return res.status(401).json({ error: 'bad code', reason: result });
 
@@ -201,31 +231,83 @@ async function verify(req, res) {
   if (consentEmail) await recordConsent(kv, pid, consentEmail);
   const token = mintSession(pid, consentEmail);
   if (!token) return res.status(503).json({ error: 'login not configured' });
-  res.setHeader('Set-Cookie', sessionCookie(token, { keep: !!keep, secure: isSecure(req) }));
+  const cookies = [sessionCookie(token, { keep: !!keep, secure: isSecure(req) })];
+  // The parent just approved this browser. With Keep me signed in, remember it
+  // for this player so the player code alone works here for 30 days. A shared
+  // computer (keep off) is never remembered.
+  if (keep) {
+    const dev = mintDeviceToken(pid);
+    if (dev) cookies.push(deviceCookie(pid, dev, { secure: isSecure(req) }));
+  }
+  res.setHeader('Set-Cookie', cookies.length === 1 ? cookies[0] : cookies);
 
   return res.status(200).json({ ok: true, player: { id: player.id, name: player.name, number: player.number } });
 }
 
-// Phase 1 server sessions. The player types the SAME code they use today (jersey
-// number + season year, e.g. #72 in 2026-27 -> "722027"). We verify it on the
-// SERVER and issue the HTTP-only session cookie, so the session cannot be forged
-// and write endpoints can trust who the caller is. The player's UX is unchanged.
+// Web sign-in with the player code (jersey number + season year, e.g. #72 in
+// 2026-27 -> "722027"). The code is guessable, so it is NOT enough on its own:
+//   1. A browser that already holds a valid session for this player just gets a
+//      fresh one (current users are never pushed back through the parent step).
+//   2. Otherwise every call is rate limited per IP, per team and per player
+//      BEFORE the lookup, and every failure is the same 401 'bad code'.
+//   3. A correct code on a browser the parent approved before (remembered-device
+//      cookie set at verify) gets a session.
+//   4. A correct code on a NEW browser gets no session. The parent(s) on file
+//      are emailed a one-time code and the client asks for it (verify).
 async function codeSignin(req, res) {
   if (req.method !== 'POST') { res.setHeader('Allow', 'POST'); return res.status(405).json({ error: 'method not allowed' }); }
   res.setHeader('Cache-Control', 'no-store');
   if (!sessionConfigured()) return res.status(503).json({ error: 'sessions not configured' });
 
-  const { playerId, code, email, keep, teamCode } = parseBody(req);
-  const pid = String(playerId || '').toLowerCase();
-  const player = await resolveSigninPlayer(pid, teamCode);
-  if (!player) return res.status(400).json({ error: 'unknown player' });
+  const { playerId, code, keep, teamCode, quiet } = parseBody(req);
+  const pid = String(playerId || '').trim().toLowerCase();
+  const team = String(teamCode || '').trim().toUpperCase();
+  const kv = getKv();
+  const secure = isSecure(req);
+  const publicP = (p) => ({ id: p.id, name: p.name, number: p.number });
 
-  if (!codeMatches(player, code)) return res.status(401).json({ error: 'bad code' });
+  // 1. Already signed in as this player on this browser (a web session, not a
+  // watch token). Proof is the signed cookie itself, so no limit is spent.
+  const claims = pid ? await sessionClaims(req, kv) : null;
+  if (claims && claims.kind === 'web' && claims.playerId === pid) {
+    const p = await resolveSigninPlayer(pid, team || undefined);
+    if (codeMatches(p, code)) {
+      const token = refreshSession(claims);
+      if (token) res.setHeader('Set-Cookie', sessionCookie(token, { keep: !!keep, secure }));
+      return res.status(200).json({ ok: true, player: publicP(p) });
+    }
+  }
 
-  const token = mintSession(pid, String(email || '').toLowerCase());
-  if (!token) return res.status(503).json({ error: 'sessions not configured' });
-  res.setHeader('Set-Cookie', sessionCookie(token, { keep: !!keep, secure: isSecure(req) }));
-  return res.status(200).json({ ok: true, player: { id: player.id, name: player.name, number: player.number } });
+  // 2. Limits first, then one answer for every failure.
+  if (!(await allowCodeSignin(kv, { playerId: pid, teamCode: team || RANGERS_TEAM_CODE }, req))) return tooMany(res);
+  const player = pid ? await resolveSigninPlayer(pid, team || undefined) : null;
+  if (!player || !codeMatches(player, code)) return res.status(401).json({ error: 'bad code' });
+
+  const member = await getMember(pid);
+  const emails = member ? parentEmailList(member) : [];
+
+  // 3. A browser the parent already approved for this player.
+  if (deviceRemembered(req, pid)) {
+    const token = mintSession(pid, emails[0] || '');
+    if (!token) return res.status(503).json({ error: 'sessions not configured' });
+    res.setHeader('Set-Cookie', sessionCookie(token, { keep: !!keep, secure }));
+    return res.status(200).json({ ok: true, player: publicP(player) });
+  }
+
+  // 4. A new browser needs the parent. The code matched, so saying why is safe.
+  if (!emails.length) return res.status(200).json({ ok: false, needsParentEmail: true });
+  if (quiet) return res.status(200).json({ ok: false, needsParentCode: true, sent: false });
+  if (!emailConfigured()) return res.status(503).json({ error: 'login not configured' });
+  // Shares request-code's per-player email budget (5 per hour), so resend and
+  // repeat sign-ins together cannot flood a family's inbox.
+  if (!(await checkAndBumpRate(kv, 'pid:' + pid))) return tooMany(res);
+  const otp = randomCode();
+  await putOtp(kv, 'pid:' + pid, otp);
+  let sent = 0;
+  for (const em of emails) {
+    if (await sendLoginCode(em, otp, player.name || 'Your player', { newDevice: true })) sent += 1;
+  }
+  return res.status(200).json({ ok: false, needsParentCode: true, sent: sent > 0, player: publicP(player) });
 }
 
 async function session(req, res) {

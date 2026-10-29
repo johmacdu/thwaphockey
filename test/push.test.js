@@ -189,7 +189,8 @@ describe('api/push send (admin-gated)', () => {
     const res = makeRes();
     await _handlers.send(post(
       { playerId: 'lewie', payload: { title: 'x' } },
-      { key: 'admin-test-token' },
+      {},
+      { authorization: 'Bearer admin-test-token' },
     ), res);
     expect(res.statusCode).toBe(200);
     expect(res.body.ok).toBe(true);
@@ -207,7 +208,7 @@ describe('api/push send (admin-gated)', () => {
 
   it('rejects an unknown player (400, before auth)', async () => {
     const res = makeRes();
-    await _handlers.send(post({ playerId: 'nobody', payload: { title: 'x' } }, { key: 'admin-test-token' }), res);
+    await _handlers.send(post({ playerId: 'nobody', payload: { title: 'x' } }, {}, { authorization: 'Bearer admin-test-token' }), res);
     expect(res.statusCode).toBe(400);
   });
 });
@@ -277,7 +278,7 @@ describe('api/push status (admin-gated diagnostics, counts not tokens)', () => {
     await store.registerToken('lewie', { token: 'secret-tok-1', platform: 'web' });
     await store.registerToken('lewie', { token: 'secret-tok-2', platform: 'ios' });
     const res = makeRes();
-    await _handlers.status(post({}, { key: 'admin-test-token' }), res);
+    await _handlers.status(post({}, {}, { authorization: 'Bearer admin-test-token' }), res);
     expect(res.statusCode).toBe(200);
     expect(res.body.pushConfigured).toBe(false);
     expect(res.body.totalTokens).toBe(2);
@@ -290,7 +291,7 @@ describe('api/push status (admin-gated diagnostics, counts not tokens)', () => {
 
   it('accepts a GET (operator can read it from a browser)', async () => {
     const res = makeRes();
-    await _handlers.status({ method: 'GET', body: {}, query: { key: 'admin-test-token' }, headers: {} }, res);
+    await _handlers.status({ method: 'GET', body: {}, query: {}, headers: { authorization: 'Bearer admin-test-token' } }, res);
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body.players)).toBe(true);
   });
@@ -303,7 +304,7 @@ describe('api/push status (admin-gated diagnostics, counts not tokens)', () => {
 
   it('sets Cache-Control no-store', async () => {
     const res = makeRes();
-    await _handlers.status(post({}, { key: 'admin-test-token' }), res);
+    await _handlers.status(post({}, {}, { authorization: 'Bearer admin-test-token' }), res);
     expect(res.headers['Cache-Control']).toBe('no-store');
   });
 

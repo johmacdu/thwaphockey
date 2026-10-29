@@ -28,7 +28,9 @@ const verify = _handlers.verify;
 const codeSignin = _handlers.codeSignin;
 const session = _handlers.session;
 const logout = _handlers.logout;
-const { mintSession, verifySession, SESSION_COOKIE, SESSION_TTL_MS } = await import('../lib/session_store.js');
+const {
+  mintSession, verifySession, SESSION_COOKIE, SESSION_TTL_MS, mintDeviceToken, deviceCookieName,
+} = await import('../lib/session_store.js');
 
 function makeRes() {
   return {
@@ -151,7 +153,7 @@ describe('login verify (player-keyed OTP -> session)', () => {
     await verify(post({ playerId: 'lewie', code, keep: true }), res);
     expect(res.statusCode).toBe(200);
     expect(res.body.player.id).toBe('lewie');
-    const sc = res.headers['Set-Cookie'];
+    const sc = [].concat(res.headers['Set-Cookie']).join('\n');
     expect(sc).toContain(SESSION_COOKIE + '=');
     expect(sc).toContain('HttpOnly');
     expect(sc).toContain('SameSite=Lax');
@@ -228,11 +230,11 @@ describe('login code-signin', () => {
     expect(res.statusCode).toBe(405);
   });
 
-  it('rejects an unknown player', async () => {
+  it('rejects an unknown player with the same answer as a wrong code', async () => {
     const res = makeRes();
     await codeSignin(post({ playerId: 'nobody', code: '722027' }), res);
-    expect(res.statusCode).toBe(400);
-    expect(res.body.error).toBe('unknown player');
+    expect(res.statusCode).toBe(401);
+    expect(res.body).toEqual({ error: 'bad code' });
   });
 
   it('rejects a wrong code', async () => {
@@ -242,9 +244,10 @@ describe('login code-signin', () => {
     expect(res.body.error).toBe('bad code');
   });
 
-  it('sets an HTTP-only session cookie for the right code', async () => {
+  it('sets an HTTP-only session cookie for the right code on a parent-approved browser', async () => {
     const res = makeRes();
-    await codeSignin(post({ playerId: 'lewie', code: '722027', email: 'p@example.com' }), res);
+    const dev = `${deviceCookieName('lewie')}=${mintDeviceToken('lewie')}`;
+    await codeSignin(post({ playerId: 'lewie', code: '722027', email: 'p@example.com' }, { cookie: dev }), res);
     expect(res.statusCode).toBe(200);
     const sc = res.headers['Set-Cookie'];
     expect(sc).toContain('HttpOnly');
@@ -254,8 +257,10 @@ describe('login code-signin', () => {
 
   it('accepts the prior season year too', async () => {
     const res = makeRes();
-    await codeSignin(post({ playerId: 'lewie', code: '722026' }), res);
+    const dev = `${deviceCookieName('lewie')}=${mintDeviceToken('lewie')}`;
+    await codeSignin(post({ playerId: 'lewie', code: '722026' }, { cookie: dev }), res);
     expect(res.statusCode).toBe(200);
+    expect(res.body.ok).toBe(true);
   });
 
   it('503 when sessions are not configured', async () => {

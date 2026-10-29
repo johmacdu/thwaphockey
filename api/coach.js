@@ -35,6 +35,7 @@
 
 import crypto from 'crypto';
 import { parseBody } from '../lib/photo_common.js';
+import { sharedKeyOk, adminTokenFrom } from '../lib/admin_auth.js';
 import { mintSession, verifySession, readSessionCookie } from '../lib/session_store.js';
 import { sessionClaims } from '../lib/watch_store.js';
 import { ROSTER, weekBoard, monthTrend, adjustPlayer, getGrants, setGrants } from '../lib/store.js';
@@ -49,7 +50,7 @@ import {
   getAdmin, setAdmin, ensureTeamIndexed,
   listTeamCoaches, ensureHeadCoach, addAssistantCoach, removeAssistantCoach, MAX_ASSISTANTS,
   backfillSeedBeta, getBetaUntil,
-  savePushToken,
+  savePushToken, withoutLegacyPhoto,
 } from '../lib/teams_store.js';
 import { ensureSchedule, getSchedule, addEvent as addScheduleEvent, nextEvent, localDateStr } from '../lib/schedule_store.js';
 import { resolveSigninPlayer, RANGERS_TEAM_CODE } from '../lib/signin_players.js';
@@ -258,10 +259,7 @@ async function coachFromReq(req) {
 }
 // Is this an admin request (admin session token or the shared admin key)?
 async function isAdminReq(req) {
-  const { adminToken } = parseBody(req);
-  const auth = (req.headers && req.headers.authorization) ? String(req.headers.authorization) : '';
-  const bearer = auth.indexOf('Bearer ') === 0 ? auth.slice(7) : '';
-  const a = adminFromToken(adminToken || (req.query && req.query.adminToken) || bearer || '');
+  const a = adminFromToken(adminTokenFrom(req, parseBody(req)));
   if (a && (await getAdmin(a.email))) return true;
   return adminOk(req);
 }
@@ -343,16 +341,12 @@ function adminFromToken(token) {
   try { return { email: hexDecode(String(claims.playerId).slice('admin:'.length)) }; }
   catch { return null; }
 }
-// Authorize an admin request. Accepts the new admin session token (adminToken in
-// body or query, or Bearer), and still accepts the legacy shared admin key so
-// nothing that already used it breaks. Returns the admin record, or null (after
-// writing a 401) when neither path authorizes.
+// Authorize an admin request. Accepts the admin session token (adminToken in the
+// body, or Bearer), and still accepts the legacy shared admin key in the
+// Authorization: Bearer header. Neither is read from the URL. Returns the admin
+// record, or null (after writing a 401) when neither path authorizes.
 async function requireAdmin(req, res) {
-  const { adminToken } = parseBody(req);
-  const auth = (req.headers && req.headers.authorization) ? String(req.headers.authorization) : '';
-  const bearer = auth.indexOf('Bearer ') === 0 ? auth.slice(7) : '';
-  const token = adminToken || (req.query && req.query.adminToken) || bearer || '';
-  const a = adminFromToken(token);
+  const a = adminFromToken(adminTokenFrom(req, parseBody(req)));
   if (a) {
     const rec = await getAdmin(a.email);
     if (rec) return rec;
@@ -446,7 +440,8 @@ async function createTeam(req, res) {
 async function addPlayer(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
   const coach = await requireCoach(req, res); if (!coach) return;
-  const { code, firstName, lastName, number, position, parentEmail, parentEmail2, parentEmails, photo } = parseBody(req);
+  // A `photo` in the body is ignored: player photos go through api/photo/*.
+  const { code, firstName, lastName, number, position, parentEmail, parentEmail2, parentEmails } = parseBody(req);
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
   if (!(await coachRunsTeam(coach, code))) return res.status(403).json({ error: 'not your team' });
   if (!String(firstName || '').trim()) return res.status(400).json({ error: 'first name required' });
@@ -456,8 +451,8 @@ async function addPlayer(req, res) {
   if (!pe.emails.length) return res.status(400).json({ error: 'a parent email is required' });
   // id = lowercase first name (same id space as player:<id>).
   const playerId = String(firstName).trim().toLowerCase();
-  const rec = await addMember(code, { playerId, firstName, lastName, number, position, parentEmails: pe.emails, photo, status: 'active' });
-  return res.status(200).json({ ok: true, member: rec });
+  const rec = await addMember(code, { playerId, firstName, lastName, number, position, parentEmails: pe.emails, status: 'active' });
+  return res.status(200).json({ ok: true, member: withoutLegacyPhoto(rec) });
 }
 
 async function removePlayer(req, res) {
@@ -471,11 +466,12 @@ async function removePlayer(req, res) {
   return res.status(200).json({ ok: true, ...out });
 }
 
-// POST edit an existing player's fields (name / number / position / photo). Coach-only.
+// POST edit an existing player's fields (name / number / position / emails). Coach-only.
+// A `photo` in the body is ignored: player photos go through api/photo/*.
 async function updatePlayer(req, res) {
   if (!methodGuard(req, res, 'POST')) return;
   const coach = await requireCoach(req, res); if (!coach) return;
-  const { code, playerId, firstName, lastName, number, position, photo, parentEmail, parentEmail2, parentEmails } = parseBody(req);
+  const { code, playerId, firstName, lastName, number, position, parentEmail, parentEmail2, parentEmails } = parseBody(req);
   if (!(await getTeam(code))) return res.status(404).json({ error: 'unknown team' });
   if (!(await coachRunsTeam(coach, code))) return res.status(403).json({ error: 'not your team' });
   if (!(await playerOnTeam(code, playerId))) return res.status(404).json({ error: 'player is not on this team' });
@@ -484,9 +480,9 @@ async function updatePlayer(req, res) {
   }
   const emailFields = parentEmailFields(parentEmails, parentEmail, parentEmail2);
   if (emailFields.error) return res.status(400).json({ error: emailFields.error });
-  const rec = await updateMember(playerId, { firstName, lastName, number, position, photo, ...emailFields.fields });
+  const rec = await updateMember(playerId, { firstName, lastName, number, position, ...emailFields.fields });
   if (!rec) return res.status(404).json({ error: 'unknown player' });
-  return res.status(200).json({ ok: true, member: rec });
+  return res.status(200).json({ ok: true, member: withoutLegacyPhoto(rec) });
 }
 
 // POST ?action=self-update-player { code (team), playerId, playerCode, firstName,
@@ -518,7 +514,7 @@ async function selfUpdatePlayer(req, res) {
   if (emailFields.error) return res.status(400).json({ error: emailFields.error });
   const rec = await updateMember(pid, { firstName, lastName, number, ...emailFields.fields });
   if (!rec) return res.status(404).json({ error: 'unknown player' });
-  return res.status(200).json({ ok: true, member: rec });
+  return res.status(200).json({ ok: true, member: withoutLegacyPhoto(rec) });
 }
 
 // GET (admin key) full roster across all teams, for the admin roster editor.
@@ -533,7 +529,7 @@ async function adminRoster(req, res) {
     const ids = await listMembers(code);
     for (const pid of ids) {
       const m = await getMember(pid);
-      if (m) out.push({ ...m, id: pid, parentEmails: parentEmailList(m), name: [m.firstName, m.lastName].filter(Boolean).join(' ') || m.firstName || pid, teamCode: code, teamName: (team && team.name) || code });
+      if (m) out.push({ ...withoutLegacyPhoto(m), id: pid, parentEmails: parentEmailList(m), name: [m.firstName, m.lastName].filter(Boolean).join(' ') || m.firstName || pid, teamCode: code, teamName: (team && team.name) || code });
     }
   }
   out.sort((a, b) => String(a.teamName || '').localeCompare(String(b.teamName || '')) || Number(a.number || 0) - Number(b.number || 0));
@@ -555,7 +551,7 @@ async function adminUpdatePlayer(req, res) {
   if (emailFields.error) return res.status(400).json({ error: emailFields.error });
   const rec = await updateMember(playerId, { firstName, lastName, number, position, ...emailFields.fields });
   if (!rec) return res.status(404).json({ error: 'unknown player' });
-  return res.status(200).json({ ok: true, member: rec });
+  return res.status(200).json({ ok: true, member: withoutLegacyPhoto(rec) });
 }
 
 // GET whether the admin account exists and whether a password has been set yet.
@@ -760,7 +756,7 @@ async function playerRollup(req, res) {
   const trend = await monthTrend(pid, 4);
   // The public game-day page reads member.position/gamePosition here, so the
   // record stays readable, minus parent emails unless the caller may see them.
-  const member = m ? ((await canSeeParentEmails(req, m.teamCode, pid)) ? m : withoutParentEmails(m)) : null;
+  const member = m ? withoutLegacyPhoto((await canSeeParentEmails(req, m.teamCode, pid)) ? m : withoutParentEmails(m)) : null;
   res.setHeader('Cache-Control', 'no-store');
   return res.status(200).json({
     ok: true, playerId: pid,
@@ -782,7 +778,7 @@ async function join(req, res) {
   if (!members.includes(pid)) return res.status(404).json({ error: 'player not on this team' });
   const m = await getMember(pid);
   // join needs only a team code, so it must not hand back parent emails.
-  const player = (await canSeeParentEmails(req, team.code, pid)) ? m : withoutParentEmails(m);
+  const player = withoutLegacyPhoto((await canSeeParentEmails(req, team.code, pid)) ? m : withoutParentEmails(m));
   res.setHeader('Cache-Control', 'no-store');
   return res.status(200).json({ ok: true, team: { code: team.code, name: team.name }, player });
 }
@@ -928,15 +924,10 @@ async function drillSuggestions(req, res) {
   return res.status(200).json({ ok: true, suggestions: await listDrillSuggestions(code) });
 }
 
-// Thwap-admin auth: a bearer or ?key= secret, matching the waitlist admin pattern.
-// Disabled (all calls 401) when the env secret is unset, so it is never open by default.
+// Thwap-admin auth: the shared secret in the Authorization: Bearer header only
+// (never ?key= in the URL). Disabled (all calls 401) when the env secret is unset.
 function adminOk(req) {
-  const secret = process.env.THWAP_ADMIN_TOKEN || process.env.WAITLIST_ADMIN_TOKEN || '';
-  if (!secret) return false;
-  const auth = (req.headers && req.headers.authorization) ? String(req.headers.authorization) : '';
-  const bearer = auth.indexOf('Bearer ') === 0 ? auth.slice(7) : '';
-  const q = (req.query && (req.query.key || req.query.token)) || '';
-  return bearer === secret || String(q) === secret;
+  return sharedKeyOk(req);
 }
 
 // GET all coach drill suggestions across every team (Thwap review backlog). Admin-only.

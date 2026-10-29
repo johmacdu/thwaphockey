@@ -39,7 +39,7 @@ describe('My Player', () => {
     const { w } = await open();
     expect(w.document.querySelector('.lk[role=dialog]')).toBeTruthy();
     expect(w.document.querySelector('.lk h2').textContent).toBe('My Player');
-    expect(w.document.querySelectorAll('.lk-tab').length).toBe(13);
+    expect(w.document.querySelectorAll('.lk-tab').length).toBe(14);
     expect(w.document.querySelector('.lk-stage .av-wrap')).toBeTruthy();
     expect(w.document.querySelector('.lk-btn')).toBeNull();
   });
@@ -123,7 +123,7 @@ describe('first-run builder', () => {
     expect(posts.length).toBe(0); // no save mid-build
     d.querySelector('[data-build=next]').click();
     expect(d.querySelector('.lk-step').textContent).toMatch(/Step 2 of 6.*hockey hair/i);
-    d.querySelector('[data-id=hairstyle-mullet]').click();
+    d.querySelector('[data-id=hairstyle-short]').click();
     d.querySelector('[data-build=next]').click();
     expect(d.querySelector('.lk-step').textContent).toMatch(/Step 3 of 6.*hair color/i);
     d.querySelector('[data-build=next]').click(); // -> step 4: jersey
@@ -137,7 +137,7 @@ describe('first-run builder', () => {
     for (let i = 0; i < 6; i++) await tick();
     expect(posts.length).toBe(1);
     expect(posts[0].look.skin).toBe('skin-s5');
-    expect(posts[0].look.hairstyle).toBe('hairstyle-mullet');
+    expect(posts[0].look.hairstyle).toBe('hairstyle-short');
     expect(w.sessionStorage.getItem('thwapReveal')).toBe('1');
   });
   it('Back returns to the previous step', async () => {
@@ -151,9 +151,16 @@ describe('first-run builder', () => {
 
 describe('hair styles', () => {
   const STYLES = ['buzz', 'short', 'flow', 'lettuce', 'mullet', 'wings', 'curls', 'ponytail', 'braids', 'locs', 'afro', 'bun', 'pigtails'];
-  it('every style is free from day one, even for a brand-new player', () => {
-    const owned = A.unlockedIds(A.progressFrom(null, 0));
-    for (const s of STYLES) expect(owned).toContain(`hairstyle-${s}`);
+  it('a brand-new player owns only Flow and Short; the rest unlock through training', () => {
+    const owned = A.unlockedIds(A.progressFrom(null, 0)).filter((id) => id.startsWith('hairstyle-'));
+    expect(owned.sort()).toEqual(['hairstyle-flow', 'hairstyle-short']);
+    for (const s of STYLES) expect(A.itemById(`hairstyle-${s}`)).toBeTruthy();
+  });
+  it('a hair style saved to grants (grandfathered) stays owned', () => {
+    const p = A.progressFrom(null, 0);
+    expect(A.isUnlocked(A.itemById('hairstyle-locs'), p)).toBe(false);
+    expect(A.isUnlocked(A.itemById('hairstyle-locs'), p, ['hairstyle-locs'])).toBe(true);
+    expect(A.validateLook({ hairstyle: 'hairstyle-locs' }, p, ['hairstyle-locs']).ok).toBe(true);
   });
   it('each style renders its own boxes, and an unknown style falls back to the default', async () => {
     const { w } = await open();
@@ -192,9 +199,9 @@ describe('unlock moment', () => {
     expect(data).toBeTruthy();
   });
   it('releases moves and celebrations held back before their tabs existed', async () => {
-    // 15 training days unlocks THWAP! (celebration); 25 Shooting unlocks Snipe (pose).
+    // 75 training days unlocks Knee slide (celebration); 25 Shooting unlocks Snipe (pose).
     // A device that saw only gear (the #447 hold) now announces both.
-    const prog = A.progressFrom({ shoot: 25 }, 15);
+    const prog = A.progressFrom({ shoot: 25 }, 75);
     const { w } = await open({ progress: prog });
     w.document.querySelector('.lk-x').click();
     const gearOnly = A.unlockedIds(prog).filter((id) => !/^(pose|celebration)-/.test(id));
@@ -202,13 +209,13 @@ describe('unlock moment', () => {
     await w.thwapAvatar.checkUnlocks();
     const toast = w.document.querySelector('.lk-toast');
     expect(toast).toBeTruthy();
-    expect(toast.textContent).toMatch(/New (celly! THWAP!|move! Snipe) and 1 more/);
+    expect(toast.textContent).toMatch(/New (celly! Knee slide|move! (Snipe|Toe drag)) and \d+ more/);
     const seen = JSON.parse(w.localStorage.getItem('thwapUnlockSeen'));
     expect(seen).toContain('pose-shooting');
-    expect(seen).toContain('celebration-fistpump');
+    expect(seen).toContain('celebration-kneeslide');
     const fresh = JSON.parse(w.localStorage.getItem('thwapUnlockNew'));
     expect(fresh).toContain('pose-shooting');
-    expect(fresh).toContain('celebration-fistpump');
+    expect(fresh).toContain('celebration-kneeslide');
   });
   it('the first check seeds silently (past training is the builder\'s job)', async () => {
     const { w } = await open();

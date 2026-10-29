@@ -11,10 +11,12 @@
     ]
   },
   "ios": {
+    "appendUserAgent": "ThwapApp/ios",
     "contentInset": "always",
     "backgroundColor": "#0b0f14"
   },
   "android": {
+    "appendUserAgent": "ThwapApp/android",
     "backgroundColor": "#0b0f14"
   },
   "plugins": {

@@ -20,8 +20,11 @@ changing the My Player screen.
 - Hair matters where it shows outside the helmet: out the back, and at the
   sides so it reads from the front too. Ten Minnesota hockey hair styles
   (Buzz to Locs), each a few boxes, with color as a separate choice.
-- **Every hair style is free from day one.** Hair is part of who a kid is,
-  like skin tone. Ponytail, braids and locs are never something to earn.
+- **Two hair styles are free from day one (Flow and Short); the rest unlock
+  early through training** (decided Oct 28 2026, replacing "all free"). Most
+  unlock on low activity counts (10 to 90) so a kid can reach the style that
+  looks like them in the first couple of weeks. A style a kid already wore
+  before the change is kept (saved to their grants).
 - Long styles stop just above the back number so it stays readable.
 
 ### Flat textures, lighting in code

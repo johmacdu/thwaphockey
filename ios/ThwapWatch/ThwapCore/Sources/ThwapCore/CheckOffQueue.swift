@@ -2,28 +2,57 @@ import Foundation
 
 /// Offline check-off queue. A tap on the wrist must ALWAYS feel done, even
 /// with no signal at the rink, so a check-off is recorded locally first and
-/// flushed to `ThwapAPI.markDone` when the network allows.
+/// flushed to the API when the network allows.
 ///
 /// Idempotent by `drillId` per day: enqueueing the same drill twice keeps one
 /// entry, and a flush that the server reports as `duplicate` still counts as
 /// delivered. That matches the server's own per-drill dedup guard, so a retry
 /// can never double-count the leaderboard.
 ///
+/// Undo: an undo of a mark that never left the watch just cancels the mark.
+/// Otherwise it queues an undo, sent in order after earlier marks. The server
+/// undo only acts on today, so an undo whose day has passed is dropped.
+///
+/// Failures (design doc section 9): offline, 5xx, 429 and 401 keep the entry
+/// and stop the flush so order is kept; 400/402/403 drop it (the server will
+/// never take it). An entry leaves the queue only on a 2xx or a drop.
+///
 /// Persistence: when built with a `fileURL` the queue loads that file on init
-/// and rewrites it (atomically) after every enqueue and every confirmed
-/// delivery, so a check-off made offline survives the app being killed. An
-/// entry leaves the file only after the API confirms it. `init()` with no URL
-/// stays in memory (tests, previews).
+/// and rewrites it (atomically) after every change, so a check-off made
+/// offline survives the app being killed. `init()` stays in memory.
 public actor CheckOffQueue {
+    public enum Action: String, Codable, Sendable { case mark, undo }
+
     public struct Entry: Codable, Equatable, Hashable, Sendable {
         public var date: String
         public var request: MarkDoneRequest
+        public var action: Action
         public var key: String { "\(date)|\(request.drillId)" }
+
+        public init(date: String, request: MarkDoneRequest, action: Action = .mark) {
+            self.date = date
+            self.request = request
+            self.action = action
+        }
+
+        // Version 1 files have no `action`; every entry there was a mark.
+        public init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            date = try c.decode(String.self, forKey: .date)
+            request = try c.decode(MarkDoneRequest.self, forKey: .request)
+            action = try c.decodeIfPresent(Action.self, forKey: .action) ?? .mark
+        }
+    }
+
+    /// What the last flush ran into, for the "waiting to sync" line.
+    public enum FlushResult: Equatable, Sendable {
+        case empty
+        case stopped(ThwapAPIError)
     }
 
     /// On-disk shape. Versioned so a later format change can migrate.
     struct Snapshot: Codable {
-        var version = 1
+        var version = 2
         var entries: [Entry]
         var delivered: [String]
     }
@@ -31,6 +60,9 @@ public actor CheckOffQueue {
     private var entries: [Entry] = []
     private var delivered: Set<String> = []
     private let fileURL: URL?
+    public private(set) var lastResult: FlushResult = .empty
+    /// Drops since launch, newest last, so the UI can explain a 402.
+    public private(set) var dropped: [ThwapAPIError] = []
 
     /// In-memory queue.
     public init() { fileURL = nil }
@@ -59,40 +91,107 @@ public actor CheckOffQueue {
     /// Everything not yet confirmed by the server, oldest first.
     public var pending: [Entry] { entries }
 
-    /// True when this drill is recorded locally (queued or delivered) for `date`.
+    /// Marks waiting to sync (what the sign-out warning counts).
+    public var pendingMarks: Int { entries.filter { $0.action == .mark }.count }
+
+    /// True when this drill reads as done locally for `date`: delivered or
+    /// queued as a mark, and not queued for undo.
     public func isDone(drillId: String, date: String) -> Bool {
         let key = "\(date)|\(drillId)"
-        return delivered.contains(key) || entries.contains { $0.key == key }
+        if entries.contains(where: { $0.key == key && $0.action == .undo }) { return false }
+        return delivered.contains(key) || entries.contains { $0.key == key && $0.action == .mark }
     }
 
     /// Record a check-off. Returns false when it was already recorded (no-op).
     @discardableResult
     public func enqueue(_ request: MarkDoneRequest, date: String) -> Bool {
-        let entry = Entry(date: date, request: request)
-        if delivered.contains(entry.key) || entries.contains(where: { $0.key == entry.key }) {
-            return false
+        let key = "\(date)|\(request.drillId)"
+        if let i = entries.firstIndex(where: { $0.key == key && $0.action == .undo }) {
+            // Undo never left the watch, so the server still has the mark.
+            entries.remove(at: i)
+            delivered.insert(key)
+            save()
+            return true
         }
-        entries.append(entry)
+        if delivered.contains(key) || entries.contains(where: { $0.key == key }) { return false }
+        entries.append(Entry(date: date, request: request, action: .mark))
         pruneDelivered(keepingFrom: date)
         save()
         return true
     }
 
-    /// Try to deliver every pending entry. Stops at the first offline error and
-    /// keeps the rest in order. Returns how many were confirmed.
+    /// Record an undo. Returns false when the drill was not done.
     @discardableResult
-    public func flush(using api: ThwapAPI) async -> Int {
+    public func enqueueUndo(_ request: MarkDoneRequest, date: String) -> Bool {
+        let key = "\(date)|\(request.drillId)"
+        if let i = entries.firstIndex(where: { $0.key == key && $0.action == .mark }) {
+            // The mark never reached the server: cancelling it is the undo.
+            entries.remove(at: i)
+            save()
+            return true
+        }
+        if entries.contains(where: { $0.key == key && $0.action == .undo }) { return false }
+        delivered.remove(key)
+        entries.append(Entry(date: date, request: request, action: .undo))
+        save()
+        return true
+    }
+
+    /// Forget a server-confirmed state (after a fresh `GET /api/done`, the
+    /// server wins). Pending entries are untouched.
+    public func replaceDelivered(with drillIds: [String], date: String) {
+        delivered = delivered.filter { !$0.hasPrefix("\(date)|") }
+        for id in drillIds { delivered.insert("\(date)|\(id)") }
+        save()
+    }
+
+    /// Wipe everything (sign out).
+    public func clear() {
+        entries = []
+        delivered = []
+        dropped = []
+        lastResult = .empty
+        save()
+    }
+
+    /// Try to deliver every pending entry, oldest first. Stops at the first
+    /// keep-queued error so order is kept. Returns how many were confirmed.
+    @discardableResult
+    public func flush(using api: ThwapAPI, today: String = ThwapDay.string()) async -> Int {
         var confirmed = 0
+        lastResult = .empty
         while let next = entries.first {
             do {
-                _ = try await api.markDone(next.request)
+                switch next.action {
+                case .mark:
+                    var req = next.request
+                    // Only an earlier day needs a date; today's mark lets the
+                    // server's own clock decide, so a skew near midnight can
+                    // never turn into a 400 'bad date'.
+                    req.date = next.date == today ? nil : next.date
+                    _ = try await api.markDone(req)
+                    delivered.insert(next.key)
+                case .undo:
+                    if next.date == today {
+                        _ = try await api.undoDone(UndoDoneRequest(player: next.request.player,
+                                                                   drillId: next.request.drillId))
+                    }
+                    // A stale undo is dropped quietly (server undo is today only).
+                }
                 // Remove only after the server confirmed, then persist at once
                 // so a kill right after delivery cannot resend a stale entry.
-                entries.removeAll { $0.key == next.key }
-                delivered.insert(next.key)
+                entries.removeFirst()
                 save()
                 confirmed += 1
+            } catch let e as ThwapAPIError where !e.keepsQueued {
+                entries.removeFirst()
+                dropped.append(e)
+                save()
+            } catch let e as ThwapAPIError {
+                lastResult = .stopped(e)
+                break
             } catch {
+                lastResult = .stopped(.offline)
                 break
             }
         }

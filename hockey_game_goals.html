@@ -1998,8 +1998,25 @@ body.pos-both .pos-only-forward,body.pos-both .pos-only-defense{display:block}
   t.addEventListener('contextmenu',function(e){ e.preventDefault(); });
   t.addEventListener('dragstart',function(e){ e.preventDefault(); });
 })();</script>
-<!-- Vercel Web Analytics: cookieless, aggregate pageviews only (no cookies, no
-     personal data). Serves data only once Web Analytics is enabled for the project. -->
-<script defer src="/_vercel/insights/script.js"></script>
+<!-- Vercel Web Analytics: website only. It is NEVER loaded inside the iPhone or
+     Android app: Apple rules for apps aimed at kids forbid third-party analytics,
+     so the script tag is only added in a plain browser. If anything suggests we
+     are inside an app wrapper, it is not added (when in doubt, no analytics). -->
+<script data-thwap-analytics-gate>(function(w,d){'use strict';
+function inApp(){try{
+var C=w.Capacitor;
+if(C){if(typeof C.isNativePlatform==='function'&&C.isNativePlatform())return true;
+var p='';try{p=(C.getPlatform&&C.getPlatform())||'';}catch(e){return true;}if(p&&p!=='web')return true;}
+if(w.androidBridge)return true;
+if(w.webkit&&w.webkit.messageHandlers&&w.webkit.messageHandlers.bridge)return true;
+var ua=(w.navigator&&w.navigator.userAgent)||'';
+if(/ThwapApp/i.test(ua))return true;
+if(/; wv\)/.test(ua))return true;
+if(/\((iPhone|iPad|iPod)[;)]/.test(ua)&&/AppleWebKit/.test(ua)&&!/Safari\//.test(ua))return true;
+if(/Macintosh/.test(ua)&&/AppleWebKit/.test(ua)&&!/(Safari|Chrome|Firefox)\//.test(ua)&&(w.navigator.maxTouchPoints||0)>1)return true;
+return false;}catch(e){return true;}}
+if(inApp())return;
+var s=d.createElement('script');s.defer=true;s.src='/_vercel/insights/script.js';(d.body||d.head||d.documentElement).appendChild(s);
+})(window,document);</script>
 </body>
 </html>

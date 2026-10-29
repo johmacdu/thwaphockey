@@ -119,13 +119,24 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
     <div id="rlist"></div>
     <div class="retire" id="retire">
       <h2>Retire player photos</h2>
-      <p class="sub">Players use their character now, so stored player photos are no longer shown. This permanently deletes every stored player photo and its parent-consent record. It cannot be undone. Coach photos are not touched.</p>
+      <p class="sub">Players use their character now, so stored player photos are no longer shown. This permanently deletes every stored player photo and its photo consent record. Sign-in consent is kept. It cannot be undone. Coach photos are not touched.</p>
       <button id="retireCheck" type="button">Check what is stored</button>
       <div id="retireMsg" class="msg"></div>
       <div id="retireConfirm" hidden>
         <label for="retirePhrase">Type <b>DELETE ALL PLAYER PHOTOS</b> to confirm</label>
         <input id="retirePhrase" type="text" autocomplete="off" spellcheck="false">
         <button id="retireGo" type="button" disabled>Delete player photos</button>
+      </div>
+    </div>
+    <div class="retire" id="orphans">
+      <h2>Clean up old photo files</h2>
+      <p class="sub">Before the photo fix, replacing a photo left the old file in storage. This finds files no current player photo uses and deletes only those. Photos in use are never touched.</p>
+      <button id="orphanCheck" type="button">Find old photo files</button>
+      <div id="orphanMsg" class="msg"></div>
+      <div id="orphanConfirm" hidden>
+        <label for="orphanPhrase">Type <b>DELETE ORPHANED PHOTOS</b> to confirm</label>
+        <input id="orphanPhrase" type="text" autocomplete="off" spellcheck="false">
+        <button id="orphanGo" type="button" disabled>Delete old photo files</button>
       </div>
     </div>
   </div>
@@ -138,7 +149,9 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
   var emailEl=document.getElementById('email'), pwEl=document.getElementById('pw'),
       loginbar=document.getElementById('loginbar'), setpwbar=document.getElementById('setpwbar');
   function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
-  function tokenQS(){ return 'adminToken='+encodeURIComponent(token); }
+  /* The admin session token rides in the Authorization header, never the URL. */
+  function authH(extra){ var h={'Authorization':'Bearer '+token}; for(var k in (extra||{})) h[k]=extra[k]; return h; }
+  var JSONH={'Content-Type':'application/json'};
   var CAT={stick:'Hands',shoot:'Shoot',dryland:'Dryland'};
   function render(){
     var rows=all.filter(function(s){ return filter==='all'?true:(s.status||'new')===filter; });
@@ -162,7 +175,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
   }
   function afterAuth(){
     document.getElementById('viewnav').hidden=false;
-    fetch('/api/coach?action=review-suggestions&'+tokenQS())
+    fetch('/api/coach?action=review-suggestions',{headers:authH()})
       .then(function(r){ if(r.status===401){ throw new Error('Session expired, sign in again.'); } return r.json(); })
       .then(function(j){ all=(j&&j.suggestions)||[]; seg.hidden=false; render(); })
       .catch(function(e){ msg.textContent=e.message||'Could not load.'; msg.className='msg err'; });
@@ -203,8 +216,8 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
       .catch(function(){ msg.textContent='Could not set password.'; msg.className='msg err'; });
   }
   function resolve(code,id,status){
-    fetch('/api/coach?action=resolve-suggestion&'+tokenQS(),
-      {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:code,id:id,status:status})})
+    fetch('/api/coach?action=resolve-suggestion',
+      {method:'POST',headers:authH(JSONH),body:JSON.stringify({code:code,id:id,status:status})})
       .then(function(r){ return r.json(); })
       .then(function(j){ if(j&&j.ok){ all.forEach(function(s){ if(s.id===id&&s.teamCode===code) s.status=status; }); render(); } })
       .catch(function(){});
@@ -250,19 +263,41 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
   }
   function loadRoster(){
     rmsg.textContent='Loading roster...'; rmsg.className='msg';
-    fetch('/api/coach?action=admin-roster&'+tokenQS())
+    fetch('/api/coach?action=admin-roster',{headers:authH()})
       .then(function(r){ if(r.status===401){ throw new Error('Bad admin key.'); } return r.json(); })
       .then(function(j){ players=(j&&j.players)||[]; renderRoster(); })
       .catch(function(e){ rmsg.textContent=e.message||'Could not load roster.'; rmsg.className='msg err'; });
   }
   function initial(p){ return esc(((p.firstName||p.name||'?')[0]||'?').toUpperCase()); }
+  /* Roster avatars come from the photo store (/api/photo/get), the same lookup
+     the app uses, never from a field on the member record. One lookup per
+     player, cached by id: a url, or null when there is no photo. The admin
+     session token rides in the Authorization header only. */
+  var photoUrls={};
+  function placeholder(p){ return "<div class='pavatar empty'>"+initial(p)+"</div>"; }
+  function avatarHTML(p){
+    var url=photoUrls[p.id];
+    return url ? "<img class='pavatar' src='"+esc(url)+"' alt=''>" : placeholder(p);
+  }
+  function paintAvatar(card,p){
+    var cur=card.querySelector('.pavatar'); if(!cur) return;
+    cur.outerHTML=avatarHTML(p);
+    var img=card.querySelector('img.pavatar');
+    /* A photo that will not load falls back to the initial, never a broken image. */
+    if(img){ img.addEventListener('error',function(){ photoUrls[p.id]=null; var c=card.querySelector('.pavatar'); if(c) c.outerHTML=placeholder(p); }); }
+  }
+  function lookupPhoto(card,p){
+    if(Object.prototype.hasOwnProperty.call(photoUrls,p.id)){ paintAvatar(card,p); return; }
+    fetch('/api/photo/get?playerId='+encodeURIComponent(p.id),{headers:authH(),cache:'no-store'})
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){ photoUrls[p.id]=(j&&typeof j.url==='string'&&j.url)||null; paintAvatar(card,p); })
+      .catch(function(){ photoUrls[p.id]=null; });
+  }
   function renderRoster(){
     if(!players.length){ rlist.innerHTML=''; rmsg.textContent='No players.'; rmsg.className='msg'; return; }
     rmsg.textContent=''; rmsg.className='msg';
     rlist.innerHTML=players.map(function(p,i){
-      var av=p.photo
-        ? "<img class='pavatar' src='"+esc(p.photo)+"' alt=''>"
-        : "<div class='pavatar empty'>"+initial(p)+"</div>";
+      var av=placeholder(p);
       var curPos=posCode(p.position);
       var posOpts=POS.map(function(o){ return "<option value='"+o[0]+"'"+(curPos===o[0]?" selected":"")+">"+o[1]+"</option>"; }).join('');
       var conOpts=CONSENT.map(function(c){ return "<option value='"+c[0]+"'>"+esc(c[1])+"</option>"; }).join('');
@@ -294,6 +329,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
       "</div>";
     }).join('');
     rlist.querySelectorAll('.pcard').forEach(function(card){
+      var pl=players[parseInt(card.getAttribute('data-i'),10)]; if(pl) lookupPhoto(card,pl);
       card.querySelector('.save').addEventListener('click',function(){ savePlayer(card); });
       card.querySelector('.addphoto').addEventListener('click',function(){ card.querySelector('.consent').classList.toggle('open'); });
       card.querySelector('.c-upload').addEventListener('click',function(){ uploadPhoto(card); });
@@ -325,8 +361,8 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
       number:card.querySelector('.f-num').value.trim(),
       position:card.querySelector('.f-pos').value,
       parentEmails:emails };
-    fetch('/api/coach?action=admin-update-player&'+tokenQS(),
-      {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    fetch('/api/coach?action=admin-update-player',
+      {method:'POST',headers:authH(JSONH),body:JSON.stringify(body)})
       .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
       .then(function(res){ if(!res.ok){ alert((res.j&&res.j.error)||'Save failed'); return; } flash(card); })
       .catch(function(){ alert('Save failed'); });
@@ -402,14 +438,14 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
     function reset(){ btn.disabled=false; btn.textContent='Upload photo'; }
     processImage(file, removeBg, setStatus, function(dataUrl){
       if(!dataUrl){ reset(); return; }
-      fetch('/api/photo/admin-put?'+tokenQS(),
-        {method:'POST',headers:{'Content-Type':'application/json'},
+      fetch('/api/photo/admin-put',
+        {method:'POST',headers:authH(JSONH),
          body:JSON.stringify({playerId:id,imageData:dataUrl,consent:{method:method,grantedBy:by}})})
         .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
         .then(function(res){
           reset();
           if(!res.ok){ alert((res.j&&res.j.error)||'Upload failed'); return; }
-          var p=players[parseInt(card.getAttribute('data-i'),10)]; if(p){ p.photo=res.j.url; }
+          var p=players[parseInt(card.getAttribute('data-i'),10)]; if(p){ photoUrls[p.id]=res.j.url||null; }
           card.querySelector('.consent').classList.remove('open'); renderRoster();
         })
         .catch(function(){ reset(); alert('Upload failed'); });
@@ -433,7 +469,7 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
       rConfirm=document.getElementById('retireConfirm'), rPhrase=document.getElementById('retirePhrase'),
       rGo=document.getElementById('retireGo');
   function retireCall(body){
-    return fetch('/api/photo/remove?'+tokenQS(),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    return fetch('/api/photo/remove',{method:'POST',headers:authH(JSONH),body:JSON.stringify(body)})
       .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,status:r.status,j:j}; }); });
   }
   function retireList(players){
@@ -459,6 +495,34 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
       rConfirm.hidden=true;
       rMsg.textContent='Deleted stored data for '+x.j.deleted+' players. Player photos are gone.';
     }).catch(function(){ rMsg.textContent='Could not reach the server. Check again before retrying.'; });
+  });
+
+  // Clean up orphaned photo files. Same shape as retire: a dry run lists the
+  // files first, and the delete needs the exact phrase (checked again server-side).
+  var OPHRASE='DELETE ORPHANED PHOTOS';
+  var oCheck=document.getElementById('orphanCheck'), oMsg=document.getElementById('orphanMsg'),
+      oConfirm=document.getElementById('orphanConfirm'), oPhrase=document.getElementById('orphanPhrase'),
+      oGo=document.getElementById('orphanGo');
+  if(oCheck) oCheck.addEventListener('click',function(){
+    if(!token){ oMsg.textContent='Sign in first.'; return; }
+    oMsg.textContent='Checking...'; oConfirm.hidden=true;
+    retireCall({orphans:true}).then(function(x){
+      if(!x.ok){ oMsg.textContent='Could not check ('+x.status+'): '+((x.j&&x.j.error)||'error'); return; }
+      if(!x.j.count){ oMsg.textContent='No old photo files. Nothing to delete ('+x.j.scanned+' files checked).'; return; }
+      oMsg.textContent=x.j.count+' old photo files are not used by any player ('+x.j.scanned+' files checked): '+
+        x.j.orphans.map(function(o){ return esc(o.pathname); }).join(', ')+'.';
+      oPhrase.value=''; oGo.disabled=true; oConfirm.hidden=false;
+    }).catch(function(){ oMsg.textContent='Could not reach the server.'; });
+  });
+  if(oPhrase) oPhrase.addEventListener('input',function(){ oGo.disabled = oPhrase.value!==OPHRASE; });
+  if(oGo) oGo.addEventListener('click',function(){
+    if(oPhrase.value!==OPHRASE) return;
+    oGo.disabled=true; oMsg.textContent='Deleting...';
+    retireCall({orphans:true,confirm:OPHRASE}).then(function(x){
+      if(!x.ok || x.j.dryRun){ oMsg.textContent='Nothing was deleted ('+x.status+'): '+((x.j&&x.j.error)||'confirm phrase not accepted'); return; }
+      oConfirm.hidden=true;
+      oMsg.textContent='Deleted '+x.j.deleted+' old photo files.';
+    }).catch(function(){ oMsg.textContent='Could not reach the server. Check again before retrying.'; });
   });
 })();
 </script>

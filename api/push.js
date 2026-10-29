@@ -38,6 +38,7 @@
 
 import { verifySession, readSessionCookie } from '../lib/session_store.js';
 import { parseBody } from '../lib/photo_common.js';
+import { sharedKeyOk as headerKeyOk, adminTokenFrom } from '../lib/admin_auth.js';
 import { ROSTER } from '../lib/store.js';
 import { listMembers, getAdmin, listAllTeamCodes } from '../lib/teams_store.js';
 import { resolvePlayer, teamPlayerIds } from '../lib/team_players.js';
@@ -59,23 +60,15 @@ function adminFromToken(token) {
   catch { return null; }
 }
 
+// The shared env key, in the Authorization: Bearer header only (never ?key=).
 function sharedKeyOk(req) {
-  const secret = process.env.THWAP_ADMIN_TOKEN || process.env.WAITLIST_ADMIN_TOKEN || '';
-  if (!secret) return false;
-  const auth = (req.headers && req.headers.authorization) ? String(req.headers.authorization) : '';
-  const bearer = auth.indexOf('Bearer ') === 0 ? auth.slice(7) : '';
-  const q = (req.query && (req.query.key || req.query.token)) || '';
-  return bearer === secret || String(q) === secret;
+  return headerKeyOk(req);
 }
 
 // True when the request carries valid admin auth. Returns a boolean (the caller
 // writes the 401) so method + validation checks can fire BEFORE auth.
 async function isAdmin(req) {
-  const { adminToken } = parseBody(req);
-  const auth = (req.headers && req.headers.authorization) ? String(req.headers.authorization) : '';
-  const bearer = auth.indexOf('Bearer ') === 0 ? auth.slice(7) : '';
-  const token = adminToken || (req.query && req.query.adminToken) || bearer || '';
-  const a = adminFromToken(token);
+  const a = adminFromToken(adminTokenFrom(req, parseBody(req)));
   if (a && (await getAdmin(a.email))) return true;
   return sharedKeyOk(req);
 }
