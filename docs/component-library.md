@@ -155,6 +155,48 @@ A centered dialog card (max-width ~360) for the sign-in / waitlist short forms.
 - **Reuse rule:** short forms only. If it scrolls or is a whole flow, use a
   full-page overlay instead.
 
+### My Player page: `.lk` (avatar.js)
+The character editor. A full-screen Thwap page built from the shared parts, so it
+reads like every other page.
+
+- **Defined in:** `avatar.js` (`openLocker`, `lockerCss`). Uses `index.html`'s
+  `.glassclose` (page close, no modifier) and `.heroCard` + `h1` + `p`.
+- **Markup (shape):**
+  ```html
+  <div class="lk" role="dialog" aria-modal="true" aria-label="My Player">
+    <button type="button" class="glassclose" aria-label="Close">&#10005;</button>
+    <div class="lk-col">                              <!-- the .app column: 1100px, 16px sides -->
+      <div class="heroCard"><h1>My Player</h1><p>Tap to wear it. Drag to turn.</p></div>
+      <div class="lk-main">                           <!-- 2 columns from 768px -->
+        <div class="lk-left">                         <!-- sticky -->
+          <div class="lk-stage"><div class="lk-fitcard lk-frame">(card front, art off)</div></div>
+          <div class="lk-sizes" role="radiogroup"><button class="lk-size on" role="radio">L</button>...</div>
+        </div>
+        <div class="lk-right">
+          <div class="lk-tabs" role="tablist"><button class="lk-tab on" role="tab">Me</button>...</div>
+          <section class="lk-sec"><h3 class="lk-sech">Skin</h3><div class="lk-items">(tiles)</div></section>
+        </div>
+      </div>
+    </div>
+  </div>
+  ```
+- **Card frame `.lk-frame`:** the card front (`buildFront`) with `.cf2-plate`,
+  scrim, tagline, team and position hidden, number and name at 30%. Use it
+  wherever a kid edits what goes ON the card.
+- **Jersey sizes `.lk-size`:** five radio buttons, S M L XL XXL, 52px tall,
+  Archivo Black. The picked one is lime with a -3deg slap (motion only when
+  allowed). Pinch and the wheel snap to the nearest size.
+- **Text tabs `.lk-tab`:** one thin row, 15px / 800, muted; the open tab is text
+  colour with a 3px lime underline. For switching between a few groups inside a
+  page. (`.seg` stays the pill toggle for views like This week / All time.)
+- **Section label `.lk-sech`:** 11px / 900 uppercase muted, over a hairline
+  (`.lk-sec`). Never a box around a group.
+- **Tile grid `.lk-items`:** at most 4 tiles per row (3 on a phone), so each
+  item stays big enough to read and tap.
+- **Reuse rule:** a new editor or picker page follows this shape (page close,
+  hero, column, text tabs, labelled sections). No per-page header row with its
+  own title and close.
+
 ### Badge modal: `.jbm` + `.bpop`
 The pop-up when a kid taps a badge on My Season (`journey.html`): badge art,
 name, tag line, star row, progress meter and one line of copy.

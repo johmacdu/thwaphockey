@@ -24,7 +24,7 @@ describe('every dialog close is the glass close', () => {
     expect(h).not.toMatch(/\.pgate-x\{|\.login-x\{/);
   });
   it('My Player and the About lightbox use it too', () => {
-    expect(read('avatar.js')).toContain("class='glassclose in-row lk-x'");
+    expect(read('avatar.js')).toContain("class='glassclose lk-x'"); // My Player is a page: the page close
     expect(read('about.html')).toContain("class='glassclose in-dialog lb-close'");
     expect(read('avatar-lab.html')).toMatch(/\.glassclose\{/);
   });
@@ -33,5 +33,7 @@ describe('every dialog close is the glass close', () => {
     expect(d).toMatch(/\.glassclose\.in-dialog/);
     expect(d).toMatch(/\.glassclose\.in-row/);
     expect(d).toMatch(/Badge modal/);
+    expect(d).toMatch(/My Player page: `\.lk`/);
+    expect(d).toMatch(/`\.lk-sech`/);
   });
 });

@@ -4,6 +4,11 @@
 /* Copied from index.html (component-library.md: .glassclose). */
 .glassclose{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);right:16px;z-index:50;display:inline-grid;place-items:center;width:48px;height:48px;border-radius:50%;font-size:20px;font-weight:700;color:var(--text,#15221B);cursor:pointer;text-decoration:none;background:color-mix(in srgb,var(--panel,#fff) 62%,transparent);border:1px solid color-mix(in srgb,var(--text,#15221B) 12%,transparent);backdrop-filter:saturate(180%) blur(18px);-webkit-backdrop-filter:saturate(180%) blur(18px);box-shadow:0 6px 20px var(--shadow,rgba(0,0,0,.18))}
 .glassclose:hover{background:color-mix(in srgb,var(--panel,#fff) 78%,transparent)}.glassclose:active{transform:scale(.94)}
+/* Copied from index.html (component-library.md: .seg, .heroCard), used by My Player. */
+.seg{display:inline-flex;gap:2px;background:var(--soft);border-radius:999px;padding:3px;margin:14px 0 4px}
+.segbtn{font:inherit;font-size:14px;font-weight:700;color:var(--muted);background:none;border:0;padding:14px 20px;min-height:48px;border-radius:999px;cursor:pointer}
+.segbtn.on{background:var(--lime);color:var(--ink);box-shadow:0 1px 2px var(--shadow)}
+.heroCard h1{font-size:40px;margin:6px 0}
 .glassclose.in-dialog{position:absolute;top:12px;right:12px;z-index:3}.glassclose.in-row{position:static}
 
 body{margin:0;font-family:system-ui,sans-serif;background:#101A14;color:#EAF2EC}

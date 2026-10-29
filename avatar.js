@@ -611,12 +611,28 @@
   // Opens from the My Player button on the player's own card. Tap an owned item: it goes on the
   // character and saves to the server. Tap a locked item: try it on, with the
   // progress line; nothing is saved. Unlocks come from the server only.
-  var GEAR_TABS=[['skin','Skin'],['hairstyle','Hair'],['hair','Hair color'],['jersey','Jersey',['jersey','socks']],['helmet','Helmet',['helmet','decal']],['cage','Cage'],['stripe','Stripe'],['gloves','Gloves'],['stick','Stick',['stick','tape']],['pose','Moves'],['celebration','Cellys'],['hand','Shot'],['facing','View'],['fit','Size']];
+  // My Player groups: five, all visible at once, each listing its parts under a
+  // plain label. View (facing) and Size are not tabs: drag the card to turn the
+  // player, pinch (or the - / + buttons) to size it.
+  var GROUPS=[['me','Me',[['skin','Skin'],['hairstyle','Hair'],['hair','Hair color']]],
+    ['jersey','Jersey',[['jersey','Jersey'],['socks','Socks']]],
+    ['helmet','Helmet',[['helmet','Helmet'],['cage','Cage'],['stripe','Stripe'],['decal','Sticker']]],
+    ['stick','Stick',[['gloves','Gloves'],['stick','Stick'],['tape','Tape'],['hand','Which way you shoot']]],
+    ['moves','Moves',[['pose','Moves'],['celebration','Cellys']]]];
   var TIER_LABEL={ common:'', rare:'Pro', epic:'All-Star', legendary:'Legend', team:'Team' };
   // A tab can hold more than one slot (Stick holds the tape, Helmet the decal,
   // Jersey the socks), so the team-set slots need no tabs of their own.
-  function slotsOf(tab){ for(var i=0;i<GEAR_TABS.length;i++) if(GEAR_TABS[i][0]===tab) return GEAR_TABS[i][2]||[tab]; return [tab]; }
-  function tabFor(slot){ for(var i=0;i<GEAR_TABS.length;i++) if(slotsOf(GEAR_TABS[i][0]).indexOf(slot)>=0) return GEAR_TABS[i][0]; return slot; }
+  function groupSlots(g){ return g[2].map(function(x){ return x[0]; }); }
+  // Group for a group id, a slot, or an old tab id (links and messages may still
+  // say 'pose', 'fit' or 'facing'). Anything unknown opens on Me.
+  function groupOf(x){
+    for(var i=0;i<GROUPS.length;i++){ if(GROUPS[i][0]===x || groupSlots(GROUPS[i]).indexOf(x)>=0) return GROUPS[i][0]; }
+    return 'me';
+  }
+  function groupById(id){ for(var i=0;i<GROUPS.length;i++) if(GROUPS[i][0]===id) return GROUPS[i]; return GROUPS[0]; }
+  // The builder still works slot by slot (one step per slot).
+  function slotsOf(tab){ return L.build!=null?[tab]:groupSlots(groupById(groupOf(tab))); }
+  function tabFor(slot){ return groupOf(slot); }
   var L={ data:null, look:null, saved:null, tab:'skin', trying:null, changed:false, me:null };
 
   function swatch(slot,short){
@@ -689,38 +705,50 @@
   }
 
   // First-run builder: three steps, everything pre-picked, so a kid can tap Done.
-  var BUILD_STEPS=[['skin','Pick your skin tone'],['hairstyle','Pick your hockey hair'],['hair','Pick your hair color'],['jersey','Pick your jersey'],['hand','Which way do you shoot?'],['facing','Which way to face?']];
+  var BUILD_STEPS=[['skin','Pick your skin tone'],['hairstyle','Pick your hockey hair'],['hair','Pick your hair color'],['jersey','Pick your jersey'],['hand','Which way do you shoot?']];
   // Hair is easiest to judge from behind, so those tabs turn the player around.
   // Facing turns the player to the picked side so the stage shows the real view.
   function faceSpin(f){ return f==='right'?25:(f==='center'?0:-25); }
-  function spinFor(tab){ return (tab==='hair'||tab==='hairstyle')?150:(tab==='facing'?faceSpin(norm(L.look||{}).facing):-25); }
+  // The stage turns to the side the card faces; hair steps in the builder show it from behind.
+  function spinFor(tab){ return (L.build!=null && (tab==='hair'||tab==='hairstyle'))?150:faceSpin(norm(L.look||{}).facing); }
   // Unlock tracking on this device: ids already shown, and ids still marked New.
   function readList(k){ try{ var v=JSON.parse(localStorage.getItem(k)||'null'); return Array.isArray(v)?v:null; }catch(_){ return null; } }
   function writeList(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(_){} }
   function isNew(id){ var n=readList('thwapUnlockNew')||[]; return n.indexOf(id)>=0; }
 
   function lockerCss(){
-    return ".lk{position:fixed;inset:0;z-index:9999;background:var(--bg,#F3F7F4);color:var(--text,#15221B);display:flex;flex-direction:column;font-family:inherit;overflow:hidden}.lk>*{min-width:0;flex-shrink:0}.lk>.lk-grid{flex:1 1 auto;min-height:0;align-content:start}"+
-      ".lk-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 8px}"+
-      ".lk-head h2{margin:0;font-size:22px;font-weight:900}"+
-      ".lk .glassclose.in-row{position:static;flex:none}"+
-      ".lk-stagewrap{position:relative;margin:0 16px}"+
+    return ".lk{position:fixed;inset:0;z-index:9999;background:var(--bg,#F3F7F4);color:var(--text,#15221B);font-family:inherit;overflow-y:auto;overscroll-behavior:contain}"+
+      // The page pattern: the .app content column, the hero, the glass close.
+      ".lk-col{max-width:1100px;margin:auto;padding:72px 16px 44px}.lk-hero{margin:0 0 12px}.lk-hero p{margin:6px 0 0}"+
+      // Phone: the frame and sizes stay in view while the list scrolls. Tablet and
+      // up: two columns, the frame on the left, the groups on the right.
+      ".lk-left{position:sticky;top:0;z-index:2;background:var(--bg,#F3F7F4);padding:8px 0 4px}"+
+      "@media (min-width:768px){.lk-main{display:grid;grid-template-columns:minmax(260px,320px) 1fr;gap:32px;align-items:start}.lk-left{top:16px;padding:0}}"+
+      // The frame: the real card front with its art off, so the player sits where it will on the card.
+      ".lk-fitcard.lk-frame{background:transparent;border:2px solid var(--line,#DCE5DE);box-shadow:none}.lk-frame .cf2{background:none!important;color:var(--muted,#5F6F64)}"+
+      ".lk-frame .cf2-plate,.lk-frame .cf2-scrim,.lk-frame .cf2-photo-mask,.lk-frame .cf2-tagline,.lk-frame .cf2-team,.lk-frame .cf2-pos{display:none}"+
+      ".lk-frame .cf2-num,.lk-frame .cf2-nm{opacity:.3;color:var(--muted,#5F6F64);text-shadow:none}"+
+      // Jersey sizes: big tap targets in the display font; the picked one slaps on in lime.
+      ".lk-sizes{display:flex;gap:8px;margin:12px 0 0}"+
+      ".lk-size{flex:1;min-height:52px;border-radius:14px;border:2px solid var(--line,#DCE5DE);background:var(--card,#fff);color:var(--text,#15221B);font-family:'Archivo Black',system-ui,sans-serif;font-size:16px;cursor:pointer}"+
+      ".lk-size.on{background:var(--lime,#B9F06B);color:#15221B;border-color:#15221B;transform:rotate(-3deg)}"+
+      "@media (prefers-reduced-motion:no-preference){.lk-size.on{animation:lkSz .26s cubic-bezier(.2,1.6,.4,1)}@keyframes lkSz{0%{transform:scale(.85) rotate(0)}100%{transform:rotate(-3deg)}}}"+
+      // Group tabs: one thin row of words, lime underline on the open one.
+      ".lk-tabs{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--line,#DCE5DE);margin:12px 0 8px}"+
+      ".lk-tab{min-height:48px;padding:0 2px;border:0;border-bottom:3px solid transparent;margin-bottom:-1px;background:none;color:var(--muted,#5F6F64);font:inherit;font-size:15px;font-weight:800;cursor:pointer}"+
+      ".lk-tab.on{color:var(--text,#15221B);border-bottom-color:var(--lime,#B9F06B)}"+
+      "@media (min-width:768px){.lk-tabs{justify-content:flex-start;gap:28px;margin-top:0}}"+
+      ".lk-stagewrap{position:relative}"+
       ".lk-play{position:absolute;right:12px;bottom:12px;min-height:48px;padding:0 18px;border-radius:24px;border:0;background:var(--text,#15221B);color:var(--bg,#F3F7F4);font:inherit;font-weight:900;font-size:16px;cursor:pointer}.lk-play[hidden]{display:none}"+
       ".lk-toast .av-word{display:none}"+
-      ".lk-stage{position:relative;height:min(46vh,380px);margin:0;border-radius:16px;background:var(--soft,#E7EEE8);overflow:hidden;touch-action:none}"+
+      ".lk-stage{position:relative;height:min(36vh,340px);margin:0;overflow:hidden;touch-action:none;cursor:grab}.lk-stage:active{cursor:grabbing}"+
       ".lk-stage .av-wrap{font-size:min(9px,2.2vw,1.1vh)}"+
-      ".lk-note{min-height:22px;margin:8px 16px 0;font-size:14px;color:var(--muted,#5F6F64);text-align:center}"+
-      ".lk-tabs{display:flex;gap:8px;overflow-x:auto;padding:12px 16px 4px;scrollbar-width:none}"+
-      ".lk-tab{flex:none;min-height:48px;padding:0 16px;border-radius:24px;border:1px solid var(--line,#DCE5DE);background:var(--card,#fff);color:var(--text,#15221B);font-weight:800;font-size:15px;cursor:pointer}"+
-      ".lk-tab[aria-selected=true]{background:var(--text,#15221B);color:var(--bg,#F3F7F4);border-color:var(--text,#15221B)}"+
+      ".lk-note{min-height:22px;margin:8px 0 0;font-size:14px;color:var(--muted,#5F6F64);text-align:center}"+
       ".lk-fitcard{position:absolute;left:50%;top:50%;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.25);cursor:grab}"+
-      ".lk-fit{grid-column:1/-1;display:flex;flex-direction:column;align-items:center;gap:10px}"+
-      ".lk-fitsize{margin:0;font-size:15px;font-weight:800;color:var(--muted,#5F6F64)}.lk-fitsize b{color:var(--text,#15221B)}"+
-      ".lk-fitrow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}"+
-      ".lk-fitbtn{min-width:72px;min-height:56px;padding:4px 10px;border-radius:14px;border:1px solid var(--line,#DCE5DE);background:var(--card,#fff);color:var(--text,#15221B);font:inherit;font-size:13px;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}"+
-      ".lk-fitbtn span{font-size:20px;line-height:1}"+
-      ".lk-fitreset{min-height:48px;padding:0 20px;border:0;background:none;color:var(--text,#15221B);font:inherit;font-weight:800;text-decoration:underline;cursor:pointer}"+
-      ".lk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;padding:8px 16px 24px;overflow-y:auto}"+
+      ".lk-grid{padding:8px 0 24px}.lk-items{display:grid;grid-template-columns:repeat(auto-fill,minmax(max(92px,calc((100% - 24px) / 4)),1fr));gap:8px} /* at most 4 per row; 3 on a phone */"+
+      // Sections: a plain uppercase label over a hairline, never a box around the group.
+      ".lk-sec{border-top:1px solid var(--line,#DCE5DE);padding-top:16px;margin-top:16px}.lk-sec:first-child{border-top:0;margin-top:4px;padding-top:4px}"+
+      ".lk-sech{margin:0 0 10px;font-family:inherit;font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:var(--muted,#5F6F64)}"+
       ".lk-item{position:relative;min-height:96px;border-radius:14px;border:2px solid var(--line,#DCE5DE);background:var(--card,#fff);color:var(--text,#15221B);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px;cursor:pointer;font:inherit}"+
       ".lk-item[aria-pressed=true]{border-color:var(--linesel,#8FD65E);box-shadow:0 0 0 2px var(--linesel,#8FD65E) inset}"+
       ".lk-sw{width:34px;height:34px;border-radius:50%;border:1px solid rgba(0,0,0,.25)}"+
@@ -739,8 +767,8 @@
       ".lk-tier{font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--muted,#5F6F64)}"+
       ".lk-btn{position:fixed;left:12px;bottom:84px;z-index:50;min-height:48px;padding:0 16px;border-radius:24px;border:1px solid var(--line,#DCE5DE);background:var(--card,#fff);color:var(--text,#15221B);font-weight:900;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.18)}"+
       ".lk-msg{padding:32px 16px;text-align:center;color:var(--muted,#5F6F64)}"+
-      ".lk-step{padding:12px 16px 4px;font-size:16px;font-weight:900}.lk-step small{display:block;font-size:13px;font-weight:700;color:var(--muted,#5F6F64)}"+
-      ".lk-foot{padding:8px 16px 16px;display:flex;gap:8px}"+
+      ".lk-step{padding:12px 0 4px;font-size:16px;font-weight:900}.lk-step small{display:block;font-size:13px;font-weight:700;color:var(--muted,#5F6F64)}"+
+      ".lk-foot{padding:8px 0 16px;display:flex;gap:8px}"+
       ".lk-go{flex:1;min-height:52px;border-radius:26px;border:0;background:var(--text,#15221B);color:var(--bg,#F3F7F4);font-weight:900;font-size:17px;cursor:pointer}"+
       ".lk-back{min-height:52px;padding:0 20px;border-radius:26px;border:1px solid var(--line,#DCE5DE);background:var(--card,#fff);color:var(--text,#15221B);font-weight:800;cursor:pointer}"+
       ".lk-new{position:absolute;top:6px;left:6px;font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:8px;background:var(--lime,#B9F06B);color:#15221B}"+
@@ -761,10 +789,12 @@
     var st=document.querySelector('.lk-stage'); if(!st||!id) return;
     if(L.playing){ L.playing(); L.playing=null; }
     var r=norm(L.trying?L.trying.look:L.look); r.num=L.num||'';
+    paintFitCard(st);
+    var w0=st.querySelector('.lk-fitcard .av-wrap'), host=(w0&&w0.parentNode)||st;
     L.playing=playCelly(id,r,function(m,sx){
-      st.innerHTML=m;
-      var sc=st.querySelector('.av-scene');
-      if(sc){ sc.style.transform='rotateX(-10deg) rotateY('+L.spin+'deg)'; sc.style.translate=sx?(sx+'em 0'):''; }
+      host.innerHTML=m;
+      var sc=host.querySelector('.av-scene');
+      if(sc){ sc.style.setProperty('--av-face',L.spin+'deg'); sc.style.translate=sx?(sx+'em 0'):''; }
     },function(){ L.playing=null; paintStage(); });
   }
   function ensureLockerCss(){
@@ -773,15 +803,10 @@
   function paintStage(){
     var st=document.querySelector('.lk-stage'); if(!st) return;
     var play=document.querySelector('.lk-play');
-    if(play) play.hidden=!(L.build==null && L.tab==='celebration' && stageCelly());
+    if(play) play.hidden=!(L.build==null && L.tab==='moves' && stageCelly());
     // A celebration is playing: let it finish (it repaints when done); only the note updates.
-    if(L.tab==='fit' && L.build==null && !L.playing){ paintFitCard(st); }
-    else if(!L.playing){
-      var look=L.trying?L.trying.look:L.look;
-      var r=norm(look); r.num=L.num||''; r.letter=(L.data&&L.data.letter)||null;
-      st.innerHTML=html(r);
-      var sc=st.querySelector('.av-scene'); if(sc) sc.style.transform='rotateX(-10deg) rotateY('+L.spin+'deg)';
-    }
+    if(!L.playing){ paintFitCard(st); turnStage(st); }
+    paintSizes();
     var note=document.querySelector('.lk-note');
     if(note){
       if(L.trying){ var it=L.trying.item, h=have(it), n=(it.rule||{}).n||0;
@@ -802,20 +827,24 @@
         "<button type='button' class='lk-go' data-build='next'>"+(L.build===BUILD_STEPS.length-1?'Done':'Next')+"</button>"; }
       return;
     }
-    t.className='lk-tabs'; t.setAttribute('role','tablist');
+    t.className='lk-tabs'; t.setAttribute('role','tablist'); t.setAttribute('aria-label','My Player');
     if(foot){ foot.hidden=true; foot.innerHTML=''; }
-    t.innerHTML=GEAR_TABS.map(function(x){ return "<button type='button' role='tab' class='lk-tab' data-tab='"+x[0]+"' aria-selected='"+(L.tab===x[0])+"'>"+x[1]+"</button>"; }).join('');
-    // Opened on a later tab (e.g. from a New move! message): keep the selected
-    // tab in view instead of leaving the row scrolled to Skin.
-    var sel=t.querySelector('[aria-selected=true]');
-    if(sel && sel.scrollIntoView){ try{ sel.scrollIntoView({block:'nearest',inline:'nearest'}); }catch(_){} }
+    t.innerHTML=GROUPS.map(function(g){ var on=L.tab===g[0];
+      return "<button type='button' role='tab' class='lk-tab"+(on?' on':'')+"' data-tab='"+g[0]+"' aria-selected='"+on+"'>"+g[1]+"</button>"; }).join('');
   }
   function paintGrid(){
     var g=document.querySelector('.lk-grid'); if(!g||!L.data) return;
-    if(L.tab==='fit' && L.build==null){ g.innerHTML=fitControls(); return; }
-    var tabSlots=slotsOf(L.tab);
-    var items=L.data.items.filter(function(it){ return tabSlots.indexOf(it.slot)>=0; });
-    g.innerHTML=items.map(function(it){
+    function tiles(slot){ return L.data.items.filter(function(it){ return it.slot===slot; }).map(tile).join(''); }
+    if(L.build!=null){ g.innerHTML="<div class='lk-items'>"+tiles(L.tab)+"</div>"; return; }
+    g.innerHTML=groupById(L.tab)[2].map(function(sec){
+      var t=tiles(sec[0]); if(!t) return '';
+      return "<section class='lk-sec' data-slot='"+sec[0]+"'><h3 class='lk-sech'>"+esc(sec[1])+"</h3><div class='lk-items'>"+t+"</div></section>";
+    }).join('');
+    if(L.focusSlot){ var fs=g.querySelector("[data-slot='"+L.focusSlot+"']"); L.focusSlot=null;
+      if(fs && fs.scrollIntoView){ try{ fs.scrollIntoView({block:'start'}); }catch(_){} } }
+  }
+  function tile(it){
+    {
       var short=it.id.slice(it.slot.length+1), own=owned(it.id), on=L.look[it.slot]===it.id;
       var sub=own?(TIER_LABEL[it.tier]||''):ruleText(it);
       var lbl=it.slot==='skin'?'Tone '+short.slice(1):(it.slot==='hair'?short.charAt(0).toUpperCase()+short.slice(1):it.label);
@@ -824,34 +853,28 @@
         (own?'':"<i class='lk-lock' aria-hidden='true'></i>")+(own&&isNew(it.id)?"<i class='lk-new'>New</i>":"")+
         itemPic(it.slot,short)+
         "<span class='lk-lbl'>"+esc(lbl)+"</span>"+(sub?"<span class='lk-sub'>"+esc(sub)+"</span>":"")+"</button>";
-    }).join('');
+    }
   }
 
   // --- Size tab: how big the player is on the card and where it stands --------
-  var FIT_STEP={ fitSize:10, fitX:5, fitY:5 };
-  function fitControls(){
-    var s=fitVal(L.look,'fitSize');
-    function b(k,d,lbl,ico){ return "<button type='button' class='lk-fitbtn' data-fit='"+k+"' data-d='"+d+"' aria-label='"+lbl+"'><span aria-hidden='true'>"+ico+"</span>"+lbl+"</button>"; }
-    return "<div class='lk-fit'>"+
-      "<p class='lk-fitsize'>Size <b>"+s+"%</b></p>"+
-      "<div class='lk-fitrow'>"+b('fitSize',-1,'Smaller','&minus;')+b('fitSize',1,'Bigger','+')+"</div>"+
-      "<div class='lk-fitrow'>"+b('fitX',-1,'Left','&larr;')+b('fitY',1,'Up','&uarr;')+b('fitY',-1,'Down','&darr;')+b('fitX',1,'Right','&rarr;')+"</div>"+
-      "<button type='button' class='lk-fitreset' data-fit='reset'>Reset</button>"+
-    "</div>";
-  }
+  var SIZES=[['S',80],['M',90],['L',100],['XL',120],['XXL',140]];
   // The real card front at its real size, scaled down to fit the stage, so what
   // the kid sees here is exactly what the card shows.
+  function turnStage(st){
+    var sc=st.querySelector('.av-scene'); if(sc) sc.style.setProperty('--av-face',L.spin+'deg');
+  }
   function paintFitCard(st){
     var W=Math.min(380,Math.round(window.innerWidth*0.94)), H=Math.round(W*1.4);
-    var r=norm(L.look); r.num=L.num||''; r.letter=(L.data&&L.data.letter)||null;
+    var look=L.trying?L.trying.look:L.look;
+    var r=norm(look); r.num=L.num||''; r.letter=(L.data&&L.data.letter)||null;
     var face='';
     try{
       var p=window.thwapCurrentPlayer && window.thwapCurrentPlayer();
-      if(window.buildFront && p){ previewLook={id:String(L.me||'').toLowerCase(),look:L.look}; face=window.buildFront(p,L.me); }
+      if(window.buildFront && p){ previewLook={id:String(L.me||'').toLowerCase(),look:look}; face=window.buildFront(p,L.me); }
     }catch(_){ face=''; }
     previewLook=null;
-    if(!face) face="<div class='cf2' style='background:#15221B'>"+html(r)+"</div>";
-    st.innerHTML="<div class='lk-fitcard' style='width:"+W+"px;height:"+H+"px'>"+face+"</div>";
+    if(!face) face="<div class='cf2'>"+html(r)+"</div>";
+    st.innerHTML="<div class='lk-fitcard lk-frame' style='width:"+W+"px;height:"+H+"px'>"+face+"</div>";
     var k=Math.min(1,(st.clientHeight-16)/H,(st.clientWidth-16)/W)||1;
     var card=st.firstChild; card.style.transform='translate(-50%,-50%) scale('+k+')';
     L.fitScale=W*k;
@@ -864,17 +887,18 @@
     L.look=next; L.status=''; paintStage();
     // Update the number only: rebuilding the buttons would drop keyboard focus
     // and swallow quick repeat taps.
-    var sz=document.querySelector('.lk-fitsize b'); if(sz) sz.textContent=fitVal(next,'fitSize')+'%';
     // One save when the kid stops tapping or dragging, not one per nudge.
     clearTimeout(L.fitTimer);
     L.fitTimer=setTimeout(function(){ var prev=L.fitPrev; L.fitPrev=null; save(prev); },600);
   }
-  function onFit(btn){
-    var k=btn.getAttribute('data-fit'), ch={};
-    if(k==='reset'){ ch.fitSize=100; ch.fitX=0; ch.fitY=0; }
-    else ch[k]=fitVal(L.look,k)+Number(btn.getAttribute('data-d'))*FIT_STEP[k];
-    fitSet(ch);
-    try{ if(window.thwapHaptic) window.thwapHaptic('tap'); }catch(_){}
+  // Size is a jersey size: five steps a kid already knows. Pinch and the wheel
+  // land on the nearest one. Sizing re-centers the player (no move control).
+  function nearestSize(n){ var b=SIZES[0]; SIZES.forEach(function(z){ if(Math.abs(n-z[1])<Math.abs(n-b[1])) b=z; }); return b; }
+  function sizeTo(n){ var z=nearestSize(n)[1]; if(z===fitVal(L.look,'fitSize') && !fitVal(L.look,'fitX') && !fitVal(L.look,'fitY')) return; fitSet({ fitSize:z, fitX:0, fitY:0 }); }
+  function paintSizes(){
+    var cur=nearestSize(fitVal(L.look||{},'fitSize'))[1];
+    var bs=document.querySelectorAll('.lk-size');
+    for(var i=0;i<bs.length;i++){ var on=Number(bs[i].getAttribute('data-size'))===cur; bs[i].setAttribute('aria-checked',on?'true':'false'); bs[i].classList.toggle('on',on); }
   }
 
   function save(prev){
@@ -885,7 +909,7 @@
         if(!x.ok) throw new Error((x.j&&x.j.error)||'save failed');
         L.look=x.j.look; L.changed=true; L.status='Saved.';
         try{ var c=JSON.parse(localStorage.getItem('thwapLooksCache')||'{}')||{}; c[L.me]=L.look; localStorage.setItem('thwapLooksCache',JSON.stringify(c)); teamLooks=c; }catch(_){}
-        paintStage(); if(L.tab!=='fit') paintGrid(); // keep the Size buttons (and focus) in place
+        paintStage(); paintGrid();
       })
       .catch(function(){ L.look=prev; L.status='That didn\u2019t save. Try again.'; paintStage(); paintGrid(); });
   }
@@ -900,10 +924,9 @@
     }
     var tab=e.target.closest('.lk-tab');
     if(tab){ if(L.playing){ L.playing(); L.playing=null; } L.tab=tab.getAttribute('data-tab'); L.trying=null; L.spin=spinFor(L.tab);
-      if(L.tab==='fit') L.status='Drag your player to move it.';
       paintTabs(); paintGrid(); paintStage(); return; }
     if(e.target.closest('.lk-play')){ playOnStage(stageCelly()); return; }
-    var fb=e.target.closest('[data-fit]'); if(fb && L.data){ onFit(fb); return; }
+    var zb=e.target.closest('[data-size]'); if(zb && L.data){ sizeTo(Number(zb.getAttribute('data-size'))); try{ if(window.thwapHaptic) window.thwapHaptic('tap'); }catch(_){} return; }
     var b=e.target.closest('.lk-item'); if(!b||!L.data) return;
     var id=b.getAttribute('data-id'), it=null;
     for(var i=0;i<L.data.items.length;i++) if(L.data.items[i].id===id) it=L.data.items[i];
@@ -921,25 +944,54 @@
     if(celly){ setTimeout(function(){ playOnStage(celly); },0); }
     var prev={}; for(var k2 in L.look) prev[k2]=L.look[k2];
     L.look[it.slot]=id; paintGrid();
-    if(it.slot==='facing') L.spin=faceSpin(id.slice(it.slot.length+1)); // turn the stage to the picked view
     if(L.build!=null){ paintStage(); return; } // the builder saves once, on Done
     save(prev);
     try{ if(window.thwapHaptic) window.thwapHaptic('tap'); }catch(_){}
   }
 
+  // One finger: drag to turn. Let go and the player settles on the nearest side
+  // (left, front or right), which the card keeps. Two fingers: pinch to size.
+  // Desktop: trackpad pinch or the scroll wheel sizes; the - / + buttons always work.
+  var FACES=[['left',-25],['center',0],['right',25]];
+  function nearestFace(spin){ var a=((spin%360)+540)%360-180, best=FACES[0];
+    FACES.forEach(function(f){ if(Math.abs(a-f[1])<Math.abs(a-best[1])) best=f; }); return best; }
+  function setFacing(face){
+    L.spin=faceSpin(face); var id='facing-'+face;
+    if(L.look.facing===id || L.build!=null){ L.look.facing=id; paintStage(); return; }
+    var prev={}; for(var k in L.look) prev[k]=L.look[k];
+    L.look.facing=id; paintStage(); save(prev);
+  }
   function bindSpin(st){
-    var x0=null, y0=0, s0=0, f0=null;
-    st.addEventListener('pointerdown',function(e){ x0=e.clientX; y0=e.clientY; s0=L.spin;
-      // Size tab: dragging moves the player on the card instead of spinning it.
-      f0=(L.tab==='fit' && L.build==null && L.data)?{x:fitVal(L.look,'fitX'),y:fitVal(L.look,'fitY')}:null;
-      try{ st.setPointerCapture(e.pointerId); }catch(_){} });
-    st.addEventListener('pointermove',function(e){ if(x0==null) return;
-      if(f0){ var w=L.fitScale||300;
-        fitSet({ fitX:f0.x+Math.round((e.clientX-x0)/w*100), fitY:f0.y-Math.round((e.clientY-y0)/(w*1.4)*100) }); return; }
-      L.spin=s0+(e.clientX-x0)*0.8;
-      var sc=st.querySelector('.av-scene'); if(sc) sc.style.transform='rotateX(-10deg) rotateY('+L.spin+'deg)'; });
-    function up(){ x0=null; f0=null; }
+    var pts={}, drag=null, pinch=null;
+    function list(){ return Object.keys(pts).map(function(k){ return pts[k]; }); }
+    function dist(a,b){ return Math.hypot(a.x-b.x,a.y-b.y)||1; }
+    st.addEventListener('pointerdown',function(e){
+      if(e.target.closest('button')) return;
+      pts[e.pointerId]={x:e.clientX,y:e.clientY};
+      try{ st.setPointerCapture(e.pointerId); }catch(_){}
+      var p=list();
+      if(p.length===2 && L.data){ drag=null; pinch={d:dist(p[0],p[1]),s:fitVal(L.look,'fitSize')}; }
+      else if(p.length===1){ drag={x:e.clientX,s:L.spin,moved:false}; }
+    });
+    st.addEventListener('pointermove',function(e){
+      if(!pts[e.pointerId]) return; pts[e.pointerId]={x:e.clientX,y:e.clientY};
+      if(pinch){ var p=list(); if(p.length>=2) sizeTo(pinch.s*dist(p[0],p[1])/pinch.d); return; }
+      if(!drag) return;
+      if(Math.abs(e.clientX-drag.x)>6) drag.moved=true;
+      L.spin=drag.s+(e.clientX-drag.x)*0.8; turnStage(st);
+    });
+    function up(e){
+      delete pts[e.pointerId];
+      if(pinch){ if(list().length<2) pinch=null; drag=null; return; }
+      if(drag && drag.moved && !L.playing) setFacing(nearestFace(L.spin)[0]);
+      drag=null;
+    }
     st.addEventListener('pointerup',up); st.addEventListener('pointercancel',up);
+    st.addEventListener('wheel',function(e){
+      if(!L.data) return; e.preventDefault();
+      var i=SIZES.indexOf(nearestSize(fitVal(L.look,'fitSize'))), d=e.deltaY<0?1:(e.deltaY>0?-1:0);
+      var j=Math.max(0,Math.min(SIZES.length-1,i+d)); if(j!==i) sizeTo(SIZES[j][1]);
+    },{passive:false});
   }
 
   function finishBuild(){
@@ -972,11 +1024,15 @@
     opts=opts||{};
     if(document.querySelector('.lk')) return;
     ensureLockerCss();
-    L={ onClose:opts.onClose||null, data:null, look:null, tab:opts.tab||'skin', trying:null, changed:false, me:null, spin:-25, status:'', num:'', build:null };
+    L={ onClose:opts.onClose||null, data:null, look:null, tab:groupOf(opts.tab||'me'), focusSlot:(opts.tab&&opts.tab!==groupOf(opts.tab))?opts.tab:null, trying:null, changed:false, me:null, spin:-25, status:'', num:'', build:null };
     var el=document.createElement('div'); el.className='lk'; el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true'); el.setAttribute('aria-label','My Player');
-    el.innerHTML="<div class='lk-head'><h2>My Player</h2><button type='button' class='glassclose in-row lk-x' aria-label='Close'>&#10005;</button></div>"+
-      "<div class='lk-stagewrap'><div class='lk-stage' aria-label='Your player. Drag to spin.'></div><button type='button' class='lk-play' hidden>&#9654; Play</button></div><div class='lk-note' aria-live='polite'></div>"+
-      "<div class='lk-tabs' role='tablist' data-lk='tabs'></div><div class='lk-grid'><div class='lk-msg'>Getting your player...</div></div><div class='lk-foot' hidden></div>";
+    el.innerHTML="<button type='button' class='glassclose lk-x' aria-label='Close'>&#10005;</button>"+
+      "<div class='lk-col'><div class='heroCard lk-hero'><h1>My Player</h1><p>Tap to wear it. Drag to turn.</p></div><div class='lk-main'>"+
+      "<div class='lk-left'><div class='lk-stagewrap'><div class='lk-stage' aria-label='Your player in the frame of your card. Drag to turn your player.'></div>"+
+      "<button type='button' class='lk-play' hidden>&#9654; Play</button></div>"+
+      "<div class='lk-sizes' role='radiogroup' aria-label='Player size'>"+SIZES.map(function(z){ return "<button type='button' class='lk-size' role='radio' data-size='"+z[1]+"' aria-checked='false'>"+z[0]+"</button>"; }).join('')+"</div>"+
+      "<div class='lk-note' aria-live='polite'></div></div>"+
+      "<div class='lk-right'><div class='lk-tabs' data-lk='tabs'></div><div class='lk-grid'><div class='lk-msg'>Getting your player...</div></div><div class='lk-foot' hidden></div></div></div></div>";
     document.body.appendChild(el);
     el.querySelector('.lk-x').addEventListener('click',closeLocker);
     el.addEventListener('click',onTap);
@@ -1067,7 +1123,7 @@
       // in My Player. Celebrations have no tab until they can play, so they
       // stay unseen (not announced, not recorded) and announce when it ships.
       // Stances got the Moves tab, so moves held back earlier announce now.
-      var shown={}; GEAR_TABS.forEach(function(t){ slotsOf(t[0]).forEach(function(sl){ shown[sl]=1; }); });
+      var shown={}; GROUPS.forEach(function(g){ groupSlots(g).forEach(function(sl){ shown[sl]=1; }); });
       var ready=(j.unlocked||[]).filter(function(id){ var it=itemName(j,id); return !it || shown[it.slot]; });
       var seen=readList('thwapUnlockSeen');
       if(!seen){ writeList('thwapUnlockSeen',ready); return j; } // first look: past training is the builder's job
