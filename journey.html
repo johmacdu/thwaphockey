@@ -139,6 +139,11 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .slipwarn[hidden]{display:none}
 .scenerow{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .scenerow h2{margin-bottom:0}
+.whoskates{display:flex;flex-direction:column;align-items:flex-end;gap:4px;margin:0 0 2px auto;font-size:12px;color:var(--muted);font-weight:700}
+.whoskates .ws{display:flex;gap:4px}
+.whoskates button{min-height:48px;min-width:56px;padding:0 14px;border-radius:22px;border:1px solid var(--line2);background:var(--card);color:var(--text);font:inherit;font-weight:800;cursor:pointer}
+.whoskates button[aria-pressed="true"]{background:var(--text);color:var(--page);border-color:var(--text)}
+.whoskates button:focus-visible,.scenehead:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
 .scenetitle{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 /* One scene at a time: the kid's own scene, or the stage they tapped. */
 .stage{position:relative;margin:20px -6px 0;border-radius:18px;overflow:hidden;aspect-ratio:16/10;background:var(--scene-bg,var(--card2))}
@@ -289,6 +294,10 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
   <div class="scenerow">
     <div><p class="eyebrow">Where I am</p>
     <h2 id="h-journey"><span id="jTier">Practice Ice</span></h2></div>
+    <div class="whoskates" role="group" aria-label="Who skates in your scene">
+      <span>Who skates</span>
+      <div class="ws"><button type="button" data-who="me" aria-pressed="true">Me</button><button type="button" data-who="sass" aria-pressed="false">Sass</button></div>
+    </div>
   </div>
   <div class="stage s1" id="jStage" role="group" aria-label="Practice Ice"></div>
   <div class="scpips" id="jPips" role="img" aria-label=""></div>
@@ -658,13 +667,15 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     if(i===b.tierIndex) return 'here';
     return i<=b.highestTier?'here':'locked';
   }
-  // The kid's own player skates their scene. Every signed-in kid has one.
   function skaterHtml(){
-    var id=BOOK&&BOOK.id||myId();
-    if(!id||!window.thwapAvatar) return '';
-    try{ var look=window.thwapAvatar.lookFor({num:''},id); return '<span class="me">'+window.thwapAvatar.html(look)+'</span>'; }catch(_){ return ''; }
+    var who=WHO==='sass'||!window.thwapAvatar?'sass':'me', id=BOOK&&BOOK.id||myId();
+    if(who==='me'&&id){
+      try{ var look=window.thwapAvatar.lookFor({num:''},id); return '<span class="me">'+window.thwapAvatar.html(look)+'</span>'; }catch(_){}
+    }
+    return '<img src="login/sass-stride-m.webp" alt="">';
   }
   function myId(){ try{ return (localStorage.getItem('bfPlayer')||'').trim().split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,''); }catch(e){ return ''; } }
+  var WHO=(function(){ try{ return localStorage.getItem('thwapJourneySkater')||'me'; }catch(e){ return 'me'; } })();
   // VIEW: the stage on show. null = the kid's own scene.
   var VIEW=null;
   function renderPath(b,opts){
@@ -740,6 +751,13 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     document.querySelectorAll('#jTiers .tierbtn').forEach(function(x){x.setAttribute('aria-pressed',x===btn?'true':'false');});
     paintStage(b,i);
   });
+  document.querySelector('.whoskates').addEventListener('click',function(e){
+    var b=e.target.closest('[data-who]'); if(!b)return;
+    WHO=b.getAttribute('data-who'); try{ localStorage.setItem('thwapJourneySkater',WHO); }catch(_){}
+    document.querySelectorAll('.whoskates [data-who]').forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false');});
+    var sk=document.getElementById('jSkater'); if(sk) sk.innerHTML=skaterHtml();
+  });
+  function paintWho(){ document.querySelectorAll('.whoskates [data-who]').forEach(function(x){x.setAttribute('aria-pressed',x.getAttribute('data-who')===WHO?'true':'false');}); }
   // Leaving the page (or the frame) never strands the modal on the app page.
   window.addEventListener('pagehide',function(){closePop(false);var m=P('jBadgeModal');if(m&&HOST!==document)m.remove();});
   document.getElementById('jBadges').addEventListener('click',function(e){
@@ -755,7 +773,7 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
       setTimeout(function(){sp.classList.remove('nope');},440);});
   });
   // Signed out (or until the API answers): the sample path.
-  renderBadges(); renderPath(SAMPLE);
+  renderBadges(); paintWho(); renderPath(SAMPLE);
   fetch('/api/board?action=journey',{credentials:'same-origin',cache:'no-store'})
     .then(function(r){return r.ok?r.json():null;})
     .then(function(b){if(b&&b.season&&Array.isArray(b.months))render(b);})
