@@ -12,8 +12,10 @@
 		1E93B50C445354E939918FF4 /* StampView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 396EE9BC2B0839B251C1443E /* StampView.swift */; };
 		239F2D59C36BDE529ED87079 /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 226CEC61006F47B5C58D4976 /* Haptics.swift */; };
 		3172061F95FB0DA9724566E1 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A26C454F96ED9C7361F60533 /* WidgetKit.framework */; };
+		38F5978A4C5DFC43CE747BF6 /* SignInView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC7D9A4518582CBB4299BE93 /* SignInView.swift */; };
 		3A8D21B480C2053AC26E0739 /* RingMathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69F865D2DA8844CDC0B4295 /* RingMathTests.swift */; };
 		442DE46780B2FB6E06E47EC6 /* ThwapComplication.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 35618CC02FDB0FAF717A55F7 /* ThwapComplication.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		6B3A765E1D78029F8D3096BD /* LiveThwapAPITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B836D0C3976B84A0B53594DC /* LiveThwapAPITests.swift */; };
 		6BEB1B718A6AB4DF9ADF5561 /* ThwapComplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961E38393044273D9D229F33 /* ThwapComplication.swift */; };
 		855F0CD721C102D2EC23E0DB /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C210049F7B56FF7C3019D1 /* TodayView.swift */; };
 		9E324F6F1FA0B45CF9F5A651 /* ConcentricRings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CE46A8D5FCEE98C74DECC02 /* ConcentricRings.swift */; };
@@ -21,6 +23,9 @@
 		A9420BE41C526B9684241F18 /* ThwapTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0311EE25B53F422A355CF6 /* ThwapTheme.swift */; };
 		AB1DF5CC116468E1979DA80F /* ThwapWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D648FB3593CFA98B069DA4 /* ThwapWatchApp.swift */; };
 		B2133954B23EC197C5E9FB63 /* ConcentricRings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CE46A8D5FCEE98C74DECC02 /* ConcentricRings.swift */; };
+		B29759C53B76609678579139 /* LiveQueueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B3DBABBA276DB7F601BFAAF /* LiveQueueTests.swift */; };
+		B7B861C8893AD2FCEFB7512C /* ApprovalPollerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1BD4451CA31A781C351D4E5 /* ApprovalPollerTests.swift */; };
+		C441A452855CAE900483871F /* TestSupport.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CC8630CEE00B2FA594AE2DA /* TestSupport.swift */; };
 		D53E02DD2399B7C5DF3D1089 /* DrillTimerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46A21DF73C4AB3DDDDC15685 /* DrillTimerTests.swift */; };
 		D75A600D62E2CB970AC8379A /* ThwapTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0311EE25B53F422A355CF6 /* ThwapTheme.swift */; };
 		DB5DF58877775CFD99A464D8 /* ThwapCore in Frameworks */ = {isa = PBXBuildFile; productRef = A2233E6206C86CB7EFF95E38 /* ThwapCore */; };
@@ -62,6 +67,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1CC8630CEE00B2FA594AE2DA /* TestSupport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestSupport.swift; sourceTree = "<group>"; };
 		226CEC61006F47B5C58D4976 /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
 		35618CC02FDB0FAF717A55F7 /* ThwapComplication.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ThwapComplication.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		396EE9BC2B0839B251C1443E /* StampView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StampView.swift; sourceTree = "<group>"; };
@@ -72,17 +78,21 @@
 		688B8F6478D125D19CC61B30 /* ThwapWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ThwapWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6CA4CF0F67B62C08181A651B /* GameGoalsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameGoalsView.swift; sourceTree = "<group>"; };
 		6CE46A8D5FCEE98C74DECC02 /* ConcentricRings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConcentricRings.swift; sourceTree = "<group>"; };
+		7B3DBABBA276DB7F601BFAAF /* LiveQueueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveQueueTests.swift; sourceTree = "<group>"; };
 		87D648FB3593CFA98B069DA4 /* ThwapWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThwapWatchApp.swift; sourceTree = "<group>"; };
 		961E38393044273D9D229F33 /* ThwapComplication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThwapComplication.swift; sourceTree = "<group>"; };
 		A202D8D89839804A79AB1814 /* DrillRunView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrillRunView.swift; sourceTree = "<group>"; };
 		A26C454F96ED9C7361F60533 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		B836D0C3976B84A0B53594DC /* LiveThwapAPITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveThwapAPITests.swift; sourceTree = "<group>"; };
 		BD520432EAEDBD6D30A23FC1 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		C315DFBCF108054F4F5D6817 /* ThwapWatchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ThwapWatchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C69F865D2DA8844CDC0B4295 /* RingMathTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RingMathTests.swift; sourceTree = "<group>"; };
 		D088C42FCFB20B67B3051744 /* ThwapComplication.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ThwapComplication.entitlements; sourceTree = "<group>"; };
 		D7C210049F7B56FF7C3019D1 /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
+		DC7D9A4518582CBB4299BE93 /* SignInView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignInView.swift; sourceTree = "<group>"; };
 		E24F16316302965DDD731C70 /* CheckOffQueueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckOffQueueTests.swift; sourceTree = "<group>"; };
 		EF0311EE25B53F422A355CF6 /* ThwapTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThwapTheme.swift; sourceTree = "<group>"; };
+		F1BD4451CA31A781C351D4E5 /* ApprovalPollerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApprovalPollerTests.swift; sourceTree = "<group>"; };
 		FBB55FCDAA7C22E4716668C3 /* ThwapWatch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ThwapWatch.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -123,6 +133,7 @@
 				A202D8D89839804A79AB1814 /* DrillRunView.swift */,
 				6CA4CF0F67B62C08181A651B /* GameGoalsView.swift */,
 				226CEC61006F47B5C58D4976 /* Haptics.swift */,
+				DC7D9A4518582CBB4299BE93 /* SignInView.swift */,
 				396EE9BC2B0839B251C1443E /* StampView.swift */,
 				FBB55FCDAA7C22E4716668C3 /* ThwapWatch.entitlements */,
 				87D648FB3593CFA98B069DA4 /* ThwapWatchApp.swift */,
@@ -209,9 +220,13 @@
 		EE0AB4D502CA037E37D7945A /* ThwapCoreTests */ = {
 			isa = PBXGroup;
 			children = (
+				F1BD4451CA31A781C351D4E5 /* ApprovalPollerTests.swift */,
 				E24F16316302965DDD731C70 /* CheckOffQueueTests.swift */,
 				46A21DF73C4AB3DDDDC15685 /* DrillTimerTests.swift */,
+				7B3DBABBA276DB7F601BFAAF /* LiveQueueTests.swift */,
+				B836D0C3976B84A0B53594DC /* LiveThwapAPITests.swift */,
 				C69F865D2DA8844CDC0B4295 /* RingMathTests.swift */,
+				1CC8630CEE00B2FA594AE2DA /* TestSupport.swift */,
 			);
 			path = ThwapCoreTests;
 			sourceTree = "<group>";
@@ -336,6 +351,7 @@
 				19FFD0AF548D66F4F1D163EB /* DrillRunView.swift in Sources */,
 				F170FDBC6A5FDE5245309C8E /* GameGoalsView.swift in Sources */,
 				239F2D59C36BDE529ED87079 /* Haptics.swift in Sources */,
+				38F5978A4C5DFC43CE747BF6 /* SignInView.swift in Sources */,
 				1E93B50C445354E939918FF4 /* StampView.swift in Sources */,
 				A9420BE41C526B9684241F18 /* ThwapTheme.swift in Sources */,
 				AB1DF5CC116468E1979DA80F /* ThwapWatchApp.swift in Sources */,
@@ -347,9 +363,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B7B861C8893AD2FCEFB7512C /* ApprovalPollerTests.swift in Sources */,
 				F5F09D61F14258A6BE2D66B5 /* CheckOffQueueTests.swift in Sources */,
 				D53E02DD2399B7C5DF3D1089 /* DrillTimerTests.swift in Sources */,
+				B29759C53B76609678579139 /* LiveQueueTests.swift in Sources */,
+				6B3A765E1D78029F8D3096BD /* LiveThwapAPITests.swift in Sources */,
 				3A8D21B480C2053AC26E0739 /* RingMathTests.swift in Sources */,
+				C441A452855CAE900483871F /* TestSupport.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -7,6 +7,7 @@ import WatchKit
 /// | Timer starts        | `.start`         |
 /// | Any set ends        | `.notification`  |
 /// | Check-off stamp     | `.success`       |
+/// | Parent approved     | `.success`       |
 ///
 /// Why `.notification` for set end: it is the strongest, longest tap in the
 /// set, so a kid mid-rep with eyes on the puck still feels it through a glove
@@ -18,6 +19,8 @@ enum Haptics {
     static func timerStart() { play(.start) }
     static func setEnd() { play(.notification) }
     static func stamp() { play(.success) }
+    /// Sign-in approved by a parent (design doc section 10): a celebration.
+    static func approved() { play(.success) }
 
     private static func play(_ type: WKHapticType) {
         WKInterfaceDevice.current().play(type)

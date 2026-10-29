@@ -113,6 +113,12 @@ public struct SessionResponse: Codable, Equatable, Sendable {
         public var id: String
         public var name: String?
         public var number: Int?
+
+        public init(id: String, name: String? = nil, number: Int? = nil) {
+            self.id = id
+            self.name = name
+            self.number = number
+        }
     }
     public var authed: Bool
     public var player: Player?

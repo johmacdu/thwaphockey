@@ -79,6 +79,9 @@ targets:
     platform: watchOS
     sources:
       - path: ThwapCore/Tests/ThwapCoreTests
+        # Fixtures are read from the source tree via #filePath, not bundled.
+        excludes:
+          - "Fixtures/**"
     dependencies:
       - package: ThwapCore
       - target: ThwapWatch
