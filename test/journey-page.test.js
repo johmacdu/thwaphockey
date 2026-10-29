@@ -97,7 +97,7 @@ describe('signed out', () => {
   it('tapping a badge asks the kid to sign in', async () => {
     const w = await boot({ api: 401 });
     tap(w, badgeBtns(w)[0]);
-    expect($(w, 'jBadgeNote').textContent).toBe('Dangler: sign in to see your count.');
+    expect($(w, 'jBadgeNote').textContent).toBe('Sign in to see your count.');
   });
 });
 
@@ -125,7 +125,7 @@ describe('signed in: tier path', () => {
     const w = await boot({ api: book() });
     expect($(w, 'jTier').textContent).toBe('Locker Room');
     expect($(w, 'jNext').textContent).toBe('3 more training days to the next step');
-    const notes = Array.from($(w, 'jTiers').children).map((t) => t.lastChild.textContent);
+    const notes = Array.from($(w, 'jTiers').children).map((t) => t.querySelector('.tnote').textContent);
     expect(notes).toEqual(['You are here', 'Next stop', 'Later', 'Later']);
   });
 
@@ -136,7 +136,7 @@ describe('signed in: tier path', () => {
     expect($(w, 'jNext').textContent).toBe('7 more training days to the next step');
     const tiers = Array.from($(w, 'jTiers').children);
     expect(tiers.map((t) => t.className)).toEqual(['on', 'on', 'off', 'off']);
-    expect(tiers.map((t) => t.lastChild.textContent)).toEqual(['Done', 'You are here', 'Next stop', 'Later']);
+    expect(tiers.map((t) => t.querySelector('.tnote').textContent)).toEqual(['Done', 'You are here', 'Next stop', 'Later']);
     const pips = Array.from($(w, 'jPips').children).map((p) => p.className);
     expect(pips.slice(0, 4)).toEqual(['on', 'on', 'on', 'now']);
     expect(pips.slice(4).every((c) => c === '')).toBe(true);
@@ -155,7 +155,7 @@ describe('signed in: tier path', () => {
     const w = await boot({ api: book({ days: range('2026-09-01', 95), today: '2027-01-10' }), now: '2027-01-10T19:00:00Z' });
     expect($(w, 'jTier').textContent).toBe('Legend');
     expect($(w, 'jNext').textContent).toBe('You finished the whole book. Legend.');
-    expect(Array.from($(w, 'jTiers').children).map((t) => t.lastChild.textContent)).toEqual(['Done', 'Done', 'Done', 'Done']);
+    expect(Array.from($(w, 'jTiers').children).map((t) => t.querySelector('.tnote').textContent)).toEqual(['Done', 'Done', 'Done', 'Done']);
   });
 });
 
@@ -199,7 +199,7 @@ describe('signed in: badges', () => {
   it('tapping a badge says the count and what the next star needs', async () => {
     const w = await boot({ api: book({ events }) });
     tap(w, badgeBtns(w)[0]);
-    expect($(w, 'jBadgeNote').textContent).toBe('Dangler: 34 Hands drills. 26 more for star 3.');
+    expect($(w, 'jBadgeNote').textContent).toBe('34 Hands drills. 26 more for star 3.');
     expect(badgeBtns(w)[0].getAttribute('aria-pressed')).toBe('true');
     expect(badgeBtns(w)[1].getAttribute('aria-pressed')).toBe('false');
   });
@@ -207,13 +207,13 @@ describe('signed in: badges', () => {
   it('a badge with all 3 stars says so', async () => {
     const w = await boot({ api: book({ events }) });
     tap(w, badgeBtns(w)[4]);
-    expect($(w, 'jBadgeNote').textContent).toBe('Hockey Brain: 30 Hockey IQ sessions. All 3 stars!');
+    expect($(w, 'jBadgeNote').textContent).toBe('30 Hockey IQ sessions. All 3 stars!');
   });
 
   it('tapping the star row inside a badge still counts as tapping the badge', async () => {
     const w = await boot({ api: book({ events }) });
     tap(w, badgeBtns(w)[0].querySelector('.stars'));
-    expect($(w, 'jBadgeNote').textContent).toMatch(/^Dangler:/);
+    expect($(w, 'jBadgeNote').textContent).toBe('34 Hands drills. 26 more for star 3.');
   });
 
   it('the goalie sees Net Boss in the second slot', async () => {
@@ -221,7 +221,7 @@ describe('signed in: badges', () => {
     const b = badgeBtns(w)[1];
     expect(b.querySelector('b').textContent).toBe('Net Boss');
     tap(w, b);
-    expect($(w, 'jBadgeNote').textContent).toBe('Net Boss: 10 Net play drills. 20 more for star 2.');
+    expect($(w, 'jBadgeNote').textContent).toBe('10 Net play drills. 20 more for star 2.');
   });
 
   it('the finale shows the real badge-star total', async () => {
@@ -322,5 +322,73 @@ describe('embedded in the app', () => {
   it('is not in embed mode when opened on its own', async () => {
     const w = await boot({ api: 401 });
     expect(w.document.documentElement.classList.contains('embed')).toBe(false);
+  });
+});
+
+describe('tap a tier to see it', () => {
+  const tierBtn = (w, i) => w.document.querySelectorAll('#jTiers .tierbtn')[i];
+  const info = (w) => Array.from($(w, 'jTierInfo').querySelectorAll('h3,p')).map((e) => e.textContent);
+  // 20 days from Sep 1: step 3 (19 days) reached Sep 19, so Practice Ice from Sep 19.
+  const days = range('2026-09-01', 20);
+
+  it('a finished tier says when the kid got there and cleared it', async () => {
+    const w = await boot({ api: book({ days }) });
+    tap(w, tierBtn(w, 0));
+    expect($(w, 'jTierInfo').hidden).toBe(false);
+    expect(info(w)).toEqual(['Locker Room', 'Done!', 'You started here and cleared it on Sep 19.', 'It took 19 training days.']);
+    expect(tierBtn(w, 0).getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('the current tier says the step and the days to go', async () => {
+    const w = await boot({ api: book({ days }) });
+    tap(w, tierBtn(w, 1));
+    expect(info(w)).toEqual(['Practice Ice', 'You are here. Step 1 of 3.', 'You got here on Sep 19. 7 more training days to the next step.']);
+  });
+
+  it('a later tier says what it takes', async () => {
+    const w = await boot({ api: book({ days }) });
+    tap(w, tierBtn(w, 2));
+    expect(info(w)).toEqual(['Game Ready', 'Next stop.', 'You get here at 43 training days. You\u2019re at 20, so 23 to go.']);
+  });
+
+  it('tapping the same tier again closes it; another tier swaps', async () => {
+    const w = await boot({ api: book({ days }) });
+    tap(w, tierBtn(w, 0)); tap(w, tierBtn(w, 3));
+    expect(info(w)[0]).toBe('Legend');
+    expect(tierBtn(w, 0).getAttribute('aria-expanded')).toBe('false');
+    tap(w, tierBtn(w, 3));
+    expect($(w, 'jTierInfo').hidden).toBe(true);
+  });
+
+  it('works signed out on the sample', async () => {
+    const w = await boot({ api: 401 });
+    tap(w, tierBtn(w, 0));
+    expect(info(w)).toEqual(['Locker Room', 'Done!', 'You started here and cleared it.', 'It took 19 training days.']);
+  });
+});
+
+describe('tap a badge to open it', () => {
+  const events = ev('2026-10-01', 'stick', 34);
+  it('opens under its row with the art, stars and each star\'s goal', async () => {
+    const w = await boot({ api: book({ events }) });
+    tap(w, badgeBtns(w)[1]);
+    const panel = $(w, 'jBadgeInfo');
+    expect(panel.hidden).toBe(false);
+    expect(panel.previousElementSibling).toBe(badgeBtns(w)[3]); // after the first row of 4
+    tap(w, badgeBtns(w)[0]);
+    expect($(w, 'jBadgeName').textContent).toBe('Dangler');
+    const rows = Array.from($(w, 'jBadgeLadder').children).map((li) => li.textContent);
+    expect(rows).toEqual(['\u2605Star 1: 10 Hands drills\u2713 Done', '\u2605Star 2: 30 Hands drills\u2713 Done', '\u2606Star 3: 60 Hands drills26 to go']);
+    tap(w, badgeBtns(w)[5]);
+    expect(panel.previousElementSibling).toBe(badgeBtns(w)[7]); // second row
+    tap(w, badgeBtns(w)[5]);
+    expect(panel.hidden).toBe(true);
+  });
+});
+
+describe('breathing room', () => {
+  it('drops the "book opens in the spring" line', async () => {
+    const w = await boot({ api: 401 });
+    expect(w.document.body.textContent).not.toContain('book opens when the season ends');
   });
 });

@@ -36,15 +36,15 @@ html.embed .jhead .who{display:none}
 .eyebrow{font-family:'Oswald',system-ui,sans-serif;font-weight:600;font-size:var(--fs-eyebrow);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 6px}
 h1,h2,h3{font-family:'Archivo Black',system-ui,sans-serif;font-weight:400;margin:0;line-height:1.05}
 h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
-.sub{color:var(--muted);font-size:var(--fs-support);margin:6px 0 0}
+.sub{color:var(--muted);font-size:var(--fs-support);margin:8px 0 0;line-height:1.5}
 .sample{display:inline-block;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--sample);border:1px solid var(--sample);border-radius:4px;padding:1px 5px;margin-left:6px;vertical-align:middle;white-space:nowrap}
 [data-sample][hidden]{display:none}
 .note{font-size:12px;color:var(--muted);border-left:3px solid var(--sample);padding:4px 0 4px 10px;margin:0}
 
 /* A content section: flat on the page, separated by spacing only (no dividers). */
-.pg{position:relative;padding:26px 4px}
-.pg:first-of-type{padding-top:34px}
-.pg.seasonfar{padding-top:52px}
+.pg{position:relative;padding:48px 4px}
+.pg:first-of-type{padding-top:36px}
+.pg.seasonfar{padding-top:48px}
 .pg h2{margin-bottom:4px}
 .rule{border:0;border-top:1px solid var(--line);margin:18px 0}
 
@@ -68,7 +68,7 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .tiernow{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-top:10px}
 .tiernow b{font-family:'Archivo Black',sans-serif;font-weight:400;font-size:30px;color:var(--acc)}
 .tiernow span{color:var(--muted);font-weight:700}
-.rinkwrap{position:relative;margin:22px -6px 6px}
+.rinkwrap{position:relative;margin:28px -6px 16px}
 .rinkwrap .art{--ar:1600/700}
 .rinkwrap svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 .rinkwrap .sassp{position:absolute;width:20%;left:var(--x);bottom:57%;transform:translateX(-50%);filter:drop-shadow(0 4px 7px rgba(20,40,25,.35));animation:skate 400ms ease-out both}
@@ -96,20 +96,37 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 .tiers .pop .ic .art{box-shadow:0 0 0 3px var(--lime)}
 #jTier.swap{animation:chipin 260ms ease-out 900ms both}
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.tiers{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;text-align:center;margin-top:6px}
+.tiers{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;margin-top:16px}
+/* Each stop is a button: tap to see when you got there, or what it takes. */
+.tierbtn{display:block;width:100%;min-height:48px;padding:8px 2px;border:0;border-radius:14px;background:none;color:inherit;font:inherit;font-size:12px;cursor:pointer}
+.tierbtn:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.tierbtn[aria-expanded="true"]{background:var(--card2)}
+.tnote{display:block;margin-top:2px}
 .tiers div{font-size:12px;color:var(--muted)}
-.tiers .ic{width:46px;margin:0 auto 4px}
+.tiers .ic{width:52px;margin:0 auto 6px}
 .tiers .ic .art{--ar:1;border-radius:50%}
 .tiers b{display:block;font-family:'Oswald',sans-serif;font-weight:600;font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
 .tiers .on b{color:var(--acc)}
 .tiers .off .ic{opacity:.45}
-.pips{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin:18px 0 8px}
+.pips{display:grid;grid-template-columns:repeat(12,1fr);gap:4px;margin:28px 0 12px}
 .pips i{height:10px;border-radius:999px;background:var(--card2)}
 .pips i.on{background:var(--lime)}
 .pips i.now{background:var(--lime);opacity:.45}
 .pips i:nth-child(3n){margin-right:6px}
-.nextup{margin:12px 0 0;font-weight:800}
-.why{font-size:var(--fs-support);color:var(--muted);margin:4px 0 0}
+.nextup{margin:16px 0 0;font-weight:800}
+.why{font-size:var(--fs-support);color:var(--muted);margin:8px 0 0;line-height:1.5}
+/* Tier / badge details: read-only, so plain content between hairlines, no box. */
+.detail{display:grid;grid-template-columns:88px 1fr;gap:16px;align-items:start;margin:12px 0 4px;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);text-align:left}
+.detail[hidden]{display:none}
+.detail .dart .art{--ar:1;border-radius:50%}
+.detail h3{font-size:20px;margin:0 0 6px}
+.detail p{margin:0 0 4px;font-size:16px;line-height:1.45}
+.bdetail{grid-column:1/-1;margin:4px 0 8px}
+.bdetail .stars{font-size:18px;margin-bottom:6px}
+.ladder{list-style:none;padding:0;margin:10px 0 0}
+.ladder li{display:grid;grid-template-columns:20px 1fr auto;gap:8px;padding:8px 0;border-top:1px solid var(--line);font-size:15px;align-items:baseline}
+.ladder .st{color:var(--muted)}.ladder li.got .st{color:var(--acc)}
+.ladder em{font-style:normal;font-weight:800;color:var(--muted);white-space:nowrap}.ladder li.got em{color:var(--acc)}
 
 /* LOCKER */
 .lockerwrap{position:relative;display:grid;grid-template-columns:1.25fr 1fr;align-items:end;gap:6px;margin:14px 0 6px}
@@ -131,11 +148,12 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 
 /* BADGES: tappable tiles */
 .badgehead{margin-bottom:2px}
-.badges{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:14px}
-.badge{min-width:0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:8px 4px;text-align:center;min-height:48px;cursor:pointer;color:var(--text);font:inherit}
+.badges{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:20px}
+.badge{min-width:0;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 6px;text-align:center;min-height:48px;cursor:pointer;color:var(--text);font:inherit}
 .badge:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
 .badge .art{--ar:1;border-radius:50%}
-.badge b{display:block;font-family:'Oswald',sans-serif;font-weight:600;font-size:12px;letter-spacing:.04em;text-transform:uppercase;margin-top:5px}
+.badge b{display:block;font-family:'Oswald',sans-serif;font-weight:600;font-size:12px;letter-spacing:.04em;text-transform:uppercase;margin-top:8px}
+.badge[aria-expanded="true"]{border-color:var(--acc)}
 .stars{color:var(--acc);font-size:12px;letter-spacing:1px}
 /* Empty stars are a hollow shape AND a passing color, so earned vs not never rides on color alone. */
 .stars .off{color:var(--muted)}
@@ -147,7 +165,7 @@ h1{font-size:var(--fs-title)} h2{font-size:var(--fs-section)} h3{font-size:18px}
 
 /* SEASON SO FAR */
 .tl{list-style:none;padding:0;margin:10px 0 0}
-.tl li{display:grid;grid-template-columns:52px 1fr;gap:14px;padding:12px 0;align-items:baseline}
+.tl li{display:grid;grid-template-columns:52px 1fr;gap:14px;padding:16px 0;align-items:baseline}
 .tl li b{font-family:'Oswald',sans-serif;font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-size:16px}
 .tl li p{margin:0;font-size:17px;line-height:1.45}
 .tl li.future{color:var(--muted)}
@@ -210,7 +228,7 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
 <section class="pg" aria-labelledby="h-journey">
   <p class="eyebrow">Where I am</p>
   <h2 id="h-journey"><span id="jTier">Practice Ice</span></h2>
-  <p class="sub">Climb from Locker Room to Legend.</p>
+  <p class="sub">Climb from Locker Room to Legend. Tap a stop to see it.</p>
 
   <div class="rinkwrap" id="jRink" style="--x:43%">
     <div class="art" data-art="rink-path.webp"><span>rink-path.webp 1600x700</span></div>
@@ -226,11 +244,12 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
   </div>
   <p class="vh" id="jCheer" role="status" aria-live="polite"></p>
   <div class="tiers" id="jTiers" role="list" aria-label="Four tiers">
-    <div class="on" role="listitem"><div class="ic"><div class="art" data-art="tier-1.webp"><span>tier-1</span></div></div><b>Locker Room</b>Done</div>
-    <div class="on" role="listitem"><div class="ic"><div class="art" data-art="tier-2.webp"><span>tier-2</span></div></div><b>Practice Ice</b>You are here</div>
-    <div class="off" role="listitem"><div class="ic"><div class="art" data-art="tier-3.webp"><span>tier-3</span></div></div><b>Game Ready</b>Next stop</div>
-    <div class="off" role="listitem"><div class="ic"><div class="art" data-art="tier-4.webp"><span>tier-4</span></div></div><b>Legend</b>Later</div>
+    <div class="on" role="listitem"><button type="button" class="tierbtn" data-t="0" aria-expanded="false" aria-controls="jTierInfo"><div class="ic"><div class="art" data-art="tier-1.webp"><span>tier-1</span></div></div><b>Locker Room</b><span class="tnote">Done</span></button></div>
+    <div class="on" role="listitem"><button type="button" class="tierbtn" data-t="1" aria-expanded="false" aria-controls="jTierInfo"><div class="ic"><div class="art" data-art="tier-2.webp"><span>tier-2</span></div></div><b>Practice Ice</b><span class="tnote">You are here</span></button></div>
+    <div class="off" role="listitem"><button type="button" class="tierbtn" data-t="2" aria-expanded="false" aria-controls="jTierInfo"><div class="ic"><div class="art" data-art="tier-3.webp"><span>tier-3</span></div></div><b>Game Ready</b><span class="tnote">Next stop</span></button></div>
+    <div class="off" role="listitem"><button type="button" class="tierbtn" data-t="3" aria-expanded="false" aria-controls="jTierInfo"><div class="ic"><div class="art" data-art="tier-4.webp"><span>tier-4</span></div></div><b>Legend</b><span class="tnote">Later</span></button></div>
   </div>
+  <div class="detail" id="jTierInfo" hidden aria-live="polite"></div>
   <div class="pips" id="jPips" role="progressbar" aria-valuemin="0" aria-valuemax="12" aria-valuenow="4" aria-label="Step 4 of 12 this season">
     <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="now"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
   </div>
@@ -245,16 +264,16 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     <p class="sub">Every badge has 3 stars. Train to earn them. Tap a badge to see how.</p>
   </div>
   <div class="badges" id="jBadges">
-    <button type="button" class="badge" data-i="0"><div class="art" data-art="badge-01.webp"><span>01</span></div><b>Dangler</b><div class="stars" aria-label="2 of 3 stars">★★<span class="off">☆</span></div></button>
-    <button type="button" class="badge" data-i="1"><div class="art" data-art="badge-02.webp"><span>02</span></div><b>Sniper</b><div class="stars" aria-label="1 of 3 stars">★<span class="off">☆☆</span></div></button>
-    <button type="button" class="badge" data-i="2"><div class="art" data-art="badge-03.webp"><span>03</span></div><b>Engine</b><div class="stars" aria-label="3 of 3 stars">★★★</div></button>
-    <button type="button" class="badge" data-i="3"><div class="art" data-art="badge-04.webp"><span>04</span></div><b>Tape to Tape</b><div class="stars" aria-label="1 of 3 stars">★<span class="off">☆☆</span></div></button>
-    <button type="button" class="badge locked" data-i="4"><div class="art" data-art="badge-05.webp"><span>05</span></div><b>Hockey Brain</b><div class="stars" aria-label="Not started"><span class="off">☆☆☆</span></div></button>
-    <button type="button" class="badge locked" data-i="5"><div class="art" data-art="badge-06.webp"><span>06</span></div><b>On a Heater</b><div class="stars" aria-label="Not started"><span class="off">☆☆☆</span></div></button>
-    <button type="button" class="badge locked" data-i="6"><div class="art" data-art="badge-07.webp"><span>07</span></div><b>Full Week</b><div class="stars" aria-label="Not started"><span class="off">☆☆☆</span></div></button>
-    <button type="button" class="badge locked" data-i="7"><div class="art" data-art="badge-08.webp"><span>08</span></div><b>Hype Squad</b><div class="stars" aria-label="Not started"><span class="off">☆☆☆</span></div></button>
+    <button type="button" aria-expanded="false" aria-controls="jBadgeInfo" class="badge" data-i="0"><div class="art" data-art="badge-01.webp"><span>01</span></div><b>Dangler</b><div class="stars" aria-label="2 of 3 stars">★★<span class="off">☆</span></div></button>
+    <button type="button" aria-expanded="false" aria-controls="jBadgeInfo" class="badge" data-i="1"><div class="art" data-art="badge-02.webp"><span>02</span></div><b>Sniper</b><div class="stars" aria-label="1 of 3 stars">★<span class="off">☆☆</span></div></button>
+    <button type="button" aria-expanded="false" aria-controls="jBadgeInfo" class="badge" data-i="2"><div class="art" data-art="badge-03.webp"><span>03</span></div><b>Engine</b><div class="stars" aria-label="3 of 3 stars">★★★</div></button>
+    <button type="button" aria-expanded="false" aria-controls="jBadgeInfo" class="badge" data-i="3"><div class="art" data-art="badge-04.webp"><span>04</span></div><b>Tape to Tape</b><div class="stars" aria-label="1 of 3 stars">★<span class="off">☆☆</span></div></button>
+    <button type="button" aria-expanded="false" aria-controls="jBadgeInfo" class="badge locked" data-i="4"><div class="art" data-art="badge-05.webp"><span>05</span></div><b>Hockey Brain</b><div class="stars" aria-label="Not started"><span class="off">☆☆☆</span></div></button>
+    <button type="button" aria-expanded="false" aria-controls="jBadgeInfo" class="badge locked" data-i="5"><div class="art" data-art="badge-06.webp"><span>06</span></div><b>On a Heater</b><div class="stars" aria-label="Not started"><span class="off">☆☆☆</span></div></button>
+    <button type="button" aria-expanded="false" aria-controls="jBadgeInfo" class="badge locked" data-i="6"><div class="art" data-art="badge-07.webp"><span>07</span></div><b>Full Week</b><div class="stars" aria-label="Not started"><span class="off">☆☆☆</span></div></button>
+    <button type="button" aria-expanded="false" aria-controls="jBadgeInfo" class="badge locked" data-i="7"><div class="art" data-art="badge-08.webp"><span>08</span></div><b>Hype Squad</b><div class="stars" aria-label="Not started"><span class="off">☆☆☆</span></div></button>
+    <div class="detail bdetail" id="jBadgeInfo" hidden aria-live="polite"><div class="dart"><div class="art" id="jBadgeArt"></div></div><div class="dtext"><h3 id="jBadgeName"></h3><div class="stars" id="jBadgeStars"></div><p id="jBadgeNote"></p><ul class="ladder" id="jBadgeLadder"></ul></div></div>
   </div>
-  <p class="why" id="jBadgeNote" aria-live="polite"></p>
 </section>
 
 <!-- 6 SEASON SO FAR -->
@@ -287,14 +306,13 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
 </section>
 
 <!-- MY BOOKS -->
-<section aria-labelledby="h-books" style="padding:44px 4px 8px">
+<section aria-labelledby="h-books" style="padding:48px 4px 16px">
   <p class="eyebrow">My books</p>
   <h2 id="h-books" style="font-size:22px">Every season, a new book</h2>
   <div class="shelf">
     <div class="spine current"><span>2026-27</span><i class="ribbon"></i></div>
     <div class="spine next"><span>2027-28</span></div>
   </div>
-  <p class="why" style="margin-top:12px">This season's book opens when the season ends in the spring.</p>
 </section>
 
 </main>
@@ -315,6 +333,7 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
   function xFor(n){for(var i=1;i<STOP.length;i++){var a=STOP[i-1],b=STOP[i];if(n<=b[0])return a[1]+(b[1]-a[1])*(n-a[0])/(b[0]-a[0]);}return 89;}
   function txt(id,v){var el=document.getElementById(id);if(el)el.textContent=v;}
   function render(b){
+    BOOK=b;
     txt('jSeason','Season '+b.season.label);
     txt('jTier',b.tier);
     document.getElementById('jRink').style.setProperty('--x',xFor(b.stepsDone)+'%');
@@ -322,7 +341,7 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     for(var i=0;i<tiers.length;i++){
       var t=tiers[i]; t.className=i<=b.tierIndex?'on':'off';
       var note=i<b.tierIndex||(b.complete&&i===b.tierIndex)?'Done':i===b.tierIndex?'You are here':i===b.tierIndex+1?'Next stop':'Later';
-      t.lastChild.textContent=note;
+      t.querySelector('.tnote').textContent=note;
     }
     var pips=document.getElementById('jPips'),ps=pips.children;
     for(var k=0;k<ps.length;k++){ps[k].className=k<b.stepsDone?'on':(k===b.stepsDone?'now':'');}
@@ -418,16 +437,81 @@ html.embed .glassclose{display:none}html.embed .book{padding:0 0 12px}html.embed
     });
   }
   function noteFor(g){
-    if(g.next==null)return g.name+': '+g.count+' '+g.unit+'. All 3 stars!';
+    // The badge name is the heading right above this line, so it isn't repeated.
+    if(g.next==null)return g.count+' '+g.unit+'. All 3 stars!';
     var left=g.next-g.count;
-    return g.name+': '+g.count+' '+g.unit+'. '+left+' more for star '+(g.stars+1)+'.';
+    return g.count+' '+g.unit+'. '+left+' more for star '+(g.stars+1)+'.';
+  }
+  // --- Tap a tier or a badge to see it ---------------------------------------
+  // Details open in place, under the row that was tapped (the page sits inside
+  // a full-height frame on My Season, so a pop-up sheet would open off screen).
+  var BOOK=null;
+  var TIER_NAMES=['Locker Room','Practice Ice','Game Ready','Legend'];
+  // Signed out: the same sample the page shows (Practice Ice, 4 steps, 5 days to go).
+  var SAMPLE={tierIndex:1,stepsDone:4,trainingDays:30,daysToNextStep:5,complete:false,stepDates:[]};
+  function thresholds(b){ if(b&&Array.isArray(b.stepThresholds))return b.stepThresholds; var t=[];for(var i=0;i<12;i++)t.push(3+i*8);return t; }
+  function dayName(d){ if(!d)return ''; var m=Number(d.slice(5,7)),dd=Number(d.slice(8,10)); return MON[m-1]+' '+dd; }
+  function plural(n,w){ return n+' '+w+(n===1?'':'s'); }
+  function tierLines(i,b){
+    var thr=thresholds(b), dates=b.stepDates||[];
+    var startDays=i===0?0:thr[i*3-1], endDays=thr[i*3+2];
+    var reached=i===0?null:dates[i*3-1], cleared=dates[i*3+2];
+    var done=i<b.tierIndex||(b.complete&&i===b.tierIndex);
+    if(done){
+      var l=['Done!'];
+      if(i===0) l.push(cleared?'You started here and cleared it on '+dayName(cleared)+'.':'You started here and cleared it.');
+      else l.push((reached?'You got here on '+dayName(reached):'You got here')+(cleared?' and cleared it on '+dayName(cleared)+'.':' and cleared it.'));
+      l.push('It took '+plural(endDays-startDays,'training day')+'.');
+      return l;
+    }
+    if(i===b.tierIndex){
+      var step=(b.stepsDone%3)+1;
+      return ['You are here. Step '+step+' of 3.',
+        (i>0&&reached?'You got here on '+dayName(reached)+'. ':'')+plural(b.daysToNextStep,'more training day')+' to the next step.'];
+    }
+    var left=Math.max(0,startDays-b.trainingDays);
+    return [i===b.tierIndex+1?'Next stop.':'Later this season.',
+      'You get here at '+plural(startDays,'training day')+'. You\u2019re at '+b.trainingDays+', so '+left+' to go.'];
+  }
+  function closeDetail(panel,btns){ panel.hidden=true; btns.forEach(function(x){x.setAttribute('aria-expanded','false');}); }
+  document.getElementById('jTiers').addEventListener('click',function(e){
+    var btn=e.target.closest('.tierbtn'); if(!btn)return;
+    var panel=document.getElementById('jTierInfo'), btns=Array.prototype.slice.call(document.querySelectorAll('#jTiers .tierbtn'));
+    if(btn.getAttribute('aria-expanded')==='true'){ closeDetail(panel,btns); return; }
+    var i=Number(btn.getAttribute('data-t')), b=BOOK||SAMPLE;
+    var art=btn.querySelector('.art').cloneNode(true);
+    panel.innerHTML='';
+    var da=document.createElement('div'); da.className='dart'; da.appendChild(art);
+    var dt=document.createElement('div'); dt.className='dtext';
+    var h=document.createElement('h3'); h.textContent=TIER_NAMES[i]; dt.appendChild(h);
+    tierLines(i,b).forEach(function(line){ var pp=document.createElement('p'); pp.textContent=line; dt.appendChild(pp); });
+    panel.appendChild(da); panel.appendChild(dt); panel.hidden=false;
+    btns.forEach(function(x){x.setAttribute('aria-expanded',x===btn?'true':'false');});
+  });
+  function ladderHtml(g){
+    return g.thresholds.map(function(t,k){
+      var got=g.count>=t;
+      return '<li class="'+(got?'got':'')+'"><span class="st" aria-hidden="true">'+(got?'\u2605':'\u2606')+'</span>'+
+        '<span>Star '+(k+1)+': '+t+' '+g.unit+'</span><em>'+(got?'\u2713 Done':(t-g.count)+' to go')+'</em></li>';
+    }).join('');
   }
   document.getElementById('jBadges').addEventListener('click',function(e){
     var el=e.target.closest('.badge'); if(!el)return;
     ackBadge(el);
-    document.querySelectorAll('#jBadges .badge').forEach(function(x){x.setAttribute('aria-pressed',x===el?'true':'false');});
-    var g=BADGES&&BADGES[Number(el.getAttribute('data-i'))];
-    txt('jBadgeNote',g?noteFor(g):el.querySelector('b').textContent+': sign in to see your count.');
+    var panel=document.getElementById('jBadgeInfo'), btns=Array.prototype.slice.call(document.querySelectorAll('#jBadges .badge'));
+    if(el.getAttribute('aria-expanded')==='true'){ closeDetail(panel,btns); btns.forEach(function(x){x.setAttribute('aria-pressed','false');}); return; }
+    btns.forEach(function(x){x.setAttribute('aria-pressed',x===el?'true':'false');x.setAttribute('aria-expanded',x===el?'true':'false');});
+    var i=Number(el.getAttribute('data-i')), g=BADGES&&BADGES[i];
+    // Open under the row the badge is in (4 per row).
+    btns[Math.min(btns.length-1,Math.floor(i/4)*4+3)].after(panel);
+    var art=document.getElementById('jBadgeArt'), src=el.querySelector('.art');
+    art.innerHTML=src.innerHTML; art.className=src.className; art.setAttribute('aria-hidden','true');
+    txt('jBadgeName',el.querySelector('b').textContent);
+    var st=document.getElementById('jBadgeStars'); st.innerHTML=el.querySelector('.stars').innerHTML;
+    st.setAttribute('aria-label',el.querySelector('.stars').getAttribute('aria-label'));
+    txt('jBadgeNote',g?noteFor(g):'Sign in to see your count.');
+    document.getElementById('jBadgeLadder').innerHTML=g&&Array.isArray(g.thresholds)?ladderHtml(g):'';
+    panel.hidden=false;
   });
   fetch('/api/board?action=journey',{credentials:'same-origin',cache:'no-store'})
     .then(function(r){return r.ok?r.json():null;})

@@ -94,3 +94,12 @@ describe('journeyFor', () => {
     expect(j.months).toEqual([{ month: '2026-09', days: 0 }]);
   });
 });
+
+describe('journeyFor step dates', () => {
+  it('gives the date each step was reached, null when not yet', async () => {
+    const days = Array.from({ length: 12 }, (_, i) => `2026-09-${String(i + 1).padStart(2, '0')}`);
+    const j = journeyFor(days, '2026-10-01');
+    expect(j.stepThresholds).toEqual(STEP_THRESHOLDS);
+    expect(j.stepDates.slice(0, 3)).toEqual(['2026-09-03', '2026-09-11', null]);
+  });
+});
