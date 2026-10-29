@@ -128,6 +128,17 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
         <button id="retireGo" type="button" disabled>Delete player photos</button>
       </div>
     </div>
+    <div class="retire" id="orphans">
+      <h2>Clean up old photo files</h2>
+      <p class="sub">Before the photo fix, replacing a photo left the old file in storage. This finds files no current player photo uses and deletes only those. Photos in use are never touched.</p>
+      <button id="orphanCheck" type="button">Find old photo files</button>
+      <div id="orphanMsg" class="msg"></div>
+      <div id="orphanConfirm" hidden>
+        <label for="orphanPhrase">Type <b>DELETE ORPHANED PHOTOS</b> to confirm</label>
+        <input id="orphanPhrase" type="text" autocomplete="off" spellcheck="false">
+        <button id="orphanGo" type="button" disabled>Delete old photo files</button>
+      </div>
+    </div>
   </div>
 </div>
 <script>
@@ -459,6 +470,34 @@ h1{font-family:'Archivo Black',system-ui,sans-serif;font-size:26px;margin:0 0 4p
       rConfirm.hidden=true;
       rMsg.textContent='Deleted stored data for '+x.j.deleted+' players. Player photos are gone.';
     }).catch(function(){ rMsg.textContent='Could not reach the server. Check again before retrying.'; });
+  });
+
+  // Clean up orphaned photo files. Same shape as retire: a dry run lists the
+  // files first, and the delete needs the exact phrase (checked again server-side).
+  var OPHRASE='DELETE ORPHANED PHOTOS';
+  var oCheck=document.getElementById('orphanCheck'), oMsg=document.getElementById('orphanMsg'),
+      oConfirm=document.getElementById('orphanConfirm'), oPhrase=document.getElementById('orphanPhrase'),
+      oGo=document.getElementById('orphanGo');
+  if(oCheck) oCheck.addEventListener('click',function(){
+    if(!token){ oMsg.textContent='Sign in first.'; return; }
+    oMsg.textContent='Checking...'; oConfirm.hidden=true;
+    retireCall({orphans:true}).then(function(x){
+      if(!x.ok){ oMsg.textContent='Could not check ('+x.status+'): '+((x.j&&x.j.error)||'error'); return; }
+      if(!x.j.count){ oMsg.textContent='No old photo files. Nothing to delete ('+x.j.scanned+' files checked).'; return; }
+      oMsg.textContent=x.j.count+' old photo files are not used by any player ('+x.j.scanned+' files checked): '+
+        x.j.orphans.map(function(o){ return esc(o.pathname); }).join(', ')+'.';
+      oPhrase.value=''; oGo.disabled=true; oConfirm.hidden=false;
+    }).catch(function(){ oMsg.textContent='Could not reach the server.'; });
+  });
+  if(oPhrase) oPhrase.addEventListener('input',function(){ oGo.disabled = oPhrase.value!==OPHRASE; });
+  if(oGo) oGo.addEventListener('click',function(){
+    if(oPhrase.value!==OPHRASE) return;
+    oGo.disabled=true; oMsg.textContent='Deleting...';
+    retireCall({orphans:true,confirm:OPHRASE}).then(function(x){
+      if(!x.ok || x.j.dryRun){ oMsg.textContent='Nothing was deleted ('+x.status+'): '+((x.j&&x.j.error)||'confirm phrase not accepted'); return; }
+      oConfirm.hidden=true;
+      oMsg.textContent='Deleted '+x.j.deleted+' old photo files.';
+    }).catch(function(){ oMsg.textContent='Could not reach the server. Check again before retrying.'; });
   });
 })();
 </script>

@@ -159,3 +159,83 @@ describe('2. the photo upload token lives 1 hour', () => {
     vi.useRealTimers();
   });
 });
+
+describe('3. admin sweep of orphaned photo files (photos/ prefix)', () => {
+  const blob = (pathname) => ({ pathname, url: `https://blob.example/${pathname}`, size: 100, uploadedAt: '2026-09-01T00:00:00.000Z' });
+  function seedStorage() {
+    // Current records: lewie (on a team) and ghost (left every team, record kept).
+    fake.map.set('photo:lewie', { url: 'https://blob.example/photos/live-lewie.jpeg', key: 'photos/live-lewie.jpeg', updatedAt: 1 });
+    fake.map.set('photo:ghost', { url: 'https://blob.example/photos/live-ghost.png', key: 'photos/live-ghost.png', updatedAt: 1 });
+    // A photo OTP record shares the word "photo" but is not a photo record.
+    fake.map.set('otp:photo:lewie:parent@family.example', { codeHash: 'x', expiresAt: 0, attempts: 0 });
+    blobList.mockImplementation(async ({ cursor } = {}) => (cursor
+      ? { blobs: [blob('photos/old-2.jpeg')], hasMore: false }
+      : { blobs: [blob('photos/live-lewie.jpeg'), blob('photos/old-1.jpeg'), blob('photos/live-ghost.png')], hasMore: true, cursor: 'p2' }));
+  }
+  const ADMIN = bearer('admin-test-token');
+
+  it('dry run by default: lists only unreferenced files and deletes nothing', async () => {
+    seedStorage();
+    const res = makeRes();
+    await remove(post({ orphans: true }, ADMIN), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.dryRun).toBe(true);
+    expect(res.body.deleted).toBe(0);
+    expect(res.body.scanned).toBe(4);
+    expect(res.body.count).toBe(2);
+    expect(res.body.orphans.map((o) => o.pathname).sort()).toEqual(['photos/old-1.jpeg', 'photos/old-2.jpeg']);
+    expect(blobDel).not.toHaveBeenCalled();
+    expect(blobList.mock.calls[0][0].prefix).toBe('photos/');
+  });
+
+  it('a wrong confirm phrase is still a dry run', async () => {
+    seedStorage();
+    const res = makeRes();
+    await remove(post({ orphans: true, confirm: 'yes' }, ADMIN), res);
+    expect(res.body.dryRun).toBe(true);
+    expect(blobDel).not.toHaveBeenCalled();
+  });
+
+  it('the exact confirm phrase deletes only the orphans, never a referenced image', async () => {
+    seedStorage();
+    const res = makeRes();
+    await remove(post({ orphans: true, confirm: 'DELETE ORPHANED PHOTOS' }, ADMIN), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.dryRun).toBe(false);
+    expect(res.body.deleted).toBe(2);
+    const deletedUrls = blobDel.mock.calls.flatMap((c) => c[0]);
+    expect(deletedUrls.sort()).toEqual(['https://blob.example/photos/old-1.jpeg', 'https://blob.example/photos/old-2.jpeg']);
+    expect(deletedUrls.some((u) => u.includes('live-'))).toBe(false);
+    expect(await store.getPhoto(getKv(), 'lewie')).toBeTruthy();
+    expect(await store.getPhoto(getKv(), 'ghost')).toBeTruthy();
+  });
+
+  it('a non-admin is refused before storage is listed (no key, or a parent upload token)', async () => {
+    seedStorage();
+    const t = await verifiedToken('lewie');
+    for (const req of [
+      post({ orphans: true, confirm: 'DELETE ORPHANED PHOTOS' }),
+      post({ orphans: true, confirm: 'DELETE ORPHANED PHOTOS' }, bearer(t)),
+    ]) {
+      const res = makeRes();
+      await remove(req, res);
+      expect(res.statusCode).toBe(401);
+    }
+    expect(blobList).not.toHaveBeenCalled();
+    expect(blobDel).not.toHaveBeenCalled();
+  });
+
+  it('if the records cannot be read, it stops with a 500 and deletes nothing', async () => {
+    seedStorage();
+    const realScan = fake.scan;
+    fake.scan = async () => { throw new Error('kv down'); };
+    try {
+      const res = makeRes();
+      await remove(post({ orphans: true, confirm: 'DELETE ORPHANED PHOTOS' }, ADMIN), res);
+      expect(res.statusCode).toBe(500);
+      expect(blobDel).not.toHaveBeenCalled();
+    } finally {
+      fake.scan = realScan;
+    }
+  });
+});

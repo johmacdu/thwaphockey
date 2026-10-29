@@ -108,6 +108,16 @@ export class FakeRedis {
     return list.slice(start, end);
   }
 
+  // Upstash-style scan(cursor, { match, count }) -> [nextCursor, keys]. Returns
+  // every live matching key in one page ('0' = done). Only '*' globs are used.
+  // eslint-disable-next-line require-await
+  async scan(cursor, opts = {}) {
+    const pat = String(opts.match || '*').split('*').map((p) => p.replace(/[.+?^${}()|[\]\\]/g, '\\$&')).join('.*');
+    const re = new RegExp(`^${pat}$`);
+    const keys = [...this.map.keys()].filter((k) => this._live(k) && re.test(k));
+    return ['0', keys];
+  }
+
   // Test helper: seed a key directly.
   _seed(key, value) {
     this.map.set(key, value);
