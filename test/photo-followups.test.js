@@ -127,3 +127,35 @@ describe('1. removing a photo withdraws its photo consent, not sign-in consent',
     expect(await store.getConsent(getKv(), 'lewie')).toBeTruthy();
   });
 });
+
+describe('2. the photo upload token lives 1 hour', () => {
+  it('TOKEN_TTL_MS is one hour', () => {
+    expect(store.TOKEN_TTL_MS).toBe(60 * 60 * 1000);
+  });
+
+  it('verifyToken accepts a token before 1 hour and rejects it after', () => {
+    const t0 = Date.UTC(2026, 9, 1, 12, 0, 0);
+    const t = store.mintToken('lewie', t0);
+    expect(store.verifyToken(t, t0 + 59 * 60 * 1000)).toBe('lewie');
+    expect(store.verifyToken(t, t0 + 60 * 60 * 1000 + 1)).toBeNull();
+    expect(store.verifyToken(t, t0 + 24 * 60 * 60 * 1000)).toBeNull();
+  });
+
+  it('upload takes the token at 59 minutes and refuses it after 1 hour', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(Date.UTC(2026, 9, 1, 12, 0, 0));
+    const t = await verifiedToken('lewie');
+    vi.setSystemTime(Date.UTC(2026, 9, 1, 12, 59, 0));
+    let res = makeRes();
+    await upload(post({ playerId: 'lewie', imageData: JPEG_URL }, bearer(t)), res);
+    expect(res.statusCode).toBe(200);
+    vi.setSystemTime(Date.UTC(2026, 9, 1, 13, 0, 1));
+    res = makeRes();
+    await upload(post({ playerId: 'lewie', imageData: JPEG_URL }, bearer(t)), res);
+    expect(res.statusCode).toBe(401);
+    res = makeRes();
+    await remove(post({ playerId: 'lewie' }, bearer(t)), res);
+    expect(res.statusCode).toBe(401);
+    vi.useRealTimers();
+  });
+});

@@ -22,8 +22,9 @@ a deletion/privacy notice.
    email to get a code."
 3. Parent enters email. Server emails a 6-digit code (10-minute expiry).
 4. Parent enters the code. On success the server issues a short-lived,
-   player-scoped upload token (parent stays "verified" on this device for a
-   bounded window, e.g. 30 days, so they are not re-coding every edit).
+   player-scoped upload token that lasts 1 hour. If it runs out mid-edit the
+   parent is asked for a new code ("Your photo code ran out") and the same
+   photo is sent once they verify.
 5. Parent picks a photo (native file input; on phone/tablet the OS offers
    camera or library). Browser crops to the card ratio and downscales BEFORE
    upload (same as today's local path).
@@ -40,8 +41,11 @@ Server (Upstash Redis + object storage for the image blob):
   deletion contact; do not store raw email if a hash suffices for re-verify).
   DECISION NEEDED: store raw email (to send deletion confirmations) vs hash only.
 - `otp:<email>` -> { codeHash, expiresAt, attempts } (transient, 10-min TTL).
-- `consent:<playerId>` -> { emailHash, grantedAt } (the consent record COPPA
-  wants: who consented, when).
+- `photoConsent:<playerId>` -> { method, emailHash, grantedAt } (the PHOTO
+  consent record COPPA wants: who consented, when). Separate from the sign-in
+  consent (`consent:<playerId>`, api/login.js). Removing the photo deletes the
+  photo consent, so the old upload token stops working too; sign-in consent is
+  never touched.
 Client (unchanged from today, as a cache): the last-seen photo in localStorage
 so the card renders instantly offline.
 
