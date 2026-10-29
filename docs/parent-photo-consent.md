@@ -1,5 +1,15 @@
 # Thwap Hockey - Parent-Gated Player Photo (design)
 
+> **Uploads retired (2026-10-29).** Players use their drawn character now, so
+> no path can save a player photo any more: `api/photo/upload.js` (parent
+> upload) and `api/photo/admin-put.js` (admin upload) were deleted, along with
+> the card photo button, the admin "Add photo" panel and both background
+> removal clients. Only deletion remains: `api/photo/remove.js` (parent delete
+> with a verified code, admin "Retire player photos" and the orphan cleanup) and
+> `api/photo/get.js` for reading what is still stored. `api/photo/request-code.js`
+> and `api/photo/verify.js` stay because the parent delete needs the token that
+> verify mints. The design below is kept as history.
+
 Status: approved to build (Woody, 2026-09-18). Email OTP chosen over SMS.
 
 ## Goal
