@@ -10,22 +10,68 @@
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
 		50379B232058CBB4000EE86E /* capacitor.config.json in Resources */ = {isa = PBXBuildFile; fileRef = 50379B222058CBB4000EE86E /* capacitor.config.json */; };
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
-		E725B2E1240D102F1F117428 /* AppIconPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC2A701977840652D4060655 /* AppIconPlugin.swift */; };
-		69D3521BC1F21040FDEF8AF2 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CD0DD360C755F34E4C8C8E9 /* MainViewController.swift */; };
 		504EC30D1FED79650016851F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30B1FED79650016851F /* Main.storyboard */; };
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
+		69D3521BC1F21040FDEF8AF2 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CD0DD360C755F34E4C8C8E9 /* MainViewController.swift */; };
 		A084ECDBA7D38E1E42DFC39D /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */; };
+		D32686B992220937C410C479 /* ThwapWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 99FBD03D7C59B48700022D36 /* ThwapWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		E725B2E1240D102F1F117428 /* AppIconPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC2A701977840652D4060655 /* AppIconPlugin.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		5FD90BC592C1BAEB07825464 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3EBB6791BDD9AC622B6408B3 /* ThwapWatch.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = C315DFBCF108054F4F5D6817;
+			remoteInfo = Subproject;
+		};
+		7E811EBB668C687D07E4F21B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3EBB6791BDD9AC622B6408B3 /* ThwapWatch.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 859EF85033BE366A08A21DAE;
+			remoteInfo = ThwapWatch;
+		};
+		C4EAED236F448FCDDC7914CC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3EBB6791BDD9AC622B6408B3 /* ThwapWatch.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 35618CC02FDB0FAF717A55F7;
+			remoteInfo = Subproject;
+		};
+		C6D84B4128300F487F0CDAF7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3EBB6791BDD9AC622B6408B3 /* ThwapWatch.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 688B8F6478D125D19CC61B30;
+			remoteInfo = Subproject;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		5FCD92BF305EFD765E785474 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				D32686B992220937C410C479 /* ThwapWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		0CD0DD360C755F34E4C8C8E9 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
+		3EBB6791BDD9AC622B6408B3 /* ThwapWatch.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = ThwapWatch.xcodeproj; path = ../ThwapWatch/ThwapWatch.xcodeproj; sourceTree = "<group>"; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
 		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		504EC3071FED79650016851F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		CC2A701977840652D4060655 /* AppIconPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconPlugin.swift; sourceTree = "<group>"; };
-		0CD0DD360C755F34E4C8C8E9 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
 		504EC30C1FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		504EC30E1FED79650016851F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -33,6 +79,7 @@
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
 		AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.release.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.release.xcconfig"; sourceTree = "<group>"; };
+		CC2A701977840652D4060655 /* AppIconPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconPlugin.swift; sourceTree = "<group>"; };
 		FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.debug.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -63,6 +110,7 @@
 				504EC3051FED79650016851F /* Products */,
 				7F8756D8B27F46E3366F6CEA /* Pods */,
 				27E2DDA53C4D2A4D1A88CE4A /* Frameworks */,
+				3EBB6791BDD9AC622B6408B3 /* ThwapWatch.xcodeproj */,
 			);
 			sourceTree = "<group>";
 		};
@@ -70,6 +118,9 @@
 			isa = PBXGroup;
 			children = (
 				504EC3041FED79650016851F /* App.app */,
+				6388CE4C4EB57C7CD8FDDBCB /* ThwapComplication.appex */,
+				99FBD03D7C59B48700022D36 /* ThwapWatch.app */,
+				743AA962C6D09EEC0D80D693 /* ThwapWatchTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -111,11 +162,13 @@
 				504EC3001FED79650016851F /* Sources */,
 				504EC3011FED79650016851F /* Frameworks */,
 				504EC3021FED79650016851F /* Resources */,
+				5FCD92BF305EFD765E785474 /* Embed Watch Content */,
 				9592DBEFFC6D2A0C8D5DEB22 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				C41DD431AD709B6D6CC79E28 /* PBXTargetDependency */,
 			);
 			name = App;
 			productName = App;
@@ -147,16 +200,44 @@
 				Base,
 			);
 			mainGroup = 504EC2FB1FED79650016851F;
-			packageReferences = (
-			);
 			productRefGroup = 504EC3051FED79650016851F /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 504EC3051FED79650016851F /* Products */;
+					ProjectRef = 3EBB6791BDD9AC622B6408B3 /* ThwapWatch.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				504EC3031FED79650016851F /* App */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		6388CE4C4EB57C7CD8FDDBCB /* ThwapComplication.appex */ = {
+			isa = PBXReferenceProxy;
+			fileType = "wrapper.app-extension";
+			path = ThwapComplication.appex;
+			remoteRef = C4EAED236F448FCDDC7914CC /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		743AA962C6D09EEC0D80D693 /* ThwapWatchTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = ThwapWatchTests.xctest;
+			remoteRef = 5FD90BC592C1BAEB07825464 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		99FBD03D7C59B48700022D36 /* ThwapWatch.app */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.application;
+			path = ThwapWatch.app;
+			remoteRef = C6D84B4128300F487F0CDAF7 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		504EC3021FED79650016851F /* Resources */ = {
@@ -222,6 +303,14 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		C41DD431AD709B6D6CC79E28 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = ThwapWatch;
+			targetProxy = 7E811EBB668C687D07E4F21B /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		504EC30B1FED79650016851F /* Main.storyboard */ = {
