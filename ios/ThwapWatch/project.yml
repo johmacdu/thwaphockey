@@ -1,8 +1,10 @@
 # XcodeGen spec for the standalone Thwap Apple Watch app.
 # Regenerate the project after editing:  cd ios/ThwapWatch && xcodegen generate
 #
-# This is a SIBLING project to the Capacitor app (ios/App). It does not touch
-# ios/App/App.xcodeproj, its Pods, or the iOS App target's build settings.
+# This is a SIBLING project to the Capacitor app (ios/App). ios/App/App.xcodeproj
+# references it as a subproject and embeds the ThwapWatch target's product in
+# App.app/Watch. Keep the ThwapWatch target name stable: the App project points
+# at it by XcodeGen's deterministic target id.
 name: ThwapWatch
 options:
   bundleIdPrefix: com.thwaphockey.app
@@ -12,7 +14,11 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    MARKETING_VERSION: "0.1.0"
+    # Must equal the iPhone app's MARKETING_VERSION and CURRENT_PROJECT_VERSION
+    # (ios/App/App.xcodeproj). App Store Connect rejects an upload whose
+    # embedded watch app has a different version or build number.
+    # ios/scripts/embed-watch.rb checks this.
+    MARKETING_VERSION: "1.0"
     CURRENT_PROJECT_VERSION: "1"
     CODE_SIGN_STYLE: Automatic
     DEVELOPMENT_TEAM: ""
@@ -46,6 +52,9 @@ targets:
         INFOPLIST_KEY_WKCompanionAppBundleIdentifier: com.thwaphockey.app
         TARGETED_DEVICE_FAMILY: "4"
         ENABLE_PREVIEWS: YES
+        # The watch app ships inside the iPhone app (App.app/Watch), so an
+        # archive of the App scheme must not also install it at the top level.
+        SKIP_INSTALL: YES
   ThwapComplication:
     type: app-extension
     platform: watchOS
