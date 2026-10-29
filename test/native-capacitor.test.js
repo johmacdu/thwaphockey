@@ -49,7 +49,7 @@ describe('Role-aware bottom tab bar', () => {
     const labels = btns.map((b) => b.querySelector('.tabbar-lab').textContent);
     expect(labels).toEqual(['Train', 'My Season', 'Team', 'Standings', 'Profile']);
     const hrefs = btns.map((b) => b.getAttribute('href'));
-    expect(hrefs).toEqual(['#home', '#stickers', '#roster', '#progress', '#profile']);
+    expect(hrefs).toEqual(['#home', '#myseason', '#roster', '#progress', '#profile']);
   });
 
   it('coach tabs are Train / Team / Plan / Standings / Profile, landing on the dashboard', () => {

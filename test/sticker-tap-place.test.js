@@ -41,7 +41,7 @@ describe('Sticker tap-to-place behavior', () => {
   function boot() {
     const store = { bfPlayer: 'Lewie' };
     const dom = new JSDOM(html, {
-      runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://x/#stickers',
+      runScripts: 'dangerously', pretendToBeVisual: true, url: 'https://x/#myseason',
       beforeParse(w) {
         w.HTMLMediaElement.prototype.play = () => Promise.resolve();
         w.HTMLMediaElement.prototype.pause = () => {};
