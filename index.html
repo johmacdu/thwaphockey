@@ -4206,7 +4206,7 @@ window.addEventListener('hashchange',function(){ if(location.hash===''||location
       var meta=document.getElementById('pngMeta');
       if(meta){ var b=[MON[dt.getMonth()]+' '+dt.getDate()]; if(g.time) b.push(ftime(g.time)); if(g.place) b.push(g.place); meta.textContent=b.join(' | '); }
       var cnt=document.getElementById('pngCount'), dn=document.getElementById('pngDays');
-      if(cnt&&dn&&days>=0){ dn.textContent=days===0?'today':days; cnt.querySelector('span').textContent=days===0?'':'days'; cnt.hidden=false; }
+      if(cnt&&dn&&days>=0){ dn.textContent=days===0?'today':days; cnt.querySelector('span').textContent=days===0?'':(days===1?'day':'days'); cnt.hidden=false; }
       renderPicks((state&&state.goals)||[]);
       /* Within the window: prompt to set goals (or, once the game has passed, to log them).
          Once this game's goals are set, the done-state below wins regardless. */
@@ -5080,7 +5080,7 @@ function voicePickerHTML(){
     if(isUnlocked(v)){
       return "<button type=\"button\" class=\"vopt"+(v.code===curV.code?' on':'')+"\" data-voice=\""+v.code+"\" role=\"menuitemradio\">"+(v.emoji?"<span class=\"vopt-emoji\">"+v.emoji+"</span> ":'')+esc(v.label)+"</button>";
     }
-    return "<span class=\"vopt locked\">\uD83D\uDD12 "+esc(v.label)+", unlocks in "+thwapDaysToUnlock(v)+" days</span>";
+    return "<span class=\"vopt locked\">\uD83D\uDD12 "+esc(v.label)+", unlocks in "+thwapDaysToUnlock(v)+(thwapDaysToUnlock(v)===1?" day":" days")+"</span>";
   }).join('');
   return "<div class='vpick'>"+
     "<p class='vmadlib'>Sass talks with a <button type=\"button\" class=\"pos-word vword\" aria-haspopup=\"true\" aria-expanded=\"false\">"+esc(curV.label)+"</button> accent.</p>"+
@@ -6305,7 +6305,7 @@ function buildThemePicker(){
         b.addEventListener('click',function(e){ e.stopPropagation(); if(t===cb2Theme(slug)) return; cb2SetTheme(slug,t); dirty=true; setSave(); buildFaces(); renderSwatches(); });
       } else {
         /* locked: show the milestone so a kid knows how to earn it */
-        b.setAttribute('aria-label', t+', locked. Earn '+(need||'?')+' stickers to unlock');
+        b.setAttribute('aria-label', t+', locked. Earn '+(need||'?')+(need===1?' sticker':' stickers')+' to unlock');
         if(need){ var lab=document.createElement('span'); lab.className='cardsw-need'; lab.textContent=need+'\u2B50'; b.appendChild(lab); }
         b.addEventListener('click',function(e){ e.stopPropagation(); });
       }
@@ -6354,7 +6354,7 @@ function wirePhotoButton(slug){
 }
 function disc(icon,label,days,top){  return "<div class='cb-disc'>"+
     "<div class='cb-disc-top'><span class='cb-disc-name'>"+icon+" "+label+"</span>"+
-    "<span class='cb-disc-days'><img class='cb-fire' src='login/flame.webp' alt=''> "+days+" days</span></div>"+
+    "<span class='cb-disc-days'><img class='cb-fire' src='login/flame.webp' alt=''> "+days+(Number(days)===1?" day":" days")+"</span></div>"+
     "<div class='cb-disc-most'>Most: "+top+"</div></div>";
 }
 function stickerStrip(){
