@@ -731,7 +731,7 @@
       // Stance tiles: the whole body, small enough to fit the tile.
       ".lk-mini.pose{width:64px;height:84px}.lk-mini.pose .av-wrap{font-size:2px}"+
       ".lk-mini.pose .av-scene{bottom:6px;transform:rotateX(-8deg) rotateY(var(--av-face,-25deg))}"+
-      ".lk-toast .lk-mini{flex:none;width:44px;height:52px}.lk-toast .lk-mini.pose .av-wrap{font-size:1.3px}"+
+      ".lk-toast .lk-mini{flex:none;width:48px;height:60px}.lk-toast .lk-mini.pose .av-wrap{font-size:1.5px}.lk-toast .lk-mini.pose.back .av-scene{transform:rotateX(-8deg) rotateY(150deg)}"+
       ".lk-lbl{font-size:13px;font-weight:800;text-align:center;line-height:1.15}"+
       ".lk-sub{font-size:11px;color:var(--muted,#5F6F64);text-align:center;line-height:1.2}"+
       ".lk-item.locked .lk-sw{opacity:.45}"+
@@ -745,10 +745,10 @@
       ".lk-back{min-height:52px;padding:0 20px;border-radius:26px;border:1px solid var(--line,#DCE5DE);background:var(--card,#fff);color:var(--text,#15221B);font-weight:800;cursor:pointer}"+
       ".lk-new{position:absolute;top:6px;left:6px;font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:8px;background:var(--lime,#B9F06B);color:#15221B}"+
       ".lk-dot{display:inline-block;vertical-align:middle;width:10px;height:10px;border-radius:50%;background:var(--lime,#B9F06B);margin-left:8px;box-shadow:0 0 0 2px var(--card,#fff)}"+
-      ".lk-toast{position:fixed;left:50%;bottom:24px;z-index:10000;transform:translateX(-50%);min-height:56px;max-width:min(92vw,420px);display:flex;align-items:center;gap:12px;padding:8px 18px 8px 10px;border-radius:28px;border:2px solid var(--lime,#B9F06B);background:var(--card,#fff);color:var(--text,#15221B);font:inherit;font-weight:900;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.25)}"+
-      ".lk-toast .lk-sw{flex:none}.lk-letter-sw{display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;background:#C8102E;color:#fff}.lk-toast small{display:block;font-weight:700;font-size:12px;color:var(--muted,#5F6F64)}"+
+      ".lk-toast{position:fixed;left:50%;bottom:24px;z-index:10000;transform:translateX(-50%);min-height:64px;width:max-content;max-width:min(calc(100vw - 32px),420px);display:flex;align-items:center;gap:12px;padding:10px 18px 10px 10px;border-radius:24px;border:2px solid var(--lime,#B9F06B);background:var(--card,#fff);color:var(--text,#15221B);font:inherit;font-weight:900;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.25)}"+
+      ".lk-toast .lk-sw{flex:none}.lk-letter-sw{display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;background:#C8102E;color:#fff}.lk-tbody{display:flex;flex-direction:column;text-align:left;min-width:0}.lk-tk{font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--muted,#5F6F64)}.lk-tt{font-size:17px;font-weight:800;line-height:1.2}.lk-toast small{display:block;font-weight:600;font-size:14px;line-height:1.3;text-wrap:pretty;color:var(--muted,#5F6F64)}"+
       "@media (prefers-reduced-motion:no-preference){.lk-stage .av-scene{transition:transform .25s ease}"+
-        ".lk-toast{animation:lkUp .3s ease-out}@keyframes lkUp{from{transform:translate(-50%,24px);opacity:0}to{transform:translate(-50%,0);opacity:1}}"+
+        ".lk-toast{animation:lkSlap .42s cubic-bezier(.2,.9,.3,1.2)}@keyframes lkSlap{0%{transform:translate(-50%,24px) scale(.9) rotate(-5deg);opacity:0}60%{transform:translate(-50%,0) scale(1.04) rotate(1deg);opacity:1}100%{transform:translate(-50%,0) scale(1) rotate(0)}}"+
         ".av-reveal .av-scene{animation:avDrop .35s cubic-bezier(.2,.9,.3,1.2)}@keyframes avDrop{from{translate:0 -6em;opacity:0}to{translate:0 0;opacity:1}}}";
   }
 
@@ -1003,8 +1003,32 @@
   // After a drill is marked done, ask the server what is unlocked now. Anything
   // not seen on this device before gets a short "New gear!" moment that never
   // blocks the next tap, a New tag in the My Player, and a dot on its button.
-  var toastTimer=null;
+  var toastTimer=null, TOAST_MS=8000;
   function itemName(j,id){ for(var i=0;i<(j.items||[]).length;i++) if(j.items[i].id===id) return j.items[i]; return null; }
+  // What the kid got, in their words (not "gear"): New gloves, New hair, New move.
+  var KIND={ hairstyle:'hair', hair:'hair color', skin:'skin tone', jersey:'jersey', socks:'socks', helmet:'helmet',
+    decal:'helmet decal', cage:'cage', stripe:'helmet stripe', gloves:'gloves', stick:'stick', tape:'stick tape',
+    pose:'move', celebration:'celly', hand:'shot', facing:'view' };
+  var PLURAL={ gloves:1, socks:1 };
+  function kindOf(slot){ return KIND[slot]||'item'; }
+  // Why they got it, past tense, so the reward points back at the work.
+  function earnedText(it){
+    var r=it.rule||{}, n=r.n;
+    if(r.type==='activities') return 'You finished '+n+' drill'+(n===1?'':'s')+'.';
+    if(r.type==='days') return 'You trained '+n+' day'+(n===1?'':'s')+'.';
+    if(r.type==='disc') return 'You finished '+n+' '+({stick:'Hands',shoot:'Shooting',dryland:'Dryland',netplay:'Net play',iq:'Hockey IQ',pass:'Passing'}[r.disc]||r.disc)+' drills.';
+    if(r.type==='window') return 'You trained '+n+' days over winter break.';
+    if(r.type==='coach') return 'From your coach.';
+    if(r.type==='tournament') return 'You trained '+n+' days in a tournament week.';
+    if(r.type==='journey') return 'You reached '+(['Locker Room','Practice Ice','Game Ready','Legend'][n]||'a new scene')+' on your Journey.';
+    return '';
+  }
+  // The kid's own player wearing it: hair from behind, everything else full body.
+  function toastPic(slot,look){
+    var l={}; for(var k in look) l[k]=look[k];
+    if(slot==='hairstyle'||slot==='hair') return "<span class='lk-mini pose back' aria-hidden='true'>"+html(l)+"</span>";
+    return "<span class='lk-mini pose' aria-hidden='true'>"+html(l)+"</span>";
+  }
   // Milestone moment: when the kid has a celebration (or just earned one), the
   // message shows their own player doing it, wearing the new item. It never
   // blocks a tap; reduced motion shows the end pose.
@@ -1014,36 +1038,42 @@
     var my=norm(look||{}); my[it.slot]=it.id; my.num='';
     var celly=it.slot==='celebration'?it.id:my.celebration;
     if(!CELLYS[cellyKey(celly)]) celly=null;
-    var kind=it.slot==='pose'?'move':(it.slot==='celebration'?'celly':'gear');
     var b=document.createElement('button'); b.type='button'; b.className='lk-toast'; b.setAttribute('role','status');
-    var pic0=celly?"<span class='lk-mini pose lk-tcelly' aria-hidden='true'></span>":itemPic(it.slot,short);
+    // The picture is the kid's own player wearing the new item (hair from
+    // behind), never a bare color dot that cannot say what the item is.
+    var pic0=celly?"<span class='lk-mini pose lk-tcelly' aria-hidden='true'></span>":toastPic(it.slot,my);
+    var more=count>1?(count-1)+' more in My Player.':'';
+    var eyebrow, line;
     if(it.rule && it.rule.type==='team'){
       // The team did it: everyone gets it, so say who earned it and what this kid added.
       var mine=teamWeek&&typeof teamWeek.mine==='number'?teamWeek.mine:null;
-      var add=mine>0?('You added '+mine+' drill'+(mine===1?'':'s')+'.'):'Train this week to help the team get the next one.';
-      b.innerHTML=pic0+"<span>The Rangers did it!<small>New team item: "+esc(it.label)+(count>1?' and '+(count-1)+' more':'')+". "+add+"</small></span>";
+      eyebrow='The Rangers did it!';
+      line='Team '+kindOf(it.slot)+'. '+(mine>0?('You added '+mine+' drill'+(mine===1?'':'s')+'.'):'Train this week to help the team get the next one.');
     } else {
-      b.innerHTML=pic0+"<span>New "+kind+"! "+esc(it.label)+
-        (count>1?' and '+(count-1)+' more':'')+"<small>Tap to try it on</small></span>";
+      eyebrow='New '+kindOf(it.slot);
+      line=earnedText(it);
+      line=(line?line+' ':'')+(PLURAL[it.slot]?'Tap to try them on.':'Tap to try it on.');
     }
+    if(more) line+=' '+more;
+    b.innerHTML=pic0+"<span class='lk-tbody'><span class='lk-tk'>"+esc(eyebrow)+"</span><span class='lk-tt'>"+esc(it.label)+"</span><small>"+esc(line)+"</small></span>";
     if(celly){ var pic=b.querySelector('.lk-tcelly');
       playCelly(celly,my,function(m,sx){ pic.innerHTML=m; var sc=pic.querySelector('.av-scene'); if(sc) sc.style.translate=sx?(sx+'em 0'):''; }); }
     b.addEventListener('click',function(){ b.remove(); var tb=tabFor(it.slot); if(window.thwapOpenMyPlayer) window.thwapOpenMyPlayer({tab:tb}); else openLocker({tab:tb}); });
     document.body.appendChild(b);
     try{ if(window.thwapSfx) window.thwapSfx('unlock'); }catch(_){}
     try{ if(window.thwapHaptic) window.thwapHaptic('done'); }catch(_){}
-    clearTimeout(toastTimer); toastTimer=setTimeout(function(){ if(b.parentNode) b.remove(); },5000);
+    clearTimeout(toastTimer); toastTimer=setTimeout(function(){ if(b.parentNode) b.remove(); },TOAST_MS);
   }
   // The coach gave this player the C or an A: a one-time message on this device.
   function showLetterToast(letter){
     var old=document.querySelector('.lk-toast'); if(old) old.remove();
     var b=document.createElement('button'); b.type='button'; b.className='lk-toast'; b.setAttribute('role','status');
-    b.innerHTML="<span class='lk-sw lk-letter-sw' aria-hidden='true'>"+letter+"</span><span>Coach gave you the "+letter+"!"+
+    b.innerHTML="<span class='lk-sw lk-letter-sw' aria-hidden='true'>"+letter+"</span><span class='lk-tbody'><span class='lk-tk'>New letter</span><span class='lk-tt'>Coach gave you the "+letter+"!</span>"+
       "<small>"+(letter==='C'?'You\u2019re the captain.':'You\u2019re an assistant captain.')+" It\u2019s on your jersey now.</small></span>";
     b.addEventListener('click',function(){ b.remove(); });
     document.body.appendChild(b);
     try{ if(window.thwapSfx) window.thwapSfx('unlock'); }catch(_){}
-    clearTimeout(toastTimer); toastTimer=setTimeout(function(){ if(b.parentNode) b.remove(); },5000);
+    clearTimeout(toastTimer); toastTimer=setTimeout(function(){ if(b.parentNode) b.remove(); },TOAST_MS);
   }
   // Dot on the card's Edit player button while new gear is waiting.
   var DOT_TARGETS='#cardImageBtn';
@@ -1089,7 +1119,7 @@
     if(typeof orig!=='function' || orig.__avHooked) return;
     var wrapped=function(discipline,drillId,undo){
       var p=orig.apply(this,arguments);
-      if(!undo) Promise.resolve(p).then(function(r){ if(!r || r.ok!==false) setTimeout(checkUnlocks,300); });
+      if(!undo) Promise.resolve(p).then(function(r){ if(!r || r.ok!==false) setTimeout(checkUnlocks,900); });
       return p;
     };
     wrapped.__avHooked=true;
