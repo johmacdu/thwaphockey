@@ -2423,7 +2423,13 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 <button type='button' class='segbtn' id='seasonTabStickers' data-seg='stickers' role='tab' aria-selected='false' aria-controls='stickerBook'>Stickers</button>
 </div>
 <div class='jy-embed' id='seasonJourney' role='tabpanel' aria-labelledby='seasonTabJourney'><iframe id='jyFrame' title='My Journey' loading='lazy' scrolling='no' src='journey.html?embed=1'></iframe></div>
-<script>window.addEventListener('message',function(e){ if(e.origin!==location.origin||!e.data||typeof e.data.thwapJourneyHeight!=='number') return; var f=document.getElementById('jyFrame'); if(f) f.style.height=Math.max(200,Math.min(8000,e.data.thwapJourneyHeight))+'px'; });</script>
+<script>window.addEventListener('message',function(e){ if(e.origin!==location.origin||!e.data) return; var f=document.getElementById('jyFrame'); if(!f) return;
+  if(typeof e.data.thwapJourneyHeight==='number') f.style.height=Math.max(200,Math.min(16000,e.data.thwapJourneyHeight))+'px';
+  /* The season path asks to bring the kid's own dot into view, once per load, only while the Journey tab is showing. */
+  if(typeof e.data.thwapJourneyScrollTo==='number' && f.offsetParent && !window.__thwapJourneyScrolled){ window.__thwapJourneyScrolled=true;
+    var top=f.getBoundingClientRect().top+window.scrollY+e.data.thwapJourneyScrollTo-window.innerHeight/2;
+    if(top>window.scrollY) window.scrollTo({top:top,behavior:(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)?'auto':'smooth'}); }
+});</script>
 <div class='stickerbook' id='stickerBook' role='tabpanel' aria-labelledby='seasonTabStickers' hidden>
 <div class='stickerbook-card'>
 <div class='stickerbook-head' id='stickerHead'>

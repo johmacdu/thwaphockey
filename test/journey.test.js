@@ -103,3 +103,39 @@ describe('journeyFor step dates', () => {
     expect(j.stepDates.slice(0, 3)).toEqual(['2026-09-03', '2026-09-11', null]);
   });
 });
+
+describe('season path (one dot per training day)', () => {
+  const r = (from, n) => Array.from({ length: n }, (_, i) => {
+    const d = new Date(`${from}T12:00:00Z`); d.setUTCDate(d.getUTCDate() + i); return d.toISOString().slice(0, 10);
+  });
+  it('each training day is a dot; scenes start at 19, 43 and 67', () => {
+    const j = journeyFor(r('2026-09-01', 30), '2026-09-30');
+    expect(j).toMatchObject({ dots: 30, totalDots: 91, tier: 'Practice Ice', tierIndex: 1, slips: 0, dotsToNextTier: 13 });
+    expect(j.tierDates.slice(0, 2)).toEqual(['2026-09-01', '2026-09-19']);
+    expect(journeyFor(r('2026-09-01', 18), '2026-09-18').tier).toBe('Locker Room');
+    expect(journeyFor(r('2026-09-01', 43), '2026-10-13').tier).toBe('Game Ready');
+  });
+  it('more than 4 missed days in a row costs one dot, once per run', () => {
+    // 10 days, then 6 days off, then 3 days: 10 - 1 + 3 = 12.
+    const j = journeyFor([...r('2026-09-01', 10), ...r('2026-09-17', 3)], '2026-09-20');
+    expect(j).toMatchObject({ dots: 12, slips: 1, slippedNow: false });
+    // Exactly 4 days off: no slip.
+    expect(journeyFor([...r('2026-09-01', 10), ...r('2026-09-15', 1)], '2026-09-15').slips).toBe(0);
+    // A long run still costs one dot, not one per 5 days.
+    expect(journeyFor([...r('2026-09-01', 10), ...r('2026-10-20', 1)], '2026-10-20')).toMatchObject({ dots: 10, slips: 1 });
+  });
+  it('a run of missed days still going today counts, with a warning first', () => {
+    expect(journeyFor(r('2026-09-01', 10), '2026-09-13')).toMatchObject({ dots: 10, missedInARow: 2, daysUntilSlip: 3 });
+    expect(journeyFor(r('2026-09-01', 10), '2026-09-15')).toMatchObject({ dots: 10, missedInARow: 4, daysUntilSlip: 1 });
+    expect(journeyFor(r('2026-09-01', 10), '2026-09-16')).toMatchObject({ dots: 9, slippedNow: true, daysUntilSlip: null });
+  });
+  it('never drops out of a scene once reached, and a finished path stays finished', () => {
+    const j = journeyFor(r('2026-09-01', 19), '2026-10-30');
+    expect(j).toMatchObject({ dots: 19, tier: 'Practice Ice', highestTier: 1, slippedNow: true });
+    const done = journeyFor(r('2026-09-01', 91), '2027-01-20');
+    expect(done).toMatchObject({ dots: 91, complete: true, tier: 'Legend' });
+  });
+  it('nothing slips after the season ends', () => {
+    expect(journeyFor(r('2027-03-01', 10), '2027-05-01')).toMatchObject({ slips: 0, slippedNow: false });
+  });
+});
