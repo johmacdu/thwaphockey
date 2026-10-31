@@ -75,11 +75,15 @@ public struct ErrorBody: Codable, Equatable, Sendable {
 
 // MARK: - Today (api/done.js ?view=today)
 
-/// `{ ok, date, restDay, goalie, drills:[ServerDrill] }`.
+/// `{ ok, date, restDay, bonusDay?, goalie, drills:[ServerDrill] }`. On a
+/// weekend `restDay` is true (dryland rests) and `bonusDay` is true when the
+/// web's optional Hands / third-discipline drills are in the list. An older
+/// server omits `bonusDay`.
 public struct TodayViewResponse: Codable, Equatable, Sendable {
     public var ok: Bool
     public var date: String
     public var restDay: Bool
+    public var bonusDay: Bool?
     public var goalie: Bool
     public var drills: [ServerDrill]
 }
@@ -102,6 +106,8 @@ public struct ServerDrill: Codable, Equatable, Sendable {
     public var cue: String?
     public var steps: [String]?
     public var timer: Timer?
+    /// True on a weekend bonus drill (optional, like the web's weekend reps).
+    public var bonus: Bool?
     public var done: Bool
 
     /// Fallback length for a drill the server sends without a timer: one

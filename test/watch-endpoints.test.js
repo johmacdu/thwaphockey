@@ -83,10 +83,51 @@ describe('GET /api/done?view=today', () => {
     expect(r.body.drills.filter((d) => d.done).map((d) => d.id)).toEqual(['dryland:1']);
   });
 
-  it('rest day (Saturday): restDay true and no drills', async () => {
+  it('weekend (Saturday): dryland rests, Hands and Shooting come back as bonus drills', async () => {
     at('2026-10-31');
     const r = await call(done, getAs('lewie', { view: 'today' }));
-    expect(r.body).toMatchObject({ ok: true, date: '2026-10-31', restDay: true, drills: [] });
+    expect(r.body).toMatchObject({ ok: true, date: '2026-10-31', restDay: true, bonusDay: true });
+    // The exact list the web page renders on the weekend: index.html calls these
+    // same two functions for its Hands and Shooting pages (drills-equivalence
+    // proves the page and lib/drills.js agree), with the same positional ids.
+    const di = drills.dayIndexForDate('2026-10-31');
+    const want = [
+      ...drills.stickForDay(di).map((d, i) => `stick:${i}=stick=${d.name}`),
+      ...drills.shootForDay(di, false).map((d, i) => `shoot:${i}=shoot=${d.name}`),
+    ];
+    expect(r.body.drills.map((d) => `${d.id}=${d.discipline}=${d.name}`)).toEqual(want);
+    expect(r.body.drills.length).toBeGreaterThan(0);
+    expect(r.body.drills.every((d) => d.bonus === true && d.done === false)).toBe(true);
+    expect(r.body.drills.some((d) => d.discipline === 'dryland')).toBe(false);
+  });
+
+  it('weekend (Sunday) is a bonus day too', async () => {
+    at('2026-11-01');
+    const r = await call(done, getAs('lewie', { view: 'today' }));
+    expect(r.body).toMatchObject({ restDay: true, bonusDay: true });
+    expect(new Set(r.body.drills.map((d) => d.discipline))).toEqual(new Set(['stick', 'shoot']));
+  });
+
+  it('a weekend check-off is the same record the web writes, and shows as done', async () => {
+    at('2026-10-31');
+    const m = await call(done, postAs('lewie', { player: 'lewie', discipline: 'stick', drillId: 'stick:1' }));
+    expect(m.statusCode).toBe(200);
+    const r = await call(done, getAs('lewie', { view: 'today' }));
+    expect(r.body.drills.filter((d) => d.done).map((d) => d.id)).toEqual(['stick:1']);
+  });
+
+  it('weekend goalie with Net play off: Hands only', async () => {
+    at('2026-10-31');
+    const r = await call(done, getAs('gus', { view: 'today' }));
+    expect(r.statusCode).toBe(200);
+    expect(r.body).toMatchObject({ goalie: true, restDay: true, bonusDay: true });
+    expect(new Set(r.body.drills.map((d) => d.discipline))).toEqual(new Set(['stick']));
+  });
+
+  it('weekdays carry no bonus flags', async () => {
+    const r = await call(done, getAs('lewie', { view: 'today' }));
+    expect(r.body).toMatchObject({ restDay: false, bonusDay: false });
+    expect(r.body.drills.some((d) => 'bonus' in d)).toBe(false);
   });
 
   it('works for a player on another team, and follows that team coach dryland picks', async () => {

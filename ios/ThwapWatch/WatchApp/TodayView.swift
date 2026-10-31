@@ -17,8 +17,8 @@ struct TodayView: View {
                     gameDayLink
                 }
                 if let plan = model.plan {
-                    if plan.restDay || plan.drills.isEmpty {
-                        Text("Rest day. See you Monday!")
+                    if let heading = plan.dayHeading {
+                        Text(heading)
                             .font(.system(.headline, design: .rounded).weight(.heavy))
                             .foregroundStyle(ThwapTheme.green2)
                             .padding(.vertical, 6)

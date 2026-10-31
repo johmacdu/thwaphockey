@@ -4864,22 +4864,26 @@ function timerFor(discipline, dr){
 
 /* ---- Today's whole list (the watch and GET /api/done?view=today) ----
    opts: { goalie, coachPlan, netplayEnabled }. Same drills, same order, same
-   ids the web app renders that day. A rest day (Sat/Sun) returns no drills:
-   the web's optional weekend bonus reps are not part of the watch list (v1). */
+   ids the web app renders that day. A rest day (Sat/Sun) is a dryland rest
+   only: the web still shows Hands and the third discipline as optional bonus
+   skills, so the list carries those (each flagged bonus:true) and bonusDay:true.
+   restDay stays true on weekends so an older watch build keeps its rest copy. */
 function todayList(di, opts){
   opts=opts||{};
-  var goalie=!!opts.goalie, out=[];
-  if(isRestDay(di)) return { restDay:true, drills:out };
+  var goalie=!!opts.goalie, out=[], rest=isRestDay(di);
   function add(disc, prefix, list){
     (list||[]).forEach(function(dr,i){
-      out.push({ id:prefix+':'+i, discipline:disc, name:dr.name, dose:rowSubtitle(disc, dr, goalie),
-        cue:dr.cue||'', steps:(dr.steps||[]).slice(), timer:timerFor(disc, dr) });
+      var row={ id:prefix+':'+i, discipline:disc, name:dr.name, dose:rowSubtitle(disc, dr, goalie),
+        cue:dr.cue||'', steps:(dr.steps||[]).slice(), timer:timerFor(disc, dr) };
+      if(rest) row.bonus=true;
+      out.push(row);
     });
   }
   add('stick', 'stick', stickForDay(di));
   add(thirdDiscipline(goalie), 'shoot', shootForDay(di, goalie, opts.netplayEnabled));
+  if(rest) return { restDay:true, bonusDay:out.length>0, drills:out };
   add('dryland', 'dryland', drylandForDay(di, coachDrillNames(opts.coachPlan, di, 'dryland')));
-  return { restDay:false, drills:out };
+  return { restDay:false, bonusDay:false, drills:out };
 }
 
 return {
