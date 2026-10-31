@@ -96,6 +96,7 @@ public final class LiveThwapAPI: ThwapAPI, @unchecked Sendable {
             game: goals?.gameDay == true ? goals?.game : nil,
             gameGoals: goals?.gameDay == true ? (goals?.goals ?? []) : [],
             restDay: view.restDay,
+            bonusDay: view.bonusDay ?? false,
             serverGameDay: goals?.gameDay ?? false
         )
     }

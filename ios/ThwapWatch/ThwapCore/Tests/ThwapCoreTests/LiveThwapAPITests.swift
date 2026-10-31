@@ -235,6 +235,7 @@ final class LiveThwapAPITests: XCTestCase {
     func testRestDayAndUntimedAndUnknownDiscipline() throws {
         let rest = try JSONDecoder().decode(TodayViewResponse.self, from: Fixture.raw("done-today-restday"))
         XCTAssertTrue(rest.restDay)
+        XCTAssertNil(rest.bonusDay) // an older server omits it
         XCTAssertTrue(rest.drills.isEmpty)
 
         let json = #"{"id":"iq:0","discipline":"iq","name":"Watch a shift","timer":null,"done":false}"#
@@ -242,6 +243,34 @@ final class LiveThwapAPITests: XCTestCase {
         XCTAssertEqual(d.drill?.plan, ServerDrill.untimedPlan)
         let odd = try JSONDecoder().decode(ServerDrill.self, from: Data(#"{"id":"x:0","discipline":"skating","name":"X","done":false}"#.utf8))
         XCTAssertNil(odd.drill)
+    }
+
+    func testWeekendBonusDayDecodesAndReadsAsBonusSkills() async throws {
+        let t = FakeTransport { req in
+            req.url!.path == "/api/coach" ? Fixture.response("game-goals-gameday") : Fixture.response("done-today-bonus")
+        }
+        let (api, _) = api(t)
+        let plan = try await api.todayPlan()
+        XCTAssertTrue(plan.restDay)
+        XCTAssertTrue(plan.bonusDay)
+        XCTAssertEqual(plan.drills.map(\.id), ["stick:0", "shoot:0"])
+        XCTAssertEqual(plan.dayHeading, "Bonus skills today")
+    }
+
+    func testDayHeading() {
+        let drill = Drill(id: "stick:0", discipline: .stick, name: "X", cue: "", plan: DrillPlan(sets: 1, workSeconds: 30, restSeconds: 0))
+        func plan(_ drills: [Drill], rest: Bool, bonus: Bool) -> TodayPlan {
+            TodayPlan(date: "2026-10-31", playerId: "lewie", firstName: "Lewie", drills: drills,
+                      game: nil, gameGoals: [], restDay: rest, bonusDay: bonus)
+        }
+        // weekend with bonus drills
+        XCTAssertEqual(plan([drill], rest: true, bonus: true).dayHeading, "Bonus skills today")
+        // older server: weekend, no drills
+        XCTAssertEqual(plan([], rest: true, bonus: false).dayHeading, "Rest day. See you Monday!")
+        // bonus flag with nothing in the list still reads as rest
+        XCTAssertEqual(plan([], rest: true, bonus: true).dayHeading, "Rest day. See you Monday!")
+        // a normal training day has no heading
+        XCTAssertNil(plan([drill], rest: false, bonus: false).dayHeading)
     }
 
     func testTodayPlanCombinesTodayAndGameGoals() async throws {

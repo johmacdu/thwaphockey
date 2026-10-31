@@ -190,12 +190,14 @@ public struct TodayPlan: Equatable, Sendable {
     public var game: GameEvent?
     public var gameGoals: [GameGoal]
     public var restDay: Bool
+    /// Weekend with the web's optional bonus drills in the list.
+    public var bonusDay: Bool
     /// The server's own game-day verdict (`my-game-goals` gameDay). When nil
     /// (stub, or the goals read failed) the game's date decides.
     public var serverGameDay: Bool?
 
     public init(date: String, playerId: String, firstName: String, drills: [Drill], game: GameEvent?,
-                gameGoals: [GameGoal], restDay: Bool = false, serverGameDay: Bool? = nil) {
+                gameGoals: [GameGoal], restDay: Bool = false, bonusDay: Bool = false, serverGameDay: Bool? = nil) {
         self.date = date
         self.playerId = playerId
         self.firstName = firstName
@@ -203,9 +205,22 @@ public struct TodayPlan: Equatable, Sendable {
         self.game = game
         self.gameGoals = gameGoals
         self.restDay = restDay
+        self.bonusDay = bonusDay
         self.serverGameDay = serverGameDay
     }
 
     /// Game Day Goals show only when a game or tournament covers today.
     public var isGameDay: Bool { serverGameDay ?? (game?.covers(day: date) ?? false) }
+
+    public static let bonusHeading = "Bonus skills today"
+    public static let restHeading = "Rest day. See you Monday!"
+
+    /// The line above the drill list, or nil on a normal training day. A
+    /// weekend with drills reads as bonus skills (the web's weekend sentence);
+    /// a weekend or a day with nothing to do reads as rest.
+    public var dayHeading: String? {
+        if bonusDay && !drills.isEmpty { return Self.bonusHeading }
+        if restDay || drills.isEmpty { return Self.restHeading }
+        return nil
+    }
 }
