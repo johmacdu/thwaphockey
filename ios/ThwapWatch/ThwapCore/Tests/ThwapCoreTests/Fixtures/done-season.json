@@ -15,5 +15,16 @@
   "nextTier": "Game Ready",
   "dotsToNextTier": 8,
   "dotsToFinish": 56,
-  "complete": false
+  "complete": false,
+  "step": 3,
+  "stepsDone": 5,
+  "daysToNextStep": 8,
+  "nextScene": "Game Ready",
+  "badgeStars": 17,
+  "nextStar": {
+    "id": "onaheater",
+    "name": "On a Heater",
+    "remaining": 1,
+    "unit": "day in a row"
+  }
 }

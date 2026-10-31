@@ -174,8 +174,10 @@ public struct GameGoalsResponse: Codable, Equatable, Sendable {
 // MARK: - My Season (api/done.js ?view=season)
 
 /// `{ ok, season:{key,label,start,end}, seasonOver, trainingDays, dots, totalDots,
-/// tierIndex, tier, nextTier, dotsToNextTier, dotsToFinish, complete }`, straight
-/// from lib/journey.js journeyFor, the same book journey.html shows.
+/// tierIndex, tier, nextTier, dotsToNextTier, dotsToFinish, complete, step,
+/// stepsDone, daysToNextStep, nextScene, badgeStars, nextStar }`, from
+/// lib/season_book.js, the same book and badges journey.html shows. The step
+/// and badge fields are optional so an older deploy still decodes.
 public struct SeasonResponse: Codable, Equatable, Sendable {
     public struct Season: Codable, Equatable, Sendable {
         public var key: String
@@ -197,11 +199,43 @@ public struct SeasonResponse: Codable, Equatable, Sendable {
     public var dotsToNextTier: Int
     public var dotsToFinish: Int
     public var complete: Bool
+    /// 1...3 inside the scene.
+    public var step: Int?
+    /// 0...12 across the path.
+    public var stepsDone: Int?
+    public var daysToNextStep: Int?
+    public var nextScene: String?
+    public var badgeStars: Int?
+    public var nextStar: NextStar?
+
+    public init(ok: Bool, season: Season, seasonOver: Bool, trainingDays: Int, dots: Int, totalDots: Int,
+                tierIndex: Int, tier: String, nextTier: String?, dotsToNextTier: Int, dotsToFinish: Int,
+                complete: Bool, step: Int? = nil, stepsDone: Int? = nil, daysToNextStep: Int? = nil,
+                nextScene: String? = nil, badgeStars: Int? = nil, nextStar: NextStar? = nil) {
+        self.ok = ok
+        self.season = season
+        self.seasonOver = seasonOver
+        self.trainingDays = trainingDays
+        self.dots = dots
+        self.totalDots = totalDots
+        self.tierIndex = tierIndex
+        self.tier = tier
+        self.nextTier = nextTier
+        self.dotsToNextTier = dotsToNextTier
+        self.dotsToFinish = dotsToFinish
+        self.complete = complete
+        self.step = step
+        self.stepsDone = stepsDone
+        self.daysToNextStep = daysToNextStep
+        self.nextScene = nextScene
+        self.badgeStars = badgeStars
+        self.nextStar = nextStar
+    }
 
     public var glance: SeasonGlance {
-        SeasonGlance(tier: tier, nextTier: nextTier, trainingDays: trainingDays,
-                     dotsToNextTier: dotsToNextTier, dotsToFinish: dotsToFinish,
-                     complete: complete, seasonOver: seasonOver)
+        SeasonGlance(tier: tier, step: step ?? 1, stepsDone: stepsDone ?? tierIndex * SeasonGlance.stepsPerScene,
+                     daysToNextStep: daysToNextStep ?? dotsToNextTier, nextScene: nextScene ?? nextTier,
+                     complete: complete, seasonOver: seasonOver, badgeStars: badgeStars, nextStar: nextStar)
     }
 }
 

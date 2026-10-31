@@ -83,8 +83,8 @@ The simulator plays no haptics. Judge these on a real watch.
 | Today | `GET /api/done?view=today` + `GET /api/done` | The server list wins; this watch's unsent taps are laid on top. |
 | Game Day Goals | `GET /api/coach?action=my-game-goals` | Shown only when `gameDay` is true. A failure hides the goals and never blocks the drill list. |
 | Check off / undo | `POST /api/done` via `CheckOffQueue` | Flushed on launch, on foreground and after every tap. |
-| My Season | `GET /api/done?view=season` | The scene the kid is in and the training days to the next one, from `lib/journey.js` (the journey page's math). Read after the drill list; a failure only shows "No signal" on that screen. |
-| Team | `GET /api/done?view=team` | This week's team goal, total and to go (the Standings bar numbers), plus the kid's own share. No list of kids. Same failure rule. |
+| My Season | `GET /api/done?view=season` | The scene, the step inside it (Step 2 of 3 with dots), the days to the next step or scene, badge stars and the badge closest to its next star. From `lib/season_book.js`, the same loader journey.html reads. Read after the drill list; a failure only shows "No signal" on that screen. |
+| Team | `GET /api/done?view=team` | This week's team goal, total and drills to go (the Standings bar numbers: drill check-offs in Hands, Shooting, Net play, Dryland and Passing, not Hockey IQ), plus the kid's own share. No list of kids. Same failure rule. |
 | Rings | `GET /api/done?view=rings` | This week's done/goal, written to the App Group, then `WidgetCenter.reloadAllTimelines()`. A check-off bumps the ring straight away. |
 | Sign out | `POST /api/login?action=logout` | Then clears the Keychain item, the queue and the rings. Warns first when drills have not synced. |
 
@@ -118,7 +118,7 @@ ls /tmp/App.xcarchive/Products/Applications/App.app/Watch/Thwap.app/PlugIns
 
 Endpoint tests replay JSON fixtures in `ThwapCore/Tests/ThwapCoreTests/Fixtures/`, captured from the server handlers. They are read from the source tree via `#filePath`, not bundled.
 
-Launch arguments (stub data, no network): `-thwapStub`, `-thwapScreen signin|waiting|denied|expired|today|run|stamp|goals|season|team` (implies `-thwapStub`), `-thwapGameDay`, `-thwapElapsed <seconds>`. Without them the app uses the real client.
+Launch arguments (stub data, no network): `-thwapStub`, `-thwapScreen signin|waiting|denied|expired|today|run|stamp|goals|season|team` (implies `-thwapStub`), `-thwapGameDay`, `-thwapElapsed <seconds>`, `-thwapSeasonState step2|lastStep|oneDay|legend|longStar`, `-thwapTeamState normal|one|reached`. Without them the app uses the real client.
 
 ## Only checkable live
 

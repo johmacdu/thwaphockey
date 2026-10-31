@@ -25,7 +25,7 @@ const { default: done } = await import('../api/done.js');
 const { default: board } = await import('../api/board.js');
 const { mintSession } = await import('../lib/session_store.js');
 const { setTeam, addMember } = await import('../lib/teams_store.js');
-const { journeyFor } = await import('../lib/journey.js');
+const { journeyFor, progressFor, badgesFor, nextStarFor } = await import('../lib/journey.js');
 
 function makeRes() {
   return {
@@ -136,6 +136,117 @@ describe('GET /api/done?view=season', () => {
     fake._seed('days:lewie', trainingDays(3, '2026-10-01'));
     const r = await call(done, getAs('zara', { view: 'season' }));
     expect(r.body).toMatchObject({ tier: 'Practice Ice', trainingDays: 20, dotsToNextTier: 23 });
+  });
+});
+
+describe('GET /api/done?view=season: steps and badge stars', () => {
+  const ev = (date, disc, n) => Array.from({ length: n }, () => ({ date, disc }));
+
+  // [label, training days, step, stepsDone, daysToNextStep, nextScene]
+  const steps = [
+    ['first day', 0, 1, 0, 3, 'Practice Ice'],
+    ['Practice Ice step 2', 30, 2, 4, 5, 'Game Ready'],
+    ['last step before Game Ready', 38, 3, 5, 5, 'Game Ready'],
+    ['one day left', 50, 1, 6, 1, 'Legend'],
+    ['Legend step 3', 88, 3, 11, 3, null],
+  ];
+  for (const [label, n, step, stepsDone, daysToNextStep, nextScene] of steps) {
+    it(`${label}: step ${step}, ${daysToNextStep} to go, same as progressFor and the journey page`, async () => {
+      at('2026-12-20');
+      fake._seed('days:lewie', trainingDays(n, '2026-09-01'));
+      const r = await call(done, getAs('lewie', { view: 'season' }));
+      expect(r.body).toMatchObject({ step, stepsDone, daysToNextStep, nextScene, complete: false });
+      const p = progressFor(n);
+      expect([r.body.step, r.body.stepsDone, r.body.daysToNextStep]).toEqual([p.step, p.stepsDone, p.daysToNextStep]);
+      const web = await call(board, { method: 'GET', query: { action: 'journey' }, headers: cookie('lewie') });
+      for (const k of ['step', 'stepsDone', 'daysToNextStep']) expect(r.body[k]).toBe(web.body[k]);
+    });
+  }
+
+  it('the whole path done: step 3 of 3, no next scene, nothing to go', async () => {
+    at('2027-01-15');
+    fake._seed('days:lewie', trainingDays(95, '2026-09-01'));
+    const r = await call(done, getAs('lewie', { view: 'season' }));
+    expect(r.body).toMatchObject({ complete: true, step: 3, stepsDone: 12, daysToNextStep: 0, nextScene: null });
+  });
+
+  it('badgeStars and nextStar match badgesFor and /api/board?action=journey for the same stored data', async () => {
+    at('2026-12-20');
+    const days = trainingDays(30, '2026-09-01');
+    const events = [...ev('2026-09-02', 'stick', 26), ...ev('2026-09-03', 'shoot', 9), ...ev('2026-09-04', 'dryland', 8),
+      ...ev('2026-09-05', 'pass', 3), ...ev('2026-09-06', 'iq', 2)];
+    fake._seed('days:lewie', days);
+    fake._seed('events:lewie', events);
+    fake._seed('cheersent:fw-2026:lewie', 4);
+    const r = await call(done, getAs('lewie', { view: 'season' }));
+    const web = await call(board, { method: 'GET', query: { action: 'journey' }, headers: cookie('lewie') });
+    const direct = badgesFor({ events, days, cheersSent: 4, goalie: false }, '2026-12-20');
+    expect(r.body.badgeStars).toBe(20);
+    expect(r.body.badgeStars).toBe(web.body.badgeStars);
+    expect(r.body.badgeStars).toBe(direct.badgeStars);
+    // Sniper, Hype Squad, Month Maker and Comeback Kid are all 1 away: Sniper
+    // comes first in BADGES order.
+    expect(r.body.nextStar).toEqual({ id: 'sniper', name: 'Sniper', remaining: 1, unit: 'Shooting drill' });
+    expect(r.body.nextStar).toEqual(nextStarFor(web.body.badges));
+    expect(r.body.nextStar).toEqual(nextStarFor(direct.badges));
+  });
+
+  it('a goalie gets the Net play badge, same as the journey page', async () => {
+    at('2026-12-20');
+    const days = trainingDays(30, '2026-09-01');
+    fake._seed('days:gus', days);
+    fake._seed('events:gus', ev('2026-09-02', 'netplay', 9));
+    const r = await call(done, getAs('gus', { view: 'season' }));
+    const web = await call(board, { method: 'GET', query: { action: 'journey' }, headers: cookie('gus') });
+    expect(r.body.nextStar).toEqual({ id: 'netboss', name: 'Net Boss', remaining: 1, unit: 'Net play drill' });
+    expect(r.body.nextStar).toEqual(nextStarFor(web.body.badges));
+    expect(r.body.badgeStars).toBe(web.body.badgeStars);
+  });
+
+  it('no data: zero stars and First Shift is next', async () => {
+    const r = await call(done, getAs('lewie', { view: 'season' }));
+    expect(r.body.badgeStars).toBe(0);
+    expect(r.body.nextStar).toEqual({ id: 'firstshift', name: 'First Shift', remaining: 1, unit: 'training day' });
+  });
+});
+
+describe('nextStarFor', () => {
+  const b = (o) => ({ id: o.id || 'x', name: o.name || 'X', count: 0, next: 5, kind: 'disc', unit: 'Hands drills', ...o });
+
+  it('skips 3-star badges and the tier, complete and opening milestones', () => {
+    const out = nextStarFor([
+      b({ id: 'calledup', kind: 'tier', count: 0, next: 1 }),
+      b({ id: 'seasonsweep', kind: 'complete', count: 0, next: 1 }),
+      b({ id: 'openingnight', kind: 'opening', count: 0, next: 1 }),
+      b({ id: 'maxed', count: 70, next: null }),
+      b({ id: 'dangler', name: 'Dangler', count: 6, next: 10 }),
+    ]);
+    expect(out).toEqual({ id: 'dangler', name: 'Dangler', remaining: 4, unit: 'Hands drills' });
+  });
+
+  it('smallest gap wins, ties go to BADGES order, null when nothing is left', () => {
+    expect(nextStarFor([b({ id: 'a', count: 1 }), b({ id: 'b', count: 3 }), b({ id: 'c', count: 3 })]).id).toBe('b');
+    expect(nextStarFor([b({ next: null })])).toBeNull();
+    expect(nextStarFor([])).toBeNull();
+  });
+
+  it('says each unit naturally, singular at 1', () => {
+    const say = (o, left) => nextStarFor([b({ ...o, count: 10 - left, next: 10 })]).unit;
+    expect(say({ kind: 'disc', unit: 'Dryland workouts' }, 1)).toBe('Dryland workout');
+    expect(say({ kind: 'disc', unit: 'Hockey IQ sessions' }, 2)).toBe('Hockey IQ sessions');
+    expect(say({ kind: 'streak' }, 1)).toBe('day in a row');
+    expect(say({ kind: 'streak' }, 4)).toBe('days in a row');
+    expect(say({ kind: 'weeks', min: 4 }, 2)).toBe('weeks with 4 days');
+    expect(say({ kind: 'weeks', min: 3 }, 1)).toBe('week with 3 days');
+    expect(say({ kind: 'weeks', min: 1 }, 1)).toBe('week of training');
+    expect(say({ kind: 'balance' }, 3)).toBe('drills in every skill');
+    expect(say({ kind: 'bigweek' }, 1)).toBe('drill in your best week');
+    expect(say({ kind: 'cheers' }, 1)).toBe('cheer for a teammate');
+    expect(say({ kind: 'months' }, 2)).toBe('months of training');
+    expect(say({ kind: 'comeback' }, 1)).toBe('comeback');
+    expect(say({ kind: 'days' }, 1)).toBe('training day');
+    expect(say({ kind: 'weekend' }, 2)).toBe('weekend days');
+    expect(say({ kind: 'winterdays' }, 1)).toBe('winter day');
   });
 });
 

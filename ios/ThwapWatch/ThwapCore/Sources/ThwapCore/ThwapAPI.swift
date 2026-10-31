@@ -85,12 +85,40 @@ public actor StubThwapAPI: ThwapAPI {
     public var simulateOffline: Bool
     private var doneIds: [String]
     private let date: String
+    /// Which My Season / Team answer to give, for screenshots of each state.
+    public let seasonState: SeasonState
+    public let teamState: TeamState
 
-    public init(date: String = "2026-10-31", gameDay: Bool = false, simulateOffline: Bool = false, doneIds: [String] = []) {
+    public enum SeasonState: String, Sendable, CaseIterable {
+        /// Practice Ice, step 2, 5 days to step 3.
+        case step2
+        /// Practice Ice, step 3, 5 days to Game Ready.
+        case lastStep
+        /// Game Ready, step 1, 1 day to step 2.
+        case oneDay
+        /// The whole path done.
+        case legend
+        /// The longest Next star line there is, for the fit check.
+        case longStar
+    }
+
+    public enum TeamState: String, Sendable, CaseIterable {
+        /// 112 of 150, 38 to go, you did 9.
+        case normal
+        /// 149 of 150, 1 to go, you did none yet.
+        case one
+        /// 152 of 150, goal reached.
+        case reached
+    }
+
+    public init(date: String = "2026-10-31", gameDay: Bool = false, simulateOffline: Bool = false, doneIds: [String] = [],
+                seasonState: SeasonState = .step2, teamState: TeamState = .normal) {
         self.date = date
         self.gameDay = gameDay
         self.simulateOffline = simulateOffline
         self.doneIds = doneIds
+        self.seasonState = seasonState
+        self.teamState = teamState
     }
 
     public func setOffline(_ offline: Bool) { simulateOffline = offline }
@@ -132,21 +160,51 @@ public actor StubThwapAPI: ThwapAPI {
         ])
     }
 
-    /// Mid Practice Ice, 8 training days from Game Ready.
+    /// One answer per `seasonState`, numbers as lib/journey.js would give them.
     public func season() async throws -> SeasonResponse {
         if simulateOffline { throw ThwapAPIError.offline }
-        return SeasonResponse(ok: true, season: .init(key: "fw-2026", label: "2026-27", start: "2026-09-01", end: "2027-03-31"),
-                              seasonOver: false, trainingDays: 35, dots: 35, totalDots: 91, tierIndex: 1,
-                              tier: "Practice Ice", nextTier: "Game Ready", dotsToNextTier: 8, dotsToFinish: 56,
-                              complete: false)
+        let season = SeasonResponse.Season(key: "fw-2026", label: "2026-27", start: "2026-09-01", end: "2027-03-31")
+        func r(_ days: Int, tierIndex: Int, step: Int, stepsDone: Int, toStep: Int, toTier: Int,
+               stars: Int, next: NextStar?, complete: Bool = false) -> SeasonResponse {
+            let tiers = ["Locker Room", "Practice Ice", "Game Ready", "Legend"]
+            let nextTier = tierIndex + 1 < tiers.count ? tiers[tierIndex + 1] : nil
+            return SeasonResponse(ok: true, season: season, seasonOver: false, trainingDays: days, dots: days,
+                                  totalDots: 91, tierIndex: tierIndex, tier: tiers[tierIndex], nextTier: nextTier,
+                                  dotsToNextTier: toTier, dotsToFinish: 91 - days, complete: complete, step: step,
+                                  stepsDone: stepsDone, daysToNextStep: toStep, nextScene: nextTier,
+                                  badgeStars: stars, nextStar: next)
+        }
+        switch seasonState {
+        case .step2:
+            return r(30, tierIndex: 1, step: 2, stepsDone: 4, toStep: 5, toTier: 13, stars: 12,
+                     next: NextStar(id: "dangler", name: "Dangler", remaining: 4, unit: "Hands drills"))
+        case .lastStep:
+            return r(38, tierIndex: 1, step: 3, stepsDone: 5, toStep: 5, toTier: 5, stars: 15,
+                     next: NextStar(id: "hattrickweek", name: "Hat Trick Week", remaining: 1, unit: "week with 3 days"))
+        case .oneDay:
+            return r(50, tierIndex: 2, step: 1, stepsDone: 6, toStep: 1, toTier: 17, stars: 21,
+                     next: NextStar(id: "tapetotape", name: "Tape to Tape", remaining: 1, unit: "Passing drill"))
+        case .legend:
+            return r(91, tierIndex: 3, step: 3, stepsDone: 12, toStep: 0, toTier: 0, stars: 58,
+                     next: NextStar(id: "micdup", name: "Mic'd Up", remaining: 12, unit: "cheers for teammates"),
+                     complete: true)
+        case .longStar:
+            return r(30, tierIndex: 1, step: 2, stepsDone: 4, toStep: 5, toTier: 13, stars: 12,
+                     next: NextStar(id: "completeplayer", name: "Complete Player", remaining: 15, unit: "drills in every skill"))
+        }
     }
 
-    /// The team goal from the brief: 112 of 150, 38 to go.
+    /// One answer per `teamState`. The normal one is the brief's 112 of 150.
     public func team() async throws -> TeamResponse {
         if simulateOffline { throw ThwapAPIError.offline }
         let monday = ThwapDay.mondayOf(date) ?? date
+        let (total, mine): (Int, Int) = switch teamState {
+        case .normal: (112, 9)
+        case .one: (149, 0)
+        case .reached: (152, 12)
+        }
         return TeamResponse(ok: true, teamName: "Rangers", week: .init(start: monday, end: date),
-                            goal: 150, total: 112, toGo: 38, mine: 9)
+                            goal: 150, total: total, toGo: max(0, 150 - total), mine: mine)
     }
 
     public func gameGoals() async throws -> GameGoalsResponse {
