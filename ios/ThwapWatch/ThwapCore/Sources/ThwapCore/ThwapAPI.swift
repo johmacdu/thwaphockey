@@ -12,6 +12,8 @@ import Foundation
 /// - `todayPlan()`       -> GET  /api/done?view=today (+ my-game-goals)
 /// - `todayDone()`       -> GET  /api/done
 /// - `rings()`           -> GET  /api/done?view=rings
+/// - `season()`          -> GET  /api/done?view=season
+/// - `team()`            -> GET  /api/done?view=team
 /// - `gameGoals()`       -> GET  /api/coach?action=my-game-goals
 /// - `markDone(_:)`      -> POST /api/done { player, discipline, drillId, drillName, date? }
 /// - `undoDone(_:)`      -> POST /api/done { player, drillId, undo: true }
@@ -23,6 +25,8 @@ public protocol ThwapAPI: Sendable {
     func todayPlan() async throws -> TodayPlan
     func todayDone() async throws -> DoneResponse
     func rings() async throws -> RingsResponse
+    func season() async throws -> SeasonResponse
+    func team() async throws -> TeamResponse
     func gameGoals() async throws -> GameGoalsResponse
     func markDone(_ request: MarkDoneRequest) async throws -> MarkDoneResponse
     func undoDone(_ request: UndoDoneRequest) async throws -> UndoDoneResponse
@@ -126,6 +130,23 @@ public actor StubThwapAPI: ThwapAPI {
             "shoot": .init(done: 2 + r["shoot", default: 0], goal: 15),
             "dryland": .init(done: 6 + r["dryland", default: 0], goal: 12),
         ])
+    }
+
+    /// Mid Practice Ice, 8 training days from Game Ready.
+    public func season() async throws -> SeasonResponse {
+        if simulateOffline { throw ThwapAPIError.offline }
+        return SeasonResponse(ok: true, season: .init(key: "fw-2026", label: "2026-27", start: "2026-09-01", end: "2027-03-31"),
+                              seasonOver: false, trainingDays: 35, dots: 35, totalDots: 91, tierIndex: 1,
+                              tier: "Practice Ice", nextTier: "Game Ready", dotsToNextTier: 8, dotsToFinish: 56,
+                              complete: false)
+    }
+
+    /// The team goal from the brief: 112 of 150, 38 to go.
+    public func team() async throws -> TeamResponse {
+        if simulateOffline { throw ThwapAPIError.offline }
+        let monday = ThwapDay.mondayOf(date) ?? date
+        return TeamResponse(ok: true, teamName: "Rangers", week: .init(start: monday, end: date),
+                            goal: 150, total: 112, toGo: 38, mine: 9)
     }
 
     public func gameGoals() async throws -> GameGoalsResponse {

@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "season": {
+    "key": "fw-2026",
+    "label": "2026-27",
+    "start": "2026-09-01",
+    "end": "2027-03-31"
+  },
+  "seasonOver": false,
+  "trainingDays": 70,
+  "dots": 70,
+  "totalDots": 91,
+  "tierIndex": 3,
+  "tier": "Legend",
+  "nextTier": null,
+  "dotsToNextTier": 0,
+  "dotsToFinish": 21,
+  "complete": false
+}

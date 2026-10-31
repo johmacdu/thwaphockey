@@ -224,3 +224,91 @@ public struct TodayPlan: Equatable, Sendable {
         return nil
     }
 }
+
+// MARK: - Glance screens (My Season, Team)
+
+/// What the My Season screen says. Numbers come from the server
+/// (lib/journey.js); this only turns them into short lines.
+public struct SeasonGlance: Equatable, Sendable {
+    public var tier: String
+    public var nextTier: String?
+    public var trainingDays: Int
+    public var dotsToNextTier: Int
+    public var dotsToFinish: Int
+    public var complete: Bool
+    public var seasonOver: Bool
+
+    public init(tier: String, nextTier: String?, trainingDays: Int, dotsToNextTier: Int,
+                dotsToFinish: Int, complete: Bool, seasonOver: Bool) {
+        self.tier = tier
+        self.nextTier = nextTier
+        self.trainingDays = trainingDays
+        self.dotsToNextTier = dotsToNextTier
+        self.dotsToFinish = dotsToFinish
+        self.complete = complete
+        self.seasonOver = seasonOver
+    }
+
+    static func unit(_ n: Int) -> String { n == 1 ? "training day" : "training days" }
+
+    /// The main line under the scene name.
+    public var nextLine: String {
+        if complete { return "You finished the whole path. Legend!" }
+        if seasonOver { return "The season is over. A new path starts in September." }
+        if let next = nextTier { return "\(dotsToNextTier) more \(Self.unit(dotsToNextTier)) to \(next)" }
+        return "You made it to the top scene!"
+    }
+
+    /// A second line, only in Legend before the path is done.
+    public var finishLine: String? {
+        guard !complete, !seasonOver, nextTier == nil, dotsToFinish > 0 else { return nil }
+        return "\(dotsToFinish) more \(Self.unit(dotsToFinish)) to finish the path"
+    }
+
+    /// The quiet line at the bottom.
+    public var totalLine: String { "\(trainingDays) \(Self.unit(trainingDays)) this season" }
+
+    /// Short value for the Today row.
+    public var rowValue: String { tier }
+}
+
+/// What the Team screen says: the team goal first, never a ranking.
+public struct TeamGlance: Equatable, Sendable {
+    public var teamName: String
+    public var goal: Int
+    public var total: Int
+    public var toGo: Int
+    public var mine: Int
+
+    public init(teamName: String, goal: Int, total: Int, toGo: Int, mine: Int) {
+        self.teamName = teamName
+        self.goal = goal
+        self.total = total
+        self.toGo = toGo
+        self.mine = mine
+    }
+
+    public var reached: Bool { toGo == 0 }
+
+    /// "Rangers: 112 of 150, 38 to go", the whole goal in one line.
+    public var goalLine: String {
+        "\(teamName): \(total) of \(goal), " + (reached ? "goal reached!" : "\(toGo) to go")
+    }
+
+    /// Big number line on the screen.
+    public var countLine: String { "\(total) of \(goal)" }
+
+    /// The line under the bar.
+    public var toGoLine: String { reached ? "Goal reached!" : "\(toGo) to go" }
+
+    /// Bar fill, 0...1.
+    public var fraction: Double { goal > 0 ? min(1, Double(total) / Double(goal)) : 0 }
+
+    /// The player's own part, never compared with anyone.
+    public var mineLine: String {
+        mine == 0 ? "Every drill you do adds to this." : "You added \(mine) this week."
+    }
+
+    /// Short value for the Today row.
+    public var rowValue: String { reached ? "Goal reached" : "\(toGo) to go" }
+}

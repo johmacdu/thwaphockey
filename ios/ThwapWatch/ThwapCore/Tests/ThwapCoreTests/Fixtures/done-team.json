@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "teamName": "Rangers",
+  "week": {
+    "start": "2026-11-02",
+    "end": "2026-11-04"
+  },
+  "goal": 85,
+  "total": 62,
+  "toGo": 23,
+  "mine": 9
+}
