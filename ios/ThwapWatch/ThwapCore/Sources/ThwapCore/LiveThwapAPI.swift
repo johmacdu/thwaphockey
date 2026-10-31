@@ -77,6 +77,14 @@ public final class LiveThwapAPI: ThwapAPI, @unchecked Sendable {
         try await call(.get, path: "/api/done", query: ["view": "rings"], auth: true)
     }
 
+    public func season() async throws -> SeasonResponse {
+        try await call(.get, path: "/api/done", query: ["view": "season"], auth: true)
+    }
+
+    public func team() async throws -> TeamResponse {
+        try await call(.get, path: "/api/done", query: ["view": "team"], auth: true)
+    }
+
     public func gameGoals() async throws -> GameGoalsResponse {
         try await call(.get, path: "/api/coach", query: ["action": "my-game-goals"], auth: true)
     }

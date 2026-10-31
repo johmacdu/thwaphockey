@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "season": {
+    "key": "fw-2026",
+    "label": "2026-27",
+    "start": "2026-09-01",
+    "end": "2027-03-31"
+  },
+  "seasonOver": false,
+  "trainingDays": 35,
+  "dots": 35,
+  "totalDots": 91,
+  "tierIndex": 1,
+  "tier": "Practice Ice",
+  "nextTier": "Game Ready",
+  "dotsToNextTier": 8,
+  "dotsToFinish": 56,
+  "complete": false
+}

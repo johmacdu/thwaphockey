@@ -80,7 +80,7 @@ targets:
           NSExtensionPointIdentifier: com.apple.widgetkit-extension
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.thwaphockey.app.watchkitapp.complication
+        PRODUCT_BUNDLE_IDENTIFIER: com.thwaphockey.app.watchkitapp.rings
         TARGETED_DEVICE_FAMILY: "4"
         SKIP_INSTALL: YES
   ThwapWatchTests:

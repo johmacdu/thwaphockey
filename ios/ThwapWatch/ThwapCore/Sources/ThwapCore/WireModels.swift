@@ -170,3 +170,60 @@ public struct GameGoalsResponse: Codable, Equatable, Sendable {
     public var savedAt: String?
     public var max: Int?
 }
+
+// MARK: - My Season (api/done.js ?view=season)
+
+/// `{ ok, season:{key,label,start,end}, seasonOver, trainingDays, dots, totalDots,
+/// tierIndex, tier, nextTier, dotsToNextTier, dotsToFinish, complete }`, straight
+/// from lib/journey.js journeyFor, the same book journey.html shows.
+public struct SeasonResponse: Codable, Equatable, Sendable {
+    public struct Season: Codable, Equatable, Sendable {
+        public var key: String
+        public var label: String
+        public var start: String
+        public var end: String
+    }
+
+    public var ok: Bool
+    public var season: Season
+    public var seasonOver: Bool
+    public var trainingDays: Int
+    public var dots: Int
+    public var totalDots: Int
+    public var tierIndex: Int
+    public var tier: String
+    /// nil in Legend, the top scene.
+    public var nextTier: String?
+    public var dotsToNextTier: Int
+    public var dotsToFinish: Int
+    public var complete: Bool
+
+    public var glance: SeasonGlance {
+        SeasonGlance(tier: tier, nextTier: nextTier, trainingDays: trainingDays,
+                     dotsToNextTier: dotsToNextTier, dotsToFinish: dotsToFinish,
+                     complete: complete, seasonOver: seasonOver)
+    }
+}
+
+// MARK: - Team (api/done.js ?view=team)
+
+/// `{ ok, teamName, week:{start,end}, goal, total, toGo, mine }`: this week's
+/// team goal, the same numbers the Standings bar shows. No player list.
+public struct TeamResponse: Codable, Equatable, Sendable {
+    public struct Week: Codable, Equatable, Sendable {
+        public var start: String
+        public var end: String
+    }
+
+    public var ok: Bool
+    public var teamName: String
+    public var week: Week
+    public var goal: Int
+    public var total: Int
+    public var toGo: Int
+    public var mine: Int
+
+    public var glance: TeamGlance {
+        TeamGlance(teamName: teamName, goal: goal, total: total, toGo: toGo, mine: mine)
+    }
+}
