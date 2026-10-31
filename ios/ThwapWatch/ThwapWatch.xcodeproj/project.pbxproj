@@ -36,6 +36,16 @@
 		D461354C195715CA119EF842 /* GlanceViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8AF46747CE44EC6CB8A28EC /* GlanceViews.swift */; };
 		F365FE1BF72D696421139AA9 /* ThwapCore in Frameworks */ = {isa = PBXBuildFile; productRef = B083C517FF192F772AD79870 /* ThwapCore */; };
 		F5F09D61F14258A6BE2D66B5 /* CheckOffQueueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E24F16316302965DDD731C70 /* CheckOffQueueTests.swift */; };
+		11714B279352DCA2FB4A3B51 /* CategoryViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74C4730F5997E8D650D6D11F /* CategoryViews.swift */; };
+		4AA64E268D101D2CA85CAD1C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 616D1ECFB46384B9CB4361E1 /* Assets.xcassets */; };
+		3C92BB97FD3FD384B717FE85 /* ArchivoBlack-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B70CB9653E9EAAC312456557 /* ArchivoBlack-Regular.ttf */; };
+		8013B3072D465526D76B2B5C /* NunitoSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9AF868C8440554EE5F1D3B54 /* NunitoSans-SemiBold.ttf */; };
+		F77780F8AF6A0906E9917F25 /* NunitoSans-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 54B029545331F33DAB2CDC65 /* NunitoSans-Bold.ttf */; };
+		8913E92736E995883B09348F /* NunitoSans-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0609015A68DE40153490C1B3 /* NunitoSans-ExtraBold.ttf */; };
+		F515376148B30343B73AB036 /* NunitoSans-Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F5EAEABF80576148FEA2CB82 /* NunitoSans-Black.ttf */; };
+		5939416E35971842B9633F6A /* OFL-ArchivoBlack.txt in Resources */ = {isa = PBXBuildFile; fileRef = 953789EB449652D8EA1CE91D /* OFL-ArchivoBlack.txt */; };
+		25AAD93FDAA94D1420FBE56F /* OFL-NunitoSans.txt in Resources */ = {isa = PBXBuildFile; fileRef = CAF3C9FAD566846BA4920FD9 /* OFL-NunitoSans.txt */; };
+		91DDD5FDD36B76E00F8CB92E /* CategorySummaryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8B186FDAB7277601BA1683 /* CategorySummaryTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -100,6 +110,17 @@
 		EF0311EE25B53F422A355CF6 /* ThwapTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThwapTheme.swift; sourceTree = "<group>"; };
 		F1BD4451CA31A781C351D4E5 /* ApprovalPollerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApprovalPollerTests.swift; sourceTree = "<group>"; };
 		FBB55FCDAA7C22E4716668C3 /* ThwapWatch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ThwapWatch.entitlements; sourceTree = "<group>"; };
+		74C4730F5997E8D650D6D11F /* CategoryViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryViews.swift; sourceTree = "<group>"; };
+		616D1ECFB46384B9CB4361E1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		0D994BC786583E5FC56025F4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B70CB9653E9EAAC312456557 /* ArchivoBlack-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = ArchivoBlack-Regular.ttf; sourceTree = "<group>"; };
+		9AF868C8440554EE5F1D3B54 /* NunitoSans-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = NunitoSans-SemiBold.ttf; sourceTree = "<group>"; };
+		54B029545331F33DAB2CDC65 /* NunitoSans-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = NunitoSans-Bold.ttf; sourceTree = "<group>"; };
+		0609015A68DE40153490C1B3 /* NunitoSans-ExtraBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = NunitoSans-ExtraBold.ttf; sourceTree = "<group>"; };
+		F5EAEABF80576148FEA2CB82 /* NunitoSans-Black.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = NunitoSans-Black.ttf; sourceTree = "<group>"; };
+		953789EB449652D8EA1CE91D /* OFL-ArchivoBlack.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = OFL-ArchivoBlack.txt; sourceTree = "<group>"; };
+		CAF3C9FAD566846BA4920FD9 /* OFL-NunitoSans.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = OFL-NunitoSans.txt; sourceTree = "<group>"; };
+		1D8B186FDAB7277601BA1683 /* CategorySummaryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategorySummaryTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -145,6 +166,10 @@
 				FBB55FCDAA7C22E4716668C3 /* ThwapWatch.entitlements */,
 				87D648FB3593CFA98B069DA4 /* ThwapWatchApp.swift */,
 				D7C210049F7B56FF7C3019D1 /* TodayView.swift */,
+				74C4730F5997E8D650D6D11F /* CategoryViews.swift */,
+				616D1ECFB46384B9CB4361E1 /* Assets.xcassets */,
+				0D994BC786583E5FC56025F4 /* Info.plist */,
+				3D54F6584F7F3AB6354685E0 /* Fonts */,
 			);
 			path = WatchApp;
 			sourceTree = "<group>";
@@ -236,8 +261,23 @@
 				2BDDF308CAAA121721DC9A43 /* GlanceTests.swift */,
 				C69F865D2DA8844CDC0B4295 /* RingMathTests.swift */,
 				1CC8630CEE00B2FA594AE2DA /* TestSupport.swift */,
+				1D8B186FDAB7277601BA1683 /* CategorySummaryTests.swift */,
 			);
 			path = ThwapCoreTests;
+			sourceTree = "<group>";
+		};
+		3D54F6584F7F3AB6354685E0 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				B70CB9653E9EAAC312456557 /* ArchivoBlack-Regular.ttf */,
+				9AF868C8440554EE5F1D3B54 /* NunitoSans-SemiBold.ttf */,
+				54B029545331F33DAB2CDC65 /* NunitoSans-Bold.ttf */,
+				0609015A68DE40153490C1B3 /* NunitoSans-ExtraBold.ttf */,
+				F5EAEABF80576148FEA2CB82 /* NunitoSans-Black.ttf */,
+				953789EB449652D8EA1CE91D /* OFL-ArchivoBlack.txt */,
+				CAF3C9FAD566846BA4920FD9 /* OFL-NunitoSans.txt */,
+			);
+			path = Fonts;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -267,6 +307,7 @@
 			buildConfigurationList = 4664EE83B79A27ECD720CC0B /* Build configuration list for PBXNativeTarget "ThwapWatch" */;
 			buildPhases = (
 				0E12672A088F9F83EA962436 /* Sources */,
+				9584443A41176F7D7CACA084 /* Resources */,
 				E6CED7E06D41267CF9F332B0 /* Frameworks */,
 				F3BC9E73B3AC898CE6ADC9EC /* Embed Foundation Extensions */,
 			);
@@ -347,12 +388,31 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		9584443A41176F7D7CACA084 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4AA64E268D101D2CA85CAD1C /* Assets.xcassets in Resources */,
+				3C92BB97FD3FD384B717FE85 /* ArchivoBlack-Regular.ttf in Resources */,
+				8013B3072D465526D76B2B5C /* NunitoSans-SemiBold.ttf in Resources */,
+				F77780F8AF6A0906E9917F25 /* NunitoSans-Bold.ttf in Resources */,
+				8913E92736E995883B09348F /* NunitoSans-ExtraBold.ttf in Resources */,
+				F515376148B30343B73AB036 /* NunitoSans-Black.ttf in Resources */,
+				5939416E35971842B9633F6A /* OFL-ArchivoBlack.txt in Resources */,
+				25AAD93FDAA94D1420FBE56F /* OFL-NunitoSans.txt in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		0E12672A088F9F83EA962436 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				1ABF8A15A7D05630FB8CB6B3 /* AppModel.swift in Sources */,
+				11714B279352DCA2FB4A3B51 /* CategoryViews.swift in Sources */,
 				B2133954B23EC197C5E9FB63 /* ConcentricRings.swift in Sources */,
 				19FFD0AF548D66F4F1D163EB /* DrillRunView.swift in Sources */,
 				F170FDBC6A5FDE5245309C8E /* GameGoalsView.swift in Sources */,
@@ -371,6 +431,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B7B861C8893AD2FCEFB7512C /* ApprovalPollerTests.swift in Sources */,
+				91DDD5FDD36B76E00F8CB92E /* CategorySummaryTests.swift in Sources */,
 				F5F09D61F14258A6BE2D66B5 /* CheckOffQueueTests.swift in Sources */,
 				D53E02DD2399B7C5DF3D1089 /* DrillTimerTests.swift in Sources */,
 				A513F2B288CC747A4F577768 /* KeychainTokenStoreTests.swift in Sources */,
@@ -598,6 +659,7 @@
 				CODE_SIGN_ENTITLEMENTS = WatchApp/ThwapWatch.entitlements;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WatchApp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Thwap;
 				INFOPLIST_KEY_WKApplication = YES;
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.thwaphockey.app;
@@ -617,6 +679,7 @@
 				CODE_SIGN_ENTITLEMENTS = WatchApp/ThwapWatch.entitlements;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = WatchApp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Thwap;
 				INFOPLIST_KEY_WKApplication = YES;
 				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = com.thwaphockey.app;

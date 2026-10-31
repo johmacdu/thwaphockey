@@ -40,10 +40,23 @@ targets:
       properties:
         com.apple.security.application-groups:
           - group.com.thwaphockey.app
+    # Bundled fonts (SIL Open Font License, see WatchApp/Fonts/OFL-*.txt).
+    # Merged with the generated Info.plist below.
+    info:
+      path: WatchApp/Info.plist
+      properties:
+        UIAppFonts:
+          - ArchivoBlack-Regular.ttf
+          - NunitoSans-SemiBold.ttf
+          - NunitoSans-Bold.ttf
+          - NunitoSans-ExtraBold.ttf
+          - NunitoSans-Black.ttf
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.thwaphockey.app.watchkitapp
         PRODUCT_NAME: Thwap
+        # Watch app icon (single 1024 watchOS size) plus the category icons.
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: Thwap
         INFOPLIST_KEY_WKApplication: YES

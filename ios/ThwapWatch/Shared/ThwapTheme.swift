@@ -10,6 +10,23 @@ enum ThwapTheme {
     static let panel = Color(hex: 0x182420)     // dark --panel
     static let line = Color(hex: 0x2A3831)      // dark --line
     static let muted = Color(hex: 0x9DACA2)     // dark --muted
+    static let card = Color(hex: 0x182420)      // dark --card (same as --panel)
+    static let soft = Color(hex: 0x1F2C24)      // dark --soft, bar track + neutral button
+    static let text2 = Color(hex: 0xD3DDD6)     // dark --text2
+    static let ice = Color(hex: 0xF3F7F4)       // dark --ice, main text
+
+    /// Archivo Black, the web's display face (names, big numbers). Bundled in
+    /// the watch app only; elsewhere it falls back to the system face.
+    static func display(_ size: CGFloat, relativeTo style: Font.TextStyle = .title) -> Font {
+        .custom("ArchivoBlack-Regular", size: size, relativeTo: style)
+    }
+
+    enum Weight: String { case semibold = "SemiBold", bold = "Bold", extraBold = "ExtraBold", black = "Black" }
+
+    /// Nunito Sans, the web's body face, at one of the bundled weights (600 to 900).
+    static func body(_ size: CGFloat, _ weight: Weight = .extraBold, relativeTo style: Font.TextStyle = .body) -> Font {
+        .custom("NunitoSans-\(weight.rawValue)", size: size, relativeTo: style)
+    }
 
     /// Discipline accents (#stick/#shoot/#dryland .exrow --exacc).
     static func color(_ d: Discipline) -> Color {

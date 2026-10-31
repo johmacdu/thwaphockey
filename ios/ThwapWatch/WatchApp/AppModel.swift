@@ -75,6 +75,11 @@ final class AppModel: ObservableObject {
         RingMath.rings(drills: plan?.drills ?? [], doneIds: doneIds)
     }
 
+    /// Today's categories with progress, one home page each.
+    var categories: [CategorySummary] {
+        plan?.categories(doneIds: doneIds) ?? []
+    }
+
     var toGo: Int {
         guard let plan else { return 0 }
         return plan.drills.filter { !doneIds.contains($0.id) }.count

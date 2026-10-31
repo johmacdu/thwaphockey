@@ -3,15 +3,16 @@ import ThwapCore
 
 /// Launch arguments for previews, UI tests and screenshots only:
 ///   -thwapStub                     use StubThwapAPI + an in-memory token (no network)
-///   -thwapScreen signin|waiting|denied|expired|today|run|stamp|goals|season|team
+///   -thwapScreen signin|waiting|denied|expired|today|category|categoryDone|list|run|stamp|goals|season|team|more
 ///                                  (implies -thwapStub)
-///   -thwapGameDay   -thwapElapsed <sec>
+///   -thwapGameDay   -thwapWeekend   -thwapElapsed <sec>
 ///   -thwapSeasonState step2|lastStep|oneDay|legend|longStar   -thwapTeamState normal|one|reached
 ///   -thwapBaseURL <https url>      point the real client at another deploy
 struct LaunchOptions {
     var stub = false
     var screen: String?
     var gameDay = false
+    var weekend = false
     var elapsed: Double = 0
     var seasonState: StubThwapAPI.SeasonState = .step2
     var teamState: StubThwapAPI.TeamState = .normal
@@ -26,6 +27,7 @@ struct LaunchOptions {
         o.screen = value("-thwapScreen")
         o.stub = args.contains("-thwapStub") || o.screen != nil
         o.gameDay = args.contains("-thwapGameDay") || o.screen == "goals"
+        o.weekend = args.contains("-thwapWeekend")
         o.elapsed = Double(value("-thwapElapsed") ?? "") ?? 0
         o.seasonState = value("-thwapSeasonState").flatMap(StubThwapAPI.SeasonState.init(rawValue:)) ?? .step2
         o.teamState = value("-thwapTeamState").flatMap(StubThwapAPI.TeamState.init(rawValue:)) ?? .normal
@@ -40,7 +42,8 @@ struct LaunchOptions {
 func makeModel(_ launch: LaunchOptions = .current) -> AppModel {
     if launch.stub {
         let stub = StubThwapAPI(date: ThwapDay.string(), gameDay: launch.gameDay,
-                                seasonState: launch.seasonState, teamState: launch.teamState)
+                                seasonState: launch.seasonState, teamState: launch.teamState,
+                                weekend: launch.weekend)
         let demo = WatchCredential(token: "demo.stub.0.sig", exp: nil,
                                    player: .init(id: StubThwapAPI.playerId, name: "Demo", number: 0))
         return AppModel(api: stub,
@@ -69,7 +72,8 @@ struct RootView: View {
     @EnvironmentObject var model: AppModel
     @Environment(\.scenePhase) private var scenePhase
     @State private var showGoals = false
-    @State private var glance: GlanceScreen?
+    @State private var page: HomePage = .hello
+    @State private var openCategory: Discipline?
     @State private var appliedLaunch = false
     private let launch = LaunchOptions.current
 
@@ -98,13 +102,10 @@ struct RootView: View {
 
     private var signedIn: some View {
         NavigationStack {
-            TodayView(showGoals: $showGoals, glance: $glance)
+            HomePager(page: $page, showGoals: $showGoals, openCategory: $openCategory)
                 .navigationDestination(isPresented: $showGoals) { GameGoalsView() }
-                .navigationDestination(item: $glance) { screen in
-                    switch screen {
-                    case .season: SeasonView()
-                    case .team: TeamView()
-                    }
+                .navigationDestination(item: $openCategory) { disc in
+                    CategoryDrillList(discipline: disc)
                 }
         }
         .fullScreenCover(item: $model.running) { drill in
@@ -131,7 +132,17 @@ struct RootView: View {
         appliedLaunch = true
         switch launch.screen {
         case "today":
-            model.seedDone(["stick:1", "dryland:0"])
+            model.seedDone(["stick:0", "stick:1"])
+        case "category":
+            model.seedDone(["stick:0", "stick:1"])
+            page = .category(.shoot)
+        case "categoryDone":
+            model.seedDone(["stick:0", "stick:1", "stick:2"])
+            page = .category(.stick)
+        case "list":
+            model.seedDone(["stick:0", "stick:1"])
+            page = .category(.stick)
+            openCategory = .stick
         case "run":
             model.running = plan.drills.first { $0.id == "stick:2" }
         case "stamp":
@@ -140,11 +151,22 @@ struct RootView: View {
         case "goals":
             showGoals = true
         case "season":
-            glance = .season
+            page = .season
         case "team":
-            glance = .team
+            page = .team
+        case "more":
+            page = .more
         default:
             break
+        }
+        // The pager can settle on its first page after the first layout pass,
+        // so a scripted screenshot page is set again once it is on screen.
+        let target = page
+        if target != .hello {
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(600))
+                page = target
+            }
         }
     }
 }
