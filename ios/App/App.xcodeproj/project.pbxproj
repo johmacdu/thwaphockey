@@ -118,8 +118,15 @@
 			isa = PBXGroup;
 			children = (
 				504EC3041FED79650016851F /* App.app */,
-				6388CE4C4EB57C7CD8FDDBCB /* ThwapComplication.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A1B2C3D4E5F60718293A4B5C /* Products */ = {
+			isa = PBXGroup;
+			children = (
 				99FBD03D7C59B48700022D36 /* ThwapWatch.app */,
+				6388CE4C4EB57C7CD8FDDBCB /* ThwapComplication.appex */,
 				743AA962C6D09EEC0D80D693 /* ThwapWatchTests.xctest */,
 			);
 			name = Products;
@@ -204,7 +211,7 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 504EC3051FED79650016851F /* Products */;
+					ProductGroup = A1B2C3D4E5F60718293A4B5C /* Products */;
 					ProjectRef = 3EBB6791BDD9AC622B6408B3 /* ThwapWatch.xcodeproj */;
 				},
 			);
