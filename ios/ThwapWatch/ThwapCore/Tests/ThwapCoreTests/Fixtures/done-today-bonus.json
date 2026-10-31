@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "date": "2026-10-31",
+  "restDay": true,
+  "bonusDay": true,
+  "goalie": false,
+  "drills": [
+    { "id": "stick:0", "discipline": "stick", "name": "Stationary Side-to-Side", "dose": "Hands", "cue": "", "steps": [], "timer": { "type": "interval", "sets": 4, "workSeconds": 40, "restSeconds": 15, "totalSeconds": 220 }, "bonus": true, "done": true },
+    { "id": "shoot:0", "discipline": "shoot", "name": "Moving Warm-Up", "dose": "Shooting", "cue": "", "steps": [], "timer": null, "bonus": true, "done": false }
+  ]
+}

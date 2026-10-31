@@ -37,14 +37,15 @@
 //                                         library, rotation, coach dryland picks and
 //                                         timer scripts index.html renders), with
 //                                         each drill's done flag:
-//   { ok, date, restDay, goalie, drills:[{ id, discipline, name, dose, cue,
+//   { ok, date, restDay, bonusDay, goalie, drills:[{ id, discipline, name, dose, cue,
 //     steps, timer:{type,sets,workSeconds,restSeconds,totalSeconds,script}|null,
-//     done }] }
+//     bonus?, done }] }
 //   ids are the web's positional ids ('stick:0', 'shoot:1', 'dryland:2'); a
 //   goalie's Net play rows keep the 'shoot:' prefix with discipline 'netplay'.
 //   dose is the line the web shows under the name (dryland reps, stickhandling
-//   group, shooting theme). Saturday/Sunday: restDay true, drills [] (the web's
-//   optional weekend bonus reps are not part of this list).
+//   group, shooting theme). Saturday/Sunday: restDay true (dryland rests) and
+//   bonusDay true, with the web's optional weekend Hands and third-discipline
+//   drills, each flagged bonus:true. Same ids, so a check-off is the same record.
 //
 // GET  /api/done?view=rings (session)  : this week's rings for the watch
 //                                         complication:
@@ -244,6 +245,7 @@ async function viewToday(res, entry, goalie) {
     ok: true,
     date,
     restDay: list.restDay,
+    bonusDay: list.bonusDay,
     goalie,
     drills: list.drills.map((d) => ({ ...d, done: done.has(d.id) })),
   });
