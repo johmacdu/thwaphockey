@@ -93,3 +93,20 @@ note is worth showing. The `MainActivity` keeps its own `LAUNCHER` filter as the
 
 - **Tinted (monochrome) iOS icons** — the third iOS 18 appearance; would need a grayscale Sass.
 - **Android themed icons** — a `<monochrome>` adaptive layer for wallpaper-tinted dark-mode launchers.
+
+## Default icon (what every kid sees before picking one)
+
+The default iPhone and Android icon is Sass stickhandling on Thwap lime (`#B9F06B`). The
+approved master is `app-icons/primary/thwap-icon-1024.png` (1024 square, opaque). The watch app
+uses the same art and ships with the watch redesign.
+
+Regenerate every platform file from the master with:
+
+```bash
+python3 scripts/gen_primary_icon.py            # needs Pillow (pip install Pillow==11.0.0)
+```
+
+It writes the iPhone `AppIcon-512@2x.png`, the Android legacy square and round mipmaps
+(48 to 192px), and the Android adaptive foreground (Sass inside the 66% safe zone of the 108dp
+canvas, so launcher masks never crop his stick or the puck) over a lime background color.
+The 20 selectable alternates above are separate and unchanged.
