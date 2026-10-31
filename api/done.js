@@ -56,7 +56,26 @@
 //   activities in that discipline, lib/drills.js weekGoals). Goalies get
 //   netplay in place of shoot.
 //
-// Both views: 401 without a session, 403 when ?player= names someone else,
+// GET  /api/done?view=season (session) : the Season Book glance for the watch,
+//                                         from lib/journey.js journeyFor (the
+//                                         same math /api/board?action=journey
+//                                         feeds journey.html):
+//   { ok, season:{key,label,start,end}, seasonOver, trainingDays, dots,
+//     totalDots, tierIndex, tier, nextTier, dotsToNextTier, dotsToFinish,
+//     complete }
+//   nextTier is null in Legend. dotsToNextTier is the journey page's
+//   "N training days to <next scene>" number.
+//
+// GET  /api/done?view=team (session)   : this week's team goal for the watch,
+//                                         the same numbers the Standings bar
+//                                         shows (/api/board?tf=week):
+//   { ok, teamName, week:{start,end}, goal, total, toGo, mine }
+//   goal = lib/store currentTeamGoal for the player's team; total = the
+//   team's weekBoard rows summed over the bar's disciplines (teamBarCount);
+//   toGo = max(0, goal - total); mine = this player's own share of total.
+//   No per-player list: the watch never ranks kids.
+//
+// All views: 401 without a session, 403 when ?player= names someone else,
 // 400 for a session player no longer on any team. Any team (lib/team_players).
 //
 // Goalie: the member store's roster position decides, with the old fixed
@@ -84,12 +103,16 @@ import {
   validBackdate,
   weekDates,
   weekBoard,
+  getTrainingDays,
+  currentTeamGoal,
+  teamBarCount,
 } from '../lib/store.js';
+import { journeyFor, TIERS } from '../lib/journey.js';
 import { sessionClaims } from '../lib/watch_store.js';
 import { getMember } from '../lib/teams_store.js';
 import { isGated } from '../lib/billing_store.js';
-import { resolvePlayer } from '../lib/team_players.js';
-import { getTeamPlan } from '../lib/teams_store.js';
+import { resolvePlayer, teamPlayerIds, RANGERS_TEAM_CODE } from '../lib/team_players.js';
+import { getTeamPlan, getTeam } from '../lib/teams_store.js';
 import { isGoalie, disciplinesForPlayer } from '../lib/positions.js';
 import { todayList, weekGoals, dayIndexForDate, thirdDiscipline } from '../lib/drills.js';
 
@@ -181,14 +204,14 @@ async function handleGet(req, res) {
   }
   const goalie = await isGoalie(entry.id);
   const view = String((req.query && req.query.view) || '');
-  if (view === 'today' || view === 'rings') {
+  if (Object.hasOwn(WATCH_VIEWS, view)) {
     // Self only: a ?player= naming anyone but the session player is refused.
     const asked = String((req.query && req.query.player) || '').trim().toLowerCase();
     if (asked && asked !== entry.id) {
       return res.status(403).json({ error: 'not your account' });
     }
     res.setHeader('Cache-Control', 'no-store');
-    return view === 'today' ? viewToday(res, entry, goalie) : viewRings(res, entry, goalie);
+    return WATCH_VIEWS[view](res, entry, goalie);
   }
   if (view) {
     return res.status(400).json({ error: 'unknown view' });
@@ -267,6 +290,63 @@ async function viewRings(res, entry, goalie) {
     rings,
   });
 }
+
+// GET ?view=season: where the player is on the season path (lib/journey.js).
+async function viewSeason(res, entry) {
+  const book = journeyFor(await getTrainingDays(entry.id), localDateStr());
+  return res.status(200).json({
+    ok: true,
+    season: book.season,
+    seasonOver: book.seasonOver,
+    trainingDays: book.trainingDays,
+    dots: book.dots,
+    totalDots: book.totalDots,
+    tierIndex: book.tierIndex,
+    tier: book.tier,
+    nextTier: TIERS[book.tierIndex + 1] || null,
+    dotsToNextTier: book.dotsToNextTier,
+    dotsToFinish: book.dotsToFinish,
+    complete: book.complete,
+  });
+}
+
+// The name the team goal line uses. Standings says "Rangers" for the original
+// team; any other team uses its own name.
+async function teamNameFor(teamCode) {
+  if (!teamCode || teamCode === RANGERS_TEAM_CODE) return 'Rangers';
+  try {
+    const t = await getTeam(teamCode);
+    return (t && t.name) || 'Your team';
+  } catch {
+    return 'Your team';
+  }
+}
+
+// GET ?view=team: this week's team goal, the numbers the Standings bar shows.
+async function viewTeam(res, entry) {
+  const teamCode = entry.teamCode || RANGERS_TEAM_CODE;
+  const ids = await teamPlayerIds(teamCode);
+  const days = weekDates();
+  const [rows, goal, teamName] = await Promise.all([
+    weekBoard(ids),
+    currentTeamGoal({ teamCode, teamIds: ids }),
+    teamNameFor(teamCode),
+  ]);
+  const total = rows.reduce((n, r) => n + teamBarCount(r), 0);
+  const mine = teamBarCount(rows.find((r) => r.id === entry.id));
+  return res.status(200).json({
+    ok: true,
+    teamName,
+    week: { start: days[0], end: days[days.length - 1] },
+    goal: goal.goal,
+    total,
+    toGo: Math.max(0, goal.goal - total),
+    mine,
+  });
+}
+
+// The watch reads, all session-gated and self-only (see handleGet).
+const WATCH_VIEWS = { today: viewToday, rings: viewRings, season: viewSeason, team: viewTeam };
 
 export default async function handler(req, res) {
   if (req.method === 'GET') {
