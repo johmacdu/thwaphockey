@@ -15,26 +15,42 @@ struct SeasonView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 6) {
                 if let g = model.season {
-                    Text("YOU'RE IN")
-                        .font(.caption2.weight(.heavy))
-                        .foregroundStyle(ThwapTheme.muted)
                     Text(g.tier)
                         .font(.system(.title3, design: .rounded).weight(.heavy))
                         .foregroundStyle(ThwapTheme.lime)
                         .fixedSize(horizontal: false, vertical: true)
-                    Text(g.nextLine)
-                        .font(.system(.body, design: .rounded).weight(.heavy))
-                        .fixedSize(horizontal: false, vertical: true)
-                    if let finish = g.finishLine {
-                        Text(finish)
-                            .font(.footnote.weight(.semibold))
-                            .foregroundStyle(ThwapTheme.green2)
+                    if g.offSeason {
+                        Text(g.countdownLine)
+                            .font(.system(.body, design: .rounded).weight(.heavy))
                             .fixedSize(horizontal: false, vertical: true)
+                    } else {
+                        HStack(spacing: 8) {
+                            Text(g.stepLine)
+                                .font(.footnote.weight(.bold))
+                                .foregroundStyle(ThwapTheme.green2)
+                            StepDots(dots: g.dots)
+                        }
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel(g.stepLine)
+                        Text(g.countdownLine)
+                            .font(.system(.body, design: .rounded).weight(.heavy))
+                            .fixedSize(horizontal: false, vertical: true)
+                        if g.starsLine != nil || g.nextStarLine != nil {
+                            Divider().overlay(ThwapTheme.line).padding(.vertical, 4)
+                        }
+                        if let stars = g.starsLine {
+                            Text(stars)
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(ThwapTheme.green2)
+                        }
+                        if let next = g.nextStarLine {
+                            Text(next)
+                                .font(.caption2.weight(.bold))
+                                .foregroundStyle(ThwapTheme.muted)
+                                .lineLimit(2)
+                                .minimumScaleFactor(0.75)
+                        }
                     }
-                    Divider().overlay(ThwapTheme.line).padding(.vertical, 4)
-                    Text(g.totalLine)
-                        .font(.caption2.weight(.bold))
-                        .foregroundStyle(ThwapTheme.muted)
                 } else {
                     GlanceWaiting(failed: model.seasonFailed)
                 }
@@ -49,6 +65,30 @@ struct SeasonView: View {
     }
 }
 
+/// The three steps inside a scene: filled = done, ringed = the one being
+/// worked on, open = not yet.
+struct StepDots: View {
+    let dots: [SeasonGlance.Dot]
+
+    var body: some View {
+        HStack(spacing: 5) {
+            ForEach(Array(dots.enumerated()), id: \.offset) { _, dot in
+                switch dot {
+                case .done:
+                    Circle().fill(ThwapTheme.lime).frame(width: 9, height: 9)
+                case .current:
+                    Circle().fill(ThwapTheme.lime.opacity(0.3))
+                        .overlay(Circle().stroke(ThwapTheme.lime, lineWidth: 2))
+                        .frame(width: 12, height: 12)
+                case .open:
+                    Circle().stroke(ThwapTheme.muted, lineWidth: 1.5).frame(width: 9, height: 9)
+                }
+            }
+        }
+        .accessibilityHidden(true)
+    }
+}
+
 struct TeamView: View {
     @EnvironmentObject var model: AppModel
 
@@ -57,18 +97,19 @@ struct TeamView: View {
             VStack(alignment: .leading, spacing: 6) {
                 if let g = model.team {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(g.teamName.uppercased() + " THIS WEEK")
+                        Text(TeamGlance.eyebrow)
                             .font(.caption2.weight(.heavy))
                             .foregroundStyle(ThwapTheme.muted)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.7)
                         Text(g.countLine)
                             .font(.system(.title3, design: .rounded).weight(.heavy))
                             .foregroundStyle(ThwapTheme.lime)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
                         GoalBar(fraction: g.fraction)
                             .frame(height: 8)
                         Text(g.toGoLine)
                             .font(.system(.body, design: .rounded).weight(.heavy))
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel(g.goalLine)

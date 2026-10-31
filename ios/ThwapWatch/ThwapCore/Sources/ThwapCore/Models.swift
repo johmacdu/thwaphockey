@@ -227,52 +227,107 @@ public struct TodayPlan: Equatable, Sendable {
 
 // MARK: - Glance screens (My Season, Team)
 
+/// The badge closest to its next star, from the server (lib/journey.js
+/// nextStarFor). `unit` already reads right after "N more", singular at 1.
+public struct NextStar: Codable, Equatable, Sendable {
+    public var id: String
+    public var name: String
+    public var remaining: Int
+    public var unit: String
+
+    public init(id: String, name: String, remaining: Int, unit: String) {
+        self.id = id
+        self.name = name
+        self.remaining = remaining
+        self.unit = unit
+    }
+}
+
 /// What the My Season screen says. Numbers come from the server
 /// (lib/journey.js); this only turns them into short lines.
 public struct SeasonGlance: Equatable, Sendable {
+    /// One of the three step dots inside the scene.
+    public enum Dot: Equatable, Sendable { case done, current, open }
+
     public var tier: String
-    public var nextTier: String?
-    public var trainingDays: Int
-    public var dotsToNextTier: Int
-    public var dotsToFinish: Int
+    /// The step being worked on inside the scene, 1...3 (3 once complete).
+    public var step: Int
+    /// Steps done across the whole path, 0...12.
+    public var stepsDone: Int
+    public var daysToNextStep: Int
+    /// nil in Legend, the top scene.
+    public var nextScene: String?
     public var complete: Bool
     public var seasonOver: Bool
+    /// nil when the server did not send badges.
+    public var badgeStars: Int?
+    public var nextStar: NextStar?
 
-    public init(tier: String, nextTier: String?, trainingDays: Int, dotsToNextTier: Int,
-                dotsToFinish: Int, complete: Bool, seasonOver: Bool) {
+    public static let stepsPerScene = 3
+
+    public init(tier: String, step: Int, stepsDone: Int, daysToNextStep: Int, nextScene: String?,
+                complete: Bool, seasonOver: Bool, badgeStars: Int? = nil, nextStar: NextStar? = nil) {
         self.tier = tier
-        self.nextTier = nextTier
-        self.trainingDays = trainingDays
-        self.dotsToNextTier = dotsToNextTier
-        self.dotsToFinish = dotsToFinish
+        self.step = step
+        self.stepsDone = stepsDone
+        self.daysToNextStep = daysToNextStep
+        self.nextScene = nextScene
         self.complete = complete
         self.seasonOver = seasonOver
+        self.badgeStars = badgeStars
+        self.nextStar = nextStar
     }
 
-    static func unit(_ n: Int) -> String { n == 1 ? "training day" : "training days" }
+    /// Off-season (Apr to Aug): only the scene and one line.
+    public var offSeason: Bool { seasonOver && !complete }
 
-    /// The main line under the scene name.
-    public var nextLine: String {
+    /// "Step 2 of 3".
+    public var stepLine: String { "Step \(step) of \(Self.stepsPerScene)" }
+
+    /// Filled = done in this scene, current = the step being worked on, open = not yet.
+    public var dots: [Dot] {
+        let doneHere = complete ? Self.stepsPerScene : stepsDone % Self.stepsPerScene
+        return (0..<Self.stepsPerScene).map { i in
+            if i < doneHere { return .done }
+            if i == doneHere && !complete { return .current }
+            return .open
+        }
+    }
+
+    static func days(_ n: Int) -> String { n == 1 ? "1 more day" : "\(n) more days" }
+
+    /// The line under the dots. Complete and off-season say one thing instead.
+    public var countdownLine: String {
         if complete { return "You finished the whole path. Legend!" }
         if seasonOver { return "The season is over. A new path starts in September." }
-        if let next = nextTier { return "\(dotsToNextTier) more \(Self.unit(dotsToNextTier)) to \(next)" }
-        return "You made it to the top scene!"
+        if step < Self.stepsPerScene { return "\(Self.days(daysToNextStep)) to step \(step + 1)" }
+        if let next = nextScene { return "\(Self.days(daysToNextStep)) to \(next)" }
+        return "\(Self.days(daysToNextStep)) to finish the path"
     }
 
-    /// A second line, only in Legend before the path is done.
-    public var finishLine: String? {
-        guard !complete, !seasonOver, nextTier == nil, dotsToFinish > 0 else { return nil }
-        return "\(dotsToFinish) more \(Self.unit(dotsToFinish)) to finish the path"
+    /// "🏅 12 badge stars". nil off-season or when no badge data came back.
+    public var starsLine: String? {
+        guard !offSeason, let n = badgeStars else { return nil }
+        return "🏅 \(n) badge \(n == 1 ? "star" : "stars")"
     }
 
-    /// The quiet line at the bottom.
-    public var totalLine: String { "\(trainingDays) \(Self.unit(trainingDays)) this season" }
+    /// "Next star: Dangler, 4 more Hands drills". nil when nothing is left.
+    public var nextStarLine: String? {
+        guard !offSeason, let s = nextStar, s.remaining > 0 else { return nil }
+        return "Next star: \(s.name), \(s.remaining) more \(s.unit)"
+    }
 
-    /// Short value for the Today row.
-    public var rowValue: String { tier }
+    /// Short value for the Today row: "Practice Ice, step 2".
+    public var rowValue: String {
+        if complete { return "\(tier), path done" }
+        if seasonOver { return tier }
+        return "\(tier), step \(step)"
+    }
 }
 
 /// What the Team screen says: the team goal first, never a ranking.
+/// The total counts drill check-offs this week (Hands, Shooting, Net play,
+/// Dryland, Passing; Hockey IQ is not on the bar).
 public struct TeamGlance: Equatable, Sendable {
     public var teamName: String
     public var goal: Int
@@ -290,23 +345,29 @@ public struct TeamGlance: Equatable, Sendable {
 
     public var reached: Bool { toGo == 0 }
 
-    /// "Rangers: 112 of 150, 38 to go", the whole goal in one line.
+    /// The eyebrow.
+    public static let eyebrow = "TEAM GOAL"
+
+    /// VoiceOver: "Team goal: 112 of 150 drills, 38 to go".
     public var goalLine: String {
-        "\(teamName): \(total) of \(goal), " + (reached ? "goal reached!" : "\(toGo) to go")
+        "Team goal: \(total) of \(goal) drills, " + (reached ? "goal reached" : "\(toGo) to go")
     }
 
     /// Big number line on the screen.
     public var countLine: String { "\(total) of \(goal)" }
 
     /// The line under the bar.
-    public var toGoLine: String { reached ? "Goal reached!" : "\(toGo) to go" }
+    public var toGoLine: String {
+        if reached { return "Goal reached!" }
+        return toGo == 1 ? "1 more drill to go!" : "\(toGo) more drills to go!"
+    }
 
     /// Bar fill, 0...1.
     public var fraction: Double { goal > 0 ? min(1, Double(total) / Double(goal)) : 0 }
 
     /// The player's own part, never compared with anyone.
     public var mineLine: String {
-        mine == 0 ? "Every drill you do adds to this." : "You added \(mine) this week."
+        mine == 0 ? "Every drill you do adds to this." : "You did \(mine) this week 💪"
     }
 
     /// Short value for the Today row.

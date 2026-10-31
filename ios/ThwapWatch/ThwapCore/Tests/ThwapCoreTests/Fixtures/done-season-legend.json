@@ -15,5 +15,16 @@
   "nextTier": null,
   "dotsToNextTier": 0,
   "dotsToFinish": 21,
-  "complete": false
+  "complete": false,
+  "step": 1,
+  "stepsDone": 9,
+  "daysToNextStep": 5,
+  "nextScene": null,
+  "badgeStars": 42,
+  "nextStar": {
+    "id": "onaheater",
+    "name": "On a Heater",
+    "remaining": 1,
+    "unit": "day in a row"
+  }
 }

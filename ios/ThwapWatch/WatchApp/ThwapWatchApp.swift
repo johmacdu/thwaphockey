@@ -6,12 +6,15 @@ import ThwapCore
 ///   -thwapScreen signin|waiting|denied|expired|today|run|stamp|goals|season|team
 ///                                  (implies -thwapStub)
 ///   -thwapGameDay   -thwapElapsed <sec>
+///   -thwapSeasonState step2|lastStep|oneDay|legend|longStar   -thwapTeamState normal|one|reached
 ///   -thwapBaseURL <https url>      point the real client at another deploy
 struct LaunchOptions {
     var stub = false
     var screen: String?
     var gameDay = false
     var elapsed: Double = 0
+    var seasonState: StubThwapAPI.SeasonState = .step2
+    var teamState: StubThwapAPI.TeamState = .normal
 
     static let current: LaunchOptions = {
         let args = ProcessInfo.processInfo.arguments
@@ -24,6 +27,8 @@ struct LaunchOptions {
         o.stub = args.contains("-thwapStub") || o.screen != nil
         o.gameDay = args.contains("-thwapGameDay") || o.screen == "goals"
         o.elapsed = Double(value("-thwapElapsed") ?? "") ?? 0
+        o.seasonState = value("-thwapSeasonState").flatMap(StubThwapAPI.SeasonState.init(rawValue:)) ?? .step2
+        o.teamState = value("-thwapTeamState").flatMap(StubThwapAPI.TeamState.init(rawValue:)) ?? .normal
         return o
     }()
 
@@ -34,7 +39,8 @@ struct LaunchOptions {
 @MainActor
 func makeModel(_ launch: LaunchOptions = .current) -> AppModel {
     if launch.stub {
-        let stub = StubThwapAPI(date: ThwapDay.string(), gameDay: launch.gameDay)
+        let stub = StubThwapAPI(date: ThwapDay.string(), gameDay: launch.gameDay,
+                                seasonState: launch.seasonState, teamState: launch.teamState)
         let demo = WatchCredential(token: "demo.stub.0.sig", exp: nil,
                                    player: .init(id: StubThwapAPI.playerId, name: "Demo", number: 0))
         return AppModel(api: stub,

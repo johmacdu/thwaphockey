@@ -57,14 +57,17 @@
 //   netplay in place of shoot.
 //
 // GET  /api/done?view=season (session) : the Season Book glance for the watch,
-//                                         from lib/journey.js journeyFor (the
-//                                         same math /api/board?action=journey
-//                                         feeds journey.html):
+//                                         from lib/season_book.js (the same
+//                                         loader /api/board?action=journey
+//                                         uses for journey.html):
 //   { ok, season:{key,label,start,end}, seasonOver, trainingDays, dots,
 //     totalDots, tierIndex, tier, nextTier, dotsToNextTier, dotsToFinish,
-//     complete }
-//   nextTier is null in Legend. dotsToNextTier is the journey page's
-//   "N training days to <next scene>" number.
+//     complete, step, stepsDone, daysToNextStep, nextScene, badgeStars,
+//     nextStar:{id,name,remaining,unit}|null }
+//   nextTier and nextScene are the same (null in Legend). step is 1-3 inside
+//   the scene; stepsDone counts all 12; daysToNextStep finishes the current
+//   step (on step 3 that moves to nextScene). badgeStars is badgesFor's total;
+//   nextStar is the badge closest to its next star (lib/journey nextStarFor).
 //
 // GET  /api/done?view=team (session)   : this week's team goal for the watch,
 //                                         the same numbers the Standings bar
@@ -103,11 +106,11 @@ import {
   validBackdate,
   weekDates,
   weekBoard,
-  getTrainingDays,
   currentTeamGoal,
   teamBarCount,
 } from '../lib/store.js';
-import { journeyFor, TIERS } from '../lib/journey.js';
+import { TIERS, nextStarFor } from '../lib/journey.js';
+import { seasonBookFor } from '../lib/season_book.js';
 import { sessionClaims } from '../lib/watch_store.js';
 import { getMember } from '../lib/teams_store.js';
 import { isGated } from '../lib/billing_store.js';
@@ -291,9 +294,12 @@ async function viewRings(res, entry, goalie) {
   });
 }
 
-// GET ?view=season: where the player is on the season path (lib/journey.js).
+// GET ?view=season: where the player is on the season path, plus badge stars.
+// The book and badges come from lib/season_book.js, the same loader
+// /api/board?action=journey uses, so the watch and journey.html agree.
 async function viewSeason(res, entry) {
-  const book = journeyFor(await getTrainingDays(entry.id), localDateStr());
+  const { book, badges } = await seasonBookFor(entry.id, localDateStr());
+  const nextScene = TIERS[book.tierIndex + 1] || null;
   return res.status(200).json({
     ok: true,
     season: book.season,
@@ -303,10 +309,16 @@ async function viewSeason(res, entry) {
     totalDots: book.totalDots,
     tierIndex: book.tierIndex,
     tier: book.tier,
-    nextTier: TIERS[book.tierIndex + 1] || null,
+    nextTier: nextScene,
     dotsToNextTier: book.dotsToNextTier,
     dotsToFinish: book.dotsToFinish,
     complete: book.complete,
+    step: book.step,
+    stepsDone: book.stepsDone,
+    daysToNextStep: book.daysToNextStep,
+    nextScene,
+    badgeStars: badges.badgeStars,
+    nextStar: nextStarFor(badges.badges),
   });
 }
 
