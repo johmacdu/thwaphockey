@@ -1,7 +1,7 @@
 import XCTest
 @testable import ThwapCore
 
-/// The watch home's categories: grouping, order, next drill and the lines.
+/// The watch home's categories: grouping, order, counts and the lines.
 final class CategorySummaryTests: XCTestCase {
     let drills = StubThwapAPI.drills
 
@@ -34,16 +34,18 @@ final class CategorySummaryTests: XCTestCase {
         let shoot = CategorySummary.build(drills: drills, doneIds: [])[1]
         XCTAssertEqual(shoot.doneCount, 0)
         XCTAssertFalse(shoot.isComplete)
-        XCTAssertEqual(shoot.nextDrill?.id, "shoot:0")
+        XCTAssertEqual(shoot.buttonTitle, "Pick a drill")
+        XCTAssertEqual(shoot.pageAccessibilityLine, "Shooting, 0 of 3 done. Pick a drill.")
         XCTAssertEqual(shoot.progressLine, "0 of 3 done")
         XCTAssertEqual(shoot.tileLine, "0/3")
         XCTAssertEqual(shoot.fraction, 0)
         XCTAssertEqual(shoot.accessibilityLine, "Shooting, 0 of 3 done")
     }
 
-    func testNextDrillSkipsDoneOnesInOrder() {
+    func testPartlyDone() {
         let stick = CategorySummary.build(drills: drills, doneIds: ["stick:0", "stick:2"])[0]
-        XCTAssertEqual(stick.nextDrill?.id, "stick:1")
+        XCTAssertFalse(stick.isComplete)
+        XCTAssertEqual(stick.buttonTitle, "Pick a drill")
         XCTAssertEqual(stick.countLine, "2 of 3 done")
         XCTAssertEqual(stick.tileLine, "2/3")
         XCTAssertEqual(stick.fraction, 2.0 / 3.0, accuracy: 0.0001)
@@ -54,7 +56,8 @@ final class CategorySummaryTests: XCTestCase {
     func testAllDone() {
         let stick = CategorySummary.build(drills: drills, doneIds: ["stick:0", "stick:1", "stick:2"])[0]
         XCTAssertTrue(stick.isComplete)
-        XCTAssertNil(stick.nextDrill)
+        XCTAssertEqual(stick.buttonTitle, "See drills")
+        XCTAssertEqual(stick.pageAccessibilityLine, "Hands, 3 of 3 done. See drills.")
         XCTAssertEqual(stick.progressLine, "All done!")
         XCTAssertEqual(stick.countLine, "3 of 3 done")
         XCTAssertEqual(stick.fraction, 1)

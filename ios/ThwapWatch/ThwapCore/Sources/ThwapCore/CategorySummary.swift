@@ -32,8 +32,8 @@ extension Drill {
     }
 }
 
-/// One category of today's list, for the watch home: one page per category,
-/// a Start button that runs the next drill not done yet, and a drill list.
+/// One category of today's list, for the watch home: one page per category
+/// and a drill list. The player always picks the drill; nothing auto-starts.
 /// Built from `TodayPlan` and the done ids, so the views stay thin.
 public struct CategorySummary: Identifiable, Equatable, Sendable {
     public var discipline: Discipline
@@ -55,9 +55,6 @@ public struct CategorySummary: Identifiable, Equatable, Sendable {
 
     public func isDone(_ drill: Drill) -> Bool { doneIds.contains(drill.id) }
 
-    /// The first drill in list order that is not done yet; nil when all are.
-    public var nextDrill: Drill? { drills.first { !doneIds.contains($0.id) } }
-
     /// Progress bar fill, 0...1.
     public var fraction: Double { total > 0 ? Double(doneCount) / Double(total) : 0 }
 
@@ -70,8 +67,17 @@ public struct CategorySummary: Identifiable, Equatable, Sendable {
     /// "2/3", the small tile on the hello page.
     public var tileLine: String { "\(doneCount)/\(total)" }
 
-    /// VoiceOver for the category page header: "Shooting, 0 of 3 done".
+    /// VoiceOver for the drill list header: "Shooting, 0 of 3 done".
     public var accessibilityLine: String { "\(title), \(countLine)" }
+
+    /// The category page button: "Pick a drill", or "See drills" once all are done.
+    public var buttonTitle: String { isComplete ? Self.seeDrills : Self.pickDrill }
+
+    /// VoiceOver for the whole category page: "Shooting, 0 of 3 done. Pick a drill."
+    public var pageAccessibilityLine: String { "\(accessibilityLine). \(buttonTitle)." }
+
+    public static let pickDrill = "Pick a drill"
+    public static let seeDrills = "See drills"
 
     public static let allDone = "All done!"
 
