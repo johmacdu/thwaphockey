@@ -31,7 +31,7 @@ The watch app's version and build number must match the iPhone app's. App Store 
 
 ### Archive and upload (owner steps)
 
-1. Register the App Group `group.com.thwaphockey.app` on the Apple Developer account. Turn it on for `com.thwaphockey.app.watchkitapp` and `com.thwaphockey.app.watchkitapp.complication`.
+1. Register the App Group `group.com.thwaphockey.app` on the Apple Developer account. Turn it on for `com.thwaphockey.app.watchkitapp` and `com.thwaphockey.app.watchkitapp.rings`.
 2. Open `ios/App/App.xcworkspace` in Xcode. Always open the workspace, not a single project.
 3. Set your team under Signing & Capabilities on three targets: `App` (App project), `ThwapWatch` and `ThwapComplication` (ThwapWatch project). Every target uses Automatic signing, so the team is all you need to set.
 4. Pick the `App` scheme and `Any iOS Device (arm64)`.
@@ -57,7 +57,7 @@ Do not edit `ThwapWatch.xcodeproj` by hand. Keep the target name `ThwapWatch`: t
 | `Complication/` | WidgetKit complication: circular (3 concentric rings) and rectangular. |
 | `Shared/` | Theme tokens and the ring view, compiled into both the app and the complication. |
 
-Bundle ids: `com.thwaphockey.app.watchkitapp` (app), `.watchkitapp.complication`, `.watchkitapp.tests`. App Group: `group.com.thwaphockey.app`. The App Group needs registering on the Apple Developer account before a device build will sign.
+Bundle ids: `com.thwaphockey.app.watchkitapp` (app), `.watchkitapp.rings`, `.watchkitapp.tests`. App Group: `group.com.thwaphockey.app`. The App Group needs registering on the Apple Developer account before a device build will sign.
 
 ## Content source
 
