@@ -37,6 +37,12 @@ final class AppModel: ObservableObject {
     @Published private(set) var waitingToSync = 0
     /// One quiet line under the list (season not active, renew soon).
     @Published private(set) var notice: String?
+    /// My Season and Team glances. nil until read; a failed read only sets
+    /// the matching flag, never `loadFailed`, so the drill list is untouched.
+    @Published private(set) var season: SeasonGlance?
+    @Published private(set) var team: TeamGlance?
+    @Published private(set) var seasonFailed = false
+    @Published private(set) var teamFailed = false
 
     let api: ThwapAPI
     let tokens: TokenStore
@@ -137,6 +143,8 @@ final class AppModel: ObservableObject {
         weekRings = nil
         waitingToSync = 0
         notice = nil
+        season = nil
+        team = nil
         auth = .signedOut
     }
 
@@ -180,6 +188,20 @@ final class AppModel: ObservableObject {
         }
         await refreshRings()
         updateNotice()
+        await refreshGlance()
+    }
+
+    /// My Season and Team, read side by side after the drill list. Each one
+    /// fails on its own and keeps the last good answer.
+    func refreshGlance() async {
+        guard auth == .signedIn else { return }
+        async let s = try? api.season()
+        async let t = try? api.team()
+        let (sr, tr) = await (s, t)
+        if let sr { season = sr.glance }
+        if let tr { team = tr.glance }
+        seasonFailed = season == nil
+        teamFailed = team == nil
     }
 
     /// The server wins, with this watch's unsent taps laid on top so an

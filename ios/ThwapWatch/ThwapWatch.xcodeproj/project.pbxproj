@@ -16,6 +16,7 @@
 		3A8D21B480C2053AC26E0739 /* RingMathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C69F865D2DA8844CDC0B4295 /* RingMathTests.swift */; };
 		442DE46780B2FB6E06E47EC6 /* ThwapComplication.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 35618CC02FDB0FAF717A55F7 /* ThwapComplication.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		6B3A765E1D78029F8D3096BD /* LiveThwapAPITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B836D0C3976B84A0B53594DC /* LiveThwapAPITests.swift */; };
+		B7D925CFBD91E0FDDCD09D88 /* GlanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BDDF308CAAA121721DC9A43 /* GlanceTests.swift */; };
 		6BEB1B718A6AB4DF9ADF5561 /* ThwapComplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 961E38393044273D9D229F33 /* ThwapComplication.swift */; };
 		855F0CD721C102D2EC23E0DB /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C210049F7B56FF7C3019D1 /* TodayView.swift */; };
 		9E324F6F1FA0B45CF9F5A651 /* ConcentricRings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CE46A8D5FCEE98C74DECC02 /* ConcentricRings.swift */; };
@@ -32,6 +33,7 @@
 		DB5DF58877775CFD99A464D8 /* ThwapCore in Frameworks */ = {isa = PBXBuildFile; productRef = A2233E6206C86CB7EFF95E38 /* ThwapCore */; };
 		E88DEB78C499CAF2E9B67D1C /* ThwapCore in Frameworks */ = {isa = PBXBuildFile; productRef = 9649933CE24972A8E56AF1D0 /* ThwapCore */; };
 		F170FDBC6A5FDE5245309C8E /* GameGoalsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CA4CF0F67B62C08181A651B /* GameGoalsView.swift */; };
+		D461354C195715CA119EF842 /* GlanceViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8AF46747CE44EC6CB8A28EC /* GlanceViews.swift */; };
 		F365FE1BF72D696421139AA9 /* ThwapCore in Frameworks */ = {isa = PBXBuildFile; productRef = B083C517FF192F772AD79870 /* ThwapCore */; };
 		F5F09D61F14258A6BE2D66B5 /* CheckOffQueueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E24F16316302965DDD731C70 /* CheckOffQueueTests.swift */; };
 /* End PBXBuildFile section */
@@ -79,6 +81,7 @@
 		65DE621EEF45260D7A1E8496 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		688B8F6478D125D19CC61B30 /* Thwap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Thwap.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6CA4CF0F67B62C08181A651B /* GameGoalsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameGoalsView.swift; sourceTree = "<group>"; };
+		F8AF46747CE44EC6CB8A28EC /* GlanceViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlanceViews.swift; sourceTree = "<group>"; };
 		6CE46A8D5FCEE98C74DECC02 /* ConcentricRings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConcentricRings.swift; sourceTree = "<group>"; };
 		7B3DBABBA276DB7F601BFAAF /* LiveQueueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveQueueTests.swift; sourceTree = "<group>"; };
 		87D648FB3593CFA98B069DA4 /* ThwapWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThwapWatchApp.swift; sourceTree = "<group>"; };
@@ -86,6 +89,7 @@
 		A202D8D89839804A79AB1814 /* DrillRunView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DrillRunView.swift; sourceTree = "<group>"; };
 		A26C454F96ED9C7361F60533 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		B836D0C3976B84A0B53594DC /* LiveThwapAPITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveThwapAPITests.swift; sourceTree = "<group>"; };
+		2BDDF308CAAA121721DC9A43 /* GlanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlanceTests.swift; sourceTree = "<group>"; };
 		BD520432EAEDBD6D30A23FC1 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		C315DFBCF108054F4F5D6817 /* ThwapWatchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ThwapWatchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C69F865D2DA8844CDC0B4295 /* RingMathTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RingMathTests.swift; sourceTree = "<group>"; };
@@ -134,6 +138,7 @@
 				BD520432EAEDBD6D30A23FC1 /* AppModel.swift */,
 				A202D8D89839804A79AB1814 /* DrillRunView.swift */,
 				6CA4CF0F67B62C08181A651B /* GameGoalsView.swift */,
+				F8AF46747CE44EC6CB8A28EC /* GlanceViews.swift */,
 				226CEC61006F47B5C58D4976 /* Haptics.swift */,
 				DC7D9A4518582CBB4299BE93 /* SignInView.swift */,
 				396EE9BC2B0839B251C1443E /* StampView.swift */,
@@ -228,6 +233,7 @@
 				2FBB550E0A817B7846EC6950 /* KeychainTokenStoreTests.swift */,
 				7B3DBABBA276DB7F601BFAAF /* LiveQueueTests.swift */,
 				B836D0C3976B84A0B53594DC /* LiveThwapAPITests.swift */,
+				2BDDF308CAAA121721DC9A43 /* GlanceTests.swift */,
 				C69F865D2DA8844CDC0B4295 /* RingMathTests.swift */,
 				1CC8630CEE00B2FA594AE2DA /* TestSupport.swift */,
 			);
@@ -350,6 +356,7 @@
 				B2133954B23EC197C5E9FB63 /* ConcentricRings.swift in Sources */,
 				19FFD0AF548D66F4F1D163EB /* DrillRunView.swift in Sources */,
 				F170FDBC6A5FDE5245309C8E /* GameGoalsView.swift in Sources */,
+				D461354C195715CA119EF842 /* GlanceViews.swift in Sources */,
 				239F2D59C36BDE529ED87079 /* Haptics.swift in Sources */,
 				38F5978A4C5DFC43CE747BF6 /* SignInView.swift in Sources */,
 				1E93B50C445354E939918FF4 /* StampView.swift in Sources */,
@@ -369,6 +376,7 @@
 				A513F2B288CC747A4F577768 /* KeychainTokenStoreTests.swift in Sources */,
 				B29759C53B76609678579139 /* LiveQueueTests.swift in Sources */,
 				6B3A765E1D78029F8D3096BD /* LiveThwapAPITests.swift in Sources */,
+				B7D925CFBD91E0FDDCD09D88 /* GlanceTests.swift in Sources */,
 				3A8D21B480C2053AC26E0739 /* RingMathTests.swift in Sources */,
 				C441A452855CAE900483871F /* TestSupport.swift in Sources */,
 			);

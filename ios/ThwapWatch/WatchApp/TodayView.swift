@@ -7,6 +7,7 @@ import ThwapCore
 struct TodayView: View {
     @EnvironmentObject var model: AppModel
     @Binding var showGoals: Bool
+    @Binding var glance: GlanceScreen?
     @State private var confirmSignOut = false
 
     var body: some View {
@@ -28,6 +29,7 @@ struct TodayView: View {
                             if model.isDone(drill) { model.undoTarget = drill } else { model.running = drill }
                         }
                     }
+                    glanceLinks
                     footer
                 } else if model.loadFailed {
                     Text("No signal. Try again at the rink.")
@@ -97,6 +99,42 @@ struct TodayView: View {
         }
         .accessibilityElement(children: .combine)
         .padding(.bottom, 2)
+    }
+
+    /// My Season and Team, under the drills. Drills always stay on top.
+    private var glanceLinks: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            glanceLink("🗺️", "My Season", value: model.season?.rowValue, to: .season,
+                       hint: "Shows where you are on the season path")
+            Divider().overlay(ThwapTheme.line)
+            glanceLink("🤝", "Team", value: model.team?.rowValue, to: .team,
+                       hint: "Shows the team goal for this week")
+        }
+        .padding(.top, 6)
+    }
+
+    private func glanceLink(_ emoji: String, _ title: String, value: String?, to screen: GlanceScreen,
+                            hint: String) -> some View {
+        Button { glance = screen } label: {
+            HStack {
+                Text(emoji)
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(title)
+                        .font(.headline)
+                    if let value {
+                        Text(value)
+                            .font(.caption2.weight(.bold))
+                            .foregroundStyle(ThwapTheme.green2)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                    }
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right").font(.footnote)
+            }
+            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+        }
+        .accessibilityHint(hint)
     }
 
     private var gameDayLink: some View {

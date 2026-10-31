@@ -3,7 +3,7 @@ import ThwapCore
 
 /// Launch arguments for previews, UI tests and screenshots only:
 ///   -thwapStub                     use StubThwapAPI + an in-memory token (no network)
-///   -thwapScreen signin|waiting|denied|expired|today|run|stamp|goals
+///   -thwapScreen signin|waiting|denied|expired|today|run|stamp|goals|season|team
 ///                                  (implies -thwapStub)
 ///   -thwapGameDay   -thwapElapsed <sec>
 ///   -thwapBaseURL <https url>      point the real client at another deploy
@@ -63,6 +63,7 @@ struct RootView: View {
     @EnvironmentObject var model: AppModel
     @Environment(\.scenePhase) private var scenePhase
     @State private var showGoals = false
+    @State private var glance: GlanceScreen?
     @State private var appliedLaunch = false
     private let launch = LaunchOptions.current
 
@@ -91,8 +92,14 @@ struct RootView: View {
 
     private var signedIn: some View {
         NavigationStack {
-            TodayView(showGoals: $showGoals)
+            TodayView(showGoals: $showGoals, glance: $glance)
                 .navigationDestination(isPresented: $showGoals) { GameGoalsView() }
+                .navigationDestination(item: $glance) { screen in
+                    switch screen {
+                    case .season: SeasonView()
+                    case .team: TeamView()
+                    }
+                }
         }
         .fullScreenCover(item: $model.running) { drill in
             DrillRunView(drill: drill, startOffset: launch.elapsed)
@@ -126,6 +133,10 @@ struct RootView: View {
             if let d = plan.drills.first(where: { $0.id == "stick:2" }) { model.checkOff(d) }
         case "goals":
             showGoals = true
+        case "season":
+            glance = .season
+        case "team":
+            glance = .team
         default:
             break
         }
