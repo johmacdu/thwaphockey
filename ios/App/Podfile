@@ -1,4 +1,4 @@
-require_relative '../../../../../../../Documents/GitHub/thwaphockey/node_modules/@capacitor/ios/scripts/pods_helpers'
+require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
 
 platform :ios, '15.0'
 use_frameworks!
@@ -9,14 +9,14 @@ use_frameworks!
 install! 'cocoapods', :disable_input_output_paths => true
 
 def capacitor_pods
-  pod 'Capacitor', :path => '../../../../../../../Documents/GitHub/thwaphockey/node_modules/@capacitor/ios'
-  pod 'CapacitorCordova', :path => '../../../../../../../Documents/GitHub/thwaphockey/node_modules/@capacitor/ios'
-  pod 'CapacitorApp', :path => '../../../../../../../Documents/GitHub/thwaphockey/node_modules/@capacitor/app'
-  pod 'CapacitorHaptics', :path => '../../../../../../../Documents/GitHub/thwaphockey/node_modules/@capacitor/haptics'
-  pod 'CapacitorPushNotifications', :path => '../../../../../../../Documents/GitHub/thwaphockey/node_modules/@capacitor/push-notifications'
-  pod 'CapacitorShare', :path => '../../../../../../../Documents/GitHub/thwaphockey/node_modules/@capacitor/share'
-  pod 'CapacitorSplashScreen', :path => '../../../../../../../Documents/GitHub/thwaphockey/node_modules/@capacitor/splash-screen'
-  pod 'CapacitorStatusBar', :path => '../../../../../../../Documents/GitHub/thwaphockey/node_modules/@capacitor/status-bar'
+  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
+  pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
+  pod 'CapacitorApp', :path => '../../node_modules/@capacitor/app'
+  pod 'CapacitorHaptics', :path => '../../node_modules/@capacitor/haptics'
+  pod 'CapacitorPushNotifications', :path => '../../node_modules/@capacitor/push-notifications'
+  pod 'CapacitorShare', :path => '../../node_modules/@capacitor/share'
+  pod 'CapacitorSplashScreen', :path => '../../node_modules/@capacitor/splash-screen'
+  pod 'CapacitorStatusBar', :path => '../../node_modules/@capacitor/status-bar'
 end
 
 target 'App' do
@@ -39,6 +39,13 @@ post_install do |installer|
       config.build_settings['GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS'] = 'NO'
       config.build_settings['CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS'] = 'NO'
       config.build_settings['SWIFT_SUPPRESS_WARNINGS'] = 'YES'
+      # Release builds precompile the Cordova Clang module under the Capacitor pod
+      # target, where WKProcessPool's deprecation surfaces through Swift's Clang
+      # importer; SWIFT_SUPPRESS_WARNINGS does not cover that path.
+      swift_flags = Array(config.build_settings['OTHER_SWIFT_FLAGS'] || '$(inherited)').join(' ')
+      unless swift_flags.include?('-Wno-deprecated-declarations')
+        config.build_settings['OTHER_SWIFT_FLAGS'] = "#{swift_flags} -Xcc -Wno-deprecated-declarations"
+      end
     end
   end
   # Clears Xcode's "Update to recommended settings" prompt on the Pods project.
