@@ -168,6 +168,20 @@ Scrim and Cancel dismiss; only the red button acts. Always pair
   button stays disabled until the typed text matches. Use it only for actions
   that delete an account, never for everyday removes.
 
+### Profile big card + "My stuff" tiles: `.prof-bigcard`, `.prof-tile`
+The kid Profile (players in the app; coaches keep plain rows). The player's real
+card renders full width at the top via the shared `window.buildFront` at the 300px
+base and scales to fit; tapping it opens the spinnable card overlay. Below, a
+3-up grid of `.prof-tile` buttons, each one navigating: streak (live board
+streak, tap opens the stats page), stickers (the Sticker Book count, tap opens
+My Season > Stickers), My Sass (current app icon, tap opens App icon).
+
+- **Defined in:** `index.html` (`#profKid`, kid-profile script after `#profile`).
+- **Reuse rule:** tiles wear the card look only because every tile navigates;
+  a read-only number goes flat. Keep tiles to one number + one short kid label.
+- **`.prof-pop`:** the THWAP! burst that pops on a Profile switch turning ON.
+  450ms, never gates the tap, hidden under reduced motion.
+
 ### My Player page: `.lk` (avatar.js)
 The character editor. A full-screen Thwap page built from the shared parts, so it
 reads like every other page.
