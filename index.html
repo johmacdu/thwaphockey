@@ -585,6 +585,10 @@ body:not(.viewing-teammate) .cardctl-mine:not([hidden]){display:flex;justify-con
 .cf2-nm i{display:block;width:200px;max-width:96%;height:6px;background:#C0252A;margin:6px 0 7px}
 .cf2-pos{font-family:'Oswald',system-ui,sans-serif;font-weight:500;font-size:clamp(12px,4vw,17px);text-transform:uppercase;letter-spacing:.14em;color:#E7ECF0}
 .cf2-team{text-align:right;font-family:'Oswald',system-ui,sans-serif;font-weight:600;font-size:12px;line-height:1.3;text-transform:uppercase;letter-spacing:.08em;color:#DCE2E8;flex:0 0 auto;white-space:nowrap}
+/* The name/position column may shrink so a long two-position label
+   ("Forward & Defense") wraps instead of pushing the team name off the card. */
+.cf2-foot>div:first-child{min-width:0;flex:1 1 auto}
+.cf2-pos{line-height:1.15}
 /* Team page only: the roster cards are rendered scaled from a 300px base, which
    pushes the right-aligned Jr Rangers / Vancouver WA block off the right edge
    (clipped by .cf2 overflow:hidden). Give the foot more right room and pull the
