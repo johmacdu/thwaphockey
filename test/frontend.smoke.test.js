@@ -29,11 +29,11 @@ describe('index.html structure', () => {
     expect(doc.querySelector('title')?.textContent).toContain('Thwap Hockey');
   });
 
-  it('has balanced <section> tags (open === close === 14)', () => {
+  it('has balanced <section> tags (open === close === 15)', () => {
     const open = (html.match(/<section id=/g) || []).length;
     const close = (html.match(/<\/section>/g) || []).length;
     expect(open).toBe(close);
-    expect(open).toBe(14); // + #profile (native settings/account tab) + #iq (Hockey IQ); #addplayer is a .sheet side panel, not a page section
+    expect(open).toBe(15); // + #profile (native settings/account tab) + #appicon (its App icon sub-page) + #iq (Hockey IQ); #addplayer is a .sheet side panel, not a page section
   });
 
   it('#home is the last section (required for :target hash nav)', () => {

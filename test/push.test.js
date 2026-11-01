@@ -371,8 +371,7 @@ describe('Notifications toggle hardening (token lifecycle via the shipped closur
   function runToggle({ plugin = null, persisted = null } = {}) {
     const dom = new JSDOM(
       "<!doctype html><html><body>"
-      + "<button id='profNotif' aria-pressed='false'>"
-      + "<span id='profNotifIco'>🔕</span><span id='profNotifLabel'>Off</span>"
+      + "<button id='profNotif' role='switch' aria-checked='false' aria-pressed='false'>"
       + "</button></body></html>",
       { url: 'https://thwaphockey.com/' },
     );
@@ -411,11 +410,11 @@ describe('Notifications toggle hardening (token lifecycle via the shipped closur
     expect(win.document.getElementById('profNotif')).toBeTruthy();
   });
 
-  it('restores persisted ON state on load (aria-pressed + label)', () => {
+  it('restores persisted ON state on load (switch aria-checked + aria-pressed)', () => {
     const { win } = runToggle({ persisted: '1' });
     const btn = win.document.getElementById('profNotif');
+    expect(btn.getAttribute('aria-checked')).toBe('true');
     expect(btn.getAttribute('aria-pressed')).toBe('true');
-    expect(win.document.getElementById('profNotifLabel').textContent).toBe('On');
   });
 
   it('a click persists the toggle intent to localStorage.thwapNotif', () => {
@@ -469,8 +468,10 @@ describe('Notifications toggle hardening (token lifecycle via the shipped closur
     // Pretend a prior ON state with no stored token (e.g. token write failed).
     win.localStorage.setItem('thwapNotif', '1');
     const btn = win.document.getElementById('profNotif');
+    btn.setAttribute('aria-checked', 'true');
     btn.setAttribute('aria-pressed', 'true');
     btn.dispatchEvent(new win.Event('click')); // disable
+    expect(btn.getAttribute('aria-checked')).toBe('false');
     expect(fetches.some((f) => String(f.url).includes('action=unregister'))).toBe(false);
     expect(win.localStorage.getItem('thwapNotifToken')).toBeNull();
   });

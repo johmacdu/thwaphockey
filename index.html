@@ -1474,41 +1474,61 @@ body.is-native.is-android .pe-confirm-go:active{
    on the web they stay in the footer. These are flat rows (no card styling on a
    non-navigating element), grouped under plain labels. --- */
 body:not(.is-native) #profile.page:target{display:none}  /* web: never routable */
-body:not(.is-native) #profile .prof-row-native{display:none}  /* native-only: Notifications toggle needs the Capacitor push plugin */
-body:not(.is-native) #profile .prof-group-native{display:none}  /* native-only: alternate app icons are an iOS/Android feature */
-#profile .appicon-hint{font-size:var(--fs-support);color:var(--muted);margin:0 0 12px;padding:0 2px}
-#profile .appicon-skill{margin:0 0 14px}
-#profile .appicon-skilllab{font-size:var(--fs-support);font-weight:900;color:var(--text);margin:0 0 6px;padding:0 2px}
-#profile .appicon-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
-#profile .appicon-cell{position:relative;border:0;background:none;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;aspect-ratio:1;border-radius:16px}
-#profile .appicon-cell img{display:block;width:100%;height:100%;border-radius:16px}
-#profile .appicon-cell.sel{outline:3px solid var(--lime);outline-offset:2px}
-#profile .appicon-cell.sel::after{content:'\2713';position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:var(--lime);color:var(--ink,#15221B);font-size:13px;font-weight:900;line-height:20px;text-align:center}
-#profile .prof-wrap{max-width:520px;margin:0 auto}
-#profile .prof-group{margin:0 0 22px}
-#profile .prof-grouplab{font-size:var(--fs-eyebrow);font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;padding:0 2px}
+body:not(.is-native) #profile .prof-row-native{display:none}  /* native-only: Notifications needs the Capacitor push plugin; alternate app icons are an iOS/Android feature */
+body:not(.is-native) #profile .prof-group-native{display:none}  /* native-only: developer diagnostics */
+/* App icon sub-page (#appicon, opened from the Profile 'App icon' row). */
+body:not(.is-native) #appicon.page:target{display:none}  /* web: never routable, like #profile */
+#appicon .prof-back{display:inline-flex;align-items:center;gap:6px;margin:6px 0 4px;color:var(--green);font-weight:900;font-size:16px;text-decoration:none;-webkit-tap-highlight-color:transparent}
+#appicon .prof-back-ch{font-size:24px;line-height:1}
+#appicon .prof-title{font-family:'Archivo Black',system-ui,sans-serif;font-weight:400;font-size:34px;letter-spacing:.005em;margin:10px 0 14px}
+#appicon .appicon-hint{font-size:15px;font-weight:700;color:var(--muted);margin:0 0 24px;line-height:1.4}
+#appicon .appicon-skill{margin:0 0 24px}
+#appicon .appicon-skilllab{font-size:16px;font-weight:900;color:var(--text);margin:0 0 10px}
+#appicon .appicon-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+#appicon .appicon-cell{position:relative;border:0;background:none;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;aspect-ratio:1;border-radius:14px}
+#appicon .appicon-cell img{display:block;width:100%;height:100%;border-radius:14px}
+#appicon .appicon-cell.sel img{box-shadow:0 0 0 3px var(--bg),0 0 0 6px var(--green)}
+#appicon .appicon-cell.sel::after{content:'\2713';position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;background:var(--green);color:var(--bg);font-size:13px;font-weight:900;line-height:22px;text-align:center}
+#profile .prof-wrap,#appicon .prof-wrap{max-width:520px;margin:0 auto}
+#profile .prof-group{margin:0 0 32px}
+#profile .prof-grouplab{font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 4px}
 #profile .prof-row{
   display:flex;align-items:center;justify-content:space-between;gap:12px;
-  min-height:52px;padding:12px 2px;border-bottom:1px solid var(--line);
+  min-height:56px;padding:0;border-bottom:1px solid var(--line);
 }
 #profile .prof-row:last-child{border-bottom:0}
-#profile .prof-rowlab{font-size:var(--fs-body);font-weight:800;color:var(--text)}
+#profile .prof-row[hidden]{display:none}
+#profile .prof-rowlab{font-size:17px;font-weight:800;color:var(--text)}
 #profile a.prof-row,#profile button.prof-row{
   width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);
-  font-family:inherit;cursor:pointer;color:var(--text);-webkit-tap-highlight-color:transparent;
+  font-family:inherit;cursor:pointer;color:var(--text);text-decoration:none;-webkit-tap-highlight-color:transparent;
 }
 #profile a.prof-row:last-child,#profile button.prof-row:last-child{border-bottom:0}
-#profile .prof-rowchev{color:var(--chev);font-size:20px;font-weight:700}
-#profile .prof-card-btn{
-  display:flex;align-items:center;gap:14px;width:100%;text-align:left;
-  background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);
-  padding:14px;font-family:inherit;cursor:pointer;color:var(--text);
-  -webkit-tap-highlight-color:transparent;
-}
-#profile .prof-card-art{width:48px;height:48px;border-radius:10px;object-fit:cover;flex:0 0 auto;background:var(--soft)}
+#profile .prof-rowchev{color:var(--chev);font-size:22px;font-weight:700}
+#profile .prof-rowval{display:flex;align-items:center;gap:10px;color:var(--muted);font-weight:700;font-size:15px}
+#profile .prof-appicon-mini{width:30px;height:30px;border-radius:8px;display:block}
+#profile .prof-appicon-mini[hidden]{display:none}
+/* Player card row: a navigating row, not a card. */
+#profile .prof-me{gap:14px;min-height:76px;justify-content:flex-start}
+#profile .prof-me .prof-rowchev{margin-left:auto}
+#profile .prof-card-art{width:52px;height:52px;border-radius:50%;object-fit:cover;flex:0 0 auto;background:var(--soft)}
 #profile .prof-card-txt{display:flex;flex-direction:column;gap:2px}
-#profile .prof-card-nm{font-size:var(--fs-cardtitle);font-weight:900}
-#profile .prof-card-sub{font-size:var(--fs-support);color:var(--muted)}
+#profile .prof-card-nm{font-size:18px;font-weight:900}
+#profile .prof-card-sub{font-size:14px;font-weight:700;color:var(--muted)}
+#profile .prof-card-sub[hidden]{display:none}
+/* iOS-style on/off switch. State lives in aria-checked (role=switch). */
+#profile .prof-row-switch{cursor:pointer;-webkit-tap-highlight-color:transparent}
+#profile .prof-switch{position:relative;flex:none;width:51px;height:31px;padding:0;border:0;border-radius:16px;background:var(--line2);cursor:pointer;transition:background .2s ease;-webkit-tap-highlight-color:transparent}
+#profile .prof-switch::after{content:'';position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,.2);transition:left .2s ease}
+#profile .prof-switch[aria-checked='true']{background:#4CB34A}
+html[data-theme='dark'] #profile .prof-switch[aria-checked='true']{background:#8FD65E}
+#profile .prof-switch[aria-checked='true']::after{left:22px}
+#profile .prof-switch:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+/* With the bottom tab bar showing, Profile is a tab, not a sheet: no close X and
+   no brand header, just the big title (the X overlapped the settings rows). */
+body.is-native.is-authed:not(.login-locked) #profile>.glassclose,
+body.is-native.is-authed:not(.login-locked) #profile>.topbar{display:none}
+body.is-native.is-authed:not(.login-locked) #profile>.hero{padding:10px 0 28px}
 #profile .prof-signout{color:var(--alert);font-weight:900}
 /* In the app, the web footer action cluster (sound/theme/menu) is redundant with
    the Profile tab, so hide it. The slogan + trademark stay. */
@@ -2548,83 +2568,29 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 <div class='hero'><h1>Profile</h1></div>
 <div class='prof-wrap'>
   <div class='prof-group'>
-    <div class='prof-grouplab'>Your card</div>
-    <button type='button' class='prof-card-btn' id='profCardBtn'>
+    <button type='button' class='prof-row prof-me' id='profCardBtn'>
       <img class='prof-card-art' id='profCardArt' src='logo-64.png' alt='' loading='lazy' decoding='async'>
-      <span class='prof-card-txt'><span class='prof-card-nm' id='profCardNm'>Your player card</span><span class='prof-card-sub'>Open your card</span></span>
+      <span class='prof-card-txt'><span class='prof-card-nm' id='profCardNm'>Your player card</span><span class='prof-card-sub' id='profCardSub' hidden>Your player card</span></span>
+      <span class='prof-rowchev' aria-hidden='true'>&rsaquo;</span>
     </button>
     <a class='prof-row' href='#roster' id='profInfo'><span class='prof-rowlab'>Player info</span><span class='prof-rowchev'>&rsaquo;</span></a>
   </div>
   <div class='prof-group'>
     <div class='prof-grouplab'>Settings</div>
-    <div class='prof-row'>
-      <span class='prof-rowlab'>Sound</span>
-      <button class='sfxtoggle' id='profSfxToggle' type='button' aria-label='Mute sounds' title='Mute sounds' aria-pressed='true'></button>
+    <div class='prof-row prof-row-switch'>
+      <span class='prof-rowlab' id='profSfxLab'>Sound</span>
+      <button class='prof-switch' id='profSfxToggle' type='button' role='switch' aria-checked='true' aria-pressed='true' aria-labelledby='profSfxLab'></button>
     </div>
-    <div class='prof-row'>
-      <span class='prof-rowlab'>Appearance</span>
-      <button class='themetoggle' id='profThemeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='profTtico'>🌙</span><span class='ttlabel' id='profTtlabel'>Dark</span></button>
+    <div class='prof-row prof-row-switch'>
+      <span class='prof-rowlab' id='profThemeLab'>Dark mode</span>
+      <button class='prof-switch' id='profThemeToggle' type='button' role='switch' aria-checked='false' aria-labelledby='profThemeLab'></button>
     </div>
-    <div class='prof-row prof-row-native' id='profNotifRow'>
-      <span class='prof-rowlab'>Notifications</span>
-      <button class='themetoggle' id='profNotif' type='button' aria-pressed='false' aria-label='Turn notifications on or off'><span class='ttico' id='profNotifIco'>🔕</span><span class='ttlabel' id='profNotifLabel'>Off</span></button>
+    <div class='prof-row prof-row-switch prof-row-native' id='profNotifRow'>
+      <span class='prof-rowlab' id='profNotifLab'>Notifications</span>
+      <button class='prof-switch' id='profNotif' type='button' role='switch' aria-checked='false' aria-pressed='false' aria-labelledby='profNotifLab'></button>
     </div>
+    <a class='prof-row prof-row-native' href='#appicon' id='profAppIconRow'><span class='prof-rowlab'>App icon</span><span class='prof-rowval'><img class='prof-appicon-mini' id='profAppIconMini' alt='' hidden><span id='profAppIconLab'></span><span class='prof-rowchev'>&rsaquo;</span></span></a>
   </div>
-  <div class='prof-group prof-group-native' id='appIconGroup'>
-    <div class='prof-grouplab'>App icon</div>
-    <p class='appicon-hint'>Pick which Sass shows on your home screen.</p>
-    <div id='appIconGrid'></div>
-  </div>
-  <script>
-  /* Selectable app icon: pick a skill + color; the choice is remembered and, in
-     the native app, applied via the alternate-icon bridge (see app-icons/README).
-     On the web it is an inert preview -- the installed icon can only change in the
-     native shell. Data-driven from app-icons/manifest.json. */
-  (function(){
-    var grid=document.getElementById('appIconGrid'); if(!grid) return;
-    var KEY='thwapAppIcon';
-    function current(){ try{ return JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ return null; } }
-    function applyNative(ic){
-      try{
-        var cap=window.Capacitor, plat=(cap&&cap.getPlatform&&cap.getPlatform())||'web';
-        /* iOS wants the CFBundleAlternateIcons key; Android wants the activity-alias name. */
-        var name=(plat==='android'?ic.androidAlias:ic.iosKey);
-        var p=cap&&cap.Plugins&&(cap.Plugins.DynamicAppIcon||cap.Plugins.CapacitorDynamicIcon||cap.Plugins.AppIcon);
-        if(p&&p.change){ p.change({name:name}); return true; }
-        if(p&&p.setIcon){ p.setIcon({name:name}); return true; }
-        if(window.thwapSetNativeIcon){ window.thwapSetNativeIcon(name, {ios:ic.iosKey, android:ic.androidAlias, platform:plat}); return true; }
-      }catch(e){}
-      return false;  /* no native bridge (web, or plugin not installed): choice is still remembered */
-    }
-    window.thwapRenderAppIconPicker=function(m){
-      var cur=current(); grid.innerHTML='';
-      (m.skills||[]).forEach(function(sk){
-        var wrap=document.createElement('div'); wrap.className='appicon-skill';
-        var lab=document.createElement('div'); lab.className='appicon-skilllab'; lab.textContent=sk.label; wrap.appendChild(lab);
-        var row=document.createElement('div'); row.className='appicon-row';
-        (m.colors||[]).forEach(function(col){
-          var ic=(m.icons||[]).filter(function(x){return x.skill===sk.id&&x.color===col.id;})[0]; if(!ic) return;
-          var b=document.createElement('button'); b.type='button'; b.className='appicon-cell'; b.setAttribute('aria-label',sk.label+' '+col.label); b.setAttribute('data-ios',ic.iosKey);
-          if(cur&&cur.skill===sk.id&&cur.color===col.id) b.classList.add('sel');
-          /* preview follows the SYSTEM appearance (what iOS 18 keys the icon off),
-             dark variant when available -- not the in-app theme toggle */
-          b.innerHTML=(ic.darkPreview?"<picture><source srcset='"+ic.darkPreview+"' media='(prefers-color-scheme: dark)'><img src='"+ic.preview+"' alt='' loading='lazy'></picture>":"<img src='"+ic.preview+"' alt='' loading='lazy'>");
-          b.addEventListener('click',function(){
-            grid.querySelectorAll('.appicon-cell.sel').forEach(function(e){e.classList.remove('sel');});
-            b.classList.add('sel');
-            try{ localStorage.setItem(KEY, JSON.stringify({skill:sk.id,color:col.id,iosKey:ic.iosKey,androidAlias:ic.androidAlias})); }catch(e){}
-            applyNative(ic);
-          });
-          row.appendChild(b);
-        });
-        wrap.appendChild(row); grid.appendChild(wrap);
-      });
-    };
-    fetch('/app-icons/manifest.json',{cache:'no-store'}).then(function(r){ return r.ok?r.json():null; })
-      .then(function(m){ if(m&&m.icons) window.thwapRenderAppIconPicker(m); else { var g=document.getElementById('appIconGroup'); if(g) g.hidden=true; } })
-      .catch(function(){ var g=document.getElementById('appIconGroup'); if(g) g.hidden=true; });
-  })();
-  </script>
   <div class='prof-group'>
     <div class='prof-grouplab'>About</div>
     <a class='prof-row' href='/about'><span class='prof-rowlab'>About Thwap</span><span class='prof-rowchev'>&rsaquo;</span></a>
@@ -2722,6 +2688,75 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
   <div class='prof-group'>
     <button type='button' class='prof-row prof-signout' id='profSignout'><span class='prof-rowlab prof-signout'>Sign out</span></button>
   </div>
+</div>
+</section>
+<section id='appicon' class='page'>
+<div class='prof-wrap'>
+  <a class='prof-back' href='#profile'><span class='prof-back-ch' aria-hidden='true'>&lsaquo;</span>Profile</a>
+  <h1 class='prof-title'>App icon</h1>
+  <p class='appicon-hint'>Pick which Sass shows on your home screen.</p>
+  <div id='appIconGrid'></div>
+  <script>
+  /* Selectable app icon: pick a skill + color; the choice is remembered and, in
+     the native app, applied via the alternate-icon bridge (see app-icons/README).
+     On the web it is an inert preview -- the installed icon can only change in the
+     native shell. Data-driven from app-icons/manifest.json. */
+  (function(){
+    var grid=document.getElementById('appIconGrid'); if(!grid) return;
+    var KEY='thwapAppIcon';
+    function current(){ try{ return JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ return null; } }
+    /* No manifest: drop the Profile 'App icon' row, there is nothing to pick. */
+    function hideRow(){ var r=document.getElementById('profAppIconRow'); if(r) r.hidden=true; }
+    /* Profile row summary: a mini preview of the current pick + 'Hands, Purple'. */
+    function paintRow(m){
+      var cur=current(), mini=document.getElementById('profAppIconMini'), lab=document.getElementById('profAppIconLab');
+      var ic=cur&&(m.icons||[]).filter(function(x){return x.skill===cur.skill&&x.color===cur.color;})[0];
+      var sk=ic&&(m.skills||[]).filter(function(x){return x.id===ic.skill;})[0], col=ic&&(m.colors||[]).filter(function(x){return x.id===ic.color;})[0];
+      if(lab) lab.textContent=(sk&&col)?(sk.label+', '+col.label):'';
+      if(mini){ if(ic){ var dark=false; try{ dark=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches); }catch(e){} mini.setAttribute('src',(dark&&ic.darkPreview)?ic.darkPreview:ic.preview); mini.hidden=false; } else mini.hidden=true; }
+    }
+    function applyNative(ic){
+      try{
+        var cap=window.Capacitor, plat=(cap&&cap.getPlatform&&cap.getPlatform())||'web';
+        /* iOS wants the CFBundleAlternateIcons key; Android wants the activity-alias name. */
+        var name=(plat==='android'?ic.androidAlias:ic.iosKey);
+        var p=cap&&cap.Plugins&&(cap.Plugins.DynamicAppIcon||cap.Plugins.CapacitorDynamicIcon||cap.Plugins.AppIcon);
+        if(p&&p.change){ p.change({name:name}); return true; }
+        if(p&&p.setIcon){ p.setIcon({name:name}); return true; }
+        if(window.thwapSetNativeIcon){ window.thwapSetNativeIcon(name, {ios:ic.iosKey, android:ic.androidAlias, platform:plat}); return true; }
+      }catch(e){}
+      return false;  /* no native bridge (web, or plugin not installed): choice is still remembered */
+    }
+    window.thwapRenderAppIconPicker=function(m){
+      var cur=current(); grid.innerHTML=''; paintRow(m);
+      (m.skills||[]).forEach(function(sk){
+        var wrap=document.createElement('div'); wrap.className='appicon-skill';
+        var lab=document.createElement('div'); lab.className='appicon-skilllab'; lab.textContent=sk.label; wrap.appendChild(lab);
+        var row=document.createElement('div'); row.className='appicon-row';
+        (m.colors||[]).forEach(function(col){
+          var ic=(m.icons||[]).filter(function(x){return x.skill===sk.id&&x.color===col.id;})[0]; if(!ic) return;
+          var b=document.createElement('button'); b.type='button'; b.className='appicon-cell'; b.setAttribute('aria-label',sk.label+' '+col.label); b.setAttribute('data-ios',ic.iosKey);
+          if(cur&&cur.skill===sk.id&&cur.color===col.id) b.classList.add('sel');
+          /* preview follows the SYSTEM appearance (what iOS 18 keys the icon off),
+             dark variant when available -- not the in-app theme toggle */
+          b.innerHTML=(ic.darkPreview?"<picture><source srcset='"+ic.darkPreview+"' media='(prefers-color-scheme: dark)'><img src='"+ic.preview+"' alt='' loading='lazy'></picture>":"<img src='"+ic.preview+"' alt='' loading='lazy'>");
+          b.addEventListener('click',function(){
+            grid.querySelectorAll('.appicon-cell.sel').forEach(function(e){e.classList.remove('sel');});
+            b.classList.add('sel');
+            try{ localStorage.setItem(KEY, JSON.stringify({skill:sk.id,color:col.id,iosKey:ic.iosKey,androidAlias:ic.androidAlias})); }catch(e){}
+            applyNative(ic);
+            paintRow(m);
+          });
+          row.appendChild(b);
+        });
+        wrap.appendChild(row); grid.appendChild(wrap);
+      });
+    };
+    fetch('/app-icons/manifest.json',{cache:'no-store'}).then(function(r){ return r.ok?r.json():null; })
+      .then(function(m){ if(m&&m.icons) window.thwapRenderAppIconPicker(m); else hideRow(); })
+      .catch(hideRow);
+  })();
+  </script>
 </div>
 </section>
 <section id='home'>
@@ -5632,7 +5667,7 @@ render();
 fetchBoard();
 window.addEventListener('hashchange',function(){ if(location.hash==='#progress') fetchBoard(); });
 })();</script>
-<script>(function(){var KEY='thwapTheme';function apply(t){var dark=(t==='dark');document.documentElement.setAttribute('data-theme',dark?'dark':'light');try{if(window.thwapSyncStatusBar)window.thwapSyncStatusBar(dark);if(window.thwapSyncNavBar)window.thwapSyncNavBar(dark);}catch(e){}var i=document.getElementById('ttico'),l=document.getElementById('ttlabel');if(i)i.textContent=dark?'☀️':'🌙';if(l)l.textContent=dark?'Light':'Dark';var pi=document.getElementById('profTtico'),pl=document.getElementById('profTtlabel');if(pi)pi.textContent=dark?'☀️':'🌙';if(pl)pl.textContent=dark?'Light':'Dark';var bm=document.getElementById('brandMark');if(bm)bm.setAttribute('src',dark?'wordmark-dark.svg':'wordmark-light.svg');var fm=document.getElementById('footerMark');if(fm)fm.setAttribute('src',dark?'wordmark-tm-dark.svg':'wordmark-tm-light.svg');var lm=document.getElementById('loginMark');if(lm)lm.setAttribute('src',dark?'wordmark-dark.svg':'wordmark-light.svg');}var saved='light';try{saved=localStorage.getItem(KEY)||'light';}catch(e){}apply(saved);function toggle(){var cur='light';try{cur=localStorage.getItem(KEY)||'light';}catch(e){}var next=(cur==='dark'?'light':'dark');try{localStorage.setItem(KEY,next);}catch(e){}apply(next);}var b=document.getElementById('themeToggle');if(b)b.addEventListener('click',toggle);var pb=document.getElementById('profThemeToggle');if(pb)pb.addEventListener('click',toggle);})();</script>
+<script>(function(){var KEY='thwapTheme';function apply(t){var dark=(t==='dark');document.documentElement.setAttribute('data-theme',dark?'dark':'light');try{if(window.thwapSyncStatusBar)window.thwapSyncStatusBar(dark);if(window.thwapSyncNavBar)window.thwapSyncNavBar(dark);}catch(e){}var i=document.getElementById('ttico'),l=document.getElementById('ttlabel');if(i)i.textContent=dark?'☀️':'🌙';if(l)l.textContent=dark?'Light':'Dark';var ps=document.getElementById('profThemeToggle');if(ps)ps.setAttribute('aria-checked',dark?'true':'false');var bm=document.getElementById('brandMark');if(bm)bm.setAttribute('src',dark?'wordmark-dark.svg':'wordmark-light.svg');var fm=document.getElementById('footerMark');if(fm)fm.setAttribute('src',dark?'wordmark-tm-dark.svg':'wordmark-tm-light.svg');var lm=document.getElementById('loginMark');if(lm)lm.setAttribute('src',dark?'wordmark-dark.svg':'wordmark-light.svg');}var saved='light';try{saved=localStorage.getItem(KEY)||'light';}catch(e){}apply(saved);function toggle(){var cur='light';try{cur=localStorage.getItem(KEY)||'light';}catch(e){}var next=(cur==='dark'?'light':'dark');try{localStorage.setItem(KEY,next);}catch(e){}apply(next);}var b=document.getElementById('themeToggle');if(b)b.addEventListener('click',toggle);var pb=document.getElementById('profThemeToggle');if(pb)pb.addEventListener('click',toggle);})();</script>
 <script>
 /* Shared menu manager: at most one popover menu (footer kebab, nav kebabs) open
    at a time. Opening one closes the others; a single document-level listener
@@ -10793,7 +10828,11 @@ document.getElementById('coachInfoScrim') && document.getElementById('coachInfoS
   function wireMute(){
     var btns=[document.getElementById('sfxToggle'),document.getElementById('profSfxToggle')].filter(Boolean);
     if(!btns.length)return;
-    function paint(){ var on=sfxOn(); btns.forEach(function(b){ b.innerHTML=on?SPK:OFF; b.setAttribute('aria-pressed',on?'true':'false'); b.setAttribute('aria-label',on?'Mute sounds':'Unmute sounds'); b.title=on?'Mute sounds':'Unmute sounds'; b.classList.toggle('off',!on); }); }
+    function paint(){ var on=sfxOn(); btns.forEach(function(b){
+      b.setAttribute('aria-pressed',on?'true':'false');
+      /* the Profile row is a labelled switch (role=switch): state only, no icon */
+      if(b.getAttribute('role')==='switch'){ b.setAttribute('aria-checked',on?'true':'false'); return; }
+      b.innerHTML=on?SPK:OFF; b.setAttribute('aria-label',on?'Mute sounds':'Unmute sounds'); b.title=on?'Mute sounds':'Unmute sounds'; b.classList.toggle('off',!on); }); }
     btns.forEach(function(b){
       if(b._wired)return; b._wired=1;
       b.addEventListener('click',function(e){ e.stopPropagation(); var next=!sfxOn(); setSfxOn(next); paint(); if(next){ ctx(); play('toggleOn'); } });
@@ -11103,7 +11142,7 @@ window.thwapPaywall=function(billing, teamCode){
     if(h==='roster') return 'roster';
     if(h==='plan') return 'plan';
     if(h==='progress') return 'progress';
-    if(h==='profile') return 'profile';
+    if(h==='profile'||h==='appicon') return 'profile';
     return null; /* #player, #login, etc: no tab lit */
   }
   function paintTabs(){
@@ -11130,10 +11169,20 @@ window.thwapPaywall=function(billing, teamCode){
       try{ nm=(localStorage.getItem('bfPlayer')||'').trim(); }catch(e){}
       if(nm){
         var art=document.getElementById('profCardArt');
-        var nmEl=document.getElementById('profCardNm');
-        if(nmEl) nmEl.textContent=nm.split(/\s+/)[0]+"'s card";
         slug=nm.split(/\s+/)[0].toLowerCase();
         if(art) art.setAttribute('src','cards/'+slug+'_photo.png');
+        /* 'Lewie #72': first name + jersey from the roster (or the demo roster).
+           Repainted on each visit, since the roster can land after boot. */
+        var paintCard=function(){
+          var nmEl=document.getElementById('profCardNm'), sub=document.getElementById('profCardSub');
+          var first=nm.split(/\s+/)[0], info=null;
+          try{ info=(window.THWAP_ROSTER||{})[slug]||null; if(window.thwapDemoInfo){ var di=window.thwapDemoInfo(nm); if(di) info=di; } }catch(e){}
+          var num=info&&info.num!=null&&info.num!==''?String(info.num):'';
+          if(nmEl) nmEl.textContent=num?(first+' #'+num):first;
+          if(sub) sub.hidden=false;
+        };
+        paintCard();
+        window.addEventListener('hashchange',function(){ if(location.hash==='#profile') paintCard(); });
       }
       cardBtn.addEventListener('click',function(){
         if(nm && window.openPlayerPage){ window.openPlayerPage(nm,'card'); }
@@ -11143,6 +11192,14 @@ window.thwapPaywall=function(billing, teamCode){
       var art2=document.getElementById('profCardArt');
       if(art2) art2.addEventListener('error',function(){ art2.setAttribute('src','logo-64.png'); });
     }
+
+    /* Switch rows: a tap anywhere on the row flips its switch, like iOS Settings. */
+    document.querySelectorAll('#profile .prof-row-switch').forEach(function(r){
+      r.addEventListener('click',function(e){
+        var sw=r.querySelector('.prof-switch');
+        if(sw && e.target!==sw && !sw.contains(e.target)) sw.click();
+      });
+    });
 
     /* Sign out: identical clearing to the footer kebab's menuSignout, so there
        is one sign-out behaviour whichever surface the user used. */
@@ -11182,11 +11239,8 @@ window.thwapPaywall=function(billing, teamCode){
     if(notif){
       var NOTIF_KEY='thwapNotif';
       var paintNotif=function(on){
+        notif.setAttribute('aria-checked', on?'true':'false');
         notif.setAttribute('aria-pressed', on?'true':'false');
-        var ico=document.getElementById('profNotifIco');
-        var lab=document.getElementById('profNotifLabel');
-        if(ico) ico.textContent = on ? '🔔' : '🔕';
-        if(lab) lab.textContent = on ? 'On' : 'Off';
       };
       var persisted=false;
       try{ persisted = localStorage.getItem(NOTIF_KEY)==='1'; }catch(_){}
@@ -11229,7 +11283,7 @@ window.thwapPaywall=function(billing, teamCode){
         try{ localStorage.removeItem('thwapNotifToken'); }catch(_){}
       };
       notif.addEventListener('click',function(){
-        var next = notif.getAttribute('aria-pressed')!=='true';
+        var next = notif.getAttribute('aria-checked')!=='true';
         paintNotif(next);
         try{ localStorage.setItem(NOTIF_KEY, next?'1':'0'); }catch(_){}
         if(next) enableNotif(); else disableNotif();
