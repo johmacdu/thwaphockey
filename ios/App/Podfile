@@ -1,6 +1,6 @@
-require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
+require_relative '../../../../../../../Documents/GitHub/thwaphockey/node_modules/@capacitor/ios/scripts/pods_helpers'
 
-platform :ios, '14.0'
+platform :ios, '15.0'
 use_frameworks!
 
 # workaround to avoid Xcode caching of Pods that requires
@@ -9,14 +9,14 @@ use_frameworks!
 install! 'cocoapods', :disable_input_output_paths => true
 
 def capacitor_pods
-  pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
-  pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
-  pod 'CapacitorApp', :path => '../../node_modules/@capacitor/app'
-  pod 'CapacitorHaptics', :path => '../../node_modules/@capacitor/haptics'
-  pod 'CapacitorPushNotifications', :path => '../../node_modules/@capacitor/push-notifications'
-  pod 'CapacitorShare', :path => '../../node_modules/@capacitor/share'
-  pod 'CapacitorSplashScreen', :path => '../../node_modules/@capacitor/splash-screen'
-  pod 'CapacitorStatusBar', :path => '../../node_modules/@capacitor/status-bar'
+  pod 'Capacitor', :path => '../../../../../../../Documents/GitHub/thwaphockey/node_modules/@capacitor/ios'
+  pod 'CapacitorCordova', :path => '../../../../../../../Documents/GitHub/thwaphockey/node_modules/@capacitor/ios'
+  pod 'CapacitorApp', :path => '../../../../../../../Documents/GitHub/thwaphockey/node_modules/@capacitor/app'
+  pod 'CapacitorHaptics', :path => '../../../../../../../Documents/GitHub/thwaphockey/node_modules/@capacitor/haptics'
+  pod 'CapacitorPushNotifications', :path => '../../../../../../../Documents/GitHub/thwaphockey/node_modules/@capacitor/push-notifications'
+  pod 'CapacitorShare', :path => '../../../../../../../Documents/GitHub/thwaphockey/node_modules/@capacitor/share'
+  pod 'CapacitorSplashScreen', :path => '../../../../../../../Documents/GitHub/thwaphockey/node_modules/@capacitor/splash-screen'
+  pod 'CapacitorStatusBar', :path => '../../../../../../../Documents/GitHub/thwaphockey/node_modules/@capacitor/status-bar'
 end
 
 target 'App' do
@@ -32,6 +32,40 @@ post_install do |installer|
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
       config.build_settings['ENABLE_MODULE_VERIFIER'] = 'NO'
+      # Deprecation warnings inside Capacitor / Cordova pods (WKProcessPool,
+      # UNNotificationPresentationOptions.alert) are third-party code we do not
+      # own and get overwritten on every npm install. Silence them for pods only;
+      # Thwap's own targets still warn normally.
+      config.build_settings['GCC_WARN_ABOUT_DEPRECATED_FUNCTIONS'] = 'NO'
+      config.build_settings['CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS'] = 'NO'
+      config.build_settings['SWIFT_SUPPRESS_WARNINGS'] = 'YES'
     end
+  end
+  # Clears Xcode's "Update to recommended settings" prompt on the Pods project.
+  installer.pods_project.root_object.attributes['LastUpgradeCheck'] = '2660'
+end
+
+# "[CP] Embed Pods Frameworks will be run during every build because it does not
+# specify any outputs": that is intended (input/output paths are disabled above),
+# so tell Xcode explicitly instead of warning on each build.
+post_integrate do |installer|
+  installer.aggregate_targets.map(&:user_project).uniq.each do |project|
+    project.targets.each do |target|
+      target.shell_script_build_phases.each do |phase|
+        phase.always_out_of_date = '1' if phase.name&.start_with?('[CP]')
+      end
+      # The App target's Swift code imports Cordova's CDVWebViewProcessPoolFactory.h,
+      # which uses the deprecated WKProcessPool. -Xcc passes the flag to Swift's
+      # Clang header importer only, so it hides deprecations in imported
+      # Objective-C headers; deprecations in Thwap's own Swift code still warn.
+      next unless target.name == 'App'
+      target.build_configurations.each do |config|
+        flags = Array(config.build_settings['OTHER_SWIFT_FLAGS'] || '$(inherited)')
+        flags = flags.join(' ').split(' ')
+        flags += ['-Xcc', '-Wno-deprecated-declarations'] unless flags.include?('-Wno-deprecated-declarations')
+        config.build_settings['OTHER_SWIFT_FLAGS'] = flags.join(' ')
+      end
+    end
+    project.save
   end
 end

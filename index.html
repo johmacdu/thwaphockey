@@ -1584,6 +1584,17 @@ body.is-native.is-authed:not(.login-locked) :is(#home,#coachhome,#myseason,#prog
 body.is-native.is-authed:not(.login-locked) #roster>.teambanner{padding-top:24px}
 body.is-native.is-authed:not(.login-locked) :is(#myseason,#profile)>.hero>h1:first-child{margin-top:0}
 body.is-native.is-authed:not(.login-locked) #roster>.teambanner h1{font-size:clamp(38px,10vw,54px);line-height:1.04;margin:8px 0 11px}
+/* App footer: the slogan on ONE line, centered; the TM wordmark is gone from the
+   app. Profile alone shows Sass + the wordmark (the home brand, moved here with
+   its tap / long-press easter eggs). Sheets sit above the tab bar. */
+body.is-native .footer{justify-content:center}
+body.is-native .footer .slogan{white-space:nowrap;text-align:center}
+body.is-native .footer .slogan .sl-br{display:none}
+body.is-native.is-authed:not(.login-locked) .trademark{display:none}
+.footbrand{display:none}
+body.is-native.is-authed.on-profile:not(.login-locked) .footbrand{display:flex;justify-content:center;padding:0 4px 28px}
+.footbrand .brand{justify-content:center}
+body.is-native .sheet{z-index:80}
 #profile .prof-signout{color:var(--alert);font-weight:900}
 /* Delete account: coach-only (only coaches create accounts). */
 #profile .prof-delacct{display:none}
@@ -1837,7 +1848,11 @@ body.login-locked{overflow:hidden}
 /* Self-serve coach signup: the shared team code shown after a team is created. */
 .cs-code{margin:14px 0;padding:14px 10px;border:2px dashed var(--line,#2A3831);border-radius:14px;background:var(--panel,#182420);text-align:center;font-family:'Archivo Black',system-ui,monospace;font-weight:700;font-size:30px;letter-spacing:.14em;color:var(--green2,#B9F06B);user-select:all}
 .cs-codehint{font-size:13px}
-</style><script>try{if(localStorage.getItem('thwapTheme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script></head><body><script>/* Thwap native bridge (Capacitor) - no-op in a plain browser; see native-bridge.js */
+</style><script>try{if(localStorage.getItem('thwapTheme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script><script>/* Self-heal the chosen player: if the device is signed in (thwapAuth cookie)
+   but bfPlayer was lost, restore it from the sign-in record. Without this the
+   greeting reads "Hey there", tapping it jumps to Team, and Profile's card row
+   is blank. Runs before any view reads bfPlayer. Never overwrites a pick. */
+(function(){try{if(localStorage.getItem('bfPlayer'))return;var m=document.cookie.match(/(?:^|; )thwapAuth=([^;]*)/);var raw=m?decodeURIComponent(m[1]):(localStorage.getItem('thwapAuth')||sessionStorage.getItem('thwapAuth'));if(!raw)return;var a=JSON.parse(raw);if(a&&a.pid&&a.name)localStorage.setItem('bfPlayer',String(a.name));}catch(e){}})();</script></head><body><script>/* Thwap native bridge (Capacitor) - no-op in a plain browser; see native-bridge.js */
 (function(){'use strict';var Cap=window.Capacitor;var isNative=!!(Cap&&typeof Cap.isNativePlatform==='function'&&Cap.isNativePlatform());function webVibrate(ms){try{if(navigator.vibrate)navigator.vibrate(ms);}catch(e){}}window.thwapHaptic=function(kind){if(!isNative){webVibrate(kind==='streak'?[12,40,12]:12);return;}try{var H=Cap.Plugins&&Cap.Plugins.Haptics;if(!H)return;if(kind==='streak'){H.notification({type:'SUCCESS'});}else if(kind==='done'){H.impact({style:'MEDIUM'});}else{H.impact({style:'LIGHT'});}}catch(e){}};})();</script><script>/* Native-shell flag. The ONLY switch for every native adaptation (bottom tab bar,
    Profile tab, safe areas, gesture suppression, Android back). It is gated on the
    same window.Capacitor?.isNativePlatform() check as the bridge, so the plain
@@ -2976,7 +2991,17 @@ window.thwapTrainingToday=function(){
 </div>
 </section>
 </main>
-<div class='footer'><span class='slogan'>Compete. Improve.<br class='sl-br'> Have fun.</span><div class='footer-actions'><button class='sfxtoggle' id='sfxToggle' type='button' aria-label='Mute sounds' title='Mute sounds' aria-pressed='true'></button><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button><div class='footmenu-wrap'><button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button><div class='footmenu' id='footMenu' hidden role='menu'><a class='footmenu-item' href='/about' role='menuitem'>About Thwap</a><a class='footmenu-item footmenu-splash' id='menuTerms' href='#' role='menuitem'>Terms of Use</a><a class='footmenu-item footmenu-splash' id='menuPrivacy' href='#' role='menuitem'>Privacy Policy</a><a class='footmenu-item footmenu-inproduct' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a><a class='footmenu-item footmenu-inproduct' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a><a class='footmenu-item footmenu-inproduct' id='menuSignout' href='#' role='menuitem'>Sign out</a></div></div></div></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div>
+<div class='footer'><span class='slogan'>Compete. Improve.<br class='sl-br'> Have fun.</span><div class='footer-actions'><button class='sfxtoggle' id='sfxToggle' type='button' aria-label='Mute sounds' title='Mute sounds' aria-pressed='true'></button><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button><div class='footmenu-wrap'><button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button><div class='footmenu' id='footMenu' hidden role='menu'><a class='footmenu-item' href='/about' role='menuitem'>About Thwap</a><a class='footmenu-item footmenu-splash' id='menuTerms' href='#' role='menuitem'>Terms of Use</a><a class='footmenu-item footmenu-splash' id='menuPrivacy' href='#' role='menuitem'>Privacy Policy</a><a class='footmenu-item footmenu-inproduct' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a><a class='footmenu-item footmenu-inproduct' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a><a class='footmenu-item footmenu-inproduct' id='menuSignout' href='#' role='menuitem'>Sign out</a></div></div></div></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div><div class='footbrand' id='footBrand'></div><script>/* App only: Sass + the wordmark live at the bottom of Profile (the Train tab's
+   header is hidden in the app). The SAME nodes move, so the tap and long-press
+   easter eggs bound to #sassLogo / #brandMark keep working. on-profile marks the
+   Profile tab so only it shows them. The website never runs this. */
+(function(){
+  var b=document.body; if(!b.classList.contains('is-native')) return;
+  var slot=document.getElementById('footBrand'), brand=document.querySelector('#home>.topbar>.brand');
+  if(slot && brand) slot.appendChild(brand);
+  function mark(){ b.classList.toggle('on-profile', location.hash==='#profile'); }
+  mark(); window.addEventListener('hashchange', mark);
+})();</script>
 </div>
 <nav class='tabbar' id='tabbar' aria-label='Main'>
   <span class='tab-player'>
@@ -3071,6 +3096,7 @@ function showHomePlayer(){
      On the splash / logged out it is always "Hey there", even if a player was
      picked before on this device. */
   var authed=/(?:^|; )thwapAuth=/.test(document.cookie);
+  if(!authed){ try{ authed=!!(localStorage.getItem('thwapAuth')||sessionStorage.getItem('thwapAuth')); }catch(e){} }
   if(saved && authed){ el.textContent=firstNameOf(saved); el.classList.remove('needpick'); }
   else { el.textContent='there'; el.classList.add('needpick'); }  /* "Hey there" until signed in */
 }
@@ -10695,7 +10721,13 @@ if(pencil) pencil.addEventListener('click',function(){ setEditing(true); });
 if(doneBtn) doneBtn.addEventListener('click',function(){ setEditing(false); });
 var selfCancelBtn=document.getElementById('rosterEditSelfCancel');
 if(selfCancelBtn) selfCancelBtn.addEventListener('click',function(){ setEditing(false); });
-function sheetShow(on){ if(sheet) sheet.hidden=!on; }
+function sheetShow(on){
+  if(!sheet) return;
+  /* The sheet lives inside the Team page; opened from Profile that page is
+     display:none, so the sheet would open invisibly. Lift it to <body> once. */
+  if(on && sheet.parentNode!==document.body) document.body.appendChild(sheet);
+  sheet.hidden=!on;
+}
 function validEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v||'').trim()); }
 function openSelfEdit(){
   /* The roster-grid card is only present once the Team page has rendered; when
