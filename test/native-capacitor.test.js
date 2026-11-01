@@ -77,7 +77,7 @@ describe('Role-aware bottom tab bar', () => {
 
   it('the active-tab mapping rolls drill sub-pages up to Train and gives #player no tab', () => {
     expect(html).toMatch(/if\(h==='stick'\|\|h==='shoot'\|\|h==='dryland'\|\|h==='drillpick'\|\|h==='pass'\|\|h==='iq'\)\{/);
-    expect(html).toMatch(/if\(h==='profile'\) return 'profile';/);
+    expect(html).toMatch(/if\(h==='profile'\|\|h==='appicon'\) return 'profile';/);
     expect(html).toMatch(/return h==='coachhome' \? 'coachhome' : 'home';/);
   });
 
@@ -178,8 +178,9 @@ describe('Profile tab (native settings/account surface)', () => {
     expect(rowRule).toBeTruthy();
     expect(rowRule[1]).not.toMatch(/border-radius/);
     expect(rowRule[1]).toMatch(/border-bottom:1px solid var\(--line\)/);
-    // the only carded element is the interactive card button, which navigates
-    expect(css).toMatch(/#profile \.prof-card-btn\{[^}]*border-radius:var\(--r-card\)/);
+    // the player card entry is a plain navigating row now, not a card
+    expect(html).toMatch(/<button type='button' class='prof-row prof-me' id='profCardBtn'>/);
+    expect(css).not.toMatch(/#profile \.prof-card-btn\{/);
   });
 });
 
