@@ -1,56 +1,246 @@
 import SwiftUI
 import ThwapCore
 
-/// Screen 1: today's drills as a chunky checklist (the web's expandable-tile
-/// checklist, not cards). Each row is a big discipline-colored tap target; a
-/// done row turns lime with a check.
-struct TodayView: View {
+/// The pages of the watch home, top to bottom. The Digital Crown flips them
+/// one at a time (a vertical paged TabView), like Apple's Activity app.
+enum HomePage: Hashable {
+    case hello
+    case category(Discipline)
+    case season
+    case team
+    case more
+}
+
+/// Home: Hello, one page per category of today's list, My Season, Team, and a
+/// last small page for sync status and Sign out.
+struct HomePager: View {
     @EnvironmentObject var model: AppModel
+    @Binding var page: HomePage
     @Binding var showGoals: Bool
-    @Binding var glance: GlanceScreen?
+    @Binding var openCategory: Discipline?
+
+    var body: some View {
+        TabView(selection: $page) {
+            HelloPage(page: $page, showGoals: $showGoals)
+                .tag(HomePage.hello)
+            ForEach(model.categories) { summary in
+                CategoryPage(summary: summary) { openCategory = summary.discipline }
+                    .tag(HomePage.category(summary.discipline))
+            }
+            SeasonPage()
+                .tag(HomePage.season)
+            TeamPage()
+                .tag(HomePage.team)
+            MorePage()
+                .tag(HomePage.more)
+        }
+        .tabViewStyle(.verticalPage)
+        .toolbar(.hidden, for: .navigationBar)
+    }
+}
+
+/// Shared frame for one home page: leading aligned, full height, Thwap
+/// background, clear of the page indicator on the right.
+struct PageFrame<Content: View>: View {
+    @ViewBuilder var content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            content
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .padding(.leading, 12)
+        .padding(.trailing, 14)
+        .padding(.top, 4)
+        .padding(.bottom, 10)
+        .ignoresSafeArea(edges: .bottom)
+        .containerBackground(ThwapTheme.bg, for: .tabView)
+    }
+}
+
+/// Page 1: the greeting, and today's categories at a glance.
+struct HelloPage: View {
+    @EnvironmentObject var model: AppModel
+    @Binding var page: HomePage
+    @Binding var showGoals: Bool
+
+    var body: some View {
+        PageFrame {
+            Eyebrow(text: model.team?.teamName ?? "Thwap")
+                .padding(.top, 16)
+            VStack(alignment: .leading, spacing: 0) {
+                Text("Hey")
+                    .foregroundStyle(ThwapTheme.ice)
+                Text(model.firstName)
+                    .foregroundStyle(ThwapTheme.lime)
+            }
+            .font(ThwapTheme.display(26, relativeTo: .title2))
+            .lineLimit(1)
+            .minimumScaleFactor(0.6)
+            .layoutPriority(1)
+            .padding(.top, 4)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Hey \(model.firstName)")
+
+            if let plan = model.plan {
+                let cats = model.categories
+                if cats.isEmpty {
+                    Text(TodayPlan.restHeading)
+                        .font(ThwapTheme.body(15))
+                        .foregroundStyle(ThwapTheme.green2)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, 14)
+                    Spacer(minLength: 0).layoutPriority(-1)
+                } else {
+                    HStack(spacing: 6) {
+                        ForEach(cats) { c in
+                            Button { page = .category(c.discipline) } label: {
+                                VStack(spacing: 4) {
+                                    CategoryIcon(discipline: c.discipline, size: 26)
+                                    Text(c.tileLine)
+                                        .font(ThwapTheme.body(12, .black, relativeTo: .caption))
+                                        .foregroundStyle(ThwapTheme.color(c.discipline))
+                                        .lineLimit(1)
+                                }
+                                .frame(maxWidth: .infinity, minHeight: 50)
+                                .padding(.vertical, 6)
+                                .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(ThwapTheme.card))
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(c.accessibilityLine)
+                            .accessibilityHint("Goes to the \(c.title) page")
+                        }
+                    }
+                    .padding(.top, 14)
+                    Spacer(minLength: 0).layoutPriority(-1)
+                    if plan.isGameDay {
+                        Button { showGoals = true } label: {
+                            HStack(spacing: 4) {
+                                Text("🎯 Game day goals")
+                                    .font(ThwapTheme.body(14, .black))
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.8)
+                                    .layoutPriority(1)
+                                Spacer(minLength: 0).layoutPriority(-1)
+                                Image(systemName: "chevron.right").font(.footnote.weight(.bold))
+                                    .foregroundStyle(ThwapTheme.muted)
+                            }
+                            .foregroundStyle(ThwapTheme.ice)
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityHint("Shows the goals you picked for today's game")
+                    } else {
+                        if plan.dayHeading == TodayPlan.bonusHeading {
+                            Text(TodayPlan.bonusHeading)
+                                .font(ThwapTheme.body(12, .black, relativeTo: .caption))
+                                .foregroundStyle(ThwapTheme.green2)
+                                .frame(maxWidth: .infinity)
+                                .padding(.bottom, 2)
+                        }
+                        Text("Turn the crown to start")
+                            .font(ThwapTheme.body(12, .bold, relativeTo: .caption))
+                            .foregroundStyle(ThwapTheme.muted)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                            .layoutPriority(1)
+                            .frame(maxWidth: .infinity)
+                            .padding(.bottom, 4)
+                    }
+                }
+            } else if model.loadFailed {
+                Text("No signal. Try again at the rink.")
+                    .font(ThwapTheme.body(14, .bold))
+                    .foregroundStyle(ThwapTheme.muted)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 14)
+                Spacer(minLength: 0).layoutPriority(-1)
+            } else {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 14)
+                Spacer(minLength: 0).layoutPriority(-1)
+            }
+        }
+    }
+}
+
+/// One category: big icon, name, progress, and one button. Everything on the
+/// page opens the category's drill list, where the player picks the drill.
+/// Nothing starts on its own.
+struct CategoryPage: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    let summary: CategorySummary
+    let openList: () -> Void
+
+    var body: some View {
+        let accent = ThwapTheme.color(summary.discipline)
+        PageFrame {
+            Button(action: openList) {
+                VStack(alignment: .leading, spacing: 0) {
+                    CategoryIcon(discipline: summary.discipline, size: 56)
+                        .padding(.top, 2)
+                    Text(summary.title)
+                        .font(ThwapTheme.display(30, relativeTo: .title))
+                        .foregroundStyle(ThwapTheme.ice)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                        .layoutPriority(1)
+                        .padding(.top, 10)
+                    Text(summary.progressLine)
+                        .font(ThwapTheme.body(15))
+                        .foregroundStyle(summary.isComplete ? ThwapTheme.lime : accent)
+                        .lineLimit(1)
+                        .padding(.top, 4)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityHidden(true)
+
+            ProgressBar(fraction: summary.fraction, color: summary.isComplete ? ThwapTheme.lime : accent)
+                .frame(height: 8)
+                .padding(.top, 10)
+                .animation(reduceMotion ? nil : .easeOut(duration: 0.3), value: summary.fraction)
+
+            Spacer(minLength: 8).layoutPriority(-1)
+
+            PillButton(title: summary.buttonTitle,
+                       fill: summary.isComplete ? ThwapTheme.soft : accent,
+                       text: summary.isComplete ? ThwapTheme.text2 : ThwapTheme.ink,
+                       action: openList)
+                .accessibilityLabel(summary.pageAccessibilityLine)
+                .accessibilityHint("Opens the \(summary.title) drills")
+        }
+    }
+}
+
+/// The last page: what this watch still has to sync, and Sign out.
+struct MorePage: View {
+    @EnvironmentObject var model: AppModel
     @State private var confirmSignOut = false
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 8) {
-                header
-                if model.plan?.isGameDay == true {
-                    gameDayLink
-                }
-                if let plan = model.plan {
-                    if let heading = plan.dayHeading {
-                        Text(heading)
-                            .font(.system(.headline, design: .rounded).weight(.heavy))
-                            .foregroundStyle(ThwapTheme.green2)
-                            .padding(.vertical, 6)
-                    }
-                    ForEach(plan.drills) { drill in
-                        DrillRow(drill: drill, done: model.isDone(drill)) {
-                            if model.isDone(drill) { model.undoTarget = drill } else { model.running = drill }
-                        }
-                    }
-                    glanceLinks
-                    footer
-                } else if model.loadFailed {
-                    Text("No signal. Try again at the rink.")
-                        .font(.footnote)
-                        .foregroundStyle(ThwapTheme.muted)
-                    footer
-                } else {
-                    ProgressView()
-                }
+        PageFrame {
+            Eyebrow(text: "This watch")
+                .padding(.top, 16)
+            Text(model.waitingToSync > 0
+                 ? "\(model.waitingToSync) waiting to sync"
+                 : "All synced")
+                .font(ThwapTheme.body(15))
+                .foregroundStyle(ThwapTheme.ice)
+                .padding(.top, 6)
+            if let notice = model.notice {
+                Text(notice)
+                    .font(ThwapTheme.body(12, .bold, relativeTo: .caption))
+                    .foregroundStyle(ThwapTheme.muted)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.top, 4)
             }
-            .padding(.horizontal, 4)
-        }
-        .background(ThwapTheme.bg)
-        .navigationTitle("Today")
-        .alert(model.undoTarget.map { "Undo \($0.name)?" } ?? "",
-               isPresented: Binding(get: { model.undoTarget != nil }, set: { if !$0 { model.undoTarget = nil } }),
-               presenting: model.undoTarget) { drill in
-            Button("Undo", role: .destructive) { model.undo(drill); model.undoTarget = nil }
-            Button("Keep it", role: .cancel) { model.undoTarget = nil }
-        } message: { _ in
-            Text("It comes off your list for today.")
+            Spacer(minLength: 8).layoutPriority(-1)
+            PillButton(title: "Sign out", fill: ThwapTheme.soft, text: ThwapTheme.text2) { confirmSignOut = true }
         }
         .alert("Sign out?", isPresented: $confirmSignOut) {
             Button("Sign out", role: .destructive) { Task { await model.signOut() } }
@@ -61,146 +251,5 @@ struct TodayView: View {
                  : "A parent will need to approve this watch again.")
         }
     }
-
-    private var footer: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            if model.waitingToSync > 0 {
-                Label("\(model.waitingToSync) waiting to sync", systemImage: "icloud.and.arrow.up")
-                    .font(.caption2)
-                    .foregroundStyle(ThwapTheme.muted)
-            }
-            if let notice = model.notice {
-                Text(notice)
-                    .font(.caption2)
-                    .foregroundStyle(ThwapTheme.muted)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            Button("Sign out") { confirmSignOut = true }
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(ThwapTheme.muted)
-                .frame(maxWidth: .infinity, minHeight: 48)
-        }
-        .padding(.top, 6)
-    }
-
-    private var header: some View {
-        HStack(spacing: 8) {
-            ConcentricRings(rings: model.rings, line: 4, gap: 1.5)
-                .frame(width: 40, height: 40)
-            VStack(alignment: .leading, spacing: 0) {
-                Text("Hey \(model.firstName) 👋")
-                    .font(.headline)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                Text(model.toGo == 0 ? "All done today!" : "\(model.toGo) to go")
-                    .font(.footnote)
-                    .foregroundStyle(ThwapTheme.green2)
-            }
-        }
-        .accessibilityElement(children: .combine)
-        .padding(.bottom, 2)
-    }
-
-    /// My Season and Team, under the drills. Drills always stay on top.
-    private var glanceLinks: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            glanceLink("🗺️", "My Season", value: model.season?.rowValue, to: .season,
-                       hint: "Shows where you are on the season path")
-            Divider().overlay(ThwapTheme.line)
-            glanceLink("🤝", "Team", value: model.team?.rowValue, to: .team,
-                       hint: "Shows the team goal for this week")
-        }
-        .padding(.top, 6)
-    }
-
-    private func glanceLink(_ emoji: String, _ title: String, value: String?, to screen: GlanceScreen,
-                            hint: String) -> some View {
-        Button { glance = screen } label: {
-            HStack {
-                Text(emoji)
-                VStack(alignment: .leading, spacing: 0) {
-                    Text(title)
-                        .font(.headline)
-                    if let value {
-                        Text(value)
-                            .font(.caption2.weight(.bold))
-                            .foregroundStyle(ThwapTheme.green2)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.8)
-                    }
-                }
-                Spacer(minLength: 0)
-                Image(systemName: "chevron.right").font(.footnote)
-            }
-            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-        }
-        .accessibilityHint(hint)
-    }
-
-    private var gameDayLink: some View {
-        Button { showGoals = true } label: {
-            HStack {
-                Text("🎯")
-                Text("Game day goals")
-                    .font(.headline)
-                Spacer(minLength: 0)
-                Image(systemName: "chevron.right").font(.footnote)
-            }
-            .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-        }
-        .accessibilityHint("Shows the goals you picked for today's game")
-    }
 }
 
-struct DrillRow: View {
-    let drill: Drill
-    let done: Bool
-    let action: () -> Void
-
-    var body: some View {
-        let accent = ThwapTheme.color(drill.discipline)
-        Button(action: action) {
-            HStack(spacing: 8) {
-                ZStack {
-                    Circle()
-                        .strokeBorder(done ? ThwapTheme.ink : accent, lineWidth: 2.5)
-                        .background(Circle().fill(done ? ThwapTheme.ink : .clear))
-                    if done {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 13, weight: .black))
-                            .foregroundStyle(ThwapTheme.lime)
-                    }
-                }
-                .frame(width: 24, height: 24)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(drill.name)
-                        .font(.system(.body, design: .rounded).weight(.heavy))
-                        .foregroundStyle(done ? ThwapTheme.ink : .white)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
-                    Text(done ? "Done!" : drill.discipline.label)
-                        .font(.caption2.weight(.bold))
-                        .foregroundStyle(done ? ThwapTheme.ink.opacity(0.75) : accent)
-                }
-                Spacer(minLength: 0)
-            }
-            .padding(.vertical, 10)
-            .padding(.horizontal, 10)
-            .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
-            .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(done ? ThwapTheme.lime : accent.opacity(0.22))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .strokeBorder(done ? ThwapTheme.lime : accent, lineWidth: 2)
-            )
-        }
-        .buttonStyle(.plain)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(drill.name), \(drill.discipline.label)")
-        .accessibilityValue(done ? "Done" : "Not done yet")
-        .accessibilityHint(done ? "Asks before undoing" : "Starts the drill timer")
-        .accessibilityAddTraits(done ? [.isButton, .isSelected] : .isButton)
-    }
-}

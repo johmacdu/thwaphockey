@@ -88,6 +88,8 @@ public actor StubThwapAPI: ThwapAPI {
     /// Which My Season / Team answer to give, for screenshots of each state.
     public let seasonState: SeasonState
     public let teamState: TeamState
+    /// A weekend: only the bonus drills (Hands and Shooting), dryland rests.
+    public let weekend: Bool
 
     public enum SeasonState: String, Sendable, CaseIterable {
         /// Practice Ice, step 2, 5 days to step 3.
@@ -112,8 +114,9 @@ public actor StubThwapAPI: ThwapAPI {
     }
 
     public init(date: String = "2026-10-31", gameDay: Bool = false, simulateOffline: Bool = false, doneIds: [String] = [],
-                seasonState: SeasonState = .step2, teamState: TeamState = .normal) {
+                seasonState: SeasonState = .step2, teamState: TeamState = .normal, weekend: Bool = false) {
         self.date = date
+        self.weekend = weekend
         self.gameDay = gameDay
         self.simulateOffline = simulateOffline
         self.doneIds = doneIds
@@ -238,11 +241,13 @@ public actor StubThwapAPI: ThwapAPI {
             date: date,
             playerId: Self.playerId,
             firstName: "Demo",
-            drills: Self.drills,
+            drills: weekend ? Self.drills.filter { $0.discipline != .dryland } : Self.drills,
             // On a stub game day the fixture game is moved onto `date`, so the
             // Game Day Goals path is reachable whatever today is.
             game: gameDay ? { var g = Self.game; g.date = date; return g }() : nil,
             gameGoals: gameDay ? Self.goals : [],
+            restDay: weekend,
+            bonusDay: weekend,
             serverGameDay: gameDay
         )
     }

@@ -53,7 +53,7 @@ Do not edit `ThwapWatch.xcodeproj` by hand. Keep the target name `ThwapWatch`: t
 | Path | What |
 |---|---|
 | `ThwapCore/` | Swift package with the pure logic: wire models that mirror the server JSON, the `ThwapAPI` protocol, `LiveThwapAPI` (URLSession behind an injectable `HTTPTransport`), `KeychainTokenStore`, `ApprovalPoller`, `StubThwapAPI` fixtures, `CheckOffQueue`, `RingMath`, `DrillTimer`, `RingStore` (App Group). No UI. |
-| `WatchApp/` | SwiftUI screens: Sign in, Ask a parent (waiting), Today (with undo confirm and sign out), drill running, THWAP stamp, Game Day Goals, My Season, Team. Plus `Haptics`. |
+| `WatchApp/` | SwiftUI screens: Sign in, Ask a parent (waiting), the home pager (Hello, one page per drill category, My Season, Team, This watch with Sign out; the Digital Crown flips pages), a category's drill list (the player picks the drill; undo confirm), drill running, THWAP stamp, Game Day Goals. Plus `Haptics`, the bundled fonts (`Fonts/`, SIL Open Font License) and the category icons (`Assets.xcassets`, from the web's `login/icon-*.webp`). |
 | `Complication/` | WidgetKit complication: circular (3 concentric rings) and rectangular. |
 | `Shared/` | Theme tokens and the ring view, compiled into both the app and the complication. |
 
@@ -118,7 +118,7 @@ ls /tmp/App.xcarchive/Products/Applications/App.app/Watch/Thwap.app/PlugIns
 
 Endpoint tests replay JSON fixtures in `ThwapCore/Tests/ThwapCoreTests/Fixtures/`, captured from the server handlers. They are read from the source tree via `#filePath`, not bundled.
 
-Launch arguments (stub data, no network): `-thwapStub`, `-thwapScreen signin|waiting|denied|expired|today|run|stamp|goals|season|team` (implies `-thwapStub`), `-thwapGameDay`, `-thwapElapsed <seconds>`, `-thwapSeasonState step2|lastStep|oneDay|legend|longStar`, `-thwapTeamState normal|one|reached`. Without them the app uses the real client.
+Launch arguments (stub data, no network): `-thwapStub`, `-thwapScreen signin|waiting|denied|expired|today|category|categoryDone|list|run|stamp|goals|season|team|more` (implies `-thwapStub`), `-thwapGameDay`, `-thwapWeekend` (bonus drills only, two categories), `-thwapElapsed <seconds>`, `-thwapSeasonState step2|lastStep|oneDay|legend|longStar`, `-thwapTeamState normal|one|reached`. Without them the app uses the real client.
 
 ## Only checkable live
 
