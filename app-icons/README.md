@@ -54,6 +54,16 @@ brand ink — a deep version of the same color). iOS 18 shows the matching one w
 appearance, automatically, with no extra picker choice.
 
 Delivery is the asset catalog (loose `CFBundleIconFiles` PNGs can't carry appearance variants).
+**Wired (Nov 2026):** `scripts/wire_ios_alt_icons.py` writes the 20
+`ios/App/App/Assets.xcassets/AltIcon-*.appiconset` sets (light + dark 1024, same art as the
+generator), and the App target sets `ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES` and
+`ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES`. Xcode writes `CFBundleAlternateIcons` (iPhone and
+iPad) itself, so Info.plist has NO hand-written icon list. The old list pointed at loose PNGs that
+were never in the target, and App Store Connect rejected build 1 with ITMS-90032. The loose
+`AltIcon-*@2x/@3x.png` files in `ios/App/App/` are unused. Re-run the wire script after changing
+skills or colors.
+
+The original staging notes follow.
 The generator stages one appearance set per icon in `app-icons/ios-appearance/<AltIcon>.appiconset/`
 (light + dark 1024 + a `Contents.json` with the `luminosity` appearances). To wire it (native-side,
 needs an Xcode build — kept out of this change so it doesn't collide with the alternate-icon switch):

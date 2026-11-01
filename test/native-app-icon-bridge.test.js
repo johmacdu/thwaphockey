@@ -7,7 +7,7 @@
 // the key sets match -- no hardcoded expectations duplicated from memory.
 
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
@@ -72,12 +72,30 @@ describe('Native app-icon bridge stays in lockstep with the manifest', () => {
     expect(pluginAliases).toEqual(manifestAliases);
   });
 
-  it('every manifest iosKey is a real CFBundleAlternateIcons entry in Info.plist', () => {
-    const realKeys = new Set(iosAlternateIconKeysFromPlist(infoPlist));
-    expect(realKeys.size).toBe(20);
-    for (const ic of manifest.icons) {
-      expect(realKeys.has(ic.iosKey), `${ic.iosKey} declared in Info.plist`).toBe(true);
+  // iOS alternate icons ship from the asset catalog (one AltIcon-*.appiconset each) and
+  // are named in the App target's ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES; Xcode
+  // then writes CFBundleAlternateIcons itself. The old hand-written Info.plist list
+  // pointed at loose PNGs that were never in the target, and Apple rejected the build
+  // (ITMS-90032), so this asserts the catalog wiring instead and that the stale plist
+  // list cannot come back.
+  it('every manifest iosKey is a real alternate app icon in the asset catalog and the build setting', () => {
+    const pbx = readFileSync(resolve(root, 'ios/App/App.xcodeproj/project.pbxproj'), 'utf8');
+    const settings = [...pbx.matchAll(/ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "([^"]*)";/g)].map((m) => m[1]);
+    expect(settings.length, 'set for Debug and Release').toBe(2);
+    for (const s of settings) {
+      const names = new Set(s.split(/\s+/).filter(Boolean));
+      expect(names.size).toBe(20);
+      for (const ic of manifest.icons) expect(names.has(ic.iosKey), `${ic.iosKey} in the build setting`).toBe(true);
     }
+    for (const ic of manifest.icons) {
+      const dir = resolve(root, 'ios/App/App/Assets.xcassets', `${ic.iosKey}.appiconset`);
+      const contents = JSON.parse(readFileSync(resolve(dir, 'Contents.json'), 'utf8'));
+      for (const img of contents.images) {
+        expect(img.size).toBe('1024x1024');
+        expect(existsSync(resolve(dir, img.filename)), `${ic.iosKey}/${img.filename} exists`).toBe(true);
+      }
+    }
+    expect(iosAlternateIconKeysFromPlist(infoPlist).length, 'no hand-written loose-file list in Info.plist').toBe(0);
   });
 
   it('Android: AppIconPlugin is a @CapacitorPlugin named DynamicAppIcon and MainActivity registers it', () => {
