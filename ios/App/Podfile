@@ -26,4 +26,12 @@ end
 
 post_install do |installer|
   assertDeploymentTarget(installer)
+  # Xcode 26's module verifier rejects the double-quoted includes in
+  # Capacitor's Cordova headers ("double-quoted include ... in framework
+  # header"). Those headers are third-party, so skip the check for pods only.
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['ENABLE_MODULE_VERIFIER'] = 'NO'
+    end
+  end
 end
