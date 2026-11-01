@@ -1574,6 +1574,16 @@ html[data-theme='dark'] #profile .prof-switch[aria-checked='true']{background:#8
 body.is-native.is-authed:not(.login-locked) #profile>.glassclose,
 body.is-native.is-authed:not(.login-locked) #profile>.topbar{display:none}
 body.is-native.is-authed:not(.login-locked) #profile>.hero{padding:10px 0 28px}
+/* One header pattern for every tab in the app: no brand header, no close X
+   (you leave a tab with the tab bar), and the eyebrow or title starts at the
+   same height on each tab. Website and non-tab pages are untouched. */
+body.is-native.is-authed:not(.login-locked) :is(#myseason,#roster,#progress,#plan,#profile)>.glassclose,
+body.is-native.is-authed:not(.login-locked) :is(#home,#coachhome)>.topbar{display:none}
+body.is-native.is-authed:not(.login-locked) :is(#myseason,#roster,#progress,#plan,#profile).page:target{padding-top:0}
+body.is-native.is-authed:not(.login-locked) :is(#home,#coachhome,#myseason,#progress,#plan,#profile)>.hero,
+body.is-native.is-authed:not(.login-locked) #roster>.teambanner{padding-top:24px}
+body.is-native.is-authed:not(.login-locked) :is(#myseason,#profile)>.hero>h1:first-child{margin-top:0}
+body.is-native.is-authed:not(.login-locked) #roster>.teambanner h1{font-size:clamp(38px,10vw,54px);line-height:1.04;margin:8px 0 11px}
 #profile .prof-signout{color:var(--alert);font-weight:900}
 /* Delete account: coach-only (only coaches create accounts). */
 #profile .prof-delacct{display:none}
