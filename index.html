@@ -1596,6 +1596,43 @@ body.is-native.is-authed.on-profile:not(.login-locked) .footbrand{display:flex;j
 .footbrand .brand{justify-content:center}
 body.is-native .sheet{z-index:80}
 #profile .prof-signout{color:var(--alert);font-weight:900}
+/* --- Kid Profile (players in the app). Big card, then tappable "My stuff"
+   tiles. Tiles are tappable, so they wear the card look; the name and tip lines
+   are plain text. Coaches keep the plain rows. --- */
+.lab-coach{display:none}
+body.is-coach .lab-kid{display:none}
+body.is-coach .lab-coach{display:inline}
+body.is-native.kid-profile:not(.is-coach) #profile .prof-me,
+body.is-native.kid-profile:not(.is-coach) #profile #profAppIconRow{display:none}
+#profile .prof-kid{margin:0 0 8px}
+#profile .prof-bigcard{display:block;width:min(100%,300px);aspect-ratio:5/7;margin:0 auto;padding:0;border:0;background:none;cursor:pointer;
+  border-radius:18px;box-shadow:0 14px 34px var(--shadow);-webkit-tap-highlight-color:transparent;transition:transform .2s ease}
+#profile .prof-bigcard:active{transform:scale(.97) rotate(-1.5deg)}
+#profile .prof-bigcard:focus-visible{outline:3px solid var(--lime);outline-offset:4px}
+#profile .prof-bigcard-host{position:relative;display:block;width:100%;height:100%;overflow:hidden;border-radius:18px}
+#profile .prof-bigcard-nm{margin:16px 0 2px;text-align:center;font-family:'Archivo Black',system-ui,sans-serif;font-size:28px;line-height:1.1;color:var(--text)}
+#profile .prof-bigcard-tip{margin:0 0 28px;text-align:center;font-size:15px;font-weight:700;color:var(--muted)}
+#profile .prof-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 32px}
+#profile .prof-tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:132px;padding:14px 6px;
+  border-radius:18px;border:1px solid var(--line);background:var(--card);color:var(--text);text-decoration:none;font-family:inherit;cursor:pointer;
+  box-shadow:0 6px 16px var(--shadow);-webkit-tap-highlight-color:transparent;transition:transform .15s ease}
+#profile .prof-tile:active{transform:scale(.95)}
+#profile .prof-tile:focus-visible{outline:3px solid var(--lime);outline-offset:2px}
+#profile .prof-tile-art{width:44px;height:44px;object-fit:contain;margin:0 0 4px}
+#profile .prof-tile-icon{width:56px;height:56px;border-radius:14px}
+#profile .prof-tile-num{font-family:'Archivo Black',system-ui,sans-serif;font-size:30px;line-height:1}
+#profile .prof-tile-lab{font-size:13px;font-weight:800;color:var(--muted);text-align:center;line-height:1.2}
+#profile .prof-tile-lab-big{font-size:15px;color:var(--text)}
+#profile .prof-tile-streak .prof-tile-num{color:var(--orange)}
+#profile .prof-tile-stick .prof-tile-num{color:var(--green2)}
+#profile .prof-tile-stick .prof-tile-myst{display:grid;place-items:center;width:44px;height:44px;margin:0 0 4px;border-radius:50%;
+  background:var(--soft);font-family:'Archivo Black',system-ui,sans-serif;font-size:22px;color:var(--muted)}
+/* THWAP! pop when a Profile switch turns ON. Pure delight: never gates the tap. */
+.prof-pop{position:fixed;z-index:120;width:84px;height:auto;pointer-events:none;transform:translate(-50%,-50%) scale(.2);opacity:0;
+  animation:profPop .45s cubic-bezier(.2,1.3,.4,1) forwards}
+@keyframes profPop{0%{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(-12deg)}35%{opacity:1;transform:translate(-50%,-50%) scale(1.1) rotate(5deg)}
+  70%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(-2deg)}100%{opacity:0;transform:translate(-50%,-80%) scale(.9)}}
+@media(prefers-reduced-motion:reduce){#profile .prof-bigcard,#profile .prof-tile{transition:none}#profile .prof-bigcard:active,#profile .prof-tile:active{transform:none}.prof-pop{display:none}}
 /* Delete account: coach-only (only coaches create accounts). */
 #profile .prof-delacct{display:none}
 body.is-coach #profile .prof-delacct{display:flex}
@@ -2646,6 +2683,33 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 <div class='topbar'><div class='brand'><img class='brandlogo' src='sass-logo.webp' alt='Thwap Hockey' width='80' height='68'><img class='brandmark' src='wordmark-light.svg' alt='Thwap Hockey'></div></div>
 <div class='hero'><h1>Profile</h1></div>
 <div class='prof-wrap'>
+  <!-- Kid Profile (players in the app): the real card big at the top, then
+       "My stuff" tiles. Filled in by the kid-profile script below. Coaches keep
+       the plain rows (they have no player card). -->
+  <div class='prof-kid' id='profKid' hidden>
+    <button type='button' class='prof-bigcard' id='profBigCard' aria-label='Open your player card and spin it'>
+      <span class='prof-bigcard-host' id='profBigCardHost'></span>
+    </button>
+    <p class='prof-bigcard-nm' id='profBigCardNm'></p>
+    <p class='prof-bigcard-tip'>Tap your card to spin it</p>
+    <div class='prof-grouplab'>My stuff</div>
+    <div class='prof-tiles'>
+      <button type='button' class='prof-tile prof-tile-streak' id='profTileStreak'>
+        <img class='prof-tile-art' src='login/flame.webp' alt=''>
+        <span class='prof-tile-num' id='profTileStreakN'>0</span>
+        <span class='prof-tile-lab' id='profTileStreakLab'>day streak</span>
+      </button>
+      <button type='button' class='prof-tile prof-tile-stick' id='profTileStick'>
+        <img class='prof-tile-art' id='profTileStickArt' alt='' hidden>
+        <span class='prof-tile-num' id='profTileStickN'>0</span>
+        <span class='prof-tile-lab'>stickers</span>
+      </button>
+      <a class='prof-tile prof-tile-sass' href='#appicon' id='profTileSass'>
+        <img class='prof-tile-art prof-tile-icon' id='profTileSassArt' src='logo-64.png' alt=''>
+        <span class='prof-tile-lab prof-tile-lab-big'>My Sass</span>
+      </a>
+    </div>
+  </div>
   <div class='prof-group'>
     <button type='button' class='prof-row prof-me' id='profCardBtn'>
       <img class='prof-card-art' id='profCardArt' src='logo-64.png' alt='' loading='lazy' decoding='async'>
@@ -2655,7 +2719,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
     <a class='prof-row' href='#roster' id='profInfo'><span class='prof-rowlab'>Player info</span><span class='prof-rowchev'>&rsaquo;</span></a>
   </div>
   <div class='prof-group'>
-    <div class='prof-grouplab'>Settings</div>
+    <div class='prof-grouplab'><span class='lab-kid'>Make it yours</span><span class='lab-coach'>Settings</span></div>
     <div class='prof-row prof-row-switch'>
       <span class='prof-rowlab' id='profSfxLab'>Sound</span>
       <button class='prof-switch' id='profSfxToggle' type='button' role='switch' aria-checked='true' aria-pressed='true' aria-labelledby='profSfxLab'></button>
@@ -2789,6 +2853,99 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
   </div>
 </div>
 </section>
+<script>
+/* Kid Profile (players in the app only). Paints the big card with the same
+   buildFront the Team grid uses, plus the "My stuff" tiles from real data:
+   streak = the live board's computed streak, stickers = the Sticker Book count,
+   My Sass = the current app-icon pick. Repaints on each Profile visit. */
+(function(){
+  var body=document.body;
+  if(!body.classList.contains('is-native')) return;
+  var STICK_FILES=null, BOARD=null;
+  function nameNow(){ try{ return (localStorage.getItem('bfPlayer')||'').trim(); }catch(e){ return ''; } }
+  function paintCard(nm){
+    var host=document.getElementById('profBigCardHost'); if(!host||!window.buildFront||!window.thwapInfoFor) return;
+    var built=window.thwapInfoFor(nm), photo=null;
+    try{ photo=localStorage.getItem('thwapCardPhoto:'+built.slug); }catch(e){}
+    host.innerHTML="<div style='position:absolute;top:0;left:0;width:300px;height:420px;transform-origin:top left' data-pcbase='1'>"+
+      window.buildFront(built.info, built.slug, photo)+"</div>";
+    var scale=function(){ var w=host.clientWidth, s=host.firstChild; if(w&&s) s.style.transform='scale('+(w/300)+')'; };
+    scale(); requestAnimationFrame(scale);
+    var info=built.info, num=(info.num!=null&&info.num!=='')?(' #'+info.num):'';
+    var first=nm.split(/\s+/)[0];
+    document.getElementById('profBigCardNm').textContent=first+num;
+  }
+  function paintStreak(slug){
+    var n=document.getElementById('profTileStreakN'), lab=document.getElementById('profTileStreakLab');
+    function show(s){ n.textContent=String(s); lab.textContent=s>0?'day streak':'Start a streak!'; }
+    var b=window.thwapBoard, row=b&&b.all&&b.all[slug];
+    if(row){ show(row.streak||0); return; }
+    if(BOARD){ show(BOARD[slug]||0); return; }
+    show(0);
+    fetch('/api/board',{cache:'no-store'}).then(function(r){ return r.ok?r.json():null; }).then(function(j){
+      if(!j||!j.players) return; BOARD={};
+      j.players.forEach(function(p){ BOARD[String(p.id).toLowerCase()]=p.streak||0; });
+      show(BOARD[slug]||0);
+    }).catch(function(){});
+  }
+  function paintStickers(slug){
+    var n=document.getElementById('profTileStickN'), art=document.getElementById('profTileStickArt');
+    function show(files){
+      var earned=0; try{ earned=parseInt(localStorage.getItem('thwapEarned:'+slug)||'0',10)||0; }catch(e){}
+      var have=Math.min(Math.max(earned,3), files.length);   /* same rule as the Sticker Book */
+      n.textContent=String(have);
+      if(have>0){ art.src='stickers/'+files[have-1]; art.hidden=false; }
+    }
+    if(STICK_FILES){ show(STICK_FILES); return; }
+    fetch('stickers/stickers.json').then(function(r){ return r.json(); }).then(function(f){ STICK_FILES=f||[]; show(STICK_FILES); }).catch(function(){});
+  }
+  function paintSass(){
+    var mini=document.getElementById('profAppIconMini'), art=document.getElementById('profTileSassArt');
+    var src=mini&&!mini.hidden&&mini.getAttribute('src');
+    art.src=src||'app-icons/preview/hands-green.png';
+  }
+  function paint(){
+    if(location.hash!=='#profile'||body.classList.contains('is-coach')) return;
+    var nm=nameNow(), kid=document.getElementById('profKid'); if(!kid) return;
+    if(!nm){ kid.hidden=true; body.classList.remove('kid-profile'); return; }
+    var slug=nm.split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g,'');
+    kid.hidden=false; body.classList.add('kid-profile');
+    paintCard(nm); paintStreak(slug); paintStickers(slug); setTimeout(paintSass,0);
+  }
+  function wire(){
+    var card=document.getElementById('profBigCard');
+    if(card) card.addEventListener('click',function(){
+      if(window.thwapOpenCard) window.thwapOpenCard(); else if(window.thwapOpenMyCard) window.thwapOpenMyCard();
+    });
+    var st=document.getElementById('profTileStreak');
+    if(st) st.addEventListener('click',function(){ var nm=nameNow(); if(nm&&window.openPlayerPage) window.openPlayerPage(nm,'card'); });
+    var sk=document.getElementById('profTileStick');
+    if(sk) sk.addEventListener('click',function(){
+      location.hash='#myseason';
+      setTimeout(function(){ var t=document.getElementById('seasonTabStickers'); if(t) t.click(); },60);
+    });
+    /* THWAP! pop when a switch turns ON. Delight only: the toggle itself already ran. */
+    var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    document.querySelectorAll('#profile .prof-switch').forEach(function(sw){
+      sw.addEventListener('click',function(){
+        if(reduce) return;
+        setTimeout(function(){
+          if(sw.getAttribute('aria-checked')!=='true') return;
+          var r=sw.getBoundingClientRect(), img=document.createElement('img');
+          img.className='prof-pop'; img.src='login/thwap-burst.webp'; img.alt='';
+          img.style.left=(r.left+r.width/2)+'px'; img.style.top=(r.top+r.height/2)+'px';
+          document.body.appendChild(img);
+          setTimeout(function(){ img.remove(); },500);
+        },0);
+      });
+    });
+    window.addEventListener('resize',function(){ var h=document.getElementById('profBigCardHost'); if(h&&h.firstChild&&h.clientWidth) h.firstChild.style.transform='scale('+(h.clientWidth/300)+')'; });
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){ wire(); paint(); }); else { wire(); paint(); }
+  window.addEventListener('hashchange',paint);
+  window.addEventListener('load',paint);
+})();
+</script>
 <section id='appicon' class='page'>
 <div class='prof-wrap'>
   <a class='prof-back' href='#profile'><span class='prof-back-ch' aria-hidden='true'>&lsaquo;</span>Profile</a>
@@ -4064,6 +4221,7 @@ window.thwapActiveTeam=function(coach){
     var display=parts.length>1?parts[0]+' '+parts[parts.length-1].charAt(0)+'.':parts[0];
     return {slug:key, info:{name:name, display:display, first:parts[0].toUpperCase(), num:r.num, pos:r.pos, photo:''}};
   }
+  window.thwapInfoFor=infoFor;   /* Profile's big card draws the same card the Team grid does */
   function init(){
   /* Render the coded home-card front into each roster cell, scaled to the cell.
      The card has fixed internal font sizes tuned for the full card, so it must
