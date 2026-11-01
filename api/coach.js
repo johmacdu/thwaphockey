@@ -42,13 +42,13 @@ import { ROSTER, weekBoard, monthTrend, adjustPlayer, getGrants, setGrants } fro
 import { LETTERS, MAX_A, letterFromGrants, withLetter } from '../lib/avatar_items.js';
 import {
   getTeam, setTeam, listMembers, addMember, getMember, removeMember,
-  getCoach, setCoach, getIdpGoal, setIdpGoal, getGameGoalLog, logGameGoal, getIdpGoalLog,
+  getCoach, setCoach, deleteCoach, getIdpGoal, setIdpGoal, getGameGoalLog, logGameGoal, getIdpGoalLog,
   getTeamPlan, setTeamPlan,
   getTeamGoal, setTeamGoal,
   addDrillSuggestion, listDrillSuggestions, setSuggestionStatus, listAllTeamCodes,
   updateMember, parentEmailList, createResetToken, consumeResetToken,
   getAdmin, setAdmin, ensureTeamIndexed,
-  listTeamCoaches, ensureHeadCoach, addAssistantCoach, removeAssistantCoach, MAX_ASSISTANTS,
+  listTeamCoaches, ensureHeadCoach, addAssistantCoach, removeAssistantCoach, detachCoachFromTeam, MAX_ASSISTANTS,
   backfillSeedBeta, getBetaUntil,
   savePushToken, withoutLegacyPhoto,
 } from '../lib/teams_store.js';
@@ -417,6 +417,40 @@ async function coachRegister(req, res) {
     ok: true, token,
     coach: { email: cleanEmail, name: cleanName, teams: [], teamList: [], childPlayerId: null },
   });
+}
+
+// POST ?action=delete-account { coachToken, email } -> delete the signed-in
+// coach's own account (App Store guideline 5.1.1(v): an app that lets people
+// create an account must let them delete it in the app). The typed email must
+// match the account, as a deliberate second confirmation. Deletes the coach's
+// login record, which ends every session (requireCoach re-reads it), and takes
+// them off every team's coach list. Teams and their players are KEPT: other
+// families use them. A head coach's longest-serving assistant becomes head.
+// The seed coach is refused: ensureSeed would recreate it on the next request.
+async function deleteAccount(req, res) {
+  if (!methodGuard(req, res, 'POST')) return;
+  res.setHeader('Cache-Control', 'no-store');
+  const coach = await requireCoach(req, res); if (!coach) return;
+  const { email } = parseBody(req);
+  const typed = String(email || '').trim().toLowerCase();
+  if (!typed || typed !== String(coach.email || '').toLowerCase()) {
+    return res.status(400).json({ error: "that email doesn't match this account" });
+  }
+  if (typed === SEED_COACH_EMAIL) {
+    return res.status(403).json({ error: 'this team account can only be deleted by Thwap. Email hello@thwaphockey.com' });
+  }
+  const codes = new Set((coach.teams || []).map((c) => String(c).toUpperCase()));
+  for (const c of await listAllTeamCodes()) {
+    const code = String(c).toUpperCase();
+    if (codes.has(code)) continue;
+    const team = await getTeam(code);
+    const onTeam = (team && String(team.coachEmail || '').toLowerCase() === typed)
+      || (await listTeamCoaches(code)).some((x) => String(x.email || '').toLowerCase() === typed);
+    if (onTeam) codes.add(code);
+  }
+  for (const code of codes) await detachCoachFromTeam(code, typed);
+  await deleteCoach(typed);
+  return res.status(200).json({ ok: true, deleted: typed, teamsLeft: codes.size });
 }
 
 async function createTeam(req, res) {
@@ -1322,6 +1356,7 @@ export default async function handler(req, res) {
   switch (action) {
     case 'coach-login': return coachLogin(req, res);
     case 'coach-register': return coachRegister(req, res);
+    case 'delete-account': return deleteAccount(req, res);
     case 'create-team': return createTeam(req, res);
     case 'add-player': return addPlayer(req, res);
     case 'remove-player': return removePlayer(req, res);
@@ -1371,7 +1406,7 @@ export default async function handler(req, res) {
 
 // Exported for unit tests (call sub-handlers directly with a query.action-free req).
 export const _handlers = {
-  coachLogin, coachRegister, createTeam, addPlayer, removePlayer, roster, playerRollup,
+  coachLogin, coachRegister, deleteAccount, createTeam, addPlayer, removePlayer, roster, playerRollup,
   updatePlayer, setLetter, setPassword, requestPassword, resetPassword, requestCode,
   adminRoster, adminUpdatePlayer,
   adminLogin, adminSetPassword, adminStatus,

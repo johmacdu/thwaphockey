@@ -155,6 +155,19 @@ A centered dialog card (max-width ~360) for the sign-in / waitlist short forms.
 - **Reuse rule:** short forms only. If it scrolls or is a whole flow, use a
   full-page overlay instead.
 
+### Destructive confirm: `.pe-confirm`
+A full-screen scrimmed `role='alertdialog'` with a warning icon, a question
+title, one consequence line and a Cancel / red action row (44px buttons).
+Scrim and Cancel dismiss; only the red button acts. Always pair
+`.pe-confirm[hidden]{display:none}` with the flex display.
+
+- **Used by:** remove player (`#peConfirm`) and delete coach account
+  (`#delAcct`, Profile tab, coach only).
+- **Two-step variant (`#delAcct`):** step 1 says what happens and shows
+  Continue; step 2 reveals `.delacct-step2` (a `.login-in` field) and the red
+  button stays disabled until the typed text matches. Use it only for actions
+  that delete an account, never for everyday removes.
+
 ### My Player page: `.lk` (avatar.js)
 The character editor. A full-screen Thwap page built from the shared parts, so it
 reads like every other page.
