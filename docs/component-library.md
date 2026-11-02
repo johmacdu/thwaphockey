@@ -371,6 +371,12 @@ closes whichever menu a click (or Escape) fell outside of.
 - [ ] Does the close button use `.glassclose` (with `.in-dialog` inside a dialog,
       `.in-row` in a header)? Back button plain "Back"?
 - [ ] Card look only on something interactive that navigates?
+- [ ] Does it show signup, a price, a buy or renew button, a promo code box or a
+      link to pay? Then add `.no-app`, so the iOS and Android apps hide it. Teams
+      join and pay on the website only (App Store 3.1.1 / 3.1.3, Google Play
+      payments policy). In the apps, say what happened in plain words with no
+      button and no link, e.g. "Your team's season has ended. Your team manager
+      can renew it."
 - [ ] No `·`, no `—`/`–`? (`grep -nE "·|—|–"`)
 - [ ] Values are tokens from `design-system.md §16`, not hand-set px?
 - [ ] If I built something genuinely new and reusable, did I add it to this file?
