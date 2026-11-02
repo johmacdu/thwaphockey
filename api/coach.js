@@ -58,6 +58,7 @@ import { teamPlayerIds, resolvePlayer } from '../lib/team_players.js';
 import { GAME_GOAL_TARGET, gameGoalById } from '../lib/game_goals_catalog.js';
 import { getGamePick, setGamePick } from '../lib/game_picks_store.js';
 import { isGated, billingStatus } from '../lib/billing_store.js';
+import { coachFromToken, coachRunsTeam } from '../lib/coach_auth.js';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -201,12 +202,6 @@ function mintCoachToken(email) {
   const e = String(email).toLowerCase();
   return mintSession(`coach:${hexEncode(e)}`, e);
 }
-function coachFromToken(token) {
-  const claims = verifySession(token);
-  if (!claims || !String(claims.playerId || '').startsWith('coach:')) return null;
-  try { return { email: hexDecode(String(claims.playerId).slice('coach:'.length)) }; }
-  catch { return null; }
-}
 async function requireCoach(req, res) {
   const { coachToken } = parseBody(req);
   const token = coachToken || (req.query && req.query.coachToken) || '';
@@ -215,21 +210,6 @@ async function requireCoach(req, res) {
   const rec = await getCoach(c.email);
   if (!rec) { res.status(401).json({ error: 'unknown coach' }); return null; }
   return rec;
-}
-
-// Does this coach run this team? Head or assistant on the team's coach list, the
-// team's own coachEmail, or the team in the coach's own record. Being *a* coach
-// is not enough: anyone can register as one.
-async function coachRunsTeam(coach, code) {
-  const c = String(code || '').trim().toUpperCase();
-  const email = String(coach && coach.email || '').toLowerCase();
-  if (!c || !email) return false;
-  const team = await getTeam(c);
-  if (!team) return false;
-  if (String(team.coachEmail || '').toLowerCase() === email) return true;
-  if ((coach.teams || []).map((t) => String(t).toUpperCase()).includes(c)) return true;
-  const coaches = await listTeamCoaches(c);
-  return coaches.some((x) => String(x.email || '').toLowerCase() === email);
 }
 
 async function playerOnTeam(code, playerId) {

@@ -20,10 +20,25 @@
 
 import { listPlayers, weekBoard, currentTeamGoal, listCheers, sendCheer, listFires, sendFire, ROSTER, getRecentCheerers, getRecentFirers, localDateStr } from '../lib/store.js';
 import { seasonBookFor } from '../lib/season_book.js';
-import { getMember, getTeam } from '../lib/teams_store.js';
+import { getMember, getTeam, getCoach } from '../lib/teams_store.js';
 import { verifySession, readSessionCookie } from '../lib/session_store.js';
 import { handleLooks, handleLookGet, handleLookPost } from '../lib/look_api.js';
-import { sameTeam, teamForRequest as boardTeam } from '../lib/team_players.js';
+import { sameTeam, teamForRequest, teamPlayerIds } from '../lib/team_players.js';
+import { coachFromToken, coachRunsTeam } from '../lib/coach_auth.js';
+
+// The team a board request is about. A signed-in coach may ask for a team they
+// run (?code=&coachToken=), so a new team's coach sees their own team, never the
+// Jr. Rangers fallback. Everyone else: the session player's team, as before.
+async function boardTeam(req) {
+  const q = req.query || {};
+  const code = String(q.code || '').trim().toUpperCase();
+  const tok = q.coachToken ? coachFromToken(String(q.coachToken)) : null;
+  if (code && tok) {
+    const coach = await getCoach(tok.email);
+    if (coach && (await coachRunsTeam(coach, code))) return { teamCode: code, ids: await teamPlayerIds(code) };
+  }
+  return teamForRequest(req);
+}
 
 // Parse the request body whether Vercel already parsed it (object) or handed us
 // a raw JSON string. Returns {} on anything unparseable. Mirrors api/done.js.
@@ -184,6 +199,12 @@ export default async function handler(req, res) {
   const tf = req.query && req.query.tf;
   // Scope every list to one team (the session player's, else Jr. Rangers 10U).
   const { teamCode, ids } = await boardTeam(req);
+  // A team with no players yet (a new team's coach) has an empty board. Answer it
+  // here: the store treats an empty id list as "the Rangers".
+  if (!ids.length) {
+    res.setHeader('Cache-Control', 'no-store');
+    return res.status(200).json({ players: [], teamGoal: null });
+  }
 
   // Read the roster for the requested timeframe AND the cheer + fire counts
   // together, then merge both onto each player by id. listCheers / listFires each

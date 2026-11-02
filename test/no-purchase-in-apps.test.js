@@ -40,8 +40,9 @@ async function boot({ app = false, storage = {} } = {}) {
 
 const SURFACES = (t) => [
   t.$('navWaitlist'), t.$('navWaitlistK'),
-  t.$('loginMark').closest('p'), t.$('waitCoach').closest('p'), t.$('loginCoachLine'),
+  t.$('waitCoach').closest('p'), t.$('loginCoachLine'),
   t.$('coachSignupForm'), t.$('waitForm'), t.$('chBilling'),
+  t.$('jnTodoPay').closest('li'), // Join Thwap checklist: "Pay for Thwap"
 ];
 
 describe('in the iOS and Android apps', () => {

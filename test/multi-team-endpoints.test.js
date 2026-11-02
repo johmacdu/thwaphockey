@@ -151,6 +151,38 @@ describe('api/done.js on any team', () => {
   });
 });
 
+describe('api/board.js for a signed-in coach (?code=&coachToken=)', () => {
+  const coachTok = (email) => mintSession(`coach:${Buffer.from(email, 'utf8').toString('hex')}`, email);
+  it('a coach who runs the Flyers sees the Flyers, not the Rangers', async () => {
+    const { setCoach } = await import('../lib/teams_store.js');
+    await setCoach('dana@example.com', { name: 'Dana', teams: ['FLYERS10'] });
+    const res = makeRes();
+    await board(getAs(null, { code: 'FLYERS10', coachToken: coachTok('dana@example.com') }), res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.players.map((p) => p.id)).toEqual(['zara', 'milo']);
+  });
+  it('a brand-new team with no players gets an empty board', async () => {
+    const { setCoach } = await import('../lib/teams_store.js');
+    await setTeam('FALCONS42', { name: 'Falcons 10U', coachEmail: 'dana@example.com', createdAt: new Date().toISOString() });
+    await setCoach('dana@example.com', { name: 'Dana', teams: ['FALCONS42'] });
+    const res = makeRes();
+    await board(getAs(null, { code: 'FALCONS42', coachToken: coachTok('dana@example.com') }), res);
+    expect(res.body.players).toEqual([]);
+  });
+  it('a coach asking for a team they do not run falls back to the usual board', async () => {
+    const { setCoach } = await import('../lib/teams_store.js');
+    await setCoach('stranger@example.com', { name: 'Stranger', teams: [] });
+    const res = makeRes();
+    await board(getAs(null, { code: 'FLYERS10', coachToken: coachTok('stranger@example.com') }), res);
+    expect(res.body.players.map((p) => p.id)).not.toContain('zara');
+  });
+  it('a made-up coach token is ignored', async () => {
+    const res = makeRes();
+    await board(getAs(null, { code: 'FLYERS10', coachToken: 'nope' }), res);
+    expect(res.body.players.map((p) => p.id)).not.toContain('zara');
+  });
+});
+
 describe('api/board.js is scoped to the player\'s own team', () => {
   it('a Flyers player sees only Flyers players, all-time and this week', async () => {
     await done(postAs('zara', { player: 'zara', discipline: 'stick' }), makeRes());

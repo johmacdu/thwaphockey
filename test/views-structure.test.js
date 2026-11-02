@@ -48,12 +48,13 @@ describe('View: SPLASH / sign-in (signed-out index.html)', () => {
   it('exposes a glass close affordance on the sheet', () => {
     expect(idx.querySelector('.login-modal .glassclose, .glassclose'), 'glass close').toBeTruthy();
   });
-  it('the auth-aware header carries guest links (About / Sign In / Join Waitlist)', () => {
+  it('the auth-aware header carries guest links (About / Sign In / Join Thwap)', () => {
     const guest = idx.querySelector('.nav-guest');
     expect(guest, '.nav-guest').toBeTruthy();
     expect(guest.textContent).toMatch(/About/i);
     expect(guest.textContent).toMatch(/Sign In/i);
-    expect(guest.textContent).toMatch(/Waitlist/i);
+    expect(guest.textContent).toMatch(/Join Thwap/);
+    expect(guest.textContent).not.toMatch(/Waitlist/i);
   });
 });
 

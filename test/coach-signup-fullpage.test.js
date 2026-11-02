@@ -3,9 +3,8 @@
 // EXECUTION test (not a string guard): boots index.html in jsdom and verifies two
 // product rules for the self-serve coach signup entry point:
 //
-//   1. The sign-in sheet's "Coaching a team? Create your team." line is HIDDEN for
-//      now (it will later REPLACE "Join Waitlist"). The markup is kept so re-enabling
-//      is a one-line flip, but it must not be visible today.
+//   1. The sign-in sheet shows "Coaching or managing a team? Join Thwap.", the
+//      entry point that replaced Join Waitlist (docs/team-onboarding.md).
 //
 //   2. The coach signup (#coachSignupForm) opens as a FULL PAGE, not a centered
 //      bottom sheet: it carries the .cs-page class (position:fixed; inset:0;
@@ -37,15 +36,12 @@ async function boot() {
 }
 
 describe('self-serve coach signup entry point', () => {
-  it('hides the sign-in "Create your team." line (reserved to replace Join Waitlist)', async () => {
+  it('shows the sign-in "Coaching or managing a team? Join Thwap." line', async () => {
     const w = await boot();
-    const line = w.document.querySelector('#loginCoachLine')
-      || w.document.querySelector('#loginCoach')?.closest('p');
-    expect(line, 'the coach-signup line/paragraph should exist in markup').toBeTruthy();
-    // Hidden via the hidden attribute so it is trivially re-enabled later.
-    expect(line.hasAttribute('hidden')).toBe(true);
-    // And not visible.
-    expect(w.getComputedStyle(line).display).toBe('none');
+    const line = w.document.querySelector('#loginCoachLine');
+    expect(line, 'the coach line should exist').toBeTruthy();
+    expect(line.hasAttribute('hidden')).toBe(false);
+    expect(line.textContent).toBe('Coaching or managing a team? Join Thwap.');
   });
 
   it('coach signup form is marked up as a full page, not a sheet', async () => {

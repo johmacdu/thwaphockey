@@ -58,7 +58,8 @@ describe('Sign-in sheet mobile fixes', () => {
   it('3a. the "New to" wordmark is the plain (no-TM) mark and is smaller', () => {
     expect(html).toContain(".login-wordmark{height:44px");
     expect(html).not.toContain(".login-wordmark{height:56px");
-    expect(html).toContain("id='loginMark' src='wordmark-light.svg'");
+    // The "New to <wordmark>?" line was replaced by "Coaching or managing a team?
+    // Join Thwap." (docs/team-onboarding.md), so the sheet no longer shows a mark.
     expect(html).not.toContain("id='loginMark' src='wordmark-tm-light.svg'");
     expect(html).toContain("lm.setAttribute('src',dark?'wordmark-dark.svg':'wordmark-light.svg')");
   });

@@ -76,18 +76,20 @@ describe('Native share sheet (thwapShare)', () => {
     expect(html).toMatch(/if\(navigator\.share\)\{return navigator\.share/);
     expect(html).toMatch(/navigator\.clipboard&&navigator\.clipboard\.writeText/);
   });
-  it('ships a Share button in the team-code reveal, hidden until the code lands', () => {
+  it('ships a Share button on the Join Thwap ready step, which stays hidden until then', () => {
     const btn = doc.getElementById('csShare');
     expect(btn).toBeTruthy();
-    expect(btn.hasAttribute('hidden')).toBe(true);
-    expect(btn.textContent).toMatch(/Share the code/);
+    expect(btn.closest('#jn-ready')).toBeTruthy();
+    expect(doc.getElementById('jn-ready').hasAttribute('hidden')).toBe(true);
+    expect(btn.textContent).toMatch(/Send to families/);
   });
   it('wires the Share button to thwapShare with the join message and shows it on reveal', () => {
-    expect(html).toMatch(/if\(csShare\)\{ csShare\.hidden=false;/);
+    expect(html).toMatch(/\$\('csShare'\)\.addEventListener\('click'/);
     expect(html).toMatch(/window\.thwapShare\(\{ title:'Join our Thwap team'/);
-    expect(html).toMatch(/this team code: '\+code/);
+    expect(html).toMatch(/var link='https:\/\/thwaphockey\.com\/\?team='\+encodeURIComponent\(st\.code\)/);
+    expect(html).toMatch(/text:msg, url:link \}/);
   });
   it('shows a transient confirmation when the web path falls back to clipboard copy', () => {
-    expect(html).toMatch(/r\.ok==='copied'[^]*?csShare\.textContent='Code copied'/);
+    expect(html).toMatch(/r\.ok==='copied'[^]*?btn\.textContent='Copied\. Paste it in your group chat\.'/);
   });
 });
