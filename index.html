@@ -2053,8 +2053,8 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
       <button type='submit' class='login-go' id='loginGo' disabled>Sign In &#8594;</button>
       <p class='login-err' id='loginErr' aria-live='polite'></p>
       <button type='button' class='login-otp-toggle' id='loginOtpToggle'>Forgot your code?</button>
-      <p class='login-alt'>New to <img class='login-wordmark' id='loginMark' src='wordmark-light.svg' alt='Thwap Hockey'>? <a href='#' id='loginWaitlist'>Join the waitlist.</a></p>
-      <p class='login-alt' id='loginCoachLine' hidden>Coaching a team? <a href='#' id='loginCoach'>Create your team.</a></p>
+      <p class='login-alt no-app'>New to <img class='login-wordmark' id='loginMark' src='wordmark-light.svg' alt='Thwap Hockey'>? <a href='#' id='loginWaitlist'>Join the waitlist.</a></p>
+      <p class='login-alt no-app' id='loginCoachLine' hidden>Coaching a team? <a href='#' id='loginCoach'>Create your team.</a></p>
     </div>
     <div id='loginOtpView' hidden>
       <div class='login-otphead'>
@@ -2099,7 +2099,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
       <div class='policy-body' id='policyBody'></div>
     </div>
   </div>
-  <form class='login-modal' id='waitForm' role='dialog' aria-modal='true' aria-labelledby='waitTitle' hidden novalidate>
+  <form class='login-modal no-app' id='waitForm' role='dialog' aria-modal='true' aria-labelledby='waitTitle' hidden novalidate>
     <button type='button' class='glassclose in-dialog login-x' id='waitClose' aria-label='Close'>&#10005;</button>
     <h2 class='login-h' id='waitTitle'>Join the waitlist</h2>
     <p class='login-sub' id='waitSub'>Tell us where you play and we will reach out when THWAP opens.</p>
@@ -2130,9 +2130,9 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
     <p class='login-err' id='waitErr' aria-live='polite'></p>
     <p class='login-done' id='waitDone' hidden>You are on the list. We will be in touch.</p>
     <p class='login-alt'>Already have a team? <a href='#' id='waitBack'>Back to sign in.</a></p>
-    <p class='login-alt'>Coaching a team? <a href='#' id='waitCoach'>Set it up now.</a></p>
+    <p class='login-alt no-app'>Coaching a team? <a href='#' id='waitCoach'>Set it up now.</a></p>
   </form>
-  <form class='login-modal cs-page' id='coachSignupForm' role='dialog' aria-modal='true' aria-labelledby='csTitle' hidden novalidate>
+  <form class='login-modal cs-page no-app' id='coachSignupForm' role='dialog' aria-modal='true' aria-labelledby='csTitle' hidden novalidate>
     <button type='button' class='glassclose cs-x' id='csClose' aria-label='Close'>&#215;</button>
     <div class='cs-inner'>
     <div id='csFields'>
@@ -2351,7 +2351,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 /* Renewal heads-up (shown when the annual charge is near). */
 .chb-heads{color:var(--text);font-weight:800}
 </style>
-<div class='ch-billing' id='chBilling' hidden>
+<div class='ch-billing no-app' id='chBilling' hidden>
 <p class='ch-seclab'>Team billing</p>
 <div class='ch-billing-card' id='chBillingCard'></div>
 </div>
@@ -3093,7 +3093,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 </div>
 </section>
 <section id='home'>
-<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.webp' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks' aria-label='Quick links'><span class='nav-authed'><a class='link' href='#myseason'>My Season</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a></span><span class='nav-guest'><a class='link' href='/about' id='navAbout'>About Thwap</a><span class='topsep'>|</span><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Explore pages' aria-expanded='false'>Explore</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#myseason'>My Season</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a></span><span class='nav-guest'><a href='/about' id='navAboutK'>About Thwap</a><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
+<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.webp' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks' aria-label='Quick links'><span class='nav-authed'><a class='link' href='#myseason'>My Season</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a></span><span class='nav-guest'><a class='link' href='/about' id='navAbout'>About Thwap</a><span class='topsep'>|</span><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep no-app'>|</span><a class='link no-app' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Explore pages' aria-expanded='false'>Explore</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#myseason'>My Season</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a></span><span class='nav-guest'><a href='/about' id='navAboutK'>About Thwap</a><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK' class='no-app'>Join Waitlist</a></span></div></div>
 <div class='hero'><div class='kicker' id='homeKicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>there</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><script>(function(){try{var authed=/(?:^|; )thwapAuth=/.test(document.cookie);var p=localStorage.getItem('bfPlayer');var b=document.getElementById('homePlayer');if(b){if(p&&authed){b.textContent=p.trim().split(/\s+/)[0];}else{b.classList.add('needpick');}}}catch(e){}
 /* Team plan: hide the category rows the coach turned OFF for today. On any failure
    or unset plan, stick + shoot stay shown (the built-in rotation), and dryland
@@ -11340,6 +11340,11 @@ document.getElementById('coachInfoScrim') && document.getElementById('coachInfoS
    until BILLING_ENFORCED=1). Reads/writes nothing itself; thwapPaywall() drives it. */
 .paywall{position:fixed;left:0;right:0;bottom:0;z-index:200;background:var(--panel,#182420);border-top:1px solid var(--line,#2A3831);box-shadow:0 -8px 28px rgba(0,0,0,.25)}
 .paywall[hidden]{display:none}
+/* iOS and Android apps: teams join and pay on the website only, so the apps never
+   show signup, a price, a buy button or a link to pay (App Store guideline 3.1.1
+   and 3.1.3, Google Play payments policy). Mark anything like that .no-app.
+   docs/team-onboarding.md */
+html.is-native .no-app{display:none!important}
 .paywall-in{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
 .paywall-msg{font-weight:800;font-size:14px;color:var(--text,#F3F7F4)}
 .paywall-actions{display:inline-flex;gap:10px;align-items:center}
@@ -11363,7 +11368,11 @@ window.thwapPaywall=function(billing, teamCode){
   document.body.classList.toggle('thwap-gated', gated);
   if(!gated){ bar.hidden=true; return; }
   var msg=document.getElementById('paywallMsg'), actions=document.getElementById('paywallActions');
-  if(teamCode){
+  var inApp=document.documentElement.classList.contains('is-native');
+  if(teamCode && inApp){
+    if(msg) msg.textContent="Your team's season has ended. Your team manager can renew it.";
+    if(actions) actions.innerHTML='';
+  } else if(teamCode){
     if(msg) msg.textContent='Your season has ended. Renew to keep training.';
     if(actions){
       actions.innerHTML="<button type='button' class='paywall-btn' id='pwRenew'>Renew</button> <button type='button' class='paywall-link' id='pwCode'>Have a code?</button>";
@@ -11404,6 +11413,7 @@ window.thwapPaywall=function(billing, teamCode){
     var coach=null; try{ coach=JSON.parse(localStorage.getItem('thwapCoach')||'null'); }catch(e){ return null; }
     if(!coach||!coach.token) return null;
     if(coach.demo) return null; /* the demo coach has no real billing */
+    if(document.documentElement.classList.contains('is-native')) return null; /* apps: no prices or buy buttons */
     var code=(window.thwapActiveTeam?window.thwapActiveTeam(coach):((coach.teams&&coach.teams[0])||''));
     if(!code||String(code).toUpperCase()==='DEMO') return null;
     return code;
