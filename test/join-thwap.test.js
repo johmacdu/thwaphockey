@@ -15,7 +15,7 @@ const html = readFileSync(resolve(__dirname, '../index.html'), 'utf8');
 
 const tick = (ms = 30) => new Promise((r) => setTimeout(r, ms));
 
-async function boot({ url = 'https://thwaphockey.com/', storage = {} } = {}) {
+async function boot({ url = 'https://thwaphockey.com/', storage = {}, reduce = false } = {}) {
   const calls = [];
   const dom = new JSDOM(html, {
     runScripts: 'dangerously',
@@ -25,6 +25,7 @@ async function boot({ url = 'https://thwaphockey.com/', storage = {} } = {}) {
       window.scrollTo = () => {};
       window.HTMLMediaElement.prototype.play = () => Promise.resolve();
       for (const [k, v] of Object.entries(storage)) window.localStorage.setItem(k, v);
+      if (reduce) window.matchMedia = (q) => ({ matches: /reduce/.test(q), media: q, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
       window.fetch = (u, opts = {}) => {
         const body = opts.body ? JSON.parse(opts.body) : {};
         calls.push({ url: String(u), body });
@@ -162,5 +163,72 @@ describe('coach home day-one checklist', () => {
     const t = await boot();
     t.w.thwapJoinTodo();
     expect(t.$('jnTodo').hidden).toBe(true);
+  });
+});
+
+const COACH = JSON.stringify({ token: 't', email: 'dana@example.com', name: 'Dana Ortiz', teams: ['FALCONS42'], teamList: [{ code: 'FALCONS42', name: 'Falcons 10U' }] });
+
+describe('coach home setup mode', () => {
+  it('shows only the checklist while the team sets up', async () => {
+    const t = await boot({ url: 'https://thwaphockey.com/#coachhome', storage: { thwapCoach: COACH, thwapJoin: JSON.stringify({ step: 'done', code: 'FALCONS42' }) } });
+    const root = t.w.document.documentElement;
+    expect(root.classList.contains('jn-setup')).toBe(true);
+    t.w.thwapJoinTodo();
+    expect(t.$('jnTodo').hidden).toBe(false);
+    expect(html).toMatch(/html\.jn-setup #coachhome \.hero p,/);
+  });
+
+  it('when the last step is done, folds the list, then shows the Team page once', async () => {
+    const t = await boot({ url: 'https://thwaphockey.com/#coachhome', storage: { thwapCoach: COACH, thwapJoin: JSON.stringify({ step: 'done', code: 'FALCONS42', invited: true }) } });
+    const root = t.w.document.documentElement;
+    t.w.thwapJoinTodo(); // no players yet: still setting up
+    expect(root.classList.contains('jn-setup')).toBe(true);
+    t.w.__thwapRosterCache = { members: [{ playerId: 'sam' }] };
+    t.w.thwapJoinTodo();
+    expect(t.$('jnTodoPlayers').classList.contains('jn-just')).toBe(true); // the last check pops
+    expect(root.classList.contains('jn-setup')).toBe(true); // nothing jumps yet
+    await tick(760);
+    expect(t.$('jnTodo').classList.contains('jn-folding')).toBe(true);
+    await tick(400);
+    expect(root.classList.contains('jn-setup')).toBe(false);
+    expect(root.classList.contains('jn-reveal')).toBe(true);
+    expect(t.$('jnTodo').hidden).toBe(true);
+    expect(JSON.parse(t.w.localStorage.getItem('thwapJoin')).setupDone).toBe(true);
+    t.w.thwapJoinTodo(); // a later visit stays on the normal page
+    expect(t.$('jnTodo').hidden).toBe(true);
+  });
+
+  it('with reduced motion, switches straight to the Team page', async () => {
+    const dom = await boot({ url: 'https://thwaphockey.com/#coachhome', storage: { thwapCoach: COACH, thwapJoin: JSON.stringify({ step: 'done', code: 'FALCONS42', invited: true }) }, reduce: true });
+    dom.w.__thwapRosterCache = { members: [{ playerId: 'sam' }] };
+    dom.w.thwapJoinTodo();
+    const root = dom.w.document.documentElement;
+    expect(root.classList.contains('jn-setup')).toBe(false);
+    expect(root.classList.contains('jn-reveal')).toBe(false);
+  });
+});
+
+describe('a new team on Team and Standings', () => {
+  it('asks the board for the coach\'s own team', async () => {
+    const t = await boot({ storage: { thwapCoach: COACH } });
+    expect(t.w.thwapOwnTeam()).toBe(true);
+    expect(t.w.thwapBoardUrl('/api/board?tf=week')).toBe('/api/board?tf=week&code=FALCONS42&coachToken=t');
+    expect(t.w.thwapTeamLabel()).toBe('Falcons 10U');
+  });
+  it('leaves the Rangers and kids exactly as before', async () => {
+    const t = await boot();
+    expect(t.w.thwapOwnTeam()).toBe(false);
+    expect(t.w.thwapBoardUrl('/api/board')).toBe('/api/board');
+    expect(t.w.document.documentElement.classList.contains('thwap-noboard')).toBe(false);
+  });
+  it('shows empty Team and Standings with no Rangers cards', async () => {
+    const t = await boot({ url: 'https://thwaphockey.com/#roster', storage: { thwapCoach: COACH } });
+    const root = t.w.document.documentElement;
+    expect(t.w.document.querySelectorAll('#roster-grid .pcard[data-pid]').length).toBe(0);
+    expect(root.classList.contains('roster-empty')).toBe(true);
+    expect(root.classList.contains('thwap-noboard')).toBe(true);
+    expect(t.$('rosterKicker').textContent).toBe('Falcons 10U');
+    expect(t.$('lbKicker').textContent).toBe('Falcons 10U');
+    expect(t.$('boardEmpty').textContent).toMatch(/No standings yet/);
   });
 });
