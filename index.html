@@ -1939,7 +1939,7 @@ body.login-locked{overflow:hidden}
    same window.Capacitor?.isNativePlatform() check as the bridge, so the plain
    website at thwaphockey.com never gets body.is-native and is completely unchanged.
    Set on <html> AND <body> as early as possible so the first paint already has it. */
-(function(){try{var C=window.Capacitor;if(C&&typeof C.isNativePlatform==='function'&&C.isNativePlatform()){var pf='';try{pf=(C.getPlatform&&C.getPlatform())||'';}catch(e2){}var pc=pf==='ios'?'is-ios':(pf==='android'?'is-android':'');var r=document.documentElement;r.classList.add('is-native');if(pc)r.classList.add(pc);var add=function(){if(document.body){document.body.classList.add('is-native');if(pc)document.body.classList.add(pc);}};add();if(!document.body)document.addEventListener('DOMContentLoaded',add);}}catch(e){}})();</script><script src='avatar.js'></script><script src='demo/demo-data.js'></script><script src='demo/demo-mode.js'></script><script>/* thwapShare: native OS share sheet via @capacitor/share when in the shell, graceful web fallback (Web Share API, then clipboard copy) otherwise. Returns a promise; never throws into the caller. */window.thwapShare=function(opts){opts=opts||{};var title=opts.title||'Thwap Hockey';var text=opts.text||'';var url=opts.url||'';function done(ok){return Promise.resolve({ok:ok});}try{var C=window.Capacitor;var native=!!(C&&typeof C.isNativePlatform==='function'&&C.isNativePlatform());if(native){var S=C.Plugins&&C.Plugins.Share;if(S&&S.share){return S.share({title:title,text:text,url:url,dialogTitle:title}).then(function(){return done(true);}).catch(function(){return done(false);});}}}catch(e){}try{if(navigator.share){return navigator.share({title:title,text:text,url:url}).then(function(){return done(true);}).catch(function(){return done(false);});}}catch(e2){}try{var payload=(text?text+(url?' ':''):'')+(url||'');if(navigator.clipboard&&navigator.clipboard.writeText){return navigator.clipboard.writeText(payload).then(function(){return done('copied');}).catch(function(){return done(false);});}}catch(e3){}return done(false);};</script><script>/* thwapSyncStatusBar: match the native status bar to the app theme. No-op on the plain web (no plugin). Dark theme -> light status-bar text on a dark bar; light theme -> dark text on a light bar. */window.thwapSyncStatusBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof C.isNativePlatform==='function'&&C.isNativePlatform()))return;var SB=C.Plugins&&C.Plugins.StatusBar;if(!SB){setTimeout(function(){try{var C2=window.Capacitor;var SB2=C2&&C2.Plugins&&C2.Plugins.StatusBar;if(SB2){if(SB2.setStyle)SB2.setStyle({style:dark?'DARK':'LIGHT'});if(SB2.setBackgroundColor)SB2.setBackgroundColor({color:dark?'#101A14':'#F3F7F4'});}}catch(e3){}},300);return;}if(SB.setStyle)SB.setStyle({style:dark?'DARK':'LIGHT'});if(SB.setBackgroundColor)SB.setBackgroundColor({color:dark?'#101A14':'#F3F7F4'});}catch(e){}};</script><script>/* thwapSyncNavBar: match the ANDROID navigation-bar icon contrast to the app theme.
+(function(){try{var C=window.Capacitor;if(C&&typeof C.isNativePlatform==='function'&&C.isNativePlatform()){var pf='';try{pf=(C.getPlatform&&C.getPlatform())||'';}catch(e2){}var pc=pf==='ios'?'is-ios':(pf==='android'?'is-android':'');var r=document.documentElement;r.classList.add('is-native');if(pc)r.classList.add(pc);var add=function(){if(document.body){document.body.classList.add('is-native');if(pc)document.body.classList.add(pc);}};add();if(!document.body)document.addEventListener('DOMContentLoaded',add);}}catch(e){}})();</script><script src='policy.js'></script><script src='avatar.js'></script><script src='demo/demo-data.js'></script><script src='demo/demo-mode.js'></script><script>/* thwapShare: native OS share sheet via @capacitor/share when in the shell, graceful web fallback (Web Share API, then clipboard copy) otherwise. Returns a promise; never throws into the caller. */window.thwapShare=function(opts){opts=opts||{};var title=opts.title||'Thwap Hockey';var text=opts.text||'';var url=opts.url||'';function done(ok){return Promise.resolve({ok:ok});}try{var C=window.Capacitor;var native=!!(C&&typeof C.isNativePlatform==='function'&&C.isNativePlatform());if(native){var S=C.Plugins&&C.Plugins.Share;if(S&&S.share){return S.share({title:title,text:text,url:url,dialogTitle:title}).then(function(){return done(true);}).catch(function(){return done(false);});}}}catch(e){}try{if(navigator.share){return navigator.share({title:title,text:text,url:url}).then(function(){return done(true);}).catch(function(){return done(false);});}}catch(e2){}try{var payload=(text?text+(url?' ':''):'')+(url||'');if(navigator.clipboard&&navigator.clipboard.writeText){return navigator.clipboard.writeText(payload).then(function(){return done('copied');}).catch(function(){return done(false);});}}catch(e3){}return done(false);};</script><script>/* thwapSyncStatusBar: match the native status bar to the app theme. No-op on the plain web (no plugin). Dark theme -> light status-bar text on a dark bar; light theme -> dark text on a light bar. */window.thwapSyncStatusBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof C.isNativePlatform==='function'&&C.isNativePlatform()))return;var SB=C.Plugins&&C.Plugins.StatusBar;if(!SB){setTimeout(function(){try{var C2=window.Capacitor;var SB2=C2&&C2.Plugins&&C2.Plugins.StatusBar;if(SB2){if(SB2.setStyle)SB2.setStyle({style:dark?'DARK':'LIGHT'});if(SB2.setBackgroundColor)SB2.setBackgroundColor({color:dark?'#101A14':'#F3F7F4'});}}catch(e3){}},300);return;}if(SB.setStyle)SB.setStyle({style:dark?'DARK':'LIGHT'});if(SB.setBackgroundColor)SB.setBackgroundColor({color:dark?'#101A14':'#F3F7F4'});}catch(e){}};</script><script>/* thwapSyncNavBar: match the ANDROID navigation-bar icon contrast to the app theme.
    On targetSdk 35 (Android 15) the bars are edge-to-edge/transparent -- their colour
    comes from the app content behind them, so only the icon contrast needs to follow
    the in-app toggle. Status bar stays owned by thwapSyncStatusBar. No-op on iOS (no
@@ -10190,64 +10190,14 @@ var POLICY_VERSION='2026-09';
 function syncConsent(){ if(goBtn) goBtn.disabled=!(consentEl&&consentEl.checked); }
 if(consentEl) consentEl.addEventListener('change',syncConsent);
 syncConsent();
-/* Terms / Privacy links open a placeholder policy sheet (real text later). */
+/* Terms / Privacy links open the in-app policy sheet. */
 (function(){
   var sheet=document.getElementById('policySheet'), title=document.getElementById('policyTitle'),
       eff=document.getElementById('policyEff'), pbody=document.getElementById('policyBody'), pclose=document.getElementById('policyClose'),
       tLink=document.getElementById('loginTerms'), pLink=document.getElementById('loginPrivacy');
-  var EFFECTIVE='Effective September 2026';
-  var TERMS=
-    "<p>Thwap Hockey is a home-training app for youth hockey players. It gives a player short daily stickhandling, shooting and dryland drills, tracks the training they mark done, and shows that progress to the player and their team coach. By using Thwap Hockey you agree to these terms.</p>"+
-    "<h2>Who uses it</h2>"+
-    "<p>Thwap Hockey is used by youth players, their parents, and their team coaches. A player under 13 may use the app only with a parent's involvement and consent. A coach uses the app to set the team plan and see how players are progressing.</p>"+
-    "<h2>What you agree to</h2>"+
-    "<ul>"+
-    "<li>Use the app for its purpose: youth hockey training and coaching.</li>"+
-    "<li>Keep your sign-in details private. A team password gates the coach view; do not share it with players.</li>"+
-    "<li>Do not upload content that is not yours to share, and do not misuse another person's account.</li>"+
-    "<li>A parent, not a child, adds a player photo, and only of their own child.</li>"+
-    "</ul>"+
-    "<h2>Training and safety</h2>"+
-    "<p>The drills are general training suggestions, not medical or professional coaching advice. A player should train within their ability and stop if something hurts. A parent or coach should judge whether a drill is right for a given player. Thwap Hockey is not responsible for injuries that happen during training.</p>"+
-    "<h2>The app as-is</h2>"+
-    "<p>Thwap is offered as-is for a youth hockey team. We work to keep it running and accurate, but we do not promise it will be uninterrupted or error-free.</p>"+
-    "<h2>Changes</h2>"+
-    "<p>We may update these terms as the app grows. When the terms change in a way that matters, we will ask you to agree again at sign-in. Continuing to use the app after a change means you accept the updated terms.</p>"+
-    "<h2>Contact</h2>"+
-    "<p>Questions about these terms: <a href='mailto:hello@thwaphockey.com'>hello@thwaphockey.com</a>, or by mail to Thwap Hockey, 7610 3rd Ave, Seattle, WA 98117, Attn: John MacDuffie Woodburn.</p>";
-  var PRIVACY=
-    "<p>Thwap Hockey is built for children, so we collect as little as we can and we are plain about what we keep and why. This explains what we collect, why, who can see it, how long we keep it, and how a parent removes it.</p>"+
-    "<h2>What we collect</h2>"+
-    "<ul>"+
-    "<li><b>About a player:</b> first name, jersey number, position, and the training the player marks done. This is what shows the player and their coach how they are progressing.</li>"+
-    "<li><b>A player photo:</b> only if a parent adds one (see below).</li>"+
-    "<li><b>From a parent:</b> an email, so we can reach a parent and get consent, and a one-time 6-digit code we email to verify consent. The code is short-lived and expires.</li>"+
-    "<li><b>A coach:</b> name, email, and an optional photo.</li>"+
-    "</ul>"+
-    "<p>We do not collect a home address, phone number, precise location, or a child's own contact information. We do not track children with advertising tools, and we do not show third-party advertising to children.</p>"+
-    "<h2>Parent-added photos</h2>"+
-    "<p>A player photo is a child's face, so it is handled with the most care. A parent, not the child, adds or removes it after verifying with the one-time email code. The photo is cropped in the browser before it is sent, stored on our hosting provider, and shown only on that player's own card, never on the leaderboard or in another player's view. A parent can remove it at any time, which deletes it from our storage.</p>"+
-    "<h2>How we verify a parent</h2>"+
-    "<p>For a player under 13, we obtain a parent's consent before that child's information is used in the ways above, in line with COPPA (US) and PIPEDA (Canada). We verify a parent by emailing a one-time code to the parent's email and having them enter it, and we keep a record that consent was given and when.</p>"+
-    "<h2>How we use it</h2>"+
-    "<p>We use this information only to run the app: to show a player their drills and progress, to let their coach see team progress, to show a parent-added photo on that player's card, and to contact a parent about consent. We do not sell personal information.</p>"+
-    "<h2>Who can see it, and who helps us run the app</h2>"+
-    "<p>A player's training and photo are visible to that player, their parent, and their team's coaches. They are not shared publicly. To run the app we use a small number of named service providers, and share only what each needs. Each is bound by its terms to process the information only to provide its service to us, not for its own purposes:</p>"+
-    "<ul>"+
-    "<li><b>Vercel</b> hosts the app and runs the server code (United States).</li>"+
-    "<li><b>Upstash</b> provides the Redis database that stores player progress, parent email, consent records, and the link to a stored photo (United States).</li>"+
-    "<li><b>Resend</b> delivers the one-time parent codes and waitlist replies by email (United States).</li>"+
-    "</ul>"+
-    "<h2>How long we keep it, and how to remove it</h2>"+
-    "<p>A player's roster info and training history stay while the player is on an active team. If a player leaves a team, or a team stops using Thwap, we remove that player's information within 90 days, unless a parent asks us to delete it sooner. A player photo stays until a parent removes it, or until the player's information is removed as above. The one-time email codes are short-lived and expire automatically. A parent or coach can remove a player from a team at any time, and a parent can ask us to delete their child's information entirely at any time, including the photo file and the consent record; we action a deletion within 30 days and confirm when it is done. When we delete, we erase the stored photo file and the consent record, not just the roster row.</p>"+
-    "<h2>Keeping it safe</h2>"+
-    "<p>We serve the app over HTTPS, store a parent's one-time codes only briefly, and limit how a photo can be reached. No system is perfectly secure, but we work to protect children's information and to limit what we collect in the first place.</p>"+
-    "<h2>Our accountability, and what we do if something goes wrong</h2>"+
-    "<p>One person is accountable for how Thwap Hockey handles personal information: John MacDuffie Woodburn, our privacy contact. You can reach him using the Contact details below with any question, concern, or complaint about privacy. If a breach of security safeguards creates a real risk of significant harm to a child or parent, we will notify the affected parents and the appropriate authorities as the law requires, and tell you what happened, what information was involved, and what you can do. In Canada this follows PIPEDA's breach-notification duty; in the US we follow applicable state breach-notice laws.</p>"+
-    "<h2>A parent's rights</h2>"+
-    "<p>A parent can at any time review what we hold about their child, ask us to correct it, ask us to delete it, and withdraw consent. Email us and we will help.</p>"+
-    "<h2>Contact</h2>"+
-    "<p>Our privacy contact is John MacDuffie Woodburn. For privacy questions, or to review, correct, or delete a child's information, reach us at <a href='mailto:privacy@thwaphockey.com'>privacy@thwaphockey.com</a>, or by mail at Thwap Hockey, 7610 3rd Ave, Seattle, WA 98117, Attn: John MacDuffie Woodburn.</p>";
+  /* Text lives in policy.js (shared with the public /terms and /privacy pages). */
+  var P=window.THWAP_POLICY||{EFFECTIVE:'',TERMS:'',PRIVACY:''};
+  var EFFECTIVE=P.EFFECTIVE, TERMS=P.TERMS, PRIVACY=P.PRIVACY;
   var TXT={ terms:['Terms of Use',TERMS], privacy:['Privacy Policy',PRIVACY] };
   var lastFocus=null;
   function openPolicy(which){
