@@ -2273,7 +2273,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
       <p class='login-lab jn-codelab'>Your team code</p>
       <div class='cs-code' id='csCode'></div>
       <button type='button' class='login-go' id='csShare'>Send to families &#8594;</button>
-      <p class='jn-hint'>Paste it in your team's group chat. Kids tap Sign In and enter this code.</p>
+      <p class='jn-hint' id='jnReadyHint'>Paste it in your team's group chat. Kids tap the link, then type their jersey number and 2027.</p>
       <button type='button' class='login-go login-go-outline' id='csEnter'>Go to my team</button>
     </div>
     </div>
@@ -2297,7 +2297,8 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
     return {code:code,name:name||(code===SEED?'Rangers':'Your team'),coach:c};
   };
   window.thwapOwnTeam=function(){ var t=window.thwapViewTeam(); return !!t.coach && t.code!==SEED; };
-  window.thwapTeamLabel=function(){ return window.thwapOwnTeam() ? window.thwapViewTeam().name : 'Rangers'; };
+  /* Not thwapTeamLabel: the card back reads that one as plain text. */
+  window.thwapCoachTeamName=function(){ return window.thwapOwnTeam() ? window.thwapViewTeam().name : 'Rangers'; };
   window.thwapBoardUrl=function(u){
     var t=window.thwapViewTeam(); if(!t.coach) return u;
     return u+(u.indexOf('?')<0?'?':'&')+'code='+encodeURIComponent(t.code)+'&coachToken='+encodeURIComponent(t.coach.token);
@@ -6071,7 +6072,7 @@ function render(){
   if(big){
     if(tf==='week'){
       var goal=teamGoalFor(), done=t.all, left=Math.max(0,goal-done);
-      if(lab)lab.childNodes[0].nodeValue=window.thwapTeamLabel()+' vs '+goal+' ';
+      if(lab)lab.childNodes[0].nodeValue=window.thwapCoachTeamName()+' vs '+goal+' ';
       big.innerHTML="<span id='lbWeekNum'>"+done+"</span><small> workouts together</small>";
       var wn=document.getElementById('lbWeekNum'); if(wn)countUp(wn,done);
       if(row)row.style.display='';
@@ -6079,7 +6080,7 @@ function render(){
       if(togo)togo.textContent=left+' to go!';
       var fill=document.getElementById('lbTrackFill'); if(fill)setTimeout(function(){fill.style.width=Math.min(100,Math.round(done/goal*100))+'%';},60);
     }else{
-      if(lab)lab.childNodes[0].nodeValue=window.thwapTeamLabel()+' all time ';
+      if(lab)lab.childNodes[0].nodeValue=window.thwapCoachTeamName()+' all time ';
       big.innerHTML="<span id='lbAllNum'>"+t.all.toLocaleString()+"</span><small> workouts and counting</small>";
       var an=document.getElementById('lbAllNum'); if(an)countUp(an,t.all,function(v){return v.toLocaleString();});
       if(row)row.style.display='none';   /* no ceiling on all time, so no bar/count */
@@ -10896,7 +10897,7 @@ if(csCloseBtn){ csCloseBtn.addEventListener('click',function(e){ e.preventDefaul
     setText('jnTitle', s.title);
     setText('jnSub', name==='code' ? 'We sent a 6-digit code to '+(st.email||'your email')+'. It can take a minute.' : s.sub);
     var back=$('jnBack'); if(back) back.hidden=!s.back;
-    if(name==='ready') setText('csCode', st.code||'');
+    if(name==='ready'){ setText('csCode', st.code||''); setText('jnReadyHint', "Paste it in your team's group chat. Kids tap the link, then type their jersey number and "+SEASON_YEAR+'.'); }
     st.step=name; save();
     try{ page.scrollTop=0; }catch(_){}
     if(s.focus) setTimeout(function(){ var f=$(s.focus); if(f) f.focus(); },60);
@@ -11011,8 +11012,10 @@ if(csCloseBtn){ csCloseBtn.addEventListener('click',function(e){ e.preventDefaul
 
   /* Step 5: ready. Share the code, then go to the Team page. */
   function shareCode(btn){
-    var msg='Join our team on Thwap Hockey! Open thwaphockey.com, tap Sign In and enter our team code: '+st.code;
-    if(window.thwapShare) window.thwapShare({ title:'Join our Thwap team', text:msg, url:'https://thwaphockey.com' }).then(function(r){
+    /* The ?team= link opens Sign In with the team code already filled in. */
+    var link='https://thwaphockey.com/?team='+encodeURIComponent(st.code);
+    var msg='Join our team on Thwap Hockey! Tap the link, then type your jersey number and '+SEASON_YEAR+' (for example 9'+SEASON_YEAR+').';
+    if(window.thwapShare) window.thwapShare({ title:'Join our Thwap team', text:msg, url:link }).then(function(r){
       st.invited=true; save();
       if(btn&&r&&r.ok==='copied'){ var old=btn.innerHTML; btn.textContent='Copied. Paste it in your group chat.'; setTimeout(function(){ btn.innerHTML=old; },2200); }
       if(window.thwapJoinTodo) window.thwapJoinTodo();

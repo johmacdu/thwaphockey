@@ -147,6 +147,7 @@ describe('Join Thwap steps', () => {
     expect(t.$('coachSignupForm').hidden).toBe(false);
     expect(t.$('jnTitle').textContent).toBe('Your team is ready!');
     expect(t.$('csCode').textContent).toBe('FALCONS42');
+    expect(t.$('jnReadyHint').textContent).toBe("Paste it in your team's group chat. Kids tap the link, then type their jersey number and 2027.");
   });
 });
 
@@ -213,7 +214,8 @@ describe('a new team on Team and Standings', () => {
     const t = await boot({ storage: { thwapCoach: COACH } });
     expect(t.w.thwapOwnTeam()).toBe(true);
     expect(t.w.thwapBoardUrl('/api/board?tf=week')).toBe('/api/board?tf=week&code=FALCONS42&coachToken=t');
-    expect(t.w.thwapTeamLabel()).toBe('Falcons 10U');
+    expect(t.w.thwapCoachTeamName()).toBe('Falcons 10U');
+    expect(typeof t.w.thwapTeamLabel).not.toBe('function'); // the card back reads it as text
   });
   it('leaves the Rangers and kids exactly as before', async () => {
     const t = await boot();

@@ -86,7 +86,8 @@ describe('Native share sheet (thwapShare)', () => {
   it('wires the Share button to thwapShare with the join message and shows it on reveal', () => {
     expect(html).toMatch(/\$\('csShare'\)\.addEventListener\('click'/);
     expect(html).toMatch(/window\.thwapShare\(\{ title:'Join our Thwap team'/);
-    expect(html).toMatch(/enter our team code: '\+st\.code/);
+    expect(html).toMatch(/var link='https:\/\/thwaphockey\.com\/\?team='\+encodeURIComponent\(st\.code\)/);
+    expect(html).toMatch(/text:msg, url:link \}/);
   });
   it('shows a transient confirmation when the web path falls back to clipboard copy', () => {
     expect(html).toMatch(/r\.ok==='copied'[^]*?btn\.textContent='Copied\. Paste it in your group chat\.'/);
