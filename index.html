@@ -1443,6 +1443,46 @@ html[data-theme='dark'] body.is-native.is-ios .tabbar-btn.on{
   body.is-native.is-ios .tabbar-btn:active{transform:none}
 }
 
+/* --- 3d. Material 3 EXPRESSIVE, ANDROID ONLY (overrides 3b). Follows the
+   M3 Expressive spec (material-components-android BottomNavigation.md):
+   navigation bar 64dp on a tonal Surface Container (no border, no shadow),
+   56dp active indicator, the selected label changes color but NOT weight;
+   tonal cards with 24dp corners and no outline; title room below the status
+   bar. Thwap's own fonts and colors stay. iOS and the website are untouched. --- */
+body.is-native.is-android{--m3-surfc:color-mix(in srgb,var(--green2) 7%,var(--bg))}
+html[data-theme='dark'] body.is-native.is-android{--m3-surfc:color-mix(in srgb,#fff 6%,var(--bg))}
+body.is-native.is-android.is-authed:not(.login-locked) .tabbar{
+  min-height:calc(64px + env(safe-area-inset-bottom,0px));
+  background:var(--m3-surfc);border-top:0;box-shadow:none;align-items:flex-start;
+}
+body.is-native.is-android.is-authed:not(.login-locked) .app{
+  padding-bottom:calc(64px + env(safe-area-inset-bottom,0px) + 16px);
+}
+body.is-native.is-android .tabbar-btn{padding:6px 2px 6px;gap:4px;min-height:64px}
+body.is-native.is-android .tabbar-ico{width:56px;height:32px;border-radius:16px}
+body.is-native.is-android .tabbar-btn.on .tabbar-ico{background:color-mix(in srgb,var(--lime) 60%,var(--m3-surfc))}
+html[data-theme='dark'] body.is-native.is-android .tabbar-btn.on .tabbar-ico{background:color-mix(in srgb,var(--lime) 28%,var(--m3-surfc))}
+body.is-native.is-android .tabbar-lab,
+body.is-native.is-android .tabbar-btn.on .tabbar-lab{font-weight:700}
+/* Title room below the status bar (the Android web view starts under it, so
+   env(safe-area-inset-top) is 0 there). */
+body.is-native.is-android.is-authed:not(.login-locked) .app{padding-top:16px}
+/* Tonal cards: shape and color carry the container, not an outline or shadow. */
+body.is-native.is-android a.nav,
+body.is-native.is-android .nextgame,
+body.is-native.is-android .metric,
+body.is-native.is-android #profile .prof-tile{
+  border:0;box-shadow:none;border-radius:24px;background:var(--panel);
+}
+html[data-theme='dark'] body.is-native.is-android a.nav,
+html[data-theme='dark'] body.is-native.is-android .nextgame,
+html[data-theme='dark'] body.is-native.is-android .metric,
+html[data-theme='dark'] body.is-native.is-android #profile .prof-tile{background:var(--card2)}
+body.is-native.is-android .metric.on,
+body.is-native.is-android .metric[aria-pressed='true']{box-shadow:inset 0 0 0 3px var(--lime)}
+body.is-native.is-android .nav .ico{border-radius:16px}
+body.is-native.is-android .plancard{border:0;border-radius:24px}
+
 /* --- 3b-i. Unified drawn icon set (NATIVE-ONLY): bold, filled, colourful glyphs
    built for kids. These rules size the .twi SVGs per surface. The two locked-cell
    ::after glyphs become the colourful padlock via a background image. Web untouched. */
@@ -2174,7 +2214,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 
 <section id='coachhome' class='page'>
 <div class='topbar'><div class='brand'><img class='brandlogo' src='sass-logo.webp' alt='Thwap Hockey' width='80' height='68'><img class='brandmark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks' aria-label='Coach quick links'><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span></nav><button type='button' class='kebab' id='kebabC' aria-label='Explore pages' aria-expanded='false'>Explore</button><div class='kebabmenu' id='kebabMenuC' hidden><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a><a href='#progress'>Standings</a></span></div></div>
-<div class='hero'><div class='kicker' id='chKicker'>Jr Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='chProfileName' aria-label='Edit your coach profile'>Coach</button> <span class='hero-wave' role='img' aria-label='Waving hand'>👋</span></h1><p>Here is where your team is at.</p></div>
+<div class='hero'><div class='kicker' id='chKicker'>Jr Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='chProfileName' aria-label='Edit your coach profile'>Coach</button> <span class='hero-wave' role='img' aria-label='Waving hand'>👋</span></h1><p>Here's how your team is doing this week.</p></div>
 
 <div class='lb-teamzone'>
 <div class='lb-goal'>
