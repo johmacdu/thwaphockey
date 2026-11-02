@@ -77,7 +77,7 @@ import {
 import {
   resolveSigninPlayer, findPlayerByTeamCode, codeMatches, RANGERS_TEAM_CODE,
 } from '../lib/signin_players.js';
-import { getMember, parentEmailList } from '../lib/teams_store.js';
+import { getMember, getTeam, parentEmailList } from '../lib/teams_store.js';
 import {
   allowEmailAction, allowWatchRequest, allowWatchRequestPlayer, allowCodeSignin,
 } from '../lib/rate_limit.js';
@@ -260,11 +260,26 @@ async function codeSignin(req, res) {
   if (!sessionConfigured()) return res.status(503).json({ error: 'sessions not configured' });
 
   const { playerId, code, keep, teamCode, quiet } = parseBody(req);
-  const pid = String(playerId || '').trim().toLowerCase();
+  let pid = String(playerId || '').trim().toLowerCase();
   const team = String(teamCode || '').trim().toUpperCase();
   const kv = getKv();
   const secure = isSecure(req);
-  const publicP = (p) => ({ id: p.id, name: p.name, number: p.number });
+  let teamName = '';
+  const publicP = (p) => ({ id: p.id, name: p.name, number: p.number, teamCode: p.teamCode, teamName });
+  const loadTeamName = async (p) => { try { const t = p ? await getTeam(p.teamCode) : null; teamName = (t && t.name) || ''; } catch { teamName = ''; } };
+
+  // A kid on any team signs in with their team code plus their own code, and no
+  // player id (the browser only knows the built-in Jr. Rangers list). Find the
+  // one player on that team whose code matches; two kids sharing a number on one
+  // team is refused exactly like a wrong code. Spend a limit first.
+  let limited = false;
+  if (!pid && team) {
+    if (!(await allowCodeSignin(kv, { playerId: `team:${team}`, teamCode: team }, req))) return tooMany(res);
+    limited = true;
+    const hit = await findPlayerByTeamCode(team, code);
+    if (!hit) return res.status(401).json({ error: 'bad code' });
+    pid = hit.id;
+  }
 
   // 1. Already signed in as this player on this browser (a web session, not a
   // watch token). Proof is the signed cookie itself, so no limit is spent.
@@ -272,6 +287,7 @@ async function codeSignin(req, res) {
   if (claims && claims.kind === 'web' && claims.playerId === pid) {
     const p = await resolveSigninPlayer(pid, team || undefined);
     if (codeMatches(p, code)) {
+      await loadTeamName(p);
       const token = refreshSession(claims);
       if (token) res.setHeader('Set-Cookie', sessionCookie(token, { keep: !!keep, secure }));
       return res.status(200).json({ ok: true, player: publicP(p) });
@@ -279,9 +295,10 @@ async function codeSignin(req, res) {
   }
 
   // 2. Limits first, then one answer for every failure.
-  if (!(await allowCodeSignin(kv, { playerId: pid, teamCode: team || RANGERS_TEAM_CODE }, req))) return tooMany(res);
+  if (!limited && !(await allowCodeSignin(kv, { playerId: pid, teamCode: team || RANGERS_TEAM_CODE }, req))) return tooMany(res);
   const player = pid ? await resolveSigninPlayer(pid, team || undefined) : null;
   if (!player || !codeMatches(player, code)) return res.status(401).json({ error: 'bad code' });
+  await loadTeamName(player);
 
   const member = await getMember(pid);
   const emails = member ? parentEmailList(member) : [];

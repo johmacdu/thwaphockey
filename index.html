@@ -1443,6 +1443,46 @@ html[data-theme='dark'] body.is-native.is-ios .tabbar-btn.on{
   body.is-native.is-ios .tabbar-btn:active{transform:none}
 }
 
+/* --- 3d. Material 3 EXPRESSIVE, ANDROID ONLY (overrides 3b). Follows the
+   M3 Expressive spec (material-components-android BottomNavigation.md):
+   navigation bar 64dp on a tonal Surface Container (no border, no shadow),
+   56dp active indicator, the selected label changes color but NOT weight;
+   tonal cards with 24dp corners and no outline; title room below the status
+   bar. Thwap's own fonts and colors stay. iOS and the website are untouched. --- */
+body.is-native.is-android{--m3-surfc:color-mix(in srgb,var(--green2) 7%,var(--bg))}
+html[data-theme='dark'] body.is-native.is-android{--m3-surfc:color-mix(in srgb,#fff 6%,var(--bg))}
+body.is-native.is-android.is-authed:not(.login-locked) .tabbar{
+  min-height:calc(64px + env(safe-area-inset-bottom,0px));
+  background:var(--m3-surfc);border-top:0;box-shadow:none;align-items:flex-start;
+}
+body.is-native.is-android.is-authed:not(.login-locked) .app{
+  padding-bottom:calc(64px + env(safe-area-inset-bottom,0px) + 16px);
+}
+body.is-native.is-android .tabbar-btn{padding:6px 2px 6px;gap:4px;min-height:64px}
+body.is-native.is-android .tabbar-ico{width:56px;height:32px;border-radius:16px}
+body.is-native.is-android .tabbar-btn.on .tabbar-ico{background:color-mix(in srgb,var(--lime) 60%,var(--m3-surfc))}
+html[data-theme='dark'] body.is-native.is-android .tabbar-btn.on .tabbar-ico{background:color-mix(in srgb,var(--lime) 28%,var(--m3-surfc))}
+body.is-native.is-android .tabbar-lab,
+body.is-native.is-android .tabbar-btn.on .tabbar-lab{font-weight:700}
+/* Title room below the status bar (the Android web view starts under it, so
+   env(safe-area-inset-top) is 0 there). */
+body.is-native.is-android.is-authed:not(.login-locked) .app{padding-top:16px}
+/* Tonal cards: shape and color carry the container, not an outline or shadow. */
+body.is-native.is-android a.nav,
+body.is-native.is-android .nextgame,
+body.is-native.is-android .metric,
+body.is-native.is-android #profile .prof-tile{
+  border:0;box-shadow:none;border-radius:24px;background:var(--panel);
+}
+html[data-theme='dark'] body.is-native.is-android a.nav,
+html[data-theme='dark'] body.is-native.is-android .nextgame,
+html[data-theme='dark'] body.is-native.is-android .metric,
+html[data-theme='dark'] body.is-native.is-android #profile .prof-tile{background:var(--card2)}
+body.is-native.is-android .metric.on,
+body.is-native.is-android .metric[aria-pressed='true']{box-shadow:inset 0 0 0 3px var(--lime)}
+body.is-native.is-android .nav .ico{border-radius:16px}
+body.is-native.is-android .plancard{border:0;border-radius:24px}
+
 /* --- 3b-i. Unified drawn icon set (NATIVE-ONLY): bold, filled, colourful glyphs
    built for kids. These rules size the .twi SVGs per surface. The two locked-cell
    ::after glyphs become the colourful padlock via a background image. Web untouched. */
@@ -2063,9 +2103,14 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
           <select class='login-in login-select' id='loginTeam'>
             <option value='vancouver-jr-rangers-10u' selected>Vancouver Jr. Rangers 10U</option>
             <option value='demo-team'>Demo Team</option>
+            <option value='code'>My team has a code</option>
           </select>
           <span class='login-selchev' aria-hidden='true'>&#8250;</span>
         </span>
+      </label>
+      <label class='login-field' id='loginTeamCodeField' hidden>
+        <span class='login-lab'>Team code</span>
+        <input class='login-in' id='loginTeamCode' type='text' autocomplete='off' autocapitalize='characters' autocorrect='off' spellcheck='false' placeholder='e.g. FALCONS42'>
       </label>
       <label class='login-field'>
         <span class='login-lab'>Email</span>
@@ -2307,6 +2352,32 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
   if(window.thwapOwnTeam()) root.classList.add('thwap-ownteam','thwap-noboard');
   try{ var j=JSON.parse(localStorage.getItem('thwapJoin')||'{}')||{}; if(j.code&&!j.setupDone&&coach()) root.classList.add('jn-setup'); }catch(e){}
 })();
+/* The team a signed-in kid is on. The page was built for the Jr Rangers; a kid on
+   another team signs in with their team code, and the sign-in record keeps it
+   (thwapAuth.team). thwapKidOtherTeam() is true for such a kid, so pages load
+   that team instead of the built-in Rangers roster. */
+(function(){
+  var SEED='RANGERS72';
+  function auth(){ try{ var m=document.cookie.match(/(?:^|; )thwapAuth=([^;]*)/); return m?JSON.parse(decodeURIComponent(m[1])):null; }catch(e){ return null; } }
+  window.thwapKidTeamCode=function(){ var a=auth(); return (a&&a.team) ? String(a.team).toUpperCase() : SEED; };
+  window.thwapKidOtherTeam=function(){ return window.thwapKidTeamCode()!==SEED; };
+  window.thwapKidTeamName=function(){ var a=auth(); var n=''; try{ n=localStorage.getItem('thwapKidTeamName')||''; }catch(e){} return n||(a&&a.teamName)||'Your team'; };
+  if(!window.thwapKidOtherTeam()) return;
+  document.documentElement.classList.add('thwap-kidteam');
+  /* The card back reads this text label (the demo sets it the same way). */
+  window.thwapTeamLabel=window.thwapKidTeamName();
+  /* Card facts (number, position) for this team's players, from the roster the
+     Team page loads. Wraps the demo hook every card renderer already calls. */
+  var demoInfo=window.thwapDemoInfo;
+  window.thwapDemoInfo=function(name){
+    var d=demoInfo?demoInfo(name):null; if(d) return d;
+    var first=String(name||'').trim().split(/\s+/)[0].toLowerCase();
+    var list=window.__thwapKidRoster||[];
+    for(var i=0;i<list.length;i++){ if(String(list[i].firstName||'').toLowerCase()===first) return {num:list[i].number==null?'':String(list[i].number), pos:list[i].position||'F', photo:''}; }
+    var a=auth(); if(a&&a.name&&String(a.name).split(/\s+/)[0].toLowerCase()===first&&a.num!=null) return {num:String(a.num), pos:'F', photo:''};
+    return null;
+  };
+})();
 </script>
 <section id='dryland' class='page'>
 <a class='glassclose' href='.' aria-label='Close'>✕</a>
@@ -2336,7 +2407,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 
 <section id='coachhome' class='page'>
 <div class='topbar'><div class='brand'><img class='brandlogo' src='sass-logo.webp' alt='Thwap Hockey' width='80' height='68'><img class='brandmark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks' aria-label='Coach quick links'><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span></nav><button type='button' class='kebab' id='kebabC' aria-label='Explore pages' aria-expanded='false'>Explore</button><div class='kebabmenu' id='kebabMenuC' hidden><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a><a href='#progress'>Standings</a></span></div></div>
-<div class='hero'><div class='kicker' id='chKicker'>Jr Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='chProfileName' aria-label='Edit your coach profile'>Coach</button> <span class='hero-wave' role='img' aria-label='Waving hand'>👋</span></h1><p>Here is where your team is at.</p></div>
+<div class='hero'><div class='kicker' id='chKicker'>Jr Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='chProfileName' aria-label='Edit your coach profile'>Coach</button> <span class='hero-wave' role='img' aria-label='Waving hand'>👋</span></h1><p>Here's how your team is doing this week.</p></div>
 
 <div class='jn-todo' id='jnTodo' hidden>
 <p class='ch-seclab'>Get your team going</p>
@@ -3201,7 +3272,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 </section>
 <section id='home'>
 <div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.webp' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks' aria-label='Quick links'><span class='nav-authed'><a class='link' href='#myseason'>My Season</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a></span><span class='nav-guest'><a class='link' href='/about' id='navAbout'>About Thwap</a><span class='topsep'>|</span><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Thwap</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Explore pages' aria-expanded='false'>Explore</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#myseason'>My Season</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a></span><span class='nav-guest'><a href='/about' id='navAboutK'>About Thwap</a><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Thwap</a></span></div></div>
-<div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>there</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><script>(function(){try{var authed=/(?:^|; )thwapAuth=/.test(document.cookie);var p=localStorage.getItem('bfPlayer');var b=document.getElementById('homePlayer');if(b){if(p&&authed){b.textContent=p.trim().split(/\s+/)[0];}else{b.classList.add('needpick');}}}catch(e){}
+<div class='hero'><div class='kicker' id='homeKicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>there</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><script>(function(){try{var authed=/(?:^|; )thwapAuth=/.test(document.cookie);var p=localStorage.getItem('bfPlayer');var b=document.getElementById('homePlayer');if(b){if(p&&authed){b.textContent=p.trim().split(/\s+/)[0];}else{b.classList.add('needpick');}}}catch(e){}
 /* Team plan: hide the category rows the coach turned OFF for today. On any failure
    or unset plan, stick + shoot stay shown (the built-in rotation), and dryland
    defaults to Tue/Wed/Thu only (10U load management) so home is never empty. A
@@ -3331,6 +3402,61 @@ window.thwapTrainingToday=function(){
 <a class='nav nav-pass' href='#pass'><div class='ico'><img class='nav-ico' src='login/icon-pass.webp' alt=''></div><div><h2>Passing</h2><p>Sweep, saucer and backhand passes, about 10 min</p></div><div class='chev'>›</div></a>
 </div>
 </section>
+<script>
+/* Team page for a kid on another team: the built-in Rangers cards are not their
+   team, so build the grid from the server roster (same card faces as the demo
+   roster), and put the team's name on Home, Team and Standings. */
+(function(){
+  if(!window.thwapKidOtherTeam || !window.thwapKidOtherTeam()) return;
+  var BASE=380, code=window.thwapKidTeamCode();
+  var grid=document.getElementById('roster-grid');
+  if(grid) grid.querySelectorAll('.pcard[data-name]').forEach(function(c){ c.parentNode.removeChild(c); });
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function setNames(name){
+    var n=0; try{ n=(window.__thwapKidRoster||[]).length; }catch(e){}
+    var hk=document.getElementById('homeKicker'); if(hk) hk.textContent=name;
+    var lk=document.getElementById('lbKicker'); if(lk) lk.textContent=name;
+    var rk=document.getElementById('rosterKicker'); if(rk) rk.textContent=name+(n?', '+n+(n===1?' player':' players'):'');
+    window.thwapTeamLabel=name;
+  }
+  function rescale(){
+    document.querySelectorAll('#roster-grid .pcard [data-pcbase]').forEach(function(s){
+      var cell=s.closest('.pcard'); if(!cell) return; var w=cell.clientWidth; if(!w) return;
+      s.style.transform='scale('+(w/BASE)+')';
+    });
+  }
+  function paint(members){
+    window.__thwapKidRoster=members;
+    if(!grid || !window.buildFront) return;
+    var me=''; try{ me=(localStorage.getItem('bfPlayer')||'').trim().split(/\s+/)[0].toLowerCase(); }catch(e){}
+    grid.innerHTML=members.map(function(m){
+      var full=String((m.firstName||'')+' '+(m.lastName||'')).trim()||m.playerId;
+      return "<a href='#' class='pcard' data-name='"+esc(full)+"' data-pid='"+esc(m.playerId)+"'></a>";
+    }).join('');
+    grid.querySelectorAll('.pcard[data-name]').forEach(function(card,i){
+      var m=members[i], first=String(m.firstName||m.playerId||'');
+      var info={num:m.number==null?'':String(m.number), pos:m.position||'F', first:first};
+      card.innerHTML="<div class='pcard-card' style='position:absolute;inset:0;overflow:hidden'><div style='position:absolute;top:0;left:0;width:"+BASE+"px;height:"+(BASE*7/5)+"px;transform-origin:top left' data-pcbase='1'>"+window.buildFront(info, first.toLowerCase(), '')+"</div></div>";
+      if(first.toLowerCase()===me) card.classList.add('pcard-you-card');
+      card.addEventListener('click',function(e){ e.preventDefault(); if(window.openTeammateCard) window.openTeammateCard(card.getAttribute('data-name')); });
+    });
+    rescale();
+  }
+  setNames(window.thwapKidTeamName());
+  window.addEventListener('resize',rescale);
+  window.addEventListener('hashchange',function(){ if(location.hash==='#roster') setTimeout(rescale,30); });
+  fetch('/api/coach?action=roster&code='+encodeURIComponent(code),{credentials:'include',cache:'no-store'})
+    .then(function(r){ return r.ok?r.json():null; })
+    .then(function(j){
+      if(!j||!j.ok) return;
+      paint(Array.isArray(j.members)?j.members:[]);
+      var name=(j.team&&j.team.name)||window.thwapKidTeamName();
+      try{ localStorage.setItem('thwapKidTeamName',name); }catch(e){}
+      setNames(name);
+    })
+    .catch(function(){});
+})();
+</script>
 </main>
 <div class='footer'><span class='slogan'>Compete. Improve.<br class='sl-br'> Have fun.</span><div class='footer-actions'><button class='sfxtoggle' id='sfxToggle' type='button' aria-label='Mute sounds' title='Mute sounds' aria-pressed='true'></button><button class='themetoggle' id='themeToggle' type='button' aria-label='Switch light and dark theme'><span class='ttico' id='ttico'>🌙</span><span class='ttlabel' id='ttlabel'>Dark</span></button><div class='footmenu-wrap'><button class='footkebab' id='footKebab' type='button' aria-label='More' aria-haspopup='true' aria-expanded='false'>&#8942;</button><div class='footmenu' id='footMenu' hidden role='menu'><a class='footmenu-item' href='/about' role='menuitem'>About Thwap</a><a class='footmenu-item footmenu-splash' id='menuTerms' href='#' role='menuitem'>Terms of Use</a><a class='footmenu-item footmenu-splash' id='menuPrivacy' href='#' role='menuitem'>Privacy Policy</a><a class='footmenu-item footmenu-inproduct' href='mailto:hello@thwaphockey.com?subject=Thwap%20bug%20report' role='menuitem'>Report a bug</a><a class='footmenu-item footmenu-inproduct' href='mailto:hello@thwaphockey.com?subject=Thwap%20feature%20request' role='menuitem'>Request a feature</a><a class='footmenu-item footmenu-inproduct' id='menuSignout' href='#' role='menuitem'>Sign out</a></div></div></div></div><div class='trademark'><img class='trademark-mark' id='footerMark' src='wordmark-tm-light.svg' alt='Thwap Hockey trademark'></div><div class='footbrand' id='footBrand'></div><script>/* App only: Sass + the wordmark live at the bottom of Profile (the Train tab's
    header is hidden in the app). The SAME nodes move, so the tap and long-press
@@ -4408,7 +4534,10 @@ window.thwapActiveTeam=function(coach){
   function infoFor(name){
     var parts=String(name||'').trim().split(/\s+/);
     var key=parts[0].toLowerCase().replace(/[^a-z]/g,'');
-    var r=ROSTER[key]||{num:'',pos:'F'};
+    /* Another team's kid: that team's roster first, so a Falcons "Evan" never
+       gets the Rangers Evan's number. */
+    var other=(window.thwapKidOtherTeam&&window.thwapKidOtherTeam()&&window.thwapDemoInfo)?window.thwapDemoInfo(name):null;
+    var r=other||ROSTER[key]||{num:'',pos:'F'};
     var display=parts.length>1?parts[0]+' '+parts[parts.length-1].charAt(0)+'.':parts[0];
     return {slug:key, info:{name:name, display:display, first:parts[0].toUpperCase(), num:r.num, pos:r.pos, photo:''}};
   }
@@ -4425,7 +4554,7 @@ window.thwapActiveTeam=function(coach){
   (function(){
     var strip=document.getElementById('coachStrip'); if(!strip) return;
     if(document.body.classList.contains('is-coach')) return; /* coach path owns it */
-    var code='RANGERS72';
+    var code=(window.thwapKidTeamCode?window.thwapKidTeamCode():'RANGERS72');
     fetch('/api/coach?action=team-coaches&code='+encodeURIComponent(code))
       .then(function(r){ return r.json(); })
       .then(function(j){
@@ -4664,7 +4793,7 @@ window.addEventListener('hashchange',function(){ if(location.hash===''||location
   function gameDone(pid,gid){ if(!pid||!gid||!GD.gameDoneKey) return false; try{ return localStorage.getItem(GD.gameDoneKey(pid,gid))==='1'; }catch(e){ return false; } }
   /* Point the whole-card link at the chosen game so the plan page targets it. */
   function linkToGame(gid){ try{ card.setAttribute('href','hockey_game_goals.html'+(gid?('?game='+encodeURIComponent(gid)):'')); }catch(e){} }
-  var CODE='RANGERS72';
+  var CODE=(window.thwapKidTeamCode?window.thwapKidTeamCode():'RANGERS72');
   var set=false;
   /* Signed in on this device: the thwapAuth cookie plus a chosen player. Signed
      out, the card never asks the server for picks. */
@@ -6009,7 +6138,7 @@ window.thwapEnsureAllBoard=function(){
   pull('/api/board?tf=week','week');
 };
 function rowsFor(){
-  return LIVE[tf] || DATA[tf];     /* real data for this timeframe, else demo fallback */
+  return LIVE[tf] || ((window.thwapKidOtherTeam&&window.thwapKidOtherTeam()) ? [] : DATA[tf]);     /* real data, else the Rangers placeholder (Rangers only) */
 }
 function fetchBoard(){
   var url=(tf==='week')?'/api/board?tf=week':'/api/board';
@@ -6072,7 +6201,7 @@ function render(){
   if(big){
     if(tf==='week'){
       var goal=teamGoalFor(), done=t.all, left=Math.max(0,goal-done);
-      if(lab)lab.childNodes[0].nodeValue=window.thwapCoachTeamName()+' vs '+goal+' ';
+      if(lab)lab.childNodes[0].nodeValue=((window.thwapKidOtherTeam&&window.thwapKidOtherTeam())?window.thwapKidTeamName():window.thwapCoachTeamName())+' vs '+goal+' ';
       big.innerHTML="<span id='lbWeekNum'>"+done+"</span><small> workouts together</small>";
       var wn=document.getElementById('lbWeekNum'); if(wn)countUp(wn,done);
       if(row)row.style.display='';
@@ -6080,7 +6209,7 @@ function render(){
       if(togo)togo.textContent=left+' to go!';
       var fill=document.getElementById('lbTrackFill'); if(fill)setTimeout(function(){fill.style.width=Math.min(100,Math.round(done/goal*100))+'%';},60);
     }else{
-      if(lab)lab.childNodes[0].nodeValue=window.thwapCoachTeamName()+' all time ';
+      if(lab)lab.childNodes[0].nodeValue=((window.thwapKidOtherTeam&&window.thwapKidOtherTeam())?window.thwapKidTeamName():window.thwapCoachTeamName())+' all time ';
       big.innerHTML="<span id='lbAllNum'>"+t.all.toLocaleString()+"</span><small> workouts and counting</small>";
       var an=document.getElementById('lbAllNum'); if(an)countUp(an,t.all,function(v){return v.toLocaleString();});
       if(row)row.style.display='none';   /* no ceiling on all time, so no bar/count */
@@ -10503,6 +10632,9 @@ function mintServerSession(pid,code,email,keep,quiet){
 }
 function finishSignIn(player,email,keep){
     var rec={pid:player.pid,name:player.name,email:String(email||'').trim(),year:SEASON_YEAR,ts:Date.now()};
+    if(player.team){ rec.team=player.team; if(player.teamName) rec.teamName=player.teamName; }
+    if(player.num!=null) rec.num=player.num;
+    try{ if(player.teamName) localStorage.setItem('thwapKidTeamName',player.teamName); else localStorage.removeItem('thwapKidTeamName'); sessionStorage.removeItem('thwapJoinTeam'); }catch(e){}
     try{
       var json=JSON.stringify(rec);
       cookieSet(AUTH_KEY, json, keep?180:0);   /* client marker the gate + greeting read; the
@@ -10515,6 +10647,38 @@ function finishSignIn(player,email,keep){
     if(location.hash==='#login'){ location.hash='#home'; }
     location.reload();
 }
+/* A kid on any team: the server finds the player from the team code plus their
+   own code (jersey number + season year). New device: the parent step, as usual. */
+function teamSignIn(team,code,email,keep){
+  errEl.textContent='Signing in...';
+  fetch('/api/login?action=code-signin',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',
+    body:JSON.stringify({teamCode:team,code:code,email:email,keep:!!keep})})
+    .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return {status:r.status,j:j||{}}; }); })
+    .then(function(res){
+      var j=res.j, p=j.player;
+      var player=p ? {pid:p.id,name:p.name,team:team,teamName:p.teamName||'',num:p.number} : null;
+      if(res.status===200 && j.ok && player){ finishSignIn(player,email,keep); return; }
+      errEl.textContent='';
+      if(j.needsParentCode && player){ showParentStep(player,email,keep,!!j.sent); return; }
+      if(j.needsParentEmail){ errEl.textContent='This is a new device, and we need a parent to say yes. Ask your coach to add a parent email, then try again.'; return; }
+      if(res.status===401){ errEl.textContent='That team code or your code did not match.'; pwEl.focus(); return; }
+      if(res.status===429){ errEl.textContent='Too many tries. Wait a few minutes and try again.'; return; }
+      errEl.textContent='Sign in did not work. Try again.';
+    })
+    .catch(function(){ errEl.textContent='Sign in did not work. Check your connection and try again.'; });
+}
+/* "My team has a code" shows the Team code field. A link like
+   thwaphockey.com/?team=FALCONS42 picks it and fills the code in. */
+(function(){
+  var sel=document.getElementById('loginTeam'), field=document.getElementById('loginTeamCodeField'), inp=document.getElementById('loginTeamCode');
+  if(!sel||!field) return;
+  function sync(){ field.hidden=(sel.value!=='code'); }
+  sel.addEventListener('change',function(){ sync(); if(sel.value==='code'&&inp) inp.focus(); });
+  var q=''; try{ q=(new URLSearchParams(location.search).get('team')||'').toUpperCase().replace(/[^A-Z0-9]/g,''); }catch(e){}
+  if(!q){ try{ q=sessionStorage.getItem('thwapJoinTeam')||''; }catch(e){} }
+  if(q){ sel.value='code'; if(inp) inp.value=q; try{ sessionStorage.setItem('thwapJoinTeam',q); }catch(e){} }
+  sync();
+})();
 function signIn(player,email,keep,code){
   /* Establish the server session first (so the cookie is set before the reload).
      A new device stops here and asks for the parent's code. A down or
@@ -10635,6 +10799,15 @@ if(form){
     /* Demo team: fully client-side, no OTP and no backend. Chosen via the team
        dropdown with hi@woodymacduffie.com + 'player' | 'coach'. */
     var teamSel=document.getElementById('loginTeam');
+    if(teamSel && teamSel.value==='code'){
+      var tcEl=document.getElementById('loginTeamCode');
+      var tcode=String((tcEl&&tcEl.value)||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+      if(!tcode){ errEl.textContent='Enter your team code.'; if(tcEl) tcEl.focus(); return; }
+      var kcode=code.replace(/\D+/g,'');
+      if(!kcode){ errEl.textContent='Enter your code.'; pwEl.focus(); return; }
+      teamSignIn(tcode,kcode,email,keepEl.checked);
+      return;
+    }
     if(window.THWAP_DEMO && teamSel && teamSel.value===window.THWAP_DEMO.TEAM_VALUE){
       var dres=window.THWAP_DEMO.login(teamSel.value,email,code);
       if(dres&&dres.error){ errEl.textContent=dres.error; pwEl.focus(); pwEl.select(); return; }
@@ -10685,7 +10858,7 @@ if(form){
 window.thwapEnsureSession=function(){
   try{
     var a=readAuth(); if(!a||!a.pid||a.pid==='demo') return Promise.resolve({ok:false,status:0,reason:'no-auth-cookie'});
-    var num=NUMS[a.pid]; if(!num) return Promise.resolve({ok:false,status:0,reason:'no-jersey:'+a.pid});
+    var num=NUMS[a.pid]||a.num; if(!num) return Promise.resolve({ok:false,status:0,reason:'no-jersey:'+a.pid});
     return mintServerSession(a.pid, String(num)+String(a.year||SEASON_YEAR), a.email||'', true, true);
   }catch(e){ return Promise.resolve({ok:false,status:0,reason:'threw'}); }
 };
@@ -10698,7 +10871,7 @@ window.thwapEnsureSession=function(){
   try{
     if(sessionStorage.getItem('thwapSessSync')==='1') return;
     var a=readAuth(); if(!a||!a.pid||a.pid==='demo') return;
-    var num=NUMS[a.pid]; if(!num) return;
+    var num=NUMS[a.pid]||a.num; if(!num) return;
     sessionStorage.setItem('thwapSessSync','1');
     /* quiet: never emails a parent. A browser with a valid session (every current
        user) just gets it refreshed. A browser the server does not trust (no valid
@@ -11204,7 +11377,7 @@ gate();
    code. Saving posts to self-update-player, authorized by the player's own code
    (jersey + season year) so a player can never edit anyone else. Coaches use the
    coach pencil; guests see nothing (CSS gates the pencil on body.is-authed:not(.is-coach)). */
-var TEAM='RANGERS72';
+var TEAM=(window.thwapKidTeamCode?window.thwapKidTeamCode():'RANGERS72');
 function myName(){ try{ return (localStorage.getItem('bfPlayer')||'').trim(); }catch(e){ return ''; } }
 function myFirst(){ return (myName().split(/\s+/)[0]||''); }
 function myPid(){ return myFirst().toLowerCase().replace(/[^a-z]/g,''); }
