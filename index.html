@@ -1889,6 +1889,48 @@ body.login-locked{overflow:hidden}
 /* Self-serve coach signup: the shared team code shown after a team is created. */
 .cs-code{margin:14px 0;padding:14px 10px;border:2px dashed var(--line,#2A3831);border-radius:14px;background:var(--panel,#182420);text-align:center;font-family:'Archivo Black',system-ui,monospace;font-weight:700;font-size:30px;letter-spacing:.14em;color:var(--green2,#B9F06B);user-select:all}
 .cs-codehint{font-size:13px}
+/* Join Thwap page (docs/team-onboarding.md). Reuses .cs-page, .hero, .login-*,
+   .seg and .pill; the only new piece is the plan choice tile (.jn-plan). */
+.jn-hero{padding:0 0 var(--sp-4)}
+.jn-hero .kicker{margin-bottom:var(--sp-1)}
+#jnBack[hidden]{display:none}
+.jn-hero .login-sub{margin:var(--sp-2) 0 0;font-size:var(--fs-support);font-weight:600}
+.jn-hint{margin:var(--sp-2) 0 0;font-size:var(--fs-support);font-weight:600;color:var(--muted)}
+.jn-role{margin:0}
+.jn-role .segbtn.on{background:var(--green);color:var(--onaccent)}
+#jn-you .login-consent{margin-top:var(--sp-4)}
+.jn-role .segbtn{padding:12px 18px}
+.jn-step .login-go{margin-top:var(--sp-4)}
+.jn-codein{font-size:24px;letter-spacing:.3em;text-align:center}
+.jn-codelab{text-align:center;margin-top:var(--sp-2)}
+.jn-plans{display:grid;gap:var(--sp-3)}
+.jn-plan{display:block;position:relative;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.jn-plan input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.jn-plan-in{display:flex;flex-direction:column;gap:var(--sp-1);padding:var(--sp-4);padding-right:64px;border:2px solid var(--line2);border-radius:var(--r-card);background:var(--card);color:var(--text);min-height:var(--tap);transition:border-color .15s ease,transform .08s ease}
+.jn-plan:active .jn-plan-in{transform:scale(.99)}
+.jn-plan input:checked+.jn-plan-in{border-color:var(--green)}
+.jn-plan input:focus-visible+.jn-plan-in{outline:3px solid var(--green);outline-offset:2px}
+.jn-plan-top{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap}
+.jn-plan-name{font-weight:900;font-size:var(--fs-eyebrow);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.jn-save{padding:4px 10px;font-size:12px;font-weight:900}
+.jn-plan-price{font-family:'Archivo Black',system-ui,sans-serif;font-size:32px;line-height:1.05}
+.jn-plan-price small{font-family:system-ui,sans-serif;font-size:var(--fs-support);font-weight:700;color:var(--muted)}
+.jn-plan-sub{font-size:var(--fs-support);font-weight:600;color:var(--muted)}
+.jn-plan-check{position:absolute;top:50%;right:var(--sp-4);width:32px;height:32px;margin-top:-16px;border-radius:50%;border:2px solid var(--line2);display:grid;place-items:center;font-weight:900;font-size:16px;color:transparent}
+.jn-plan input:checked+.jn-plan-in .jn-plan-check{background:var(--green);border-color:var(--green);color:var(--onaccent)}
+/* Coach home day-one checklist: each row is a link, so it may wear the card look. */
+.jn-todo{margin:0 0 var(--sp-6)}
+.jn-todo[hidden]{display:none}
+.jn-todo-list{display:grid;gap:var(--sp-2);margin:0;padding:0;list-style:none}
+.jn-todo-row{display:flex;align-items:center;gap:var(--sp-3);width:100%;box-sizing:border-box;padding:var(--sp-3) var(--sp-4);min-height:56px;border:1px solid var(--line);border-radius:var(--r-card);background:var(--card);color:var(--text);text-decoration:none;font:inherit;text-align:left;cursor:pointer}
+.jn-todo-row.done{cursor:default;background:none;border-color:transparent}
+.jn-todo-dot{flex:none;width:28px;height:28px;border-radius:50%;border:2px solid var(--line2);display:grid;place-items:center;font-weight:900;font-size:14px;color:transparent}
+.jn-todo-row.done .jn-todo-dot{background:var(--green);border-color:var(--green);color:var(--onaccent)}
+.jn-todo-txt{flex:1;min-width:0;display:flex;flex-direction:column}
+.jn-todo-txt b{font-size:var(--fs-cardtitle);font-weight:800}
+.jn-todo-txt span{font-size:var(--fs-support);font-weight:600;color:var(--muted)}
+.jn-todo-row.done .jn-todo-txt b{color:var(--muted)}
+.jn-todo-chev{flex:none;font-size:22px;color:var(--muted)}
 </style><script>try{if(localStorage.getItem('thwapTheme')==='dark')document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script><script>/* Self-heal the chosen player: if the device is signed in (thwapAuth cookie)
    but bfPlayer was lost, restore it from the sign-in record. Without this the
    greeting reads "Hey there", tapping it jumps to Team, and Profile's card row
@@ -2008,8 +2050,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
       <button type='submit' class='login-go' id='loginGo' disabled>Sign In &#8594;</button>
       <p class='login-err' id='loginErr' aria-live='polite'></p>
       <button type='button' class='login-otp-toggle' id='loginOtpToggle'>Forgot your code?</button>
-      <p class='login-alt'>New to <img class='login-wordmark' id='loginMark' src='wordmark-light.svg' alt='Thwap Hockey'>? <a href='#' id='loginWaitlist'>Join the waitlist.</a></p>
-      <p class='login-alt' id='loginCoachLine' hidden>Coaching a team? <a href='#' id='loginCoach'>Create your team.</a></p>
+      <p class='login-alt' id='loginCoachLine'>Coaching or managing a team? <a href='#' id='loginCoach'>Join Thwap.</a></p>
     </div>
     <div id='loginOtpView' hidden>
       <div class='login-otphead'>
@@ -2087,59 +2128,114 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
     <p class='login-alt'>Already have a team? <a href='#' id='waitBack'>Back to sign in.</a></p>
     <p class='login-alt'>Coaching a team? <a href='#' id='waitCoach'>Set it up now.</a></p>
   </form>
-  <form class='login-modal cs-page' id='coachSignupForm' role='dialog' aria-modal='true' aria-labelledby='csTitle' hidden novalidate>
-    <button type='button' class='glassclose cs-x' id='csClose' aria-label='Close'>&#215;</button>
+  <form class='login-modal cs-page' id='coachSignupForm' role='dialog' aria-modal='true' aria-labelledby='jnTitle' hidden novalidate>
+    <button type='button' class='glassclose' id='csClose' aria-label='Close'>&#10005;</button>
+    <button type='button' class='glassback' id='jnBack' hidden>Back</button>
     <div class='cs-inner'>
-    <div id='csFields'>
-      <h2 class='login-h' id='csTitle'>Set up your team</h2>
-      <p class='login-sub'>Create a coach account and your team in one step. You will get a team code to share with your players.</p>
-      <label class='login-field'>
-        <span class='login-lab'>Your name</span>
-        <input class='login-in' id='csName' type='text' autocomplete='name' placeholder='Coach name' required>
-      </label>
-      <label class='login-field'>
-        <span class='login-lab'>Email</span>
-        <input class='login-in' id='csEmail' type='email' inputmode='email' autocomplete='email' placeholder='you@email.com' required>
-      </label>
-      <label class='login-field'>
-        <span class='login-lab'>Password</span>
-        <input class='login-in' id='csPw' type='password' autocomplete='new-password' placeholder='At least 6 characters' required>
-      </label>
+    <div class='hero jn-hero'><div class='kicker' id='jnStepLab'>Step 1 of 4</div><h1 class='login-h' id='jnTitle'>Your team</h1><p class='login-sub' id='jnSub'>Tell us about the team you run.</p></div>
+
+    <div class='jn-step' id='jn-team'>
       <label class='login-field'>
         <span class='login-lab'>Team name</span>
-        <input class='login-in' id='csTeam' type='text' autocomplete='off' placeholder='e.g. Jr Rangers 10U' required>
+        <input class='login-in' id='jnTeam' type='text' autocomplete='off' placeholder='e.g. Jr Rangers 10U' required>
       </label>
       <label class='login-field'>
         <span class='login-lab'>Association</span>
-        <input class='login-in' id='csAssoc' type='text' autocomplete='organization' placeholder='e.g. Vancouver Jr. Rangers'>
+        <input class='login-in' id='jnAssoc' type='text' autocomplete='organization' placeholder='e.g. Vancouver Jr. Rangers' required>
       </label>
       <label class='login-field'>
         <span class='login-lab'>Age group</span>
         <span class='login-selwrap'>
-          <select class='login-in login-select' id='csAge'>
+          <select class='login-in login-select' id='jnAge'>
             <option value='6U'>6U (mini-mite)</option>
             <option value='8U'>8U (mite)</option>
             <option value='10U' selected>10U (squirt)</option>
             <option value='12U'>12U (peewee)</option>
+            <option value='14U'>14U (bantam)</option>
           </select>
           <span class='login-selchev' aria-hidden='true'>&#8250;</span>
         </span>
       </label>
+      <button type='button' class='login-go' id='jnTeamGo'>Next &#8594;</button>
+      <p class='login-err' id='jnTeamErr' aria-live='polite'></p>
+      <p class='login-alt'>Joining as a player? <a href='#' id='csBack'>Sign in instead.</a></p>
+    </div>
+
+    <div class='jn-step' id='jn-you' hidden>
+      <label class='login-field'>
+        <span class='login-lab'>Your name</span>
+        <input class='login-in' id='jnName' type='text' autocomplete='name' placeholder='First and last name' required>
+      </label>
+      <label class='login-field'>
+        <span class='login-lab'>Your email</span>
+        <input class='login-in' id='jnEmail' type='email' inputmode='email' autocomplete='email' placeholder='you@email.com' required>
+      </label>
+      <div class='login-field'>
+        <span class='login-lab' id='jnRoleLab'>I am the</span>
+        <div class='seg jn-role' id='jnRole' role='radiogroup' aria-labelledby='jnRoleLab'>
+          <button type='button' class='segbtn on' role='radio' aria-checked='true' data-role='coach'>Coach</button>
+          <button type='button' class='segbtn' role='radio' aria-checked='false' data-role='manager'>Team manager</button>
+        </div>
+        <p class='jn-hint' id='jnRoleHint'>Coaches run training and the team. You can add a team manager later.</p>
+      </div>
       <div class='login-row login-consent'>
         <input type='checkbox' id='csConsent'>
         <label for='csConsent'>I agree to the <a href='#terms' id='csTerms'>Terms</a> and <a href='#privacy' id='csPrivacy'>Privacy Policy</a></label>
       </div>
-      <button type='submit' class='login-go' id='csGo'>Create my team &#8594;</button>
-      <p class='login-err' id='csErr' aria-live='polite'></p>
-      <p class='login-alt'>Already have a team? <a href='#' id='csBack'>Back to sign in.</a></p>
+      <button type='button' class='login-go' id='jnYouGo'>Email me a code &#8594;</button>
+      <p class='login-err' id='jnYouErr' aria-live='polite'></p>
     </div>
-    <div id='csDone' hidden>
-      <h2 class='login-h'>Your team is ready!</h2>
-      <p class='login-sub'>Share this team code with your players so they can join:</p>
+
+    <div class='jn-step' id='jn-code' hidden>
+      <label class='login-field'>
+        <span class='login-lab'>6-digit code</span>
+        <input class='login-in jn-codein' id='jnCode' type='text' name='thwapJoinCode' inputmode='numeric' autocomplete='one-time-code' pattern='[0-9]{6}' maxlength='6' autocapitalize='off' autocorrect='off' spellcheck='false' data-1p-ignore data-lpignore='true' placeholder='&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;'>
+      </label>
+      <button type='button' class='login-go' id='jnCodeGo'>Next &#8594;</button>
+      <p class='login-err' id='jnCodeErr' aria-live='polite'></p>
+      <button type='button' class='login-otp-toggle' id='jnResend'>Send a new code</button>
+    </div>
+
+    <div class='jn-step' id='jn-plan' hidden>
+      <div class='jn-plans' role='radiogroup' aria-label='Plan'>
+        <label class='jn-plan'>
+          <input type='radio' name='jnPlan' value='yearly' checked>
+          <span class='jn-plan-in'>
+            <span class='jn-plan-top'><span class='jn-plan-name'>Yearly</span><span class='pill jn-save'>2 months free</span></span>
+            <span class='jn-plan-price'>$500<small> a year</small></span>
+            <span class='jn-plan-sub'>Works out to about $42 a month.</span>
+            <span class='jn-plan-check' aria-hidden='true'>&#10003;</span>
+          </span>
+        </label>
+        <label class='jn-plan'>
+          <input type='radio' name='jnPlan' value='monthly'>
+          <span class='jn-plan-in'>
+            <span class='jn-plan-top'><span class='jn-plan-name'>Monthly</span></span>
+            <span class='jn-plan-price'>$50<small> a month</small></span>
+            <span class='jn-plan-sub'>Stop anytime.</span>
+            <span class='jn-plan-check' aria-hidden='true'>&#10003;</span>
+          </span>
+        </label>
+      </div>
+      <button type='button' class='login-go' id='jnPay'>Go to payment &#8594;</button>
+      <p class='jn-hint jn-paynote'>You pay on Stripe's secure page. Apple Pay and Google Pay work too.</p>
+      <p class='login-err' id='jnPayErr' aria-live='polite'></p>
+      <button type='button' class='login-otp-toggle' id='jnHaveCode' aria-expanded='false' aria-controls='jnCompWrap'>Have a code from Thwap?</button>
+      <div id='jnCompWrap' hidden>
+        <label class='login-field'>
+          <span class='login-lab'>Your code</span>
+          <input class='login-in' id='jnComp' type='text' autocomplete='off' autocapitalize='off' spellcheck='false'>
+        </label>
+        <button type='button' class='login-go login-go-outline' id='jnCompGo'>Use code</button>
+      </div>
+    </div>
+
+    <div class='jn-step' id='jn-ready' hidden>
+      <p class='login-lab jn-codelab'>Your team code</p>
       <div class='cs-code' id='csCode'></div>
-      <button type='button' class='login-go cs-share' id='csShare' hidden>Share the code &#8594;</button>
-      <p class='login-sub cs-codehint'>Players tap Sign in, then enter their jersey number and this code. You can add players and set the training plan from your Team page.</p>
-      <button type='button' class='login-go' id='csEnter'>Go to my team &#8594;</button>
+      <button type='button' class='login-go' id='csShare'>Send to families &#8594;</button>
+      <p class='jn-hint'>Paste it in your team's group chat. Kids tap Sign In and enter this code.</p>
+      <button type='button' class='login-go login-go-outline' id='csEnter'>Go to my team</button>
     </div>
     </div>
   </form>
@@ -2175,6 +2271,15 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 <section id='coachhome' class='page'>
 <div class='topbar'><div class='brand'><img class='brandlogo' src='sass-logo.webp' alt='Thwap Hockey' width='80' height='68'><img class='brandmark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks' aria-label='Coach quick links'><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span></nav><button type='button' class='kebab' id='kebabC' aria-label='Explore pages' aria-expanded='false'>Explore</button><div class='kebabmenu' id='kebabMenuC' hidden><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a><a href='#progress'>Standings</a></span></div></div>
 <div class='hero'><div class='kicker' id='chKicker'>Jr Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='chProfileName' aria-label='Edit your coach profile'>Coach</button> <span class='hero-wave' role='img' aria-label='Waving hand'>👋</span></h1><p>Here is where your team is at.</p></div>
+
+<div class='jn-todo' id='jnTodo' hidden>
+<p class='ch-seclab'>Get your team going</p>
+<ul class='jn-todo-list'>
+<li><div class='jn-todo-row done' id='jnTodoPay'><span class='jn-todo-dot' aria-hidden='true'>&#10003;</span><span class='jn-todo-txt'><b>Pay for Thwap</b><span>Done</span></span></div></li>
+<li><a class='jn-todo-row' id='jnTodoPlayers' href='#roster'><span class='jn-todo-dot' aria-hidden='true'>&#10003;</span><span class='jn-todo-txt'><b>Add your players</b><span id='jnTodoPlayersSub'>Name, number and a parent's email</span></span><span class='jn-todo-chev' aria-hidden='true'>&#8250;</span></a></li>
+<li><button type='button' class='jn-todo-row' id='jnTodoInvite'><span class='jn-todo-dot' aria-hidden='true'>&#10003;</span><span class='jn-todo-txt'><b>Invite families</b><span id='jnTodoInviteSub'>Send your team code</span></span><span class='jn-todo-chev' aria-hidden='true'>&#8250;</span></button></li>
+</ul>
+</div>
 
 <div class='lb-teamzone'>
 <div class='lb-goal'>
@@ -3020,7 +3125,7 @@ window.thwapSyncNavBar=function(dark){try{var C=window.Capacitor;if(!(C&&typeof 
 </div>
 </section>
 <section id='home'>
-<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.webp' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks' aria-label='Quick links'><span class='nav-authed'><a class='link' href='#myseason'>My Season</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a></span><span class='nav-guest'><a class='link' href='/about' id='navAbout'>About Thwap</a><span class='topsep'>|</span><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Waitlist</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Explore pages' aria-expanded='false'>Explore</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#myseason'>My Season</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a></span><span class='nav-guest'><a href='/about' id='navAboutK'>About Thwap</a><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Waitlist</a></span></div></div>
+<div class='topbar'><div class='brand'><img class='brandlogo' id='sassLogo' src='sass-logo.webp' alt='Thwap Hockey' width='80' height='68' style='cursor:pointer'><img class='brandmark' id='brandMark' src='wordmark-light.svg' alt='Thwap Hockey'></div><nav class='toplinks' aria-label='Quick links'><span class='nav-authed'><a class='link' href='#myseason'>My Season</a><span class='topsep'>|</span><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#progress'>Standings</a></span><span class='nav-coach'><a class='link' href='#roster'>Team</a><span class='topsep'>|</span><a class='link' href='#plan'>Plan</a></span><span class='nav-guest'><a class='link' href='/about' id='navAbout'>About Thwap</a><span class='topsep'>|</span><a class='link' href='#login' id='navSignIn'>Sign In</a><span class='topsep'>|</span><a class='link' href='#login' id='navWaitlist'>Join Thwap</a></span></nav><button type='button' class='kebab' id='kebab' aria-label='Explore pages' aria-expanded='false'>Explore</button><div class='kebabmenu' id='kebabMenu' hidden><span class='nav-authed'><a href='#myseason'>My Season</a><a href='#roster'>Team</a><a href='#progress'>Standings</a></span><span class='nav-coach'><a href='#roster'>Team</a><a href='#plan'>Plan</a></span><span class='nav-guest'><a href='/about' id='navAboutK'>About Thwap</a><a href='#login' id='navSignInK'>Sign In</a><a href='#login' id='navWaitlistK'>Join Thwap</a></span></div></div>
 <div class='hero'><div class='kicker'>Rangers 10U</div><h1 class='hero-hey'>Hey <button type='button' class='playername playername-inline' id='homePlayer' aria-label='Open your player card'>there</button> <span class='hero-wave' id='heroWave' role='img' aria-label='Waving hand'>👋</span></h1><script>(function(){try{var authed=/(?:^|; )thwapAuth=/.test(document.cookie);var p=localStorage.getItem('bfPlayer');var b=document.getElementById('homePlayer');if(b){if(p&&authed){b.textContent=p.trim().split(/\s+/)[0];}else{b.classList.add('needpick');}}}catch(e){}
 /* Team plan: hide the category rows the coach turned OFF for today. On any failure
    or unset plan, stick + shoot stay shown (the built-in rotation), and dryland
@@ -3393,6 +3498,8 @@ window.thwapActiveTeam=function(coach){
   (function(){
     var nameBtn=document.getElementById('chProfileName'), kick=document.getElementById('chKicker');
     if(nameBtn&&coach.name&&coach.name!=='Coach') nameBtn.textContent=coach.name;
+    /* Show this coach's own team name right away, not the built-in Rangers text. */
+    if(kick&&coach.teamList){ for(var ti=0;ti<coach.teamList.length;ti++){ if(coach.teamList[ti].code===code&&coach.teamList[ti].name){ kick.textContent=coach.teamList[ti].name; break; } } }
     /* The hero "Hey <name>" button opens the coach profile editor. It was styled
        as a tappable button but never had a handler; bind lazily so it works
        regardless of which IIFE defines thwapOpenCoachProfile first. */
@@ -10660,7 +10767,7 @@ function showCoachSignup(){
   if(waitForm) waitForm.hidden=true;
   var csf=document.getElementById('coachSignupForm');
   if(csf) csf.hidden=false;
-  setTimeout(function(){ var n=document.getElementById('csName'); if(n) n.focus(); },60);
+  if(window.thwapJoinResume) window.thwapJoinResume();
 }
 function waitSuccess(email){
   var fields=document.getElementById('waitFields'); if(fields) fields.hidden=true;
@@ -10673,76 +10780,205 @@ var waitlist=document.getElementById('loginWaitlist');
 if(waitlist){ waitlist.addEventListener('click',function(e){ e.preventDefault(); showWait(); }); }
 var waitBack=document.getElementById('waitBack');
 if(waitBack){ waitBack.addEventListener('click',function(e){ e.preventDefault(); showSignin(); }); }
-/* Links into / out of the self-serve coach signup sheet. */
+/* Links into / out of the Join Thwap page (docs/team-onboarding.md). */
 var loginCoach=document.getElementById('loginCoach');
 if(loginCoach){ loginCoach.addEventListener('click',function(e){ e.preventDefault(); showCoachSignup(); }); }
 var waitCoach=document.getElementById('waitCoach');
 if(waitCoach){ waitCoach.addEventListener('click',function(e){ e.preventDefault(); showCoachSignup(); }); }
-var csBack=document.getElementById('csBack');
-if(csBack){ csBack.addEventListener('click',function(e){ e.preventDefault(); showSignin(); }); }
 var csCloseBtn=document.getElementById('csClose');
 if(csCloseBtn){ csCloseBtn.addEventListener('click',function(e){ e.preventDefault(); backToSplash(); }); }
-/* Coach signup submit: register the coach, then create their team with the
-   returned token, then show the shareable team code. Two existing endpoints,
-   one form. Stores the coach session (thwapCoach) so entering lands them on
-   #coachhome already signed in, where the existing paywall handles payment when
-   BILLING_ENFORCED is on. */
-var coachSignupForm=document.getElementById('coachSignupForm');
-if(coachSignupForm){
-  var csGo=document.getElementById('csGo'), csErr=document.getElementById('csErr'),
-      csFields=document.getElementById('csFields'), csDone=document.getElementById('csDone'),
-      csCodeEl=document.getElementById('csCode'), csEnter=document.getElementById('csEnter');
-  function csFail(m,el){ if(csGo){ csGo.disabled=false; csGo.innerHTML='Create my team &#8594;'; } if(csErr) csErr.textContent=m; if(el&&el.focus) el.focus(); }
-  coachSignupForm.addEventListener('submit',function(e){
-    e.preventDefault(); if(csErr) csErr.textContent='';
-    var name=String((document.getElementById('csName').value)||'').trim();
-    var email=String((document.getElementById('csEmail').value)||'').trim();
-    var pw=String((document.getElementById('csPw').value)||'');
-    var team=String((document.getElementById('csTeam').value)||'').trim();
-    var assoc=String((document.getElementById('csAssoc').value)||'').trim();
-    var age=String((document.getElementById('csAge').value)||'10U');
-    var csConsent=document.getElementById('csConsent');
-    if(!name) return csFail('Enter your name.',document.getElementById('csName'));
-    if(!validEmail(email)) return csFail('Enter a valid email.',document.getElementById('csEmail'));
-    if(pw.length<6) return csFail('Use a password of at least 6 characters.',document.getElementById('csPw'));
-    if(!team) return csFail('Enter your team name.',document.getElementById('csTeam'));
-    if(csConsent&&!csConsent.checked) return csFail('Please agree to the Terms and Privacy Policy.');
-    try{ localStorage.setItem('thwapTerms', JSON.stringify({at:new Date().toISOString(), version:POLICY_VERSION})); }catch(_){}
-    if(csGo){ csGo.disabled=true; csGo.textContent='Creating...'; }
-    fetch('/api/coach?action=coach-register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:pw,name:name})})
-      .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,status:r.status,j:j}; }); })
-      .then(function(res){
-        if(!res.ok||!res.j||!res.j.token){
-          if(res.status===409) return csFail('An account with that email already exists. Use Back to sign in.',document.getElementById('csEmail'));
-          return csFail((res.j&&res.j.error)||'Could not create your account.');
-        }
-        var token=res.j.token, coach=res.j.coach||{};
-        return fetch('/api/coach?action=create-team',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({coachToken:token,name:team,association:assoc,ageGroup:age})})
-          .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
-          .then(function(tr){
-            if(!tr.ok||!tr.j||!tr.j.code){ return csFail((tr.j&&tr.j.error)||'Your account was made, but the team could not be created. Sign in and try again.'); }
-            var code=tr.j.code;
-            /* Persist the coach session only once the team exists, so a failed
-               create-team never leaves a signed-in coach with no team. */
-            try{ localStorage.setItem('thwapCoach', JSON.stringify({ token:token, email:email, name:coach.name||name, teams:[code], teamList:[{code:code,name:team,ageGroup:age}], childPlayerId:null })); }catch(_){}
-            if(csCodeEl) csCodeEl.textContent=code;
-            if(csFields) csFields.hidden=true;
-            if(csDone) csDone.hidden=false;
-            var csShare=document.getElementById('csShare');
-            if(csShare){ csShare.hidden=false;
-              csShare.onclick=function(){
-                var msg='Join our team on Thwap Hockey. Tap Sign in, enter your jersey number and this team code: '+code;
-                if(window.thwapShare) window.thwapShare({ title:'Join our Thwap team', text:msg, url:'https://thwaphockey.com' }).then(function(r){
-                  if(r&&r.ok==='copied'){ var old=csShare.textContent; csShare.textContent='Code copied'; setTimeout(function(){ csShare.textContent=old; },1600); }
-                });
-              };
-            }
-          });
-      })
-      .catch(function(){ csFail('Something went wrong. Check your connection and try again.'); });
+/* Join Thwap: five steps on one full page. Team -> About you -> Email code ->
+   Plan (Stripe checkout) -> Ready (team code + share). The draft is kept in
+   localStorage (thwapJoin), so a coach who leaves halfway comes back to the step
+   they were on. Coaches and managers sign in with an emailed code, never a
+   password. Endpoints: coach-start / coach-verify (api/coach.js) and
+   create-subscription with a plan (api/billing.js). */
+(function(){
+  var page=document.getElementById('coachSignupForm'); if(!page) return;
+  var KEY='thwapJoin';
+  page.addEventListener('submit',function(e){ e.preventDefault(); });
+  function $(id){ return document.getElementById(id); }
+  function load(){ try{ return JSON.parse(localStorage.getItem(KEY)||'{}')||{}; }catch(_){ return {}; } }
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(st)); }catch(_){} }
+  var st=load();
+  var STEPS={
+    team:{n:1, title:'Your team', sub:'Tell us about the team you run.', focus:'jnTeam'},
+    you:{n:2, title:'About you', sub:'We will email you a code to sign in. No password to remember.', focus:'jnName', back:'team'},
+    code:{n:3, title:'Check your email', sub:'', focus:'jnCode', back:'you'},
+    plan:{n:4, title:'Pick a plan', sub:'Your team can start training as soon as you pay.'},
+    ready:{n:0, title:'Your team is ready!', sub:'Share this code with your families so players can join.'}
+  };
+  function setText(id,t){ var el=$(id); if(el) el.textContent=t; }
+  function go(name){
+    var s=STEPS[name]||STEPS.team; if(!STEPS[name]) name='team';
+    Object.keys(STEPS).forEach(function(k){ var el=$('jn-'+k); if(el) el.hidden=(k!==name); });
+    setText('jnStepLab', s.n ? 'Step '+s.n+' of 4' : 'All set');
+    setText('jnTitle', s.title);
+    setText('jnSub', name==='code' ? 'We sent a 6-digit code to '+(st.email||'your email')+'. It can take a minute.' : s.sub);
+    var back=$('jnBack'); if(back) back.hidden=!s.back;
+    if(name==='ready') setText('csCode', st.code||'');
+    st.step=name; save();
+    try{ page.scrollTop=0; }catch(_){}
+    if(s.focus) setTimeout(function(){ var f=$(s.focus); if(f) f.focus(); },60);
+  }
+  function fill(){
+    if(st.team) $('jnTeam').value=st.team;
+    if(st.assoc) $('jnAssoc').value=st.assoc;
+    if(st.age) $('jnAge').value=st.age;
+    if(st.name) $('jnName').value=st.name;
+    if(st.email) $('jnEmail').value=st.email;
+    setRole(st.role||'coach');
+  }
+  function busy(btn,on,label){ if(!btn) return; btn.disabled=on; if(on){ btn.dataset.label=btn.innerHTML; btn.textContent=label||'One sec'; } else if(btn.dataset.label){ btn.innerHTML=btn.dataset.label; } }
+  function fail(errId,msg,el){ setText(errId,msg); if(el&&el.focus) el.focus(); }
+  function post(url,body){
+    return fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+      .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ return {ok:r.ok,status:r.status,j:j||{}}; }); });
+  }
+
+  /* Step 1: team. Association is required. */
+  $('jnTeamGo').addEventListener('click',function(){
+    setText('jnTeamErr','');
+    var team=$('jnTeam').value.trim(), assoc=$('jnAssoc').value.trim();
+    if(!team) return fail('jnTeamErr','Enter your team name.',$('jnTeam'));
+    if(!assoc) return fail('jnTeamErr','Enter your association.',$('jnAssoc'));
+    st.team=team; st.assoc=assoc; st.age=$('jnAge').value; go('you');
   });
-  if(csEnter){ csEnter.addEventListener('click',function(){ hide(); location.hash='#coachhome'; location.reload(); }); }
-}
+
+  /* Step 2: about you. Coach or team manager, then email a code. */
+  function setRole(role){
+    st.role=role;
+    document.querySelectorAll('#jnRole .segbtn').forEach(function(b){
+      var on=b.getAttribute('data-role')===role; b.classList.toggle('on',on); b.setAttribute('aria-checked',on?'true':'false');
+    });
+    setText('jnRoleHint', role==='manager'
+      ? 'Managers handle payment, the roster and invites. Your coach runs training.'
+      : 'Coaches run training and the team. You can add a team manager later.');
+  }
+  document.querySelectorAll('#jnRole .segbtn').forEach(function(b){
+    b.addEventListener('click',function(){ setRole(b.getAttribute('data-role')); save(); });
+  });
+  function sendCode(btn,errId){
+    busy(btn,true,'Sending');
+    return post('/api/coach?action=coach-start',{email:st.email,name:st.name,role:st.role,team:st.team,association:st.assoc,ageGroup:st.age})
+      .then(function(res){
+        busy(btn,false);
+        if(!res.ok){ fail(errId, res.status===429 ? 'Too many tries. Wait a few minutes and try again.' : (res.j.error||'We could not send the code. Try again.')); return false; }
+        return true;
+      })
+      .catch(function(){ busy(btn,false); fail(errId,'Something went wrong. Check your connection and try again.'); return false; });
+  }
+  $('jnYouGo').addEventListener('click',function(){
+    setText('jnYouErr','');
+    var name=$('jnName').value.trim(), email=$('jnEmail').value.trim();
+    if(!name) return fail('jnYouErr','Enter your name.',$('jnName'));
+    if(!validEmail(email)) return fail('jnYouErr','Enter a valid email.',$('jnEmail'));
+    var consent=$('csConsent'); if(consent&&!consent.checked) return fail('jnYouErr','Please agree to the Terms and Privacy Policy.',consent);
+    try{ localStorage.setItem('thwapTerms', JSON.stringify({at:new Date().toISOString(), version:POLICY_VERSION})); }catch(_){}
+    st.name=name; st.email=email; save();
+    sendCode($('jnYouGo'),'jnYouErr').then(function(ok){ if(ok) go('code'); });
+  });
+
+  /* Step 3: the emailed code signs them in and creates the team. */
+  $('jnCode').addEventListener('input',function(){ this.value=this.value.replace(/\D+/g,'').slice(0,6); });
+  $('jnCodeGo').addEventListener('click',function(){
+    setText('jnCodeErr','');
+    var otp=$('jnCode').value.replace(/\D+/g,'');
+    if(otp.length!==6) return fail('jnCodeErr','Enter the 6 digits from your email.',$('jnCode'));
+    var btn=this; busy(btn,true,'Checking');
+    post('/api/coach?action=coach-verify',{email:st.email,code:otp})
+      .then(function(res){
+        busy(btn,false);
+        if(!res.ok||!res.j.token||!res.j.team){ return fail('jnCodeErr', res.status===401 ? 'That code is not right. Check your email and try again.' : (res.j.error||'We could not check the code. Try again.'),$('jnCode')); }
+        var c=res.j.coach||{}, t=res.j.team;
+        st.code=t.code; save();
+        try{ localStorage.setItem('thwapCoach', JSON.stringify({ token:res.j.token, email:st.email, name:c.name||st.name, role:st.role, teams:[t.code], teamList:[{code:t.code,name:t.name||st.team,ageGroup:t.ageGroup||st.age}], childPlayerId:null })); }catch(_){}
+        go(res.j.paid ? 'ready' : 'plan');
+      })
+      .catch(function(){ busy(btn,false); fail('jnCodeErr','Something went wrong. Check your connection and try again.'); });
+  });
+  $('jnResend').addEventListener('click',function(){
+    var btn=this; setText('jnCodeErr','');
+    sendCode(btn,'jnCodeErr').then(function(ok){ if(ok) setText('jnCodeErr','We sent a new code.'); });
+  });
+
+  /* Step 4: plan. Stripe checkout returns to /#joined. */
+  function plan(){ var r=page.querySelector('input[name="jnPlan"]:checked'); return r?r.value:'yearly'; }
+  $('jnPay').addEventListener('click',function(){
+    setText('jnPayErr','');
+    var btn=this; busy(btn,true);
+    st.plan=plan(); save();
+    post('/api/billing?action=create-subscription',{code:st.code,plan:st.plan})
+      .then(function(res){
+        if(res.j.url){ window.location=res.j.url; return; }
+        busy(btn,false);
+        fail('jnPayErr', res.status===503 ? 'Payment is not set up yet. Hang tight.' : (res.j.error||'We could not open payment. Try again.'));
+      })
+      .catch(function(){ busy(btn,false); fail('jnPayErr','Something went wrong. Check your connection and try again.'); });
+  });
+  $('jnHaveCode').addEventListener('click',function(){
+    var w=$('jnCompWrap'), open=w.hidden; w.hidden=!open; this.setAttribute('aria-expanded',open?'true':'false');
+    if(open) setTimeout(function(){ $('jnComp').focus(); },30);
+  });
+  $('jnCompGo').addEventListener('click',function(){
+    setText('jnPayErr','');
+    var comp=$('jnComp').value.trim(); if(!comp) return fail('jnPayErr','Enter your code.',$('jnComp'));
+    var btn=this; busy(btn,true);
+    post('/api/billing?action=redeem',{code:st.code,comp:comp})
+      .then(function(res){ busy(btn,false); if(res.ok&&res.j.ok){ go('ready'); } else { fail('jnPayErr','That code did not work. Check it and try again.',$('jnComp')); } })
+      .catch(function(){ busy(btn,false); fail('jnPayErr','Something went wrong. Check your connection and try again.'); });
+  });
+
+  /* Step 5: ready. Share the code, then go to the Team page. */
+  function shareCode(btn){
+    var msg='Join our team on Thwap Hockey! Open thwaphockey.com, tap Sign In and enter our team code: '+st.code;
+    if(window.thwapShare) window.thwapShare({ title:'Join our Thwap team', text:msg, url:'https://thwaphockey.com' }).then(function(r){
+      st.invited=true; save();
+      if(btn&&r&&r.ok==='copied'){ var old=btn.innerHTML; btn.textContent='Copied. Paste it in your group chat.'; setTimeout(function(){ btn.innerHTML=old; },2200); }
+      if(window.thwapJoinTodo) window.thwapJoinTodo();
+    });
+  }
+  window.thwapJoinShare=shareCode;
+  $('csShare').addEventListener('click',function(){ shareCode(this); });
+  $('csEnter').addEventListener('click',function(){ st.step='done'; save(); hide(); location.hash='#coachhome'; location.reload(); });
+
+  /* Back and the sign-in link. */
+  $('jnBack').addEventListener('click',function(){ var s=STEPS[st.step]; if(s&&s.back) go(s.back); });
+  $('csBack').addEventListener('click',function(e){ e.preventDefault(); showSignin(); });
+
+  /* Open at the saved step. A finished join starts over for a second team. */
+  window.thwapJoinResume=function(){
+    if(st.step==='done'){ st={}; save(); }
+    fill(); go(st.step||'team');
+  };
+  /* Back from Stripe checkout (a full load, or a hash change on the same page). */
+  function backFromCheckout(){
+    if(location.hash!=='#joined' || !st.code) return;
+    show(); showCoachSignup(); go('ready');
+    var pay=$('jnPay'); busy(pay,false);
+    try{ history.replaceState(null,'',location.pathname+location.search); }catch(_){}
+  }
+  backFromCheckout();
+  window.addEventListener('hashchange',backFromCheckout);
+})();
+/* Coach home: the day-one checklist. Shown for a team that joined on this
+   device until it has players and the families were invited. */
+(function(){
+  var box=document.getElementById('jnTodo'); if(!box) return;
+  function st(){ try{ return JSON.parse(localStorage.getItem('thwapJoin')||'{}')||{}; }catch(_){ return {}; } }
+  function mark(id,done,sub){ var r=document.getElementById(id); if(!r) return; r.classList.toggle('done',!!done); var s=r.querySelector('.jn-todo-txt span'); if(s&&sub) s.textContent=sub; }
+  window.thwapJoinTodo=function(){
+    var s=st(); if(!s.code){ box.hidden=true; return; }
+    var n=Number((document.getElementById('chTotal')||{}).textContent)||0;
+    mark('jnTodoPlayers', n>0, n>0 ? (n===1?'1 player added':n+' players added') : "Name, number and a parent's email");
+    mark('jnTodoInvite', !!s.invited, s.invited ? 'Code sent' : 'Send your team code '+s.code);
+    box.hidden = n>0 && !!s.invited;
+  };
+  var inv=document.getElementById('jnTodoInvite');
+  if(inv) inv.addEventListener('click',function(){ if(window.thwapJoinShare) window.thwapJoinShare(null); });
+  window.addEventListener('hashchange',function(){ if(location.hash==='#coachhome') setTimeout(window.thwapJoinTodo,400); });
+  setTimeout(window.thwapJoinTodo,600);
+})();
 /* Close buttons dismiss the SHEET but stay on the frozen splash layer (frost + header Sign In / Join Waitlist / About), never unlocking the app. */
 function backToSplash(){ stopSplash(true); if(form) form.hidden=true; if(waitForm) waitForm.hidden=true; var csf=document.getElementById('coachSignupForm'); if(csf) csf.hidden=true; if(overlay){ overlay.hidden=true; overlay.setAttribute('aria-hidden','true'); } if(location.hash==='#login'){ history.replaceState(null,'',location.pathname+location.search); } }
 var loginCloseBtn=document.getElementById('loginClose');
@@ -10820,8 +11056,8 @@ function wireHeaderNav(id, fn){
 }
 wireHeaderNav('navSignIn', function(){ playToSheet(showSignin); });
 wireHeaderNav('navSignInK', function(){ playToSheet(showSignin); });
-wireHeaderNav('navWaitlist', function(){ playToSheet(showWait); });
-wireHeaderNav('navWaitlistK', function(){ playToSheet(showWait); });
+wireHeaderNav('navWaitlist', function(){ playToSheet(showCoachSignup); });
+wireHeaderNav('navWaitlistK', function(){ playToSheet(showCoachSignup); });
 window.addEventListener('hashchange',function(){ if(location.hash==='#login'){ show(); maybeSplash(); } });
 gate();
 })();</script>

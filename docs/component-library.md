@@ -284,6 +284,28 @@ orange `#E07A1F`.
   card. Video affordance is the inline `▶ Watch how` expand link, not an embedded
   iframe.
 
+### Plan choice tile: `.jn-plan`
+A pick-one tile for a choice with a price (the Join Thwap plan step: Yearly or
+Monthly). A visually hidden radio plus a tile: eyebrow name, optional `.pill`
+(e.g. "2 months free"), big Archivo Black price with a small unit ("a year"), one
+supporting line, and a round check on the right.
+
+- **Defined in:** `index.html` (`.jn-plans`, `.jn-plan`, `.jn-plan-*`).
+- **Selected state:** green border AND a filled green check with a ✓, never color
+  alone. Keyboard focus shows a green outline.
+- **Reuse rule:** for picking ONE option that is worth comparing side by side. For
+  a two-word either/or with no detail (Coach or Team manager), use `.seg`.
+
+### Setup checklist row: `.jn-todo-row`
+The coach home "Get your team going" list for a new team: Pay for Thwap, Add your
+players, Invite families. Each open row is a link or button (round empty dot,
+bold title, one supporting line, chevron). A finished row turns flat (no border,
+no fill) with a filled green ✓, because it no longer goes anywhere.
+
+- **Defined in:** `index.html` (`.jn-todo`, `.jn-todo-row`).
+- **Reuse rule:** only for a short one-time setup list. The whole list hides once
+  every step is done.
+
 ### Hero: `.hero` (`.kicker` eyebrow + h1 + `p`)
 The page-top greeting/intro block.
 
