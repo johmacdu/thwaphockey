@@ -78,13 +78,62 @@ beforeEach(() => {
   global.fetch = vi.fn(async () => ({ ok: true, status: 200, json: async () => ({}) }));
 });
 
+describe('code-signin with a team code and no player id (a kid on a new team)', () => {
+  // No player id in the body, so mark this browser as approved for the kid we
+  // expect the team code + code to find.
+  const asKid = (pid, body) => async (res) => {
+    for (const k of [...fake.map.keys()]) if (String(k).startsWith('rl:')) fake.map.delete(k);
+    return _handlers.codeSignin({ ...post(body), headers: { cookie: `${deviceCookieName(pid)}=${mintDeviceToken(pid)}` } }, res);
+  };
+  it('finds the player from the team code plus their own code', async () => {
+    await seedFlyers();
+    const res = makeRes();
+    await asKid('zara', { teamCode: 'FLYERS10', code: '442026', keep: true })(res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.player).toEqual({ id: 'zara', name: 'Zara', number: 44, teamCode: 'FLYERS10', teamName: 'Flyers 9U' });
+    expect(verifySession(tokenFrom(res.headers['Set-Cookie'])).playerId).toBe('zara');
+  });
+  it('accepts the team code in any case', async () => {
+    await seedFlyers();
+    const res = makeRes();
+    await asKid('milo', { teamCode: 'flyers10', code: '82027' })(res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.player.id).toBe('milo');
+  });
+  it('rejects a code nobody on that team has', async () => {
+    await seedFlyers();
+    const res = makeRes();
+    await codeSignin(post({ teamCode: 'FLYERS10', code: '992026' }), res);
+    expect(res.statusCode).toBe(401);
+  });
+  it('never signs into another team with that team code', async () => {
+    await seedFlyers();
+    await seedRangers();
+    const res = makeRes();
+    await codeSignin(post({ teamCode: 'FLYERS10', code: '712026' }), res); // Alder's Rangers code
+    expect(res.statusCode).toBe(401);
+  });
+  it('refuses when two kids on the team share the number', async () => {
+    await seedFlyers();
+    await addMember('FLYERS10', { playerId: 'ava', firstName: 'Ava', number: 44 });
+    const res = makeRes();
+    await codeSignin(post({ teamCode: 'FLYERS10', code: '442026' }), res);
+    expect(res.statusCode).toBe(401);
+  });
+  it('rejects an unknown team code', async () => {
+    const res = makeRes();
+    await codeSignin(post({ teamCode: 'NOPE99', code: '442026' }), res);
+    expect(res.statusCode).toBe(401);
+  });
+});
+
 describe('code-signin on a non-Rangers team', () => {
   it('signs a Flyers player in with jersey + season and mints a session', async () => {
     await seedFlyers();
     const res = makeRes();
     await codeSignin(post({ playerId: 'zara', code: '442026', keep: true }), res);
     expect(res.statusCode).toBe(200);
-    expect(res.body.player).toEqual({ id: 'zara', name: 'Zara', number: 44 });
+    expect(res.body.player).toEqual({ id: 'zara', name: 'Zara', number: 44, teamCode: 'FLYERS10', teamName: 'Flyers 9U' });
     const claims = verifySession(tokenFrom(res.headers['Set-Cookie']));
     expect(claims.playerId).toBe('zara');
   });
@@ -169,7 +218,7 @@ describe('the 16 Jr. Rangers 10U players still sign in', () => {
           const res = makeRes();
           await codeSignin(post({ playerId: p.id, code: `${p.number}${y}` }), res);
           expect(res.statusCode, `${p.id} ${y}`).toBe(200);
-          expect(res.body.player).toEqual({ id: p.id, name: p.name, number: p.number });
+          expect(res.body.player).toMatchObject({ id: p.id, name: p.name, number: p.number, teamCode: 'RANGERS72' });
         }
         const bad = makeRes();
         await codeSignin(post({ playerId: p.id, code: `${p.number + 1}2026` }), bad);
